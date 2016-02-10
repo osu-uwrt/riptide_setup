@@ -7,11 +7,14 @@ env:
   - ROS_DISTRO=jade
 
 install:
-  - ./minimal
+  - ./maximal
 
 script:
   - source ~/.bashrc
   - which gazebo
+  - which gzserver
+  - which gzclient
+  - ls /usr/bin/gazebo*
 
 notifications:
   email: false

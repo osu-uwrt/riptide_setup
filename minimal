@@ -15,7 +15,7 @@ wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
 sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" > /etc/apt/sources.list.d/gazebo-stable.list'
 wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
 
-sudo apt-get -qy update
+sudo apt-get -qq update
 sudo apt-get -qy install python-rosdep ros-"$ROS_DISTRO"-gazebo6-ros-pkgs
 
 sudo rosdep -qy init
