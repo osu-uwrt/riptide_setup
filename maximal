@@ -21,8 +21,8 @@ sudo apt-get -qy install python-rosdep
 sudo rosdep -qy init
 rosdep -qy update # Do not sudo!
 
-sudo apt-get -qy install ros-indigo-desktop-full ros-indigo-joystick_drivers
+sudo apt-get -qy install ros-"$ROS_DISTRO"-desktop-full ros-"ROS_DISTRO"-joystick_drivers
 sudo apt-get -qy remove gazebo2
-sudo apt-get -qy install ros-indigo-gazebo6-ros-pkgs
+sudo apt-get -qy install ros-"$ROS_DISTRO"-gazebo6-ros-pkgs
 
 echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> ~/.bashrc
