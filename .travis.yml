@@ -7,11 +7,10 @@ env:
   - ROS_DISTRO=jade
 
 install:
-  - ./maximal
+  - ./install-max-ros
 
 script:
   - source ~/.bashrc
-  - ls /usr/bin/gazebo*
 
 notifications:
   email: false
