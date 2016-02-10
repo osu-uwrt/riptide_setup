@@ -6,13 +6,11 @@ env:
   - ROS_DISTRO=indigo
   - ROS_DISTRO=jade
 
-before_install:
+install:
   - ./minimal
 
-install: true
-
 script:
-  - source /opt/ros/$ROS_DISTRO/setup.bash
+  - source ~/.bashrc
   - which check_urdf
 
 notifications:
