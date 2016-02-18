@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Example workspace creation:
+
+mkdir -p ~/riptide_ws/src
+cd ~/riptide_ws/src
+catkin_init_workspace
+
+cd ~/riptide_ws
+catkin_make
+
+echo "source ~/riptide_ws/devel/setup.bash" >> ~/.bashrc

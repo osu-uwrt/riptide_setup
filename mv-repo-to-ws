@@ -1,0 +1,4 @@
+#!/bin/bash
+
+mkdir ~/riptide_ws
+mv $PWD ~/riptide_ws/src

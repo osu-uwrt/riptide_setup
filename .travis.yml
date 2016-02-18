@@ -1,0 +1,18 @@
+language: generic
+sudo: required
+dist: trusty
+
+env:
+  - ROS_DISTRO=indigo
+  - ROS_DISTRO=jade
+
+install:
+  - ./ros-install-max
+  - ./ceres-install
+
+script:
+  - source ~/.bashrc
+
+notifications:
+  email: false
+  slack: osu-uwrt:QiKTeRcKbKhS82FG4s1SGMb6
