@@ -8,4 +8,5 @@ Riptide
    :maxdepth: 2
 
    installation
+   license
 
