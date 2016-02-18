@@ -29,7 +29,7 @@ sudo apt-add-repository -y ppa:falk-t-j/qtsixa
 # Install non-ROS/Gazebo packages:
 
 sudo apt-get -qq update
-sudo apt-get -qy install python-rosdep sixad
+sudo apt-get -qy install python-rosdep sixad joystick arduino openssh-server
 
 sudo rosdep -qy init
 rosdep -qy update # Do not sudo!
