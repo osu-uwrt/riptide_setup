@@ -1,15 +1,15 @@
 <?xml version="1.0"?>
 <package>
   <name>riptide_pid</name>
-  <version>0.0.1</version>
-  <description>The riptide_pid package</description>
+  <version>0.0.2</version>
+  <description>PID controllers for OSU's Riptide AUV.</description>
 
   <maintainer email="mahaffey.60@osu.edu">Sara Mahaffey</maintainer>
 
   <license>BSD</license>
 
   <url type="website">http://go.osu.edu/uwrt</url>
-  <url type="repository">http://github.com/osu-uwrt/riptide_pid</url>
+  <url type="repository">http://github.com/osu-uwrt/riptide</url>
 
   <author email="mahaffey.60@osu.edu">Sara Mahaffey</author>
 

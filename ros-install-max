@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# A Script to install ALL of the ROS
+# A script to install ALL of the ROS
 #
 #   Installs ros-$ROS_DISTRO-desktop-full
 #   Replaces gazebo with gazebo6 (needs testing)
@@ -16,7 +16,7 @@ if [ "${ROS_DISTRO:-false}" == "false" ]; then
 
 fi
 
-# Add the necessary repositories for ROS, Gazebo and PS3 controllers:
+# Add the necessary repositories for ROS, Gazebo and their dependencies:
 
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list'
 wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
@@ -26,7 +26,7 @@ wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
 
 sudo apt-add-repository -y ppa:falk-t-j/qtsixa
 
-# Install non-ROS/Gazebo packages:
+# Install non-ROS/non-Gazebo packages:
 
 sudo apt-get -qq update
 sudo apt-get -qy install python-rosdep sixad joystick arduino openssh-server
@@ -34,7 +34,7 @@ sudo apt-get -qy install python-rosdep sixad joystick arduino openssh-server
 sudo rosdep -qy init
 rosdep -qy update # Do not sudo!
 
-# Install the ROS and Gazebo packages:
+# Install the ROS/Gazebo packages and their dependencies:
 
 sudo apt-get -qy install ros-"$ROS_DISTRO"-desktop-full
 # Teleop:

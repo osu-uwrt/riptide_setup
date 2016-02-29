@@ -21,11 +21,12 @@ wget http://ceres-solver.org/ceres-solver-1.11.0.tar.gz
 
 tar zxf ceres-solver-1.11.0.tar.gz
 mkdir ceres-bin
-cd ceres-bin
+cd ceres-bin || exit
 cmake ../ceres-solver-1.11.0
 make -j3
-make test
-# Needed administrative permissions, added sudo.
+if ! [ "$TRAVIS" = true ]; then
+   make test
+fi
 sudo make install
 
 # Cleanup
