@@ -1,0 +1,6 @@
+<launch>
+  <node name="serial_port" pkg="jaws2_hardware" type="serial_port">
+    <param name="name" type="str" value="/dev/ttyUSB0" />
+    <param name="rate" type="int" value="9600" />
+  </node>
+</launch>
