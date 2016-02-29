@@ -36,7 +36,14 @@ rosdep -qy update # Do not sudo!
 
 # Install the ROS and Gazebo packages:
 
-sudo apt-get -qy install ros-"$ROS_DISTRO"-desktop-full ros-"ROS_DISTRO"-joystick_drivers
+sudo apt-get -qy install ros-"$ROS_DISTRO"-desktop-full
+# Teleop:
+sudo apt-get -qy install ros-"$ROS_DISTRO"-joystick_drivers
+# Navigation:
+sudo apt-get -qy install ros-"$ROS_DISTRO"-control-toolbox
+# Model:
+sudo apt-get -qy install liburdfdom-tools
+# Simulation:
 sudo apt-get -qy remove gazebo2
 sudo apt-get -qy install ros-"$ROS_DISTRO"-gazebo6-ros-pkgs
 
