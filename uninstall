@@ -25,22 +25,22 @@ sudo apt-get -qq -y autoremove
 
 # Backup .bashrc and create a new version sans ROS:
 
-cp .bashrc .bashrc.bak
-grep -v "source \(/opt/ros/[a-z]\+\|.\+/devel\)/setup.bash" .bashrc.bak > .bashrc
+cp ~/.bashrc ~/.bashrc.bak
+grep -v "source \(/opt/ros/[a-z]\+\|.\+/devel\)/setup.bash" ~/.bashrc.bak > ~/.bashrc
 
 # Remove ROS source and key
 
-rm -f /etc/apt/sources.list.d/ros-latest.list
+sudo rm -f /etc/apt/sources.list.d/ros-latest.list
 sudo apt-key del B01FA116
 
 # Remove Gazebo source and key
 
-rm -f /etc/apt/sources.list.d/gazebo-stable.list
+sudo rm -f /etc/apt/sources.list.d/gazebo-stable.list
 sudo apt-key del AF249743
 
 # Remove Sixaxis source and key
 
-sudo apt-add-repository --remove ppa:falk-t-j/qtsixa
+sudo apt-add-repository -y --remove ppa:falk-t-j/qtsixa
 sudo rm -f /etc/apt/sources.list.d/falk-t-j-qtsixa-trusty.list
 sudo apt-key del 736E4F0B
 

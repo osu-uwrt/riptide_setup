@@ -2,8 +2,8 @@
 
 # A Script to install only necessary ROS packages
 #
-#   Installs gazebo6
-#   Installs packages required by the package in the working directory
+#   Installs gazebo6-ros-pkgs
+#   Resolves package dependencies
 
 # Select the appropriate ROS version for the current OS:
 
@@ -19,21 +19,21 @@ fi
 # Add the necessary repositories for ROS and Gazebo:
 
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list'
-wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
+wget -nv http://packages.ros.org/ros.key -O - | sudo apt-key add -
 
 sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" > /etc/apt/sources.list.d/gazebo-stable.list'
-wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
+wget -nv http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
 
 # Install rosdep and Gazebo packages:
 
 sudo apt-get -qq update
-sudo apt-get -qy install python-rosdep ros-"$ROS_DISTRO"-gazebo6-ros-pkgs
+sudo apt-get -qq -y install python-rosdep ros-"$ROS_DISTRO"-gazebo6-ros-pkgs
 
-sudo rosdep -qy init
-rosdep -qy update # Do not sudo!
+sudo rosdep  init
+rosdep update # Do not sudo!
 
 # Install the current package's dependencies:
 
-rosdep -qy install --from-paths ./
+rosdep install -iyq --from-paths ./
 
 echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> ~/.bashrc

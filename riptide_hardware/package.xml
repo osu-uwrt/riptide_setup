@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>riptide_hardware</name>
-  <version>0.0.2</version>
+  <version>0.0.3</version>
   <description>Hardware abstraction layer for OSU's Riptide AUV.</description>
 
   <maintainer email="cary.42@osu.edu">Conor Cary</maintainer>
@@ -21,12 +21,12 @@
   <build_depend>roscpp</build_depend>
   <build_depend>message_filters</build_depend>
   <build_depend>riptide_msgs</build_depend>
-  <build_depend>libboost-all-dev</build_depend>
+  <build_depend>boost</build_depend>
 
   <run_depend>roscpp</run_depend>
   <run_depend>message_filters</run_depend>
   <run_depend>riptide_msgs</run_depend>
-  <run_depend>libboost-all-dev</run_depend>
+  <run_depend>boost</run_depend>
 
   <export>
   </export>

@@ -37,8 +37,11 @@ rosdep -qy update # Do not sudo!
 # Install the ROS/Gazebo packages and their dependencies:
 
 sudo apt-get -qy install ros-"$ROS_DISTRO"-desktop-full
+# Simulation:
+sudo apt-get -qy purge gazebo2
+sudo apt-get -qy install ros-"$ROS_DISTRO"-gazebo6-ros-pkgs
 # Teleop:
-sudo apt-get -qy install ros-"$ROS_DISTRO"-joystick_drivers
+sudo apt-get -qy install ros-"$ROS_DISTRO"-joystick-drivers
 # Vision
 sudo apt-get -qy install ros-"$ROS_DISTRO"-pointgrey-camera-driver
 sudo apt-get -qy install ros-"$ROS_DISTRO"-camera-calibration
@@ -47,12 +50,10 @@ sudo apt-get -qy install ros-"$ROS_DISTRO"-control-toolbox
 sudo apt-get -qy install ros-"$ROS_DISTRO"-robot-localization
 # Model:
 sudo apt-get -qy install liburdfdom-tools
-# Simulation:
-sudo apt-get -qy remove gazebo2
-sudo apt-get -qy install ros-"$ROS_DISTRO"-gazebo6-ros-pkgs
 
-# Clean up:
-
-sudo apt-get -qy autoremove
+source /opt/ros/$ROS_DISTRO/setup.bash
+rosdep install -iy --from-paths ./
 
 echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> ~/.bashrc
+
+
