@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Remove ROS packages, configs and dependencies
+sudo apt-get -qy purge ros-*
+sudo apt-get -qy autoremove
+
+# Backup .bashrc and create a new version sans ROS
+cp .bashrc .bashrc.bak
+grep -v "source \(/opt/ros/[a-z]\+\|.\+/devel\)/setup.bash" .bashrc.bak > .\bashrc
+
+# Remove ROS source and key
+rm /etc/apt/sources.list.d/ros-latest.list
+sudo apt-key del B01FA116
+
+# Remove ROS source and key
+rm /etc/apt/sources.list.d/gazebo-stable.list
+sudo apt-key del AF249743
+
+# Remove Sixaxis source and key
+sudo apt-add-repository --remove ppa:falk-t-j/qtsixa
+sudo apt-key del 736E4F0B
+
+# Delete files left by rosdep..?
+# sudo rm -rf /etc/ros
