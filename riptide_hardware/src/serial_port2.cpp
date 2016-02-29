@@ -1,5 +1,5 @@
 #include "ros/ros.h"
-#include "jaws2_msgs/PwmStamped.h"
+#include "riptide_msgs/PwmStamped.h"
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
 

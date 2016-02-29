@@ -1,6 +1,6 @@
 #include "ros/ros.h"
-#include "jaws2_msgs/ThrustStamped.h"
-#include "jaws2_msgs/PwmStamped.h"
+#include "riptide_msgs/ThrustStamped.h"
+#include "riptide_msgs/PwmStamped.h"
 
 class ThrustCal
 {
@@ -8,7 +8,7 @@ class ThrustCal
     ros::NodeHandle nh;
     ros::Subscriber ts;
     ros::Publisher pwm;
-    jaws2_msgs::PwmStamped duration;
+    riptide_msgs::PwmStamped duration;
     double max_force;
     double max_pwm;
     double f1_fwd,f2_fwd,f3_fwd,f4_fwd;
@@ -21,7 +21,7 @@ class ThrustCal
 
   public:
     ThrustCal();
-    void callback(const jaws2_msgs::ThrustStamped::ConstPtr& force);
+    void callback(const riptide_msgs::ThrustStamped::ConstPtr& force);
     void loop();
 };
 
@@ -34,8 +34,8 @@ int main(int argc, char **argv)
 
 ThrustCal::ThrustCal() : nh()
 {
-  ts = nh.subscribe<jaws2_msgs::ThrustStamped>("solver/thrust", 1, &ThrustCal::callback, this);
-  pwm = nh.advertise<jaws2_msgs::PwmStamped>("thrust_cal/pwm", 1);
+  ts = nh.subscribe<riptide_msgs::ThrustStamped>("solver/thrust", 1, &ThrustCal::callback, this);
+  pwm = nh.advertise<riptide_msgs::PwmStamped>("thrust_cal/pwm", 1);
 
   nh.param<double>("nominal_max_force", max_force, 25.0);
   nh.param<double>("nominal_max_pwm", max_pwm, 100.0);
@@ -61,7 +61,7 @@ ThrustCal::ThrustCal() : nh()
   nh.param<double>("thrust_cal/s2_rev", s2_rev, 1.0);
 }
 
-void ThrustCal::callback(const jaws2_msgs::ThrustStamped::ConstPtr& force)
+void ThrustCal::callback(const riptide_msgs::ThrustStamped::ConstPtr& force)
 {
   duration.header.stamp = force->header.stamp;
 

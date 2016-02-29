@@ -1,11 +1,11 @@
 #include "ros/ros.h"
 #include "boost/asio.hpp"
-#include "jaws2_msgs/PwmStamped.h"
+#include "riptide_msgs/PwmStamped.h"
 
 boost::asio::io_service i_o;
 boost::asio::serial_port s_p(i_o);
 
-void callback(const jaws2_msgs::PwmStamped::ConstPtr& force)
+void callback(const riptide_msgs::PwmStamped::ConstPtr& force)
 {
   const int SIZE = 21;
   unsigned char packet[SIZE];
@@ -63,7 +63,7 @@ int main(int argc, char **argv)
   s_p.set_option(boost::asio::serial_port_base::baud_rate(baud_rate));
   ROS_INFO("Serial port rate: %i", baud_rate);
 
-  sub = nh.subscribe<jaws2_msgs::PwmStamped>("thrust_cal/pwm", 1, &callback);
+  sub = nh.subscribe<riptide_msgs::PwmStamped>("thrust_cal/pwm", 1, &callback);
 
   ros::spin();
 }
