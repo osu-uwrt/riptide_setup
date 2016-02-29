@@ -1,7 +1,7 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Accel.h"
 #include "sensor_msgs/JointState.h"
-#include "jaws2_msgs/ThrustStamped.h"
+#include "riptide_msgs/ThrustStamped.h"
 
 #include <math.h>
 #include <vector>
@@ -90,7 +90,7 @@ class Solver
     ros::Publisher joints;
     ros::Publisher forces;
     sensor_msgs::JointState angles;
-    jaws2_msgs::ThrustStamped thrust;
+    riptide_msgs::ThrustStamped thrust;
     double f_a;
     double f_s;
     double f_p;
@@ -117,7 +117,7 @@ Solver::Solver(char** argv)
 {
   accels = nh.subscribe<geometry_msgs::Accel>("accel_error", 1, &Solver::callback, this);
   joints = nh.advertise<sensor_msgs::JointState>("joint_states", 1);
-  forces = nh.advertise<jaws2_msgs::ThrustStamped>("solver/thrust", 1);
+  forces = nh.advertise<riptide_msgs::ThrustStamped>("solver/thrust", 1);
 
   angles.name.resize(2);
   angles.name[0] = "port-base";
