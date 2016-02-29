@@ -1,5 +1,4 @@
 #include "ros/ros.h"
-#include "sensor_msgs/Joy.h"
 #include "geometry_msgs/Accel.h"
 #include "geometry_msgs/AccelStamped.h"
 #include <std_msgs/Float64.h>
@@ -17,10 +16,10 @@ bool first_reconfig= true;
 ros::Publisher a_e;
 
 void dyn_callback(riptide_pid::pidConfig &config, uint32_t level) {
-  ROS_INFO("Reconfigure Request: %f %f %f %f %f", 
-            config.p, config.i, 
-            config.d, 
-            config.im, 
+  ROS_INFO("Reconfigure Request: %f %f %f %f %f",
+            config.p, config.i,
+            config.d,
+            config.im,
             config.dm);
 if (first_reconfig)
 	{
@@ -38,7 +37,7 @@ void callback(const sensor_msgs::Imu::ConstPtr& current_accel, const geometry_ms
 {
 
   geometry_msgs::Vector3 accel_des,accel_thrusters;
-  
+
   ros::Time time;
   ros::Duration time_diff;
   ros::Time last_time;
@@ -67,7 +66,7 @@ void callback(const sensor_msgs::Imu::ConstPtr& current_accel, const geometry_ms
   accel_thrusters.z=pid.control_toolbox::Pid::computeCommand((accel_des.z-currentz),time_diff);
 
   pid.control_toolbox::Pid::getCurrentCmd();
-  last_time = time;  
+  last_time = time;
   ROS_INFO("PID Accel Results -> X:%f   Y:%f   Z:%f",accel_thrusters.x,accel_thrusters.y,accel_thrusters.z);
 
 a_e.publish(accel_thrusters);

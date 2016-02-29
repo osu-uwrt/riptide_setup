@@ -1,5 +1,4 @@
 #include "ros/ros.h"
-#include "sensor_msgs/Joy.h"
 #include "geometry_msgs/Accel.h"
 #include "geometry_msgs/AccelStamped.h"
 #include <std_msgs/Float64.h>
@@ -14,10 +13,10 @@
 
 
 void dyn_callback(pid_control::pidConfig &config, uint32_t level) {
-  ROS_INFO("Reconfigure Request: %f %f %f %f %f", 
-            config.p, config.i, 
-            config.d, 
-            config.im, 
+  ROS_INFO("Reconfigure Request: %f %f %f %f %f",
+            config.p, config.i,
+            config.d,
+            config.im,
             config.dm);
 }
 
@@ -25,7 +24,7 @@ void callback(const sensor_msgs::Imu::ConstPtr& current_accel, const geometry_ms
 {
 
   geometry_msgs::Vector3 accel_des;
-  
+
   ros::Time time;
   ros::Duration time_diff;
   ros::Time last_time;
@@ -51,14 +50,14 @@ void callback(const sensor_msgs::Imu::ConstPtr& current_accel, const geometry_ms
   //server.setCallback(f);
 
   pid.initPid(3, .5, 2, 0.3, -0.3);
-  
+
   //control_toolbox::Pid::initDynamicReconfig(&nh);
 
   time = ros::Time::now();
   time_diff = time-last_time;
   pid.control_toolbox::Pid::computeCommand((accel_des.x-currentx),time_diff);
   pid.control_toolbox::Pid::getCurrentCmd();
-  last_time = time;  
+  last_time = time;
 }
 
 int main(int argc, char **argv) {
