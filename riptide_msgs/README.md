@@ -1,16 +1,14 @@
-# Jaws 2 Messages
+# Riptide Messages
 
-*Contains custom-generated messages for Jaws 2.*
-
-Add `jaws_msgs` as dependency like you would any other set of messages.
+*Contains custom-generated messages for Riptide.*
 
 # Message API/Definitions
 
 *Read them as you would the one for [Vector3](http://docs.ros.org/api/geometry_msgs/html/msg/Vector3.html).*
 
-## jaws_msgs/Thrust.msg Message
+## riptide_msgs/Thrust.msg Message
 
-### File: `jaws_msgs/msg/Thrust.msg`
+### File: `riptide_msgs/msg/Thrust.msg`
 
 ### Raw Message Definition
 
@@ -18,18 +16,18 @@ Add `jaws_msgs` as dependency like you would any other set of messages.
     float32 stbd
     float32 port
 
-## jaws_msgs/ThrusStampedt.msg Message
+## riptide_msgs/ThrustStamped.msg Message
 
-### File: `jaws_msgs/msg/ThrustStamped.msg`
+### File: `riptide_msgs/msg/ThrustStamped.msg`
 
 ### Raw Message Definition
 
     Header header
     Thrust thrust
 
-## jaws_msgs/Pwm.msg Message
+## riptide_msgs/Pwm.msg Message
 
-### File: `jaws_msgs/msg/Pwm.msg`
+### File: `riptide_msgs/msg/Pwm.msg`
 
 ### Raw Message Definition
 
@@ -37,9 +35,9 @@ Add `jaws_msgs` as dependency like you would any other set of messages.
     int16 stbd
     int16 port
     
-## jaws_msgs/PwmStamped.msg Message
+## riptide_msgs/PwmStamped.msg Message
 
-### File: `jaws_msgs/msg/PwmStamped.msg`
+### File: `riptide_msgs/msg/PwmStamped.msg`
 
 ### Raw Message Definition
 
