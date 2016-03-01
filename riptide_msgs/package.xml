@@ -1,23 +1,23 @@
 <?xml version="1.0"?>
 <package>
-  <name>riptide_description</name>
+  <name>riptide_msgs</name>
   <version>0.0.3</version>
-  <description>Description of OSU's Riptide AUV.</description>
+  <description>Custom messages for OSU's Riptide AUV.</description>
 
   <maintainer email="cary.42@osu.edu">Conor Cary</maintainer>
 
   <license>BSD</license>
 
   <url type="website">http://go.osu.edu/uwrt</url>
-  <url type="repository">http://github.com/osu-uwrt/riptide</url>
+  <url type="repository">http://github.com/uwrt-osu/riptide_msgs</url>
 
   <author email="cary.42@osu.edu">Conor Cary</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <run_depend>liburdfdom-tools</run_depend>
-  <run_depend>urdf</run_depend>
-  <run_depend>xacro</run_depend>
+  <build_depend>message_generation</build_depend>
+
+  <run_depend>message_runtime</run_depend>
 
   <export>
   </export>

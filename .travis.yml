@@ -7,8 +7,8 @@ env:
   - ROS_DISTRO=jade
 
 install:
-  - ./ros-install-max
   - ./ceres-install
+  - ./ros-install-max
 
 script:
   - source ~/.bashrc

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>riptide</name>
-  <version>0.0.1</version>
+  <version>0.0.3</version>
   <description>Metapackage for OSU's Riptide AUV.</description>
 
   <maintainer email="cary.42@osu.edu">Conor Cary</maintainer>
@@ -14,7 +14,11 @@
   <author email="cary.42@osu.edu">Conor Cary</author>
 
   <buildtool_depend>catkin</buildtool_depend>
+
   <run_depend>riptide_description</run_depend>
+  <run_depend>riptide_msgs</run_depend>
+  <run_depend>riptide_hardware</run_depend>
+  <run_depend>riptide_pid</run_depend>
 
   <export>
     <metapackage />
