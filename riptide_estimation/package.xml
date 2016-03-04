@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package>
+  <name>riptide_estimation</name>
+  <version>0.0.3</version>
+  <description>State estimation for OSU's Riptide AUV.</description>
+
+  <maintainer email="cary.42@osu.edu">Conor Cary</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://go.osu.edu/uwrt</url>
+  <url type="repository">http://github.com/osu-uwrt/riptide</url>
+
+  <author email="cary.42@osu.edu">Conor Cary</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>robot_localization</build_depend>
+
+  <run_depend>robot_localization</run_depend>
+
+  <export>
+  </export>
+</package>

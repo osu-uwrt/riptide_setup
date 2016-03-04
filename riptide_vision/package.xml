@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package>
+  <name>riptide_vision</name>
+  <version>0.0.3</version>
+  <description>Vision system for OSU's Riptide AUV.</description>
+
+  <maintainer email="cary.42@osu.edu">Conor Cary</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://go.osu.edu/uwrt</url>
+  <url type="repository">http://github.com/uwrt-osu/riptide_msgs</url>
+
+  <author email="cary.42@osu.edu">Conor Cary</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>camera_calibration</build_depend>
+  <build_depend>cv_bridge</build_depend>
+  <build_depend>pointgrey_camera_driver</build_depend>
+
+  <run_depend>camera_calibration</run_depend>
+  <run_depend>cv_bridge</run_depend>
+  <run_depend>pointgrey_camera_driver</run_depend>
+
+  <export>
+  </export>
+</package>

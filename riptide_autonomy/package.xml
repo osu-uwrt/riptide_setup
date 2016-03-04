@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package>
+  <name>riptide_autonomy</name>
+  <version>0.0.3</version>
+  <description>High level control for OSU's Riptide AUV.</description>
+
+  <maintainer email="cary.42@osu.edu">Conor Cary</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://go.osu.edu/uwrt</url>
+  <url type="repository">http://github.com/uwrt-osu/riptide_msgs</url>
+
+  <author email="cary.42@osu.edu">Conor Cary</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>smach_ros</build_depend>
+
+  <run_depend>smach_ros</run_depend>
+
+  <export>
+  </export>
+</package>
