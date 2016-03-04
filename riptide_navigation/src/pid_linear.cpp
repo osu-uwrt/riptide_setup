@@ -8,14 +8,14 @@
 #include <message_filters/time_synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
 #include <dynamic_reconfigure/server.h>
-#include <riptide_pid/pidConfig.h>
+#include <riptide_navigation/pidConfig.h>
 #include <boost/asio.hpp>
 
 double p,i,d,im,dm;
 bool first_reconfig= true;
 ros::Publisher a_e;
 
-void dyn_callback(riptide_pid::pidConfig &config, uint32_t level) {
+void dyn_callback(riptide_navigation::pidConfig &config, uint32_t level) {
   ROS_INFO("Reconfigure Request: %f %f %f %f %f",
             config.p, config.i,
             config.d,
@@ -89,8 +89,8 @@ int main(int argc, char **argv) {
   message_filters::Subscriber<sensor_msgs::Imu> imu_sub(nh, "/imu/imu",1);
   message_filters::Subscriber<geometry_msgs::AccelStamped> accel_sub(nh, "accel_set_pt",1);
 
-  dynamic_reconfigure::Server<riptide_pid::pidConfig> server;
-  dynamic_reconfigure::Server<riptide_pid::pidConfig>::CallbackType f;
+  dynamic_reconfigure::Server<riptide_navigation::pidConfig> server;
+  dynamic_reconfigure::Server<riptide_navigation::pidConfig>::CallbackType f;
   f = boost::bind(&dyn_callback, _1, _2);
   server.setCallback(f);
 

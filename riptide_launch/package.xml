@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>riptide_bringup</name>
+  <name>riptide_launch</name>
   <version>0.0.3</version>
   <description>Description of OSU's Riptide AUV.</description>
 
@@ -12,7 +12,6 @@
   <url type="repository">http://github.com/osu-uwrt/riptide</url>
 
   <author email="cary.42@osu.edu">Conor Cary</author>
-  <author email="justice.251@osu.edu">Benji Justice</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 

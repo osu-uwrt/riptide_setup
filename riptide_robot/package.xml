@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>riptide</name>
+  <name>riptide_robot</name>
   <version>0.0.3</version>
   <description>Metapackage for OSU's Riptide AUV.</description>
 
@@ -15,10 +15,16 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <run_depend>riptide_autonomy</run_depend>
+  <run_depend>riptide_estimation</run_depend>
   <run_depend>riptide_description</run_depend>
+  <run_depend>riptide_gazebo</run_depend>
+  <run_depend>riptide_launch</run_depend>
   <run_depend>riptide_msgs</run_depend>
-  <run_depend>riptide_hardware</run_depend>
-  <run_depend>riptide_pid</run_depend>
+  <run_depend>riptide_navigation</run_depend>
+  <run_depend>riptide_serial</run_depend>
+  <run_depend>riptide_teleop</run_depend>
+  <run_depend>riptide_vision</run_depend>
 
   <export>
     <metapackage />
