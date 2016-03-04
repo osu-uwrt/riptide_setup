@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-PACKAGE = 'riptide_pid'
+PACKAGE = 'riptide_navigation'
 import roslib;roslib.load_manifest(PACKAGE)
 import rospy
 
@@ -12,7 +12,7 @@ def callback(config):
 if __name__ == "__main__":
     rospy.init_node("dynamic_client")
 
-    client = dynamic_reconfigure.client.Client("riptide_pid", timeout=30, config_callback=callback)
+    client = dynamic_reconfigure.client.Client("riptide_navigation", timeout=30, config_callback=callback)
 
     r = rospy.Rate(0.1)
     x = 0

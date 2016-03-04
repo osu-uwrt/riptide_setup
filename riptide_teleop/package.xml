@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>riptide_msgs</name>
+  <name>riptide_teleop</name>
   <version>0.0.4</version>
-  <description>Custom messages for OSU's Riptide AUV.</description>
+  <description>Teleoperation package for OSU's Riptide AUV.</description>
 
   <maintainer email="cary.42@osu.edu">Conor Cary</maintainer>
 
@@ -15,9 +15,11 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>message_generation</build_depend>
+  <build_depend>joy</build_depend>
+  <build_depend>roslaunch</build_depend>
 
-  <run_depend>message_runtime</run_depend>
+  <run_depend>joy</run_depend>
+  <run_depend>roslaunch</run_depend>
 
   <export>
   </export>

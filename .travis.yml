@@ -4,11 +4,10 @@ dist: trusty
 
 env:
   - ROS_DISTRO=indigo
-  - ROS_DISTRO=jade
 
 install:
-  - ./ceres-install
-  - ./ros-install-max
+  - ./scripts/install-ceres
+  - ./scripts/install-ros
 
 script:
   - source ~/.bashrc
