@@ -1,8 +1,8 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Accel.h"
 #include "sensor_msgs/JointState.h"
-#include "jaws2_msgs/ThrustStamped.h"
-#include "geometry_msgs/Vector3.h"
+#include "riptide_msgs/ThrustStamped.h"
+#include "riptide_msgs/Position.h"
 #include <math.h>
 #include <vector>
 #include "ceres/ceres.h"
@@ -24,21 +24,30 @@ double IX = 1.0; // Moment of inertia about X
 double IY = 1.0; // Moment of inertia about Y
 double IZ = 1.0; // Moment of inertia about Z
 
+riptide_msgs::Position makeVector(double x, double y, double z)
+{
+		riptide_msgs::Position vector;
+		vector.x = x;
+		vector.y = y;
+		vector.z = z;
+		return vector;
+}
+
 /*** Thruster Positions ***/
 // Positions are in meters relative to the center of mass.
 // Forward Thrusters
-geometry_msgs::Vector3 pos_u1 = new geometry_msgs::Vector3(-.25, .127, -.05);
-geometry_msgs::Vector3 pos_u2 = new geometry_msgs::Vector3(-.25, -.127, -.05);
-geometry_msgs::Vector3 pos_u3 = new geometry_msgs::Vector3(.25, -.127, -.05);
-geometry_msgs::Vector3 pos_u4 = new geometry_msgs::Vector3(.25, .127, -.05);
+riptide_msgs::Position pos_u1 = makeVector(-.25, .127, -.05);
+riptide_msgs::Position pos_u2 = makeVector(-.25, -.127, -.05);
+riptide_msgs::Position pos_u3 = makeVector(.25, -.127, -.05);
+riptide_msgs::Position pos_u4 = makeVector(.25, .127, -.05);
 // Upwards Thrusters
-geometry_msgs::Vector3 pos_f1 = new geometry_msgs::Vector3(-.3, -.127, 1);
-geometry_msgs::Vector3 pos_f2 = new geometry_msgs::Vector3(-.3, .127, 1);
-geometry_msgs::Vector3 pos_f3 = new geometry_msgs::Vector3(-.3, .127, -1);
-geometry_msgs::Vector3 pos_f4 = new geometry_msgs::Vector3(-.3, -.127, -1);
+riptide_msgs::Position pos_f1 = makeVector(-.3, -.127, 1.0);
+riptide_msgs::Position pos_f2 = makeVector(-.3, .127, 1.0);
+riptide_msgs::Position pos_f3 = makeVector(-.3, .127, -1.0);
+riptide_msgs::Position pos_f4 = makeVector(-.3, -.127, -1.0);
 // Sideways Thrusters
-geometry_msgs::Vector3 pos_s1 = new geometry_msgs::Vector3(.5, 0, -1);
-geometry_msgs::Vector3 pos_s2 = new geometry_msgs::Vector3(-.5, 0, -1);
+riptide_msgs::Position pos_s1 = makeVector(.5, 0.0, -1.0);
+riptide_msgs::Position pos_s2 = makeVector(-.5, 0.0, -1.0);
 
 /*** Thruster Definitions ***/
 // f1 = forward top right		u1 = vertical back left		s1 = sideways front
@@ -89,7 +98,7 @@ struct a_roll {
 		const T* const s1,
 		const T* const s2,
 		T* residual) const {
-		residual[0] = (u1*T(pos_u1.y)+u2*T(pos_u2.y)+u3*T(pos_u3.y)+u4*T(pos_u4.y)+s1*T(pos_s1.z)+s1*T(pos_s2.z)) / T(IX) - T(desiredRoll);
+		residual[0] = (u1[0]*T(pos_u1.y)+u2[0]*T(pos_u2.y)+u3[0]*T(pos_u3.y)+u4[0]*T(pos_u4.y)+s1[0]*T(pos_s1.z)+s1[0]*T(pos_s2.z)) / T(IX) - T(desiredRoll);
 		return true;
 	}
 };
@@ -104,7 +113,7 @@ struct a_pitch {
 		const T* const u3,
 		const T* const u4,
 		T* residual) const {
-		residual[0] = (f1*T(pos_f1.z) + f2*T(pos_f2.z) + f3*T(pos_f3.z) + f4*T(pos_f4.z) + u1*T(pos_u1.x) + u2*T(pos_u2.x) + u3*T(pos_u3.x) + u4*T(pos_u4.x))) / T(IY) - T(desiredPitch);
+		residual[0] = (f1[0] * T(pos_f1.z) + f2[0]*T(pos_f2.z) + f3[0]*T(pos_f3.z) + f4[0]*T(pos_f4.z) + u1[0]*T(pos_u1.x) + u2[0]*T(pos_u2.x) + u3[0]*T(pos_u3.x) + u4[0]*T(pos_u4.x)) / T(IY) - T(desiredPitch);
 		return true;
 	}
 };
@@ -117,7 +126,7 @@ struct a_yaw{
 		const T* const s1,
 		const T* const s2,
 		T* residual) const {
-	residual[0] = (f1*T(pos_u1.y) + f2*T(pos_u2.y) + f3*T(pos_u3.y) + f4*T(pos_u4.y) + s1*T(pos_s1.x) + s1*T(pos_s2.x)) / T(IZ) - T(desiredYaw);
+	residual[0] = (f1[0]*T(pos_f1.y) + f2[0]*T(pos_f2.y) + f3[0]*T(pos_f3.y) + f4[0]*T(pos_f4.y) + s1[0]*T(pos_s1.x) + s1[0]*T(pos_s2.x)) / T(IZ) - T(desiredYaw);
 	return true;
 }
 };
@@ -129,7 +138,7 @@ private:
 	ros::NodeHandle nh;
 	ros::Subscriber accels;
 	ros::Publisher forces;
-	jaws2_msgs::ThrustStamped thrust;
+	riptide_msgs::ThrustStamped thrust_msg;
 	double f1, f2, f3, f4;
 	double u1, u2, u3, u4;
 	double s1, s2;
@@ -153,30 +162,30 @@ int main(int argc, char **argv)
 Solver::Solver(char** argv)
 {
 	accels = nh.subscribe<geometry_msgs::Accel>("accel_error", 1, &Solver::callback, this); // Message to give desired accelerations
-	forces = nh.advertise<jaws2_msgs::ThrustStamped>("solver/thrust", 1); // Message containing force required from each thruster to achieve given acceleration
+	forces = nh.advertise<riptide_msgs::ThrustStamped>("solver/thrust", 1); // Message containing force required from each thruster to achieve given acceleration
 
 	google::InitGoogleLogging(argv[0]);
 
 	// PROBLEM SETUP
 	// Add residual blocks (equations)
 	// Linear
-	problem.AddResidualBlock(new ceres::AutoDiffCostFunction<a_surge, 1, 1, 1, 1>(new a_surge),
+	problem.AddResidualBlock(new ceres::AutoDiffCostFunction<a_surge, 1, 1, 1, 1, 1>(new a_surge),
 		NULL,
 		&f1, &f2, &f3, &f4);
-	problem.AddResidualBlock(new ceres::AutoDiffCostFunction<a_sway, 1, 1>(new a_sway),
+	problem.AddResidualBlock(new ceres::AutoDiffCostFunction<a_sway, 1, 1, 1>(new a_sway),
 		NULL,
 		&s1, &s2);
-	problem.AddResidualBlock(new ceres::AutoDiffCostFunction<a_heave, 1, 1, 1, 1>(new a_heave),
+	problem.AddResidualBlock(new ceres::AutoDiffCostFunction<a_heave, 1, 1, 1, 1, 1>(new a_heave),
 		NULL,
 		&u1, &u2, &u3, &u4);
 	// Angular
-	problem.AddResidualBlock(new ceres::AutoDiffCostFunction<a_roll, 1, 1, 1, 1, 1, 1>(new a_roll),
+	problem.AddResidualBlock(new ceres::AutoDiffCostFunction<a_roll, 1, 1, 1, 1, 1, 1, 1>(new a_roll),
 		NULL,
 		&u1, &u2, &u3, &u4, &s1, &s2);
-	problem.AddResidualBlock(new ceres::AutoDiffCostFunction<a_pitch, 1, 1, 1, 1, 1, 1, 1, 1>(new a_pitch),
+	problem.AddResidualBlock(new ceres::AutoDiffCostFunction<a_pitch, 1, 1, 1, 1, 1, 1, 1, 1, 1>(new a_pitch),
 		NULL,
 		&f1, &f2, &f3, &f4, &u1, &u2, &u3, &u4);
-	problem.AddResidualBlock(new ceres::AutoDiffCostFunction<a_yaw, 1, 1, 1, 1, 1, 1>(new a_yaw),
+	problem.AddResidualBlock(new ceres::AutoDiffCostFunction<a_yaw, 1, 1, 1, 1, 1, 1, 1>(new a_yaw),
 		NULL,
 		&f1, &f2, &f3, &f4, &s1, &s2);
 	// Set constraints (min, max thruster force)
@@ -243,7 +252,7 @@ void Solver::callback(const geometry_msgs::Accel::ConstPtr& a)
 	s1 = 0.0;
 	s2 = 0.0;
 
-#ifdef debug
+
 	std::cout << "Initial f1 = " << f1
 		<< ", f2 = " << f2
 		<< ", f3 = " << f3
@@ -255,12 +264,12 @@ void Solver::callback(const geometry_msgs::Accel::ConstPtr& a)
 		<< ", s1 = " << s1
 		<< ", s2 = " << s2
 		<< std::endl;
-#endif
+
 	
 	// Solve all my problems
 	ceres::Solve(options, &problem, &summary);
 
-#ifdef debug
+
 	std::cout << summary.FullReport() << std::endl;
 	std::cout << "Final f1 = " << f1
 		<< ", f2 = " << f2
@@ -273,24 +282,24 @@ void Solver::callback(const geometry_msgs::Accel::ConstPtr& a)
 		<< ", s1 = " << s1
 		<< ", s2 = " << s2
 		<< std::endl;
-#endif
+
 
 	// Get time
 	ros::Time time = ros::Time::now();
 
 	// Create stamped thrust message
-	thrust.header.stamp = time;
-	thrust.thrust.f1 = f1;
-	thrust.thrust.f2 = f2;
-	thrust.thrust.f3 = f3;
-	thrust.thrust.f4 = f4;
-	thrust.thrust.u1 = u1;
-	thrust.thrust.u2 = u2;
-	thrust.thrust.u3 = u3;
-	thrust.thrust.u4 = u4;
-	thrust.thrust.s1 = s1;
-	thrust.thrust.s2 = s2;
-	forces.publish(thrust);
+	thrust_msg.header.stamp = time;
+	thrust_msg.thrust.f1 = f1;
+	thrust_msg.thrust.f2 = f2;
+	thrust_msg.thrust.f3 = f3;
+	thrust_msg.thrust.f4 = f4;
+	thrust_msg.thrust.u1 = u1;
+	thrust_msg.thrust.u2 = u2;
+	thrust_msg.thrust.u3 = u3;
+	thrust_msg.thrust.u4 = u4;
+	thrust_msg.thrust.s1 = s1;
+	thrust_msg.thrust.s2 = s2;
+	forces.publish(thrust_msg);
 }
 
 void Solver::loop()
