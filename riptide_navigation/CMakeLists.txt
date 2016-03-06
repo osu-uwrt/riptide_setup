@@ -22,6 +22,7 @@ add_executable(pid_linear src/pid_linear.cpp)
 #add_executable(pid_roll src/pid_roll.cpp)
 
 add_dependencies(thrust_cal riptide_msgs_gencpp)
+add_dependencies(thrust_solver riptide_msgs_gencpp)
 
 add_dependencies(pid_linear riptide_navigation_gencfg)
 #add_dependencies(pid_roll riptide_navigation_gencfg)

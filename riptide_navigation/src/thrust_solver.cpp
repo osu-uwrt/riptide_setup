@@ -1,8 +1,8 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Accel.h"
+#include "geometry_msgs/Vector3.h"
 #include "sensor_msgs/JointState.h"
 #include "riptide_msgs/ThrustStamped.h"
-#include "riptide_msgs/Position.h"
 #include <math.h>
 #include <vector>
 #include "ceres/ceres.h"
@@ -24,30 +24,37 @@ double IX = 1.0; // Moment of inertia about X
 double IY = 1.0; // Moment of inertia about Y
 double IZ = 1.0; // Moment of inertia about Z
 
-riptide_msgs::Position makeVector(double x, double y, double z)
+struct vector
 {
-		riptide_msgs::Position vector;
-		vector.x = x;
-		vector.y = y;
-		vector.z = z;
-		return vector;
+		double x;
+		double y;
+		double z;
+};
+
+vector makeVector(double X, double Y, double Z)
+{
+	vector v;
+	v.x = X;
+	v.y = Y;
+	v.z = Z;
+	return v;
 }
 
 /*** Thruster Positions ***/
 // Positions are in meters relative to the center of mass.
 // Forward Thrusters
-riptide_msgs::Position pos_u1 = makeVector(-.25, .127, -.05);
-riptide_msgs::Position pos_u2 = makeVector(-.25, -.127, -.05);
-riptide_msgs::Position pos_u3 = makeVector(.25, -.127, -.05);
-riptide_msgs::Position pos_u4 = makeVector(.25, .127, -.05);
+vector pos_u1 = makeVector(-.25, .127, -.05);
+vector pos_u2 = makeVector(-.25, -.127, -.05);
+vector pos_u3 = makeVector(.25, -.127, -.05);
+vector pos_u4 = makeVector(.25, .127, -.05);
 // Upwards Thrusters
-riptide_msgs::Position pos_f1 = makeVector(-.3, -.127, 1.0);
-riptide_msgs::Position pos_f2 = makeVector(-.3, .127, 1.0);
-riptide_msgs::Position pos_f3 = makeVector(-.3, .127, -1.0);
-riptide_msgs::Position pos_f4 = makeVector(-.3, -.127, -1.0);
+vector pos_f1 = makeVector(-.3, -.127, 1.0);
+vector pos_f2 = makeVector(-.3, .127, 1.0);
+vector pos_f3 = makeVector(-.3, .127, -1.0);
+vector pos_f4 = makeVector(-.3, -.127, -1.0);
 // Sideways Thrusters
-riptide_msgs::Position pos_s1 = makeVector(.5, 0.0, -1.0);
-riptide_msgs::Position pos_s2 = makeVector(-.5, 0.0, -1.0);
+vector pos_s1 = makeVector(.5, 0.0, -1.0);
+vector pos_s2 = makeVector(-.5, 0.0, -1.0);
 
 /*** Thruster Definitions ***/
 // f1 = forward top right		u1 = vertical back left		s1 = sideways front
