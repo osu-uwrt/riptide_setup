@@ -9,11 +9,10 @@ branches:
     - travis
 install:
   - pip install -q --user travis-sphinx
-#  - export PATH=$HOME/.local/bin:$PATH
 script:
-  - travis-sphinx -n --source=docs build
+  - travis-sphinx --source=docs build
 after_success:
-- if [ "$TRAVIS_PULL_REQUEST" == false ]; then travis-sphinx deploy; fi
+  - travis-sphinx deploy
 notifications:
   email: false
 #  slack: osu-uwrt:QiKTeRcKbKhS82FG4s1SGMb6
