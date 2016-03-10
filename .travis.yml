@@ -4,14 +4,16 @@ dist: trusty
 
 env:
   - ROS_DISTRO=indigo
-
+branches:
+  only:
+    - travis
 install:
-  - ./scripts/install-ceres
-  - ./scripts/install-ros
-
+  - pip install --user travis-sphinx
+  - export PATH=$HOME/.local/bin:$PATH
 script:
-  - source ~/.bashrc
-
+  - travis-sphinx --source=docs build
+after_success:
+- if [ "$TRAVIS_PULL_REQUEST" == false ]; then travis-sphinx deploy; fi
 notifications:
   email: false
-  slack: osu-uwrt:QiKTeRcKbKhS82FG4s1SGMb6
+#  slack: osu-uwrt:QiKTeRcKbKhS82FG4s1SGMb6
