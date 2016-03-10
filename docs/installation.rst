@@ -2,7 +2,7 @@ Installation
 ============
 
 Minimal Install
---------------
+---------------
 
 .. code-block:: bash
 
