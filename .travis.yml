@@ -8,10 +8,10 @@ branches:
   only:
     - travis
 install:
-  - pip install --user travis-sphinx
-  - export PATH=$HOME/.local/bin:$PATH
+  - pip install -q --user travis-sphinx
+#  - export PATH=$HOME/.local/bin:$PATH
 script:
-  - travis-sphinx -n -s=docs build
+  - travis-sphinx -n --source=docs build
 after_success:
 - if [ "$TRAVIS_PULL_REQUEST" == false ]; then travis-sphinx deploy; fi
 notifications:
