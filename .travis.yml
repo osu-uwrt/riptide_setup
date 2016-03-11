@@ -6,7 +6,7 @@ env:
   - ROS_DISTRO=indigo
 branches:
   only:
-    - travis
+    - docs
 before_install:
   - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list'
   - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
@@ -14,9 +14,10 @@ before_install:
   - sudo apt-get install python-rosdep
   - sudo rosdep init
   - rosdep update
-  - sudo apt-get install ros-"$ROS_DISTRO"-desktop-full
+  - sudo apt-get -q install ros-"$ROS_DISTRO"-desktop-full
   - echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> ~/.bashrc
 install:
+  - ./scripts/create-workspace
   - pip install -q --user travis-sphinx
 script:
   - source ~/.bashrc

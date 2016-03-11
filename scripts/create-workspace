@@ -2,11 +2,11 @@
 
 # Example workspace creation:
 
-mkdir -p ~/riptide_ws/src
-cd ~/riptide_ws/src
+mkdir -p ~/osu-uwrt/riptide_ws/src
+cd ~/osu-uwrt/riptide_ws/src
 catkin_init_workspace
 
-cd ~/riptide_ws
+cd ~/osu-uwrt/riptide_ws
 catkin_make
 
-echo "source ~/riptide_ws/devel/setup.bash" >> ~/.bashrc
+echo "source ~/osu-uwrt/riptide_ws/devel/setup.bash" >> ~/.bashrc
