@@ -1,3 +1,6 @@
 #!/bin/bash
 
-mv * -t ~/osu-uwrt/riptide_ws/src
+# Moves the current repository into the
+# catkin workspace (from create-workspace). 
+
+cp -rf ./* ~/osu-uwrt/riptide_ws/src

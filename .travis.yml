@@ -4,23 +4,32 @@ dist: trusty
 
 env:
   - ROS_DISTRO=indigo
+#  - ROS_DISTRO=jade
+
 branches:
   only:
-    - docs
+    - master
+
 before_install:
+  - pip install -q --user travis-sphinx
   - ./scripts/install-ceres
   - ./scripts/install-ros
   - source ~/.bashrc
+
 install:
-  - pip install -q --user travis-sphinx
   - ./scripts/create-workspace
-  - source ~/.bashrc
-script:
-  - travis-sphinx build
   - ./scripts/move-repo
-  - cd ~/osu-uwrt/riptide_ws && catkin_make
+  - source ~/.bashrc
+
+script:
+  - cd ~/osu-uwrt/riptide_ws
+  - catkin_make
+  - cd $TRAVIS_BUILD_DIR
+  - travis-sphinx build
+
 after_success:
   - travis-sphinx deploy
+
 notifications:
   email: false
 #  slack: osu-uwrt:QiKTeRcKbKhS82FG4s1SGMb6
