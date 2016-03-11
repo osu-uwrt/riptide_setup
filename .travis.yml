@@ -20,7 +20,7 @@ install:
   - pip install -q --user travis-sphinx
 script:
   - source ~/.bashrc
-  - travis-sphinx --source=docs build
+  - travis-sphinx build
 after_success:
   - travis-sphinx deploy
 notifications:
