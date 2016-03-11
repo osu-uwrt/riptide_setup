@@ -26,29 +26,29 @@ sudo apt-add-repository -y ppa:falk-t-j/qtsixa
 # Install packages external to ROS:
 
 sudo apt-get -qq update
-sudo apt-get -qy install arduino openssh-server
-sudo apt-get -qy install sixad joystick
-sudo apt-get -qy install python-rosdep
+sudo apt-get -yqq install arduino openssh-server
+sudo apt-get -yqq install sixad joystick
+sudo apt-get -yqq install python-rosdep
 
-sudo rosdep -qy init
-rosdep -qy update # Do not sudo!
+sudo rosdep -yq init
+rosdep -yq update # Do not sudo!
 
 # Install the ROS packages and their dependencies:
 
-sudo apt-get -qy install ros-"$ROS_DISTRO"-desktop-full
+sudo apt-get -yqq install ros-"$ROS_DISTRO"-desktop-full
 # Autonomy:
-sudo apt-get -qy install ros-"$ROS_DISTRO"-smach
+sudo apt-get -yqq install ros-"$ROS_DISTRO"-smach
 # Description:
-sudo apt-get -qy install liburdfdom-tools
+sudo apt-get -yqq install liburdfdom-tools
 # Estimation
-sudo apt-get -qy install ros-"$ROS_DISTRO"-robot-localization
+sudo apt-get -yqq install ros-"$ROS_DISTRO"-robot-localization
 # Navigation:
-sudo apt-get -qy install ros-"$ROS_DISTRO"-control-toolbox
+sudo apt-get -yqq install ros-"$ROS_DISTRO"-control-toolbox
 # Teleop:
-sudo apt-get -qy install ros-"$ROS_DISTRO"-joystick-drivers
+sudo apt-get -yqq install ros-"$ROS_DISTRO"-joystick-drivers
 # Vision
-sudo apt-get -qy install ros-"$ROS_DISTRO"-camera-calibration
-sudo apt-get -qy install ros-"$ROS_DISTRO"-cv-bridge
-sudo apt-get -qy install ros-"$ROS_DISTRO"-pointgrey-camera-driver
+sudo apt-get -yqq install ros-"$ROS_DISTRO"-camera-calibration
+sudo apt-get -yqq install ros-"$ROS_DISTRO"-cv-bridge
+sudo apt-get -yqq install ros-"$ROS_DISTRO"-pointgrey-camera-driver
 
 echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> ~/.bashrc

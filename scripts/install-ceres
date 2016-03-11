@@ -7,15 +7,15 @@
 
 # Dependencies
 
-sudo apt-get install -qy cmake
-sudo apt-get install -qy libgoogle-glog-dev
-sudo apt-get install -qy libatlas-base-dev
-sudo apt-get install -qy libeigen3-dev
-sudo apt-get install -qy libsuitesparse-dev
+sudo apt-get install -yqq cmake
+sudo apt-get install -yqq libgoogle-glog-dev
+sudo apt-get install -yqq libatlas-base-dev
+sudo apt-get install -yqq libeigen3-dev
+sudo apt-get install -yqq libsuitesparse-dev
 
 # Download
 
-wget http://ceres-solver.org/ceres-solver-1.11.0.tar.gz
+wget -nv http://ceres-solver.org/ceres-solver-1.11.0.tar.gz
 
 # Install
 
@@ -23,11 +23,11 @@ tar zxf ceres-solver-1.11.0.tar.gz
 mkdir ceres-bin
 cd ceres-bin || exit
 cmake ../ceres-solver-1.11.0
-make -j3
+make -s -j3
 if [ "$TRAVIS" != true ]; then
-   make test
+   make -s test
 fi
-sudo make install
+sudo make -s install
 
 # Cleanup
 
