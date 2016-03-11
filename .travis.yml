@@ -7,9 +7,19 @@ env:
 branches:
   only:
     - travis
+before_install:
+  - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list'
+  - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
+  - sudo apt-get update
+  - sudo apt-get python-rosdep
+  - sudo rosdep init
+  - rosdep update
+  - sudo apt-get install ros-"$ROS_DISTRO"-desktop-full
+  - echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> ~/.bashrc
 install:
   - pip install -q --user travis-sphinx
 script:
+  - source ~/.bashrc
   - travis-sphinx --source=docs build
 after_success:
   - travis-sphinx deploy
