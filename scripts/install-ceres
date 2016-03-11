@@ -7,11 +7,11 @@
 
 # Dependencies
 
-sudo apt-get install -y cmake
-sudo apt-get install -y libgoogle-glog-dev
-sudo apt-get install -y libatlas-base-dev
-sudo apt-get install -y libeigen3-dev
-sudo apt-get install -y libsuitesparse-dev
+sudo apt-get install -qy cmake
+sudo apt-get install -qy libgoogle-glog-dev
+sudo apt-get install -qy libatlas-base-dev
+sudo apt-get install -qy libeigen3-dev
+sudo apt-get install -qy libsuitesparse-dev
 
 # Download
 
@@ -24,7 +24,7 @@ mkdir ceres-bin
 cd ceres-bin || exit
 cmake ../ceres-solver-1.11.0
 make -j3
-if ! [ "$TRAVIS" = true ]; then
+if [ "$TRAVIS" != true ]; then
    make test
 fi
 sudo make install

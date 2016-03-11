@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# A script to install ALL of the ROS
+# A script to install ALL of the ROS.
 #
-#   Installs ros-$ROS_DISTRO-desktop-full
-#   Replaces gazebo with gazebo6 (needs testing)
+#   Installs ros-$ROS_DISTRO-desktop-full.
+#   Then installs Riptide dependencies.
 
 # Select the appropriate ROS version for the current OS:
 
@@ -16,30 +16,26 @@ if [ "${ROS_DISTRO:-false}" == "false" ]; then
 
 fi
 
-# Add the necessary repositories for ROS, Gazebo and their dependencies:
+# Add the necessary repositories for ROS and the PS3 controller:
 
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list'
 wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
 
-sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" > /etc/apt/sources.list.d/gazebo-stable.list'
-wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
-
 sudo apt-add-repository -y ppa:falk-t-j/qtsixa
 
-# Install non-ROS/non-Gazebo packages:
+# Install packages external to ROS:
 
 sudo apt-get -qq update
-sudo apt-get -qy install python-rosdep sixad joystick arduino openssh-server
+sudo apt-get -qy install arduino openssh-server
+sudo apt-get -qy install sixad joystick
+sudo apt-get -qy install python-rosdep
 
 sudo rosdep -qy init
 rosdep -qy update # Do not sudo!
 
-# Install the ROS/Gazebo packages and their dependencies:
+# Install the ROS packages and their dependencies:
 
 sudo apt-get -qy install ros-"$ROS_DISTRO"-desktop-full
-# Gazebo:
-sudo apt-get -qy purge gazebo2
-sudo apt-get -qy install ros-"$ROS_DISTRO"-gazebo6-ros-pkgs
 # Autonomy:
 sudo apt-get -qy install ros-"$ROS_DISTRO"-smach
 # Description:
@@ -55,9 +51,4 @@ sudo apt-get -qy install ros-"$ROS_DISTRO"-camera-calibration
 sudo apt-get -qy install ros-"$ROS_DISTRO"-cv-bridge
 sudo apt-get -qy install ros-"$ROS_DISTRO"-pointgrey-camera-driver
 
-source /opt/ros/$ROS_DISTRO/setup.bash
-rosdep install -iy --from-paths ./
-
 echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> ~/.bashrc
-
-

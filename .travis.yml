@@ -8,20 +8,17 @@ branches:
   only:
     - docs
 before_install:
-  - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list'
-  - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
-  - sudo apt-get update
-  - sudo apt-get install python-rosdep
-  - sudo rosdep init
-  - rosdep update
-  - sudo apt-get -q install ros-"$ROS_DISTRO"-desktop-full
-  - echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> ~/.bashrc
-install:
-  - ./scripts/create-workspace
-  - pip install -q --user travis-sphinx
-script:
+  - ./scripts/install-ceres
+  - ./scripts/install-ros
   - source ~/.bashrc
+install:
+  - pip install -q --user travis-sphinx
+  - ./scripts/create-workspace
+  - source ~/.bashrc
+script:
   - travis-sphinx build
+  - ./scripts/move-repo
+  - cd ~/osu-uwrt/riptide_ws && catkin_make
 after_success:
   - travis-sphinx deploy
 notifications:

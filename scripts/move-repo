@@ -1,4 +1,3 @@
 #!/bin/bash
 
-mkdir ~/riptide_ws
-mv $PWD ~/riptide_ws/src
+mv */* ~/osu-uwrt/riptide_ws/src
