@@ -2,15 +2,31 @@ language: generic
 sudo: required
 dist: trusty
 
-env:
-  - ROS_DISTRO=indigo
+branches:
+  only:
+    - master
 
-install:
+before_install:
   - ./scripts/install-ceres
   - ./scripts/install-ros
+  - source ~/.bashrc
+
+install:
+  - ./scripts/create-workspace
+  - ./scripts/copy-to-workspace
+  - source ~/.bashrc
+
+before_script:
+  - pip install -q --user travis-sphinx
 
 script:
-  - source ~/.bashrc
+  - cd ~/osu-uwrt/riptide_ws
+  - catkin_make
+  - cd $TRAVIS_BUILD_DIR
+  - travis-sphinx build
+
+after_success:
+  - travis-sphinx deploy
 
 notifications:
   email: false
