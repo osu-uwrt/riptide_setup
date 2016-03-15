@@ -15,9 +15,13 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <!--
   <build_depend>gazebo6-ros-pkgs</build_depend>
+  <build_depend>gazebo6-ros-control</build_depend>
 
   <run_depend>gazebo6-ros-pkgs</run_depend>
+  <run_depend>gazebo6-ros-control</run_depend>
+  -->
 
   <export>
   </export>

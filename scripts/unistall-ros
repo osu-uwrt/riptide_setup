@@ -1,49 +1,90 @@
 #!/bin/bash
 
-# A script to uninstall ROS, Gazebo and their dependencies.
+
+# A script to uninstall ROS (~desktop-full) and Gazebo 6.
 #
-#  Purges all packages beginning with ros-$ROS_DISTRO-.
-#  Removes apt repositories and associated keys.
-#  Restores .bashrc and removes lingering files.
+#   Purges all ROS packages (beginning with ros-$ROS_DISTRO-).
+#
+#   Purges Sixaxis, Ubuntu and now-unused packages installed for ROS.
+#
+#   Cleans repositories and keys as well as ROS references in ~/.bashrc.
 
 
 # Select the appropriate ROS version for the current OS:
 
 if [ "${ROS_DISTRO:-false}" == "false" ]; then
 
-  if [ $(lsb_release -cs) == "precise" ]; then ROS_DISTRO=hydro
-  elif [ $(lsb_release -cs) == "trusty" ]; then ROS_DISTRO=indigo
-  elif [ $(lsb_release -cs) == "vivid" ]; then ROS_DISTRO=jade
+  if [ "$(lsb_release -cs)" == "precise" ]; then ROS_DISTRO=hydro
+  elif [ "$(lsb_release -cs)" == "trusty" ]; then ROS_DISTRO=indigo
+  elif [ "$(lsb_release -cs)" == "vivid" ]; then ROS_DISTRO=jade
   else echo "We've had a MAIN B BUS UNDERVOLT."; fi
 
 fi
 
-# Remove ROS/Gazebo packages, configs and dependencies:
+distro="$ROS_DISTRO"
+distro="$(tr '[:lower:]' '[:upper:]' <<< ${distro:0:1})${distro:1}"
+release="$(lsb_release -cs)"
+release="$(tr '[:lower:]' '[:upper:]' <<< ${release:0:1})${release:1}"
+echo -e "\nRemoving ROS $distro from Ubuntu $release.\n"
 
-sudo apt-get -qq -y purge ros-"$ROS_DISTRO"-* gazebo* sixad
-sudo apt-get -qq -y autoremove
 
-# Backup .bashrc and create a new version sans ROS:
+# Purge ROS, Gazebo, Sixaxis and Ubuntu packages and configs:
 
-cp ~/.bashrc ~/.bashrc.bak
-grep -v "source \(/opt/ros/[a-z]\+\|.\+/devel\)/setup.bash" ~/.bashrc.bak > ~/.bashrc
+echo -e "Removing ROS and Gazebo packages...\n"
+sudo apt-get -yqq purge python-rosdep ros-"$ROS_DISTRO"-*
+echo -e "...done.\n"
 
-# Remove ROS source and key
+echo -e "Removing Sixaxis package...\n"
+sudo apt-get -yqq purge sixad
+echo -e "...done.\n"
 
+echo -e "Removing Ubuntu packages...\n"
+sudo apt-get -yqq purge openssh-server joystick
+echo -e "...done.\n"
+
+# Remove the now-unused dependencies:
+
+echo -e "Removing dangling dependencies...\n"
+sudo apt-get -yqq autoremove
+echo -e "...done.\n"
+
+
+# Remove ROS, Gazebo and Sixaxis repositories and keys:
+
+echo -n "Removing ROS repository..."
 sudo rm -f /etc/apt/sources.list.d/ros-latest.list
 sudo apt-key del B01FA116
+echo -e "...done.\n"
 
-# Remove Gazebo source and key
-
+echo -n "Removing Gazebo repository..."
 sudo rm -f /etc/apt/sources.list.d/gazebo-stable.list
 sudo apt-key del AF249743
+echo -e "...done.\n"
 
-# Remove Sixaxis source and key
-
+echo -n "Removing Sixaxis repository..."
 sudo apt-add-repository -y --remove ppa:falk-t-j/qtsixa
 sudo rm -f /etc/apt/sources.list.d/falk-t-j-qtsixa-trusty.list
 sudo apt-key del 736E4F0B
+echo -e "...done.\n"
+
+
+# Backup .bashrc and create a new version sans ROS:
+
+echo "Backing up ~/.bashrc..."
+cp ~/.bashrc ~/.bashrc.bak
+echo -e "...done.\n"
+
+echo "Cleaning ~/.bashrc of ROS references..."
+grep -v "source \(/opt/ros/[a-z]\+\|.\+/devel\)/setup.bash" ~/.bashrc.bak > ~/.bashrc
+echo -e "...done.\n"
+
 
 # Delete files left by rosdep..?
 
+echo "Cleaning stranded rosdep files..."
 sudo rm -rf /etc/ros
+echo -e "...done.\n"
+
+# Donezo!
+
+echo -e "Uninstall complete.\n"
