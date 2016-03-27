@@ -19,7 +19,7 @@ add_executable(thrust_cal src/thrust_cal.cpp)
 add_executable(fake_data src/fake_data.cpp)
 add_executable(fake_imu src/fake_imu.cpp)
 add_executable(pid_linear src/pid_linear.cpp)
-add_executable(joy_accel_set src/accel_set.cpp)
+add_executable(joy_accel_set src accel_set.cpp)
 #add_executable(pid_roll src/pid_roll.cpp)
 
 add_dependencies(thrust_cal riptide_msgs_gencpp)

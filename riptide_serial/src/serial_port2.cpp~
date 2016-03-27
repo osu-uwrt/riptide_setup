@@ -54,7 +54,7 @@ class SerialClass{
                             this, _1,_2));
         }
 
-        void send(unsigned char *text, int SIZE)
+        void send(unsigned char *text, const int SIZE)
         {
 
             boost::asio::write(port, boost::asio::buffer(text,SIZE));
@@ -107,7 +107,7 @@ class SerialClass{
 
         while (!serial.quit())
         {
-        int SIZE = 21;
+        const int SIZE = 21;
   	unsigned char packet[SIZE];
 
   	packet[0]  = '#';
