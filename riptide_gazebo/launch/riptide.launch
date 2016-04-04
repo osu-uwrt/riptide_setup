@@ -1,0 +1,6 @@
+<launch>
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find riptide_gazebo)/worlds/riptide.world"/>
+  </include>
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-file $(find riptide_description)/urdf/riptide.urdf -urdf -x 0 -y 0 -z 10 -model riptide" />
+</launch>
