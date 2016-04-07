@@ -168,7 +168,7 @@ int main(int argc, char **argv)
 
 Solver::Solver(char** argv)
 {
-	accels = nh.subscribe<geometry_msgs::Accel>("accel_error", 1, &Solver::callback, this); // Message to give desired accelerations
+	accels = nh.subscribe<geometry_msgs::Accel>("accel_error_linear", 1, &Solver::callback, this); // Message to give desired accelerations
 	forces = nh.advertise<riptide_msgs::ThrustStamped>("solver/thrust", 1); // Message containing force required from each thruster to achieve given acceleration
 
 	google::InitGoogleLogging(argv[0]);
