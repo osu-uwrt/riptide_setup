@@ -12,16 +12,17 @@
 #include <riptide_navigation/pidConfig.h>
 #include <boost/asio.hpp>
 
-double p,i,d,im,dm;
+double p,i,d,im,dm,g;
 bool first_reconfig= true;
 ros::Publisher a_e;
 
 void dyn_callback(riptide_navigation::pidConfig &config, uint32_t level) {
-  ROS_INFO("Reconfigure Request: %f %f %f %f %f",
+  ROS_INFO("Reconfigure Request: %f %f %f %f %f %f",
             config.p, config.i,
             config.d,
             config.im,
-            config.dm);
+            config.dm,
+	    config.g);
 if (first_reconfig)
 	{
 	first_reconfig=false;
@@ -32,6 +33,7 @@ i=config.i;
 d=config.d;
 im=config.im;
 dm=config.dm;
+g=config.g;
 }
 
 void callback(const sensor_msgs::Imu::ConstPtr& current_accel, const geometry_msgs::AccelStamped::ConstPtr& accel_set,const geometry_msgs::Vector3Stamped::ConstPtr& accel_roll,const geometry_msgs::Vector3Stamped::ConstPtr& accel_pitch,const geometry_msgs::Vector3Stamped::ConstPtr& accel_yaw)
@@ -52,7 +54,7 @@ void callback(const sensor_msgs::Imu::ConstPtr& current_accel, const geometry_ms
 
   currentx = current_accel->linear_acceleration.x;
   currenty = current_accel->linear_acceleration.y;
-  currentz = current_accel->linear_acceleration.z;
+  currentz = current_accel->linear_acceleration.z-g;
 
   control_toolbox::Pid pid;
 

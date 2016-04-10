@@ -36,13 +36,16 @@ void Accel::joy_callback(const sensor_msgs::Joy::ConstPtr& joy)
 {
   ros::Time time = ros::Time::now();
   accel.header.stamp = time;
-  accel.accel.linear.x = 5 * joy->axes[1];
-  accel.accel.linear.y = 0;
-  accel.accel.linear.z = 5 * (joy->axes[14] - joy->axes[15]);
+  accel.accel.linear.x = 5 * joy->axes[3];
+  accel.accel.linear.y = 5 * joy->axes[2];
+  accel.accel.linear.z = 5 * joy->axes[1];
 
-  orient.vector.x = 5 * 2 * 3.14159 * joy->axes[2] * -1;
-  orient.vector.y = 5 * 2 * 3.14159 * joy->axes[3];
-  orient.vector.z = 5 * 2 * 3.14159 * (joy->axes[13] - joy->axes[12]);
+  ros::Time timestamp = ros::Time::now();
+  orient.header.stamp = timestamp;
+
+  orient.vector.x = joy->axes[4];
+  orient.vector.y = joy->axes[5];
+  orient.vector.z = joy->axes[13]-joy->axes[12];
 
   accels.publish(accel);
   orientation.publish(orient);
