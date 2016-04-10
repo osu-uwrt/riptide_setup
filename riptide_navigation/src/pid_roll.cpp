@@ -13,17 +13,20 @@
 #include <riptide_navigation/pidConfig.h>
 #include <boost/asio.hpp>
 #include <sensor_msgs/MagneticField.h>
+#include <imu_3dm_gx4/FilterOutput.h>
 
-double p,i,d,im,dm;
+
+double p,i,d,im,dm,mag_x;
 bool first_reconfig= true;
 ros::Publisher a_e;
 
 void dyn_callback(riptide_navigation::pidConfig &config, uint32_t level) {
-  ROS_INFO("Reconfigure Request: %f %f %f %f %f",
+  ROS_INFO("Reconfigure Request: %f %f %f %f %f %f",
             config.p, config.i,
             config.d,
             config.im,
-            config.dm);
+            config.dm,
+	    config.mag_x);
 if (first_reconfig)
 	{
 	first_reconfig=false;
@@ -34,9 +37,10 @@ i=config.i;
 d=config.d;
 im=config.im;
 dm=config.dm;
+mag_x=config.mag_x;
 }
 
-void callback(const sensor_msgs::MagneticField::ConstPtr& current_orientation, const geometry_msgs::Vector3Stamped::ConstPtr& orientation_set)
+void callback(const imu_3dm_gx4::FilterOutput::ConstPtr& current_orientation, const geometry_msgs::Vector3Stamped::ConstPtr& orientation_set)
 {
 
   ros::Time time;
@@ -49,7 +53,7 @@ void callback(const sensor_msgs::MagneticField::ConstPtr& current_orientation, c
   accel_roll.header.stamp = timestamp;
 
   orientation_des.x = orientation_set->vector.x;
-  currentx = current_orientation->magnetic_field.x;
+  currentx = current_orientation->orientation.x-mag_x;
 
   control_toolbox::Pid pid;
 
@@ -77,15 +81,15 @@ int main(int argc, char **argv) {
   node_priv.param<double>("im",im,.3);
   node_priv.param<double>("dm",dm,-.3);
 
-  message_filters::Subscriber<sensor_msgs::MagneticField> imu_sub(nh, "/imu/magnetic_field",1);
-  message_filters::Subscriber<geometry_msgs::Vector3Stamped> accel_sub(nh, "orientation_set_pt",1);
+  message_filters::Subscriber<imu_3dm_gx4::FilterOutput> imu_sub(nh, "/imu/filter",1);
+  message_filters::Subscriber<geometry_msgs::Vector3Stamped> accel_sub(nh, "angular_set_pt",1);
 
   dynamic_reconfigure::Server<riptide_navigation::pidConfig> server;
   dynamic_reconfigure::Server<riptide_navigation::pidConfig>::CallbackType f;
   f = boost::bind(&dyn_callback, _1, _2);
   server.setCallback(f);
 
-  typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::MagneticField, geometry_msgs::Vector3Stamped> MySyncPolicy;
+  typedef message_filters::sync_policies::ApproximateTime<imu_3dm_gx4::FilterOutput, geometry_msgs::Vector3Stamped> MySyncPolicy;
     message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(100), imu_sub, accel_sub);  
     sync.registerCallback(boost::bind(&callback,_1,_2));
 
