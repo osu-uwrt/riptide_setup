@@ -14,3 +14,4 @@ add_executable(serial_port src/serial_port.cpp)
 add_dependencies(serial_port riptide_msgs_gencpp)
 
 target_link_libraries(serial_port ${catkin_LIBRARIES})
+
