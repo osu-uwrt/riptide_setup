@@ -45,41 +45,6 @@ void callback(const riptide_msgs::PwmStamped::ConstPtr& force)
   s_p.write_some(boost::asio::buffer(packet, SIZE));
 }
 
-void loop()
-{
-    ros::Rate rate(30); //rate needs to be fast enough to read every byte that comes in
-    while(ros::ok())
-    {
-     const int SIZE = 1;
-     unsigned char byte[SIZE];
-
-     s_p.read_some(boost::asio::buffer(byte,SIZE));
-     if (*byte == '#') {
-     s_p.read_some(boost::asio::buffer(byte,SIZE));
-	if (*byte == '@') {
-	s_p.read_some(boost::asio::buffer(byte,SIZE));
-	const int SIZE = int(*byte);
-	unsigned char actuator_data[SIZE];
-	s_p.read_some(boost::asio::buffer(actuator_data,SIZE));
-	}
-	else if (*byte == '+') {
-	s_p.read_some(boost::asio::buffer(byte,SIZE));
-	const int SIZE = int(*byte);
-	unsigned char thruster_data[SIZE];
-	s_p.read_some(boost::asio::buffer(thruster_data,SIZE));
-	}
-	else if (*byte == '%') {
-        s_p.read_some(boost::asio::buffer(byte,SIZE));
-        const int SIZE = int(*byte);
-        unsigned char power_data[SIZE];
-        s_p.read_some(boost::asio::buffer(power_data,SIZE));
-        }
-      }
-     ros::spinOnce();
-     rate.sleep();
-    }
-}
-
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "serial_port");
@@ -100,7 +65,5 @@ int main(int argc, char **argv)
 
   sub = nh.subscribe<riptide_msgs::PwmStamped>("thrust_cal/pwm", 1, &callback);
 
-  loop(); 
+  ros::spin();
 }
-
-
