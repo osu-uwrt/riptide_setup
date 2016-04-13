@@ -13,7 +13,7 @@
 #   and Sixaxis repositories to enable system development.
 
 
-# Select the appropriate ROS version for the current OS:
+# Select the appropriate version ROS for the current OS:
 
 if [ "${ROS_DISTRO:-false}" == "false" ]; then
 
@@ -23,6 +23,9 @@ if [ "${ROS_DISTRO:-false}" == "false" ]; then
   else echo "We've had a MAIN B BUS UNDERVOLT."; fi
 
 fi
+
+
+# Send and notification of what is being installed to std out:
 
 distro="$ROS_DISTRO"
 distro="$(tr '[:lower:]' '[:upper:]' <<< ${distro:0:1})${distro:1}"
@@ -55,10 +58,10 @@ sudo apt-get -qq update
 echo -e "...done.\n"
 
 
-# Install Sixaxis and Ubuntu packages:
+# Install Ubuntu and Sixaxis packages:
 
 echo -e "Installing Ubuntu packages...\n"
-sudo apt-get -yqq install openssh-server joystick
+sudo apt-get -yqq install git openssh-server joystick
 echo -e "...done.\n"
 
 echo -e "Installing Sixaxis package...\n"
@@ -80,7 +83,7 @@ sudo apt-get -yqq install ros-"$ROS_DISTRO"-viz
 echo -e "...done.\n"
 
 
-# Requirements not found in (most of) ROS Desktop Full:
+# Requirements not found in "(most of) ROS Desktop Full":
 
 echo -e "Initializing and updating rosdep...\n"
 sudo rosdep -yq init
@@ -88,7 +91,7 @@ rosdep -yq update # Do not sudo!
 echo -e "...done.\n"
 
 echo -e "Installing ROS dependencies...\n"
-rosdep install -yqi --from-paths ./
+rosdep install -yqi --rosdistro="$ROS_DISTRO" --from-paths ./
 echo -e "...done.\n"
 
 
@@ -102,3 +105,8 @@ echo -e "...done.\n"
 # Donezo!
 
 echo -e "Installation complete.\n"
+
+
+# Let the user know how to make the current terminal work:
+
+echo -e "\nRun \`source ~/.bashrc\` to update the current shell.\n"

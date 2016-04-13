@@ -1,15 +1,22 @@
 #!/bin/bash
 
-# Catkin Workspace Setup Example
+# -------------------------- #
+#  Catkin Workspace Example  #
+# -------------------------- #
 
-echo "Creating workspace..."
+
+# Create an empty worksapce:
 mkdir -p ~/osu-uwrt/riptide_ws/src
+
+# Initialize the empty workspace:
 cd ~/osu-uwrt/riptide_ws/src
 catkin_init_workspace
 
-echo "Compiling workspace..."
+# Build the empty workspace:
 cd ~/osu-uwrt/riptide_ws
 catkin_make
 
-echo "Installing workspace..."
+# Make the built packages available for use:
 echo "source ~/osu-uwrt/riptide_ws/devel/setup.bash" >> ~/.bashrc
+
+# Run `source ~/.bashrc` after this script completes.
