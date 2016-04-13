@@ -8,18 +8,19 @@ branches:
 
 before_install:
   - ./scripts/prep-workspace
+  - cd ~/osu-uwrt/riptide_ws/src
 
 install:
-  - ./src/scripts/install-ceres
-  - ./src/scripts/install-ros
+  - ./scripts/install-ceres
+  - ./scripts/install-ros
   - source ~/.bashrc
 
 before_script:
   - pip install -q --user travis-sphinx
 
 script:
-  - ./src/scripts/setup-workspace
-  - source ~./bashrc
+  - ./scripts/setup-workspace
+  - source ~/.bashrc
   - cd $TRAVIS_BUILD_DIR
   - travis-sphinx build
 
