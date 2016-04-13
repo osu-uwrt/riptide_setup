@@ -7,19 +7,19 @@ branches:
     - master
 
 before_install:
-  - ./scripts/copy-to-workspace
-  - source ~/.bashrc
+  - ./scripts/prep-workspace
 
 install:
-  - ./scripts/install-ceres
-  - ./scripts/install-ros
+  - ./src/scripts/install-ceres
+  - ./src/scripts/install-ros
   - source ~/.bashrc
 
 before_script:
   - pip install -q --user travis-sphinx
 
 script:
-  - catkin_make
+  - ./src/scripts/setup-workspace
+  - source ~./bashrc
   - cd $TRAVIS_BUILD_DIR
   - travis-sphinx build
 
