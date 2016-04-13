@@ -1,4 +1,8 @@
 #!/bin/bash
 
-mkdir ~/riptide_ws
-mv $PWD ~/riptide_ws/src
+# Moves the current repository into the
+# catkin workspace (from create-workspace).
+
+mkdir -p ~/osu-uwrt/riptide_ws/src
+cp -rf ./* ~/osu-uwrt/riptide_ws/src
+cd ~/osu-uwrt/riptide_ws
