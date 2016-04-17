@@ -1,0 +1,11 @@
+# Goal
+string searchGoal
+geometry_msgs/Vector3 positionGoal
+duration timeout
+----
+# Result
+bool foundGoal
+geometry_msgs/Vector3 realPosition
+----
+# Feedback
+geometry_msgs/Vector3 currentPosition
