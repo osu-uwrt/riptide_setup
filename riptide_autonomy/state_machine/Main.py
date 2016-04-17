@@ -38,6 +38,7 @@ class Foo(smach.State):
 ########
 # Entry point for the state machine.
 
+# Define some constants
 DEFAULT_TIMEOUT = rospy.Duration(10);
 ZERO_POSITION = Vector3(x = 0, y = 0, z = 0);
 
