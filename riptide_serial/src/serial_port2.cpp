@@ -54,7 +54,7 @@ class SerialClass{
                             this, _1,_2));
         }
 
-        void send(std::unsigned std::char& text, const std::int SIZE)
+        void send(unsigned char *text, int SIZE)
         {
 
             boost::asio::write(port, boost::asio::buffer(text,SIZE));
@@ -107,7 +107,7 @@ class SerialClass{
 
         while (!serial.quit())
         {
-        const int SIZE = 21;
+        int SIZE = 21;
   	unsigned char packet[SIZE];
 
   	packet[0]  = '#';
@@ -142,7 +142,7 @@ class SerialClass{
   	packet[19]  = force->pwm.s2 >> 8;
   	packet[20]  = force->pwm.s2;
 
-            serial.send(packet, SIZE);
+            serial.send(&packet, SIZE);
             usleep(1000*500);
         }
 

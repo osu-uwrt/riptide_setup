@@ -10,11 +10,8 @@ catkin_package()
 include_directories(${catkin_INCLUDE_DIRS})
 
 add_executable(serial_port src/serial_port.cpp)
-#add_executable(serial_port2 src/serial_port2.cpp)
 
 add_dependencies(serial_port riptide_msgs_gencpp)
-#add_dependencies(serial_port2 riptide_msgs_gencpp)
 
 target_link_libraries(serial_port ${catkin_LIBRARIES})
-#target_link_libraries(serial_port2 ${catkin_LIBRARIES})
 
