@@ -38,12 +38,12 @@ echo -e "\nInstalling ROS $distro on Ubuntu $release.\n"
 
 echo -n "Adding ROS repository..."
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros-latest.list'
-wget -nv http://packages.ros.org/ros.key -O - | sudo apt-key add -
+wget -q http://packages.ros.org/ros.key -O - | sudo apt-key add -
 echo -e "...done.\n"
 
 echo -n "Adding Gazebo 6 repository..."
 sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" > /etc/apt/sources.list.d/gazebo-stable.list'
-wget -nv http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
+wget -q http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
 echo -e "...done.\n"
 
 echo "Adding Sixaxis repository..."
