@@ -2,9 +2,9 @@ language: generic
 sudo: required
 dist: trusty
 
-#branches:
-#  only:
-#    - master
+branches:
+  only:
+    - master
 
 before_install:
   - ./scripts/prep-workspace
@@ -29,4 +29,4 @@ script:
 
 notifications:
   email: false
-#  slack: osu-uwrt:QiKTeRcKbKhS82FG4s1SGMb6
+  slack: osu-uwrt:QiKTeRcKbKhS82FG4s1SGMb6
