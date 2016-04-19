@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>riptide_gazebo</name>
-  <version>0.0.4</version>
+  <version>0.0.5</version>
   <description>Simulation package for OSU's Riptide AUV.</description>
 
   <maintainer email="cary.42@osu.edu">Conor Cary</maintainer>
@@ -15,9 +15,13 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <!--
   <build_depend>gazebo6-ros-pkgs</build_depend>
+  <build_depend>gazebo6-ros-control</build_depend>
 
   <run_depend>gazebo6-ros-pkgs</run_depend>
+  <run_depend>gazebo6-ros-control</run_depend>
+  -->
 
   <export>
   </export>

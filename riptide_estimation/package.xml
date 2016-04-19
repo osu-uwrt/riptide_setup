@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>riptide_estimation</name>
-  <version>0.0.4</version>
+  <version>0.0.5</version>
   <description>State estimation for OSU's Riptide AUV.</description>
 
   <maintainer email="cary.42@osu.edu">Conor Cary</maintainer>
@@ -16,8 +16,18 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>robot_localization</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>imu_3dm_gx4</build_depend>
 
   <run_depend>robot_localization</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>imu_3dm_gx4</run_depend>
 
   <export>
   </export>

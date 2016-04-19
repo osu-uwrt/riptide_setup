@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>riptide_description</name>
-  <version>0.0.4</version>
+  <version>0.0.5</version>
   <description>Description of OSU's Riptide AUV.</description>
 
   <maintainer email="cary.42@osu.edu">Conor Cary</maintainer>
@@ -15,7 +15,10 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <run_depend>liburdfdom-tools</run_depend>
+  <build_depend>liburdfdom-tools</build_depend>
+  <build_depend>urdf</build_depend>
+  <build_depend>xacro</build_depend>
+
   <run_depend>urdf</run_depend>
   <run_depend>xacro</run_depend>
 
