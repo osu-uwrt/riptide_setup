@@ -2,9 +2,9 @@ language: generic
 sudo: required
 dist: trusty
 
-branches:
-  only:
-    - master
+#branches:
+#  only:
+#    - master
 
 before_install:
   - ./scripts/prep-workspace
@@ -22,11 +22,11 @@ script:
   - ./scripts/setup-workspace
   - source ~/.bashrc
   - cd $TRAVIS_BUILD_DIR
-  - travis-sphinx build
+#  - travis-sphinx build
 
-after_success:
-  - travis-sphinx deploy
+#after_success:
+#  - travis-sphinx deploy
 
 notifications:
   email: false
-  slack: osu-uwrt:QiKTeRcKbKhS82FG4s1SGMb6
+#  slack: osu-uwrt:QiKTeRcKbKhS82FG4s1SGMb6
