@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# ---------------------------- #
+#  Prepare a Catkin Workspace  #
+# ---------------------------- #
+
+
+# Having just run `git clone ...`
+
+
+# Create an empty worksapce:
+mkdir -p ~/osu-uwrt/riptide_ws/
+
+# Copy the repository to the workspace:
+cp -rf ../riptide ~/osu-uwrt/riptide_ws/src
+
+# List the contentents of the destination:
+ls -al ~/osu-uwrt/riptide_ws/src
+
+# The source can now be removed. (!TRAVIS)
