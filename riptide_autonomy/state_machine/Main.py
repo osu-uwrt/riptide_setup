@@ -22,17 +22,7 @@ from riptide_msgs.msg import NavigateAction, NavigateGoal
 # STATE DEFINITIONS #
 #####################
 # Define states that are not "Simple Action States" in here.
-
-# Example:
-class Foo(smach.State):
-	# Define intitialization function. Runs on state creationg.
-	def __init__(self):
-		smach.State.__init__(self, outcomes=['succeeded', 'failed']);
-	
-	#Define execute function. Runs when state is active.
-	def execute(self, userdata):
-		return 'succeeded';
-
+		
 ########
 # MAIN #
 ########
@@ -52,8 +42,6 @@ def main():
 	sm0 = smach.StateMachine(outcomes=['succeeded', 'aborted', 'preempted','failed']);
 	# Add states
 	with sm0:
-		#  Normal state
-		smach.StateMachine.add('FOO', Foo(), transitions={'succeeded':'GOTO_B', 'failed':'failed'});
 		
 		# GO TO B
 		smach.StateMachine.add('GOTO_B', smach_ros.SimpleActionState('NavigateAction', NavigateAction, goal = Goal, result_key='B_Result',  output_keys=['B_Result']), transitions={'succeeded':'GOTO_C', 'aborted':'failed'});
