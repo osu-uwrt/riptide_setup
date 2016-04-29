@@ -4,6 +4,3 @@
 [submodule "viso2"]
 	path = viso2
 	url = https://github.com/iConor/viso2.git
-[submodule "docs/themes/sphinx_rtd_theme"]
-	path = docs/themes/sphinx_rtd_theme
-	url = https://github.com/snide/sphinx_rtd_theme.git

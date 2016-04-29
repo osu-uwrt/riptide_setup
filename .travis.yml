@@ -18,6 +18,7 @@ install:
 
 before_script:
   - pip install -q --user travis-sphinx
+  - pip install sphinx_rtd_theme
 
 script:
   - ./scripts/setup-workspace
