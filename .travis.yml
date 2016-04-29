@@ -5,6 +5,7 @@ dist: trusty
 branches:
   only:
     - master
+    - docs
 
 before_install:
   - ./scripts/prep-workspace
@@ -21,15 +22,6 @@ before_script:
 script:
   - ./scripts/setup-workspace
   - source ~/.bashrc
-  - cd $TRAVIS_BUILD_DIR
-  - travis-sphinx build
-
-after_success:
-  - travis-sphinx deploy
-
-script:
-  - cd ~/osu-uwrt/riptide_ws
-  - catkin_make
   - cd $TRAVIS_BUILD_DIR
   - travis-sphinx build
 
