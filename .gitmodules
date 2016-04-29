@@ -3,4 +3,4 @@
 	url = https://github.com/KumarRobotics/imu_3dm_gx4.git
 [submodule "viso2"]
 	path = viso2
-	url = https://github.com/srv/viso2.git
+	url = https://github.com/iConor/viso2.git

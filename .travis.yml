@@ -2,24 +2,30 @@ language: generic
 sudo: required
 dist: trusty
 
-env:
-  - ROS_DISTRO=indigo
-#  - ROS_DISTRO=jade
-
 branches:
   only:
     - master
 
 before_install:
-  - pip install -q --user travis-sphinx
+  - ./scripts/prep-workspace
+  - cd ~/osu-uwrt/riptide_ws/src
+
+install:
   - ./scripts/install-ceres
   - ./scripts/install-ros
   - source ~/.bashrc
 
-install:
-  - ./scripts/create-workspace
-  - ./scripts/move-repo
+before_script:
+  - pip install -q --user travis-sphinx
+
+script:
+  - ./scripts/setup-workspace
   - source ~/.bashrc
+  - cd $TRAVIS_BUILD_DIR
+  - travis-sphinx build
+
+after_success:
+  - travis-sphinx deploy
 
 script:
   - cd ~/osu-uwrt/riptide_ws
