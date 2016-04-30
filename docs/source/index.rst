@@ -4,9 +4,44 @@
 Riptide
 =======
 
+
+Software
+--------
+
 .. toctree::
    :maxdepth: 2
 
    installation
-   license
 
+
+Electronics
+-----------
+
+.. toctree::
+   :maxdepth: 2
+
+   schematics
+   components
+   interconnect
+   layouts
+
+Assembly
+--------
+
+.. toctree::
+   :maxdepth: 2
+
+   motherboard
+   backplane
+   fasteners
+   subconns
+
+
+Miscellaneous
+-------------
+
+.. toctree::
+   :maxdepth: 2
+
+   editthis
+   license
