@@ -24,7 +24,6 @@ Install Documentation Software
 
 .. code-block:: bash
 
-  pip install sphinx
-  pip install sphinx_rtd_theme
+  ./scripts/install-sphinx
   cd ~/osu-uwrt/riptide_ws/src/docs
   make html

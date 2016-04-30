@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [ "$TRAVIS" != true ]; then
+   pip install -q --user sphinx
+else
+   pip install -q --user travis-sphinx
+fi
+
+pip install -q --user sphinx_rtd_theme

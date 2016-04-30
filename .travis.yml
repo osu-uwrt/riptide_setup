@@ -5,7 +5,6 @@ dist: trusty
 branches:
   only:
     - master
-    - docs
 
 before_install:
   - ./scripts/prep-workspace
@@ -17,8 +16,7 @@ install:
   - source ~/.bashrc
 
 before_script:
-  - pip install -q --user travis-sphinx
-  - pip install -q --user sphinx_rtd_theme
+  - ./scripts/install-sphinx
 
 script:
   - ./scripts/setup-workspace
