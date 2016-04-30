@@ -17,6 +17,16 @@ import os
 # To use the RTD Theme locally:
 import sphinx_rtd_theme
 
+# Edit on GitHub
+# From: http://read-the-docs.readthedocs.io/en/latest/vcs.html
+html_context = {
+  "github_user": "osu-uwrt",
+  "github_repo": "riptide",
+  "github_version": "master",
+  "conf_py_path": "/docs/source/",
+  "display_github": True
+}
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
