@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Riptide documentation build configuration file, created by
-# sphinx-quickstart on Wed Feb 10 16:30:15 2016.
+# sphinx-quickstart on Thu Mar 10 23:52:12 2016.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -14,6 +14,18 @@
 
 import sys
 import os
+# To use the RTD Theme locally:
+import sphinx_rtd_theme
+
+# Edit on GitHub
+# From: http://read-the-docs.readthedocs.io/en/latest/vcs.html
+html_context = {
+  "github_user": "osu-uwrt",
+  "github_repo": "riptide",
+  "github_version": "master",
+  "conf_py_path": "/docs/source/",
+  "display_github": True
+}
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -28,10 +40,7 @@ import os
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = [
-    'sphinx.ext.todo',
-    'sphinx.ext.mathjax',
-]
+extensions = ['sphinx.ext.mathjax']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -76,7 +85,7 @@ language = None
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ['build']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -103,7 +112,7 @@ pygments_style = 'sphinx'
 #keep_warnings = False
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
-todo_include_todos = True
+todo_include_todos = False
 
 
 # -- Options for HTML output ----------------------------------------------
@@ -118,7 +127,7 @@ html_theme = 'sphinx_rtd_theme'
 #html_theme_options = {}
 
 # Add any paths that contain custom themes here, relative to this directory.
-#html_theme_path = []
+html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -284,3 +293,73 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+
+# -- Options for Epub output ----------------------------------------------
+
+# Bibliographic Dublin Core info.
+epub_title = project
+epub_author = author
+epub_publisher = author
+epub_copyright = copyright
+
+# The basename for the epub file. It defaults to the project name.
+#epub_basename = project
+
+# The HTML theme for the epub output. Since the default themes are not
+# optimized for small screen space, using the same theme for HTML and epub
+# output is usually not wise. This defaults to 'epub', a theme designed to save
+# visual space.
+#epub_theme = 'epub'
+
+# The language of the text. It defaults to the language option
+# or 'en' if the language is not set.
+#epub_language = ''
+
+# The scheme of the identifier. Typical schemes are ISBN or URL.
+#epub_scheme = ''
+
+# The unique identifier of the text. This can be a ISBN number
+# or the project homepage.
+#epub_identifier = ''
+
+# A unique identification for the text.
+#epub_uid = ''
+
+# A tuple containing the cover image and cover page html template filenames.
+#epub_cover = ()
+
+# A sequence of (type, uri, title) tuples for the guide element of content.opf.
+#epub_guide = ()
+
+# HTML files that should be inserted before the pages created by sphinx.
+# The format is a list of tuples containing the path and title.
+#epub_pre_files = []
+
+# HTML files that should be inserted after the pages created by sphinx.
+# The format is a list of tuples containing the path and title.
+#epub_post_files = []
+
+# A list of files that should not be packed into the epub file.
+epub_exclude_files = ['search.html']
+
+# The depth of the table of contents in toc.ncx.
+#epub_tocdepth = 3
+
+# Allow duplicate toc entries.
+#epub_tocdup = True
+
+# Choose between 'default' and 'includehidden'.
+#epub_tocscope = 'default'
+
+# Fix unsupported image types using the Pillow.
+#epub_fix_images = False
+
+# Scale large images.
+#epub_max_image_width = 0
+
+# How to display URL addresses: 'footnote', 'no', or 'inline'.
+#epub_show_urls = 'inline'
+
+# If false, no index is generated.
+#epub_use_index = True
