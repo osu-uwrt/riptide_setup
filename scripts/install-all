@@ -1,0 +1,25 @@
+# A script to install Riptide's development environment.
+#
+#   Run 'source ~/.bashrc' to continue using the current shell.
+#
+#   This is the local equivalent to the Travis CI procedure.
+
+
+sudo apt-get install git python-pip
+git clone https://github.com/osu-uwrt/riptide.git --recursive
+cd riptide
+
+./scripts/prep-workspace
+cd ~/osu-uwrt/riptide_ws/src
+
+./scripts/install-ros
+./scripts/install-ceres
+source ~/.bashrc
+
+./scripts/install-sphinx
+
+./scripts/setup-workspace
+source ~/.bashrc
+
+cd ~/osu-uwrt/riptide_ws/src/docs
+make html

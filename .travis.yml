@@ -7,19 +7,19 @@ branches:
     - master
 
 before_install:
-  - ./scripts/prep-workspace
+  - ./scripts/workspace-prep
   - cd ~/osu-uwrt/riptide_ws/src
 
 install:
-  - ./scripts/install-ceres
   - ./scripts/install-ros
+  - ./scripts/install-ceres
   - source ~/.bashrc
 
 before_script:
   - ./scripts/install-sphinx
 
 script:
-  - ./scripts/setup-workspace
+  - ./scripts/workspace-setup
   - source ~/.bashrc
   - cd $TRAVIS_BUILD_DIR
   - travis-sphinx build

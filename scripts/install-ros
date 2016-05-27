@@ -61,7 +61,7 @@ echo -e "...done.\n"
 # Install Ubuntu and Sixaxis packages:
 
 echo -e "Installing Ubuntu packages...\n"
-sudo apt-get -yqq install git openssh-server joystick
+sudo apt-get -yqq install openssh-server joystick
 echo -e "...done.\n"
 
 echo -e "Installing Sixaxis package...\n"
