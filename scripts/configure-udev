@@ -1,0 +1,10 @@
+#!/bin/bash
+
+cd ~/osu-uwrt/riptide_ws/src/imu_3dm_gx4
+sudo ./script/add_rule
+
+cd ../riptide_vision
+sudo ./udev/add
+
+sudo service udev restart
+

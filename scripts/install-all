@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # A script to install Riptide's development environment.
 #
 #   Run 'source ~/.bashrc' to continue using the current shell.
@@ -23,3 +25,6 @@ source ~/.bashrc
 
 cd ~/osu-uwrt/riptide_ws/src/docs
 make html
+
+cd ~/osu-uwrt/riptide_ws/src
+./scripts/configure-udev
