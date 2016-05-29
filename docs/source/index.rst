@@ -22,29 +22,8 @@ Hardware Overview
    :maxdepth: 2
 
    interconnect
-
-
-Electrical
-~~~~~~~~~~
-
-.. toctree::
-   :maxdepth: 2
-
-   sensors
-   computer
-   backplane
-   standalone
-
-
-Mechanical
-~~~~~~~~~~
-
-.. toctree::
-   :maxdepth: 2
-
-   actuators
-   chassis
-   enclosures
+   electrical
+   mechanical
 
 
 Software Overview

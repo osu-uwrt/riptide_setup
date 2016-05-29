@@ -1,18 +1,21 @@
+Electronic Subsystems
+=====================
+
 Acoustics
-=========
+---------
 
 Overview
---------
+~~~~~~~~
 
 
 Hardware
---------
+~~~~~~~~
 
 ?!
 
 
 Firmware
---------
+~~~~~~~~
 
 The TMS320C5515 eZDSP USB Stick was programmed using Code Composer Studio in the language of C++. After receiving a signal from the hydrophone array, the microcontroller would filter out unwanted frequency ranges using a digital bandpass filter. The specified frequency range is 25-40 kHz.
 
@@ -22,53 +25,53 @@ The heading information containing the direction that the vehicle needs to trave
 
 
 Wiring
-------
+~~~~~~
 
 
 
 Battery
-=======
+-------
 
 Overview
---------
+~~~~~~~~
 
 
 
 Hardware
---------
+~~~~~~~~
 
 
 
 Firmware
---------
+~~~~~~~~
 
 
 
 
 Wiring
-------
+~~~~~~
 
 
 
 Pneumatics
-==========
+----------
 
 
 Overview
---------
+~~~~~~~~
 
 
 
 Hardware
---------
+~~~~~~~~
 
 
 
 Firmware
---------
+~~~~~~~~
 
 
 
 
 Wiring
-------
+~~~~~~

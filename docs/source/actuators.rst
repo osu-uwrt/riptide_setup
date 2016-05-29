@@ -1,23 +1,23 @@
 Grippers
-========
+--------
 
 Overview
---------
+~~~~~~~~
 
 The two manipulators are used for acquiring items and moving them from the bottom of the pool. The claw was designed to reach as far as possible while still maintaining a low profile when not in use. To do this, a two way linear actuator was used. The two claw parts were water jet and derlin inserts were used around the screws to reduce friction when the claw is actuating. Additionally, stainless steel rods with a slider was designed to reduce any side loading.
 
 
 Assembly
---------
+~~~~~~~~
 
 
 
 Marker Droppers
-===============
+---------------
 
 
 Overview
---------
+~~~~~~~~
 
 The marker dropper is operated by a permanent magnet, a steel 1 in diameter ball, and compressed air. The steel marker ball rests in a cylindrical chamber and is separated from the magnet by a 1/8 in delrin plate. The 1/8 in delrin is thin enough that the magnet can keep the ball still, yet it thick enough that firing compressed air through a check-valve in the top of the chamber at the steel ball can overcome the magnetic force and release the ball.
 
@@ -27,24 +27,24 @@ Other designs were considered, but this design was ultimately chosen due to simp
 
 
 Assembly
---------
+~~~~~~~~
 
 
 
 
 
 Thrusters
-=========
+---------
 
 
 Overview
---------
+~~~~~~~~
 
 
 
 
 Assembly
---------
+~~~~~~~~
 
 
 
@@ -52,10 +52,10 @@ Assembly
 
 
 Torpedo Launchers
-=================
+-----------------
 
 Overview
---------
+~~~~~~~~
 
 The torpedo launcher consists of two Delrin barrels held in place by two Delrin support structures attached at the vehicle’s front end. Two torpedoes are launched from the barrels through the internal pressurization of the torpedoes themselves. At the pneumatic pressure’s peak, the torpedo slips passed the O-ring keeping it attached to the pneumatic valve and speeds forward through the water. The torpedoes consists to a 1.5-inch diameter head attached to a 0.75-inch diameter shaft that has 3 stability fins attached at its base. The 5-inch long torpedo fits snugly in the 5.5-inch long barrel to assure that all air pressure is devoted to pushing the torpedo out of the barrel and so the torpedo does not “wobble” prior to exit.
 
@@ -67,4 +67,4 @@ Most of the part machining was done on a lathe including the barrels (turned and
 
 
 Assembly
---------
+~~~~~~~~

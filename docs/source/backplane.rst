@@ -1,6 +1,5 @@
-Backplane
-=========
-
+Backplane Electronics
+=====================
 
 .. note::
   Gravity does not apply to this element, it will stay in place of its own free will.
@@ -8,31 +7,71 @@ Backplane
 .. warning::
   Gravity applies to the following elements, push them in really really hard, or else.
 
-Power Distribution Board
-------------------------
 
-- Battery Cables connect here?
-
-
-5v DC-DC Converter
-------------------
+5vdc
+----
 
 You had one job!
 
 
-12v DC-DC Converter
--------------------
+Overview
+~~~~~~~~
+
+
+
+
+Hardware
+~~~~~~~~
+
+.. image:: _static/schematic.png
+
+
+Firmware
+~~~~~~~~
+
+
+
+
+Wiring
+~~~~~~
+
+
+
+
+12vdc
+-----
 
 Just to the backplane or to other things?
 
-Thruster Control Board
-----------------------
 
-The Boss!
+Overview
+~~~~~~~~
 
 
-ESC Boards
-----------
+
+
+Hardware
+~~~~~~~~
+
+
+
+
+Firmware
+~~~~~~~~
+
+
+
+
+Wiring
+~~~~~~
+
+
+
+ESC Controller
+--------------
+
+Overview
+~~~~~~~~
 
 ===== ========
 Board Thruster
@@ -50,145 +89,71 @@ Board Thruster
 ===== ========
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-5vdc
-====
-
-
-Overview
---------
-
-
-
 Hardware
---------
-
-.. image:: _static/schematic.png
-
-
-
-Firmware
---------
-
-
-
-
-Wiring
-------
-
-
-
-12vdc
-=====
-
-
-Overview
---------
-
-
-
-Hardware
---------
-
-
-
-Firmware
---------
-
-
-
-
-Wiring
-------
-
-
-
-ESC Controller
-==============
-
-
-Overview
---------
-
-
-
-Hardware
---------
-
+~~~~~~~~
 
 .. image:: _static/board.png
 
 
-
 Firmware
---------
+~~~~~~~~
 
 
 
 
 Wiring
-------
+~~~~~~
 
 
 
 
 Power Distribution
-==================
-
+------------------
 
 Overview
---------
+~~~~~~~~
 
+- Battery Cables connect here?
 
 
 Hardware
---------
+~~~~~~~~
+
 
 
 
 Firmware
---------
+~~~~~~~~
 
 
 
 
 Wiring
-------
-
+~~~~~~
 
 
 
 
 Thruster Controller
-===================
+-------------------
 
 Overview
---------
+~~~~~~~~
 
+The Boss!
 
 
 Hardware
---------
+~~~~~~~~
+
 
 
 
 Firmware
---------
+~~~~~~~~
 
 
 
 
 Wiring
-------
+~~~~~~

@@ -1,5 +1,5 @@
-Motherboard
-===========
+Computer
+========
 
 Mounting
 --------
