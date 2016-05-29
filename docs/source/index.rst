@@ -5,36 +5,56 @@ Riptide
 =======
 
 
-Software
---------
+
+Introduction
+------------
 
 .. toctree::
    :maxdepth: 2
 
+   This is Safety <safety>
    installation
 
-
-Electronics
------------
+Hardware Overview
+-----------------
 
 .. toctree::
    :maxdepth: 2
 
-   schematics
-   components
    interconnect
-   layouts
 
-Assembly
---------
+
+Electrical
+~~~~~~~~~~
 
 .. toctree::
    :maxdepth: 2
 
-   motherboard
+   sensors
+   computer
    backplane
-   fasteners
-   subconns
+   standalone
+
+
+Mechanical
+~~~~~~~~~~
+
+.. toctree::
+   :maxdepth: 2
+
+   actuators
+   chassis
+   enclosures
+
+
+Software Overview
+-----------------
+
+.. toctree::
+   :maxdepth: 2
+
+   ros
+   packages
 
 
 Miscellaneous
