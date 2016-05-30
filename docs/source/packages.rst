@@ -1,3 +1,6 @@
+Packages
+========
+
 Autonomy
 --------
 
@@ -37,4 +40,10 @@ The outputs from two LORD Microstrain 3DM-GX4-25 inertial measurement units, mon
 Vision
 ------
 
-What is email? How do I read it?
+The Riptide Vision System revolves around a set of three PointGrey Blackfly 3 machine vision cameras. Two of the three are mounted in the front side-by-side and provide a depth map via OpenCV stereo camera algorithms. Additionally, each camera outputs both a color and monocular rectified image for our general color and contour matching algorithms.
+
+This is The Ohio State University’s first year competing in AUVSI, as such, a lot was unknown with such a large vehicle, we also did not want to bite off more than we could chew. With this mindset, algorithm design was kept relatively simple. Each algorithm is stored in a general purpose library which can be called on with only an image as an argument. Having simple function contracts allows those working on mission design logic to utilize the vision library to its full effectiveness by not having to understand every detail of the vision system, only needing to understand the concept of passing in an image, and getting a heading or distance in return.
+
+This is the team’s first attempt at a computer vision system, as such, a lot was learned very quickly. This includes the distortion of colors based on location, time, and depth of submersion. Additionally, there are a variety of ways to go about doing each task. Which is best proved to be an impossible question. Up to four versions for each algorithm were developed, each shined in certain circumstances and flopped in others. For example, the algorithm which determines the direction of the orange marker went through three iterations, one which detected the rectangular shape and drew conclusions about the heading via the corners, one which found the middle point of the object and then the middle point of the top half and bottom half, and the heading from those two points. Lastly, the winner, operates by taking the threshold of the color orange, yielding a black and white image, with white points being where orange is in the original, and an average line is calculated based on those points. The theory is that the distribution of points will always form a best fit line in the direction of the marker, no matter how cloudy the water or the small differences in color which aren’t let through the threshold. This proved to be simple to implement, and very effective during trials.
+
+For more complicated tasks, images go through a series of stages which work on a guess-and-check basis. For example, when buoys are being located, the image is first separated by color and potential circles on the threshold image are added to a list. This list is then passed to the next stage where a circle contour algorithm checks if, in that area of the image, does a circle appear? A similar next stage happens with the depth image. This approach is very useful because taking the threshold of an image is computationally cheap. This allows us to dramatically simplify the image for the more computational expensive algorithms to take place. For example, rather than finding circles in the raw 1024 x 768 image, the complex circle algorithm only runs through a few 100 x 100 images, 1/70 the size; with a runtime complexity of O(n3), this simplifies the computational task to relatively nothing, saving us heat in the housing, and freeing up computer resources for other algorithms.
