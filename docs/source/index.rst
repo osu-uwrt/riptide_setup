@@ -1,46 +1,48 @@
-.. Riptide documentation master file, created by
-   sphinx-quickstart on Wed Feb 10 16:30:15 2016.
-
 Riptide
 =======
 
 
-
-Introduction
-------------
-
 .. toctree::
    :maxdepth: 2
+   :caption: Introduction
 
-   This is Safety <safety>
+   safety
    installation
-
-Hardware Overview
------------------
-
-.. toctree::
-   :maxdepth: 2
-
    interconnect
-   electrical
-   mechanical
 
-
-Software Overview
------------------
 
 .. toctree::
    :maxdepth: 2
+   :caption: Electrical
+
+   sensors
+   computer
+   backplane
+   standalone
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Mechanical
+
+   actuators
+   chassis
+   enclosures
+   fasteners
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Software
 
    ros
    packages
+   smach
 
-
-Miscellaneous
--------------
 
 .. toctree::
    :maxdepth: 2
+   :caption: Miscellaneous
 
    editthis
    license
