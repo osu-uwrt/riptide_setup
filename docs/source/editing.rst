@@ -1,5 +1,5 @@
-Documentation
-=============
+Editing
+=======
 
 - `reStructuredText Primer`_
 - `Sphinx Markup Constructs`_

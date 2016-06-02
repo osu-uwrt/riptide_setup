@@ -7,7 +7,6 @@ Autonomy
 The State Machine is the decision making tool that allows computer to control its behavior autonomously. SMACH is one of the packages in the ROS that provides these functions to be used in easier form. In SMACH, each state defines each actions or tasks to be performed. This allows vehicle to execute each task and make transitions smoothly, and it also allows team members to monitor vehicle’s state by vehicle publishing each of its decision. One of the classes in SMACH that was particularly useful was the SimpleActionState, which allows state machine to access nodes through action files. This feature was necessary since the state machine manages and operates specific nodes accordingly.
 
 
-
 Controls
 --------
 
@@ -21,20 +20,16 @@ Using the thrusts provided by the thrust mapper, the thrust calibrator transmits
 
 
 
-
 Estimation
 ----------
 
 Ooh, this is new!
 
 
-
-
 Navigation
 ----------
 
 The outputs from two LORD Microstrain 3DM-GX4-25 inertial measurement units, mono odometry from the bottom-facing camera, stereo odometry from the forward-facing cameras, and a Blue Robotics Bar30 pressure sensor are inputted into a Kalman filter. This filter then produces estimates for the absolute position, velocity, and acceleration of the vehicle. Orientation data is also obtained from the inertial measurement unit located near the center of mass of the vehicle. These data are used to determine the vehicle’s current state which are used in conjunction with a new desired state and several PID controllers to ascertain required X, Y, and Z acceleration values for the vehicle. The PID controllers are implemented separately for linear accelerations, roll, pitch, and yaw in order to provide the most accurate PID parameters for each case. The desired state of the vehicle is determined from the state machine. These set points can also be provided by a joystick from the surface in the case of tethered movement during the testing phase. This capability allows for easy tuning of the PID controllers and stabilization assessment.
-
 
 
 Vision

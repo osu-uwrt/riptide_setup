@@ -8,35 +8,16 @@ Backplane Electronics
   Gravity applies to the following elements, push them in really really hard, or else.
 
 
+Mechanical
+----------
+
+
 5vdc
 ----
 
 You had one job!
 
-
-Overview
-~~~~~~~~
-
-
-
-
-Hardware
-~~~~~~~~
-
-.. image:: _static/schematic.png
-
-
-Firmware
-~~~~~~~~
-
-
-
-
-Wiring
-~~~~~~
-
-
-
+.. image:: /_static/schematic.png
 
 12vdc
 -----
@@ -44,34 +25,8 @@ Wiring
 Just to the backplane or to other things?
 
 
-Overview
-~~~~~~~~
-
-
-
-
-Hardware
-~~~~~~~~
-
-
-
-
-Firmware
-~~~~~~~~
-
-
-
-
-Wiring
-~~~~~~
-
-
-
 ESC Controller
 --------------
-
-Overview
-~~~~~~~~
 
 ===== ========
 Board Thruster
@@ -88,72 +43,16 @@ Board Thruster
 "     SurgeLR
 ===== ========
 
-
-Hardware
-~~~~~~~~
-
-.. image:: _static/board.png
-
-
-Firmware
-~~~~~~~~
-
-
-
-
-Wiring
-~~~~~~
-
-
+.. image:: /_static/board.png
 
 
 Power Distribution
 ------------------
 
-Overview
-~~~~~~~~
-
 - Battery Cables connect here?
-
-
-Hardware
-~~~~~~~~
-
-
-
-
-Firmware
-~~~~~~~~
-
-
-
-
-Wiring
-~~~~~~
-
-
 
 
 Thruster Controller
 -------------------
 
-Overview
-~~~~~~~~
-
 The Boss!
-
-
-Hardware
-~~~~~~~~
-
-
-
-
-Firmware
-~~~~~~~~
-
-
-
-
-Wiring
-~~~~~~

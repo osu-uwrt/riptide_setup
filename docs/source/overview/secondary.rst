@@ -1,20 +1,18 @@
-Electronic Subsystems
-=====================
+Secondary Modules
+=================
 
-Acoustics
----------
+Acoustics Module
+----------------
 
-Overview
-~~~~~~~~
-
-
-Hardware
-~~~~~~~~
-
-?!
+Electrical
+~~~~~~~~~~
 
 
-Firmware
+Mechanical
+~~~~~~~~~~
+
+
+Software
 ~~~~~~~~
 
 The TMS320C5515 eZDSP USB Stick was programmed using Code Composer Studio in the language of C++. After receiving a signal from the hydrophone array, the microcontroller would filter out unwanted frequency ranges using a digital bandpass filter. The specified frequency range is 25-40 kHz.
@@ -24,54 +22,46 @@ Once the signal is received by the vehicle’s three hydrophones, the angle of a
 The heading information containing the direction that the vehicle needs to travel in order to reach the pinger is then sent to the central processing computer continuously until the breeching sequence activates.
 
 
-Wiring
-~~~~~~
+Battery Modules
+---------------
+
+Mechanical
+~~~~~~~~~~
 
 
+Electrical
+~~~~~~~~~~
 
-Battery
--------
 
-Overview
+Software
 ~~~~~~~~
 
 
+Safety Module
+-------------
 
-Hardware
+Mechanical
+~~~~~~~~~~
+
+
+Electrical
+~~~~~~~~~~
+
+
+Software
 ~~~~~~~~
 
 
+Pneumatics Module
+-----------------
 
-Firmware
+Mechanical
+~~~~~~~~~~
+
+
+Electrical
+~~~~~~~~~~
+
+
+Software
 ~~~~~~~~
-
-
-
-
-Wiring
-~~~~~~
-
-
-
-Pneumatics
-----------
-
-
-Overview
-~~~~~~~~
-
-
-
-Hardware
-~~~~~~~~
-
-
-
-Firmware
-~~~~~~~~
-
-
-
-
-Wiring
-~~~~~~

@@ -1,48 +1,44 @@
-Riptide
-=======
-
+Riptide Documentation
+=====================
 
 .. toctree::
    :maxdepth: 2
    :caption: Introduction
 
    safety
-   installation
-   interconnect
-
+   start
 
 .. toctree::
    :maxdepth: 2
-   :caption: Electrical
+   :caption: Hardware Overview
 
-   sensors
-   computer
-   backplane
-   standalone
-
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Mechanical
-
-   actuators
-   chassis
-   enclosures
-   fasteners
-
+   overview/sensors
+   overview/computer
+   overview/backplane
+   overview/primary
+   overview/secondary
+   overview/chassis
+   overview/actuators
 
 .. toctree::
    :maxdepth: 2
-   :caption: Software
+   :caption: Software Overview
 
-   ros
-   packages
-   smach
+   overview/ros
+   overview/packages
+   overview/smach
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Vehicle Setup
+
+   setup/hardware
+   setup/software
 
 .. toctree::
    :maxdepth: 2
    :caption: Miscellaneous
 
-   editthis
+   release
+   editing
    license

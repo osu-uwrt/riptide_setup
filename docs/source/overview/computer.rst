@@ -1,5 +1,5 @@
-Computer
-========
+Onboard Computer
+================
 
 Mounting
 --------

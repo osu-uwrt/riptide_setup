@@ -310,7 +310,7 @@ Exterior Cables & Hoses
    - SubConn `Power`_ Series information.
    - SubConn `Micro`_ Circular Series information.
 
-You can download :download:`this cabling diagram <_static/CablingDiagram.pdf>` or :download:`this block diagram <_static/FunctionalBlockDiagram(8).pdf>`.
+You can download :download:`this cabling diagram </_static/CablingDiagram.pdf>` or :download:`this block diagram </_static/FunctionalBlockDiagram(8).pdf>`.
 
 Main Housing I/O Panel -- Port
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

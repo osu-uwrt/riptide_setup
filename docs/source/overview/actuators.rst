@@ -4,23 +4,11 @@ Actuators
 Grippers
 --------
 
-Overview
-~~~~~~~~
-
 The two manipulators are used for acquiring items and moving them from the bottom of the pool. The claw was designed to reach as far as possible while still maintaining a low profile when not in use. To do this, a two way linear actuator was used. The two claw parts were water jet and derlin inserts were used around the screws to reduce friction when the claw is actuating. Additionally, stainless steel rods with a slider was designed to reduce any side loading.
-
-
-Assembly
-~~~~~~~~
-
 
 
 Marker Droppers
 ---------------
-
-
-Overview
-~~~~~~~~
 
 The marker dropper is operated by a permanent magnet, a steel 1 in diameter ball, and compressed air. The steel marker ball rests in a cylindrical chamber and is separated from the magnet by a 1/8 in delrin plate. The 1/8 in delrin is thin enough that the magnet can keep the ball still, yet it thick enough that firing compressed air through a check-valve in the top of the chamber at the steel ball can overcome the magnetic force and release the ball.
 
@@ -29,36 +17,18 @@ The physical design of the marker dropper is a cylindrical chamber, a magnet fac
 Other designs were considered, but this design was ultimately chosen due to simplicity. Another design required pneumatic controls which would have worked, yet required additional hardware for the AUV. The final physical design was chosen based on machinability. Other previous designs were found to be too difficult to machine or too difficult to replicate more than once if something went wrong with the first part. The use of delrin as the main component material kept the part lightweight, easy to machine, and inexpensive.
 
 
-Assembly
-~~~~~~~~
-
-
-
-
-
 Thrusters
 ---------
 
+| `Blue Robotics`_
+| `T200`_
+|
 
-Overview
-~~~~~~~~
-
-
-
-
-Assembly
-~~~~~~~~
-
-
-
-
+Ten T200 Blue Robotics thrusters give the AUV control over six degrees of freedom and are fixed to the water-jet chassis to be able to vary the thruster configuration. Riptide’s design features propulsion directions that include up, down, forwards, backwards, and sideways. The thruster wires were cut to length, soldered, and resin was injected in molds to seal the electrical connections. Each thruster was tested with our thruster testing stand that consists of a 100 gallon tank, aluminum t-slot, Arduino microcontroller, and a 50 lb. load cell to measure power, rpm, current, voltage, and thrust output. When the thruster applies forward thrust, the L shaped t-slot pivots and the force exerted on the load cell is recorded. In future AUV designs, the thruster testing stand will be used prior to thruster selection to allow the most efficient thrust to be chosen.
 
 
 Torpedo Launchers
 -----------------
-
-Overview
-~~~~~~~~
 
 The torpedo launcher consists of two Delrin barrels held in place by two Delrin support structures attached at the vehicle’s front end. Two torpedoes are launched from the barrels through the internal pressurization of the torpedoes themselves. At the pneumatic pressure’s peak, the torpedo slips passed the O-ring keeping it attached to the pneumatic valve and speeds forward through the water. The torpedoes consists to a 1.5-inch diameter head attached to a 0.75-inch diameter shaft that has 3 stability fins attached at its base. The 5-inch long torpedo fits snugly in the 5.5-inch long barrel to assure that all air pressure is devoted to pushing the torpedo out of the barrel and so the torpedo does not “wobble” prior to exit.
 
@@ -69,5 +39,6 @@ After finalizing the pursuance of a pneumatic launcher system, the next step was
 Most of the part machining was done on a lathe including the barrels (turned and bored), the torpedo head (turned and bored), and the torpedo shaft (faced). The shafts diameter came from stock, and its length was achieved via a bandsaw and facing on the lathe. The metal endcap of the parrel was turned down on the lathe from stock aluminum. The support structures for the barrels were water-jet by a third party.
 
 
-Assembly
-~~~~~~~~
+
+.. _Blue Robotics: https://www.bluerobotics.com/
+.. _T200: http://docs.bluerobotics.com/thrusters/t200/
