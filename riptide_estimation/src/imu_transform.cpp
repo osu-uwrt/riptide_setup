@@ -35,7 +35,7 @@ private:
   static geometry_msgs::Vector3 vector3(tf::Vector3 tf);
   static tf::Quaternion quaternion(geometry_msgs::Quaternion msg);
   static geometry_msgs::Quaternion quaternion(tf::Quaternion tf);
-  // TF
+  // Transformation handling group:
   tf::TransformBroadcaster bcast;
   geometry_msgs::TransformStamped tform;
 
@@ -95,9 +95,9 @@ void Orientation::filter_cb(const imu_3dm_gx4::FilterOutput::ConstPtr& filter)
   filter_.orientation_covariance_status = filter->orientation_covariance_status;
   filter_pub.publish(filter_);
 
-  // Transform!
+  // Send orientation to TF
   tform.header.stamp = filter->header.stamp;
-  tform.transform.rotation = filter->orientation;
+  tform.transform.rotation = filter_.orientation;
   bcast.sendTransform(tform);
 }
 

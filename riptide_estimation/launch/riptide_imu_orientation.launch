@@ -1,6 +1,0 @@
-<launch>
-  <!-- Launch the simple RPY transformation node -->
-  <node name="imu_orientation" pkg="riptide_estimation" type="imu_orientation"/>
-  <!-- Launch the imu_3dm_gx4 driver node -->
-  <include file="$(find riptide_estimation)/launch/riptide_imu.launch"/>
-</launch>
