@@ -1,6 +1,7 @@
 #include "ros/ros.h"
 #include "tf/transform_datatypes.h"
 #include "tf/LinearMath/Transform.h"
+#include "tf/transform_broadcaster.h"
 #include "imu_3dm_gx4/FilterOutput.h"
 #include "sensor_msgs/Imu.h"
 #include "sensor_msgs/MagneticField.h"
@@ -34,6 +35,9 @@ private:
   static geometry_msgs::Vector3 vector3(tf::Vector3 tf);
   static tf::Quaternion quaternion(geometry_msgs::Quaternion msg);
   static geometry_msgs::Quaternion quaternion(tf::Quaternion tf);
+  // TF
+  tf::TransformBroadcaster bcast;
+  geometry_msgs::TransformStamped tform;
 
 public:
   Orientation();
@@ -73,6 +77,9 @@ Orientation::Orientation()
 
   rotation_matrix = tf::Matrix3x3(1, 0, 0, 0, -1, 0, 0, 0, -1);
   rotation = tf::Transform(rotation_matrix);
+
+  tform.header.frame_id = "odom";
+  tform.child_frame_id = "base_link";
 }
 
 void Orientation::filter_cb(const imu_3dm_gx4::FilterOutput::ConstPtr& filter)
@@ -87,6 +94,11 @@ void Orientation::filter_cb(const imu_3dm_gx4::FilterOutput::ConstPtr& filter)
   filter_.bias_covariance_status = filter->bias_covariance_status;
   filter_.orientation_covariance_status = filter->orientation_covariance_status;
   filter_pub.publish(filter_);
+
+  // Transform!
+  tform.header.stamp = filter->header.stamp;
+  tform.transform.rotation = filter->orientation;
+  bcast.sendTransform(tform);
 }
 
 void Orientation::imu_cb(const sensor_msgs::Imu::ConstPtr& imu)
