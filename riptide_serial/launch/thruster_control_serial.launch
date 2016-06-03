@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="rosserial_python" type="serial_node.py" name="thruster_control_serial">
+    <param name="port" value="/dev/ttyACM2"/>
+    <param name="baud" value="115200"/>
+  </node>
+</launch>
