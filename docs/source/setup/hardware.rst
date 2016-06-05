@@ -11,7 +11,7 @@ Guidelines
 Fasteners
 ~~~~~~~~~
 
-LOCTITE 222 THREADLOCKER is applied to all bolts/screws threading into stainless steel or connecting the sealing latched to the main aluminum housing. MARING GRADE ANTI-SEIZE is applied to all other bolts/screws threading into aluminum prior to fastening. 8-32 bolts used to compress gasket should be tightened to a torque of 9 inch-pounds. All other bolts/screws should be hand-tightened.
+LOCTITE 222 THREADLOCKER is applied to all bolts/screws threading into stainless steel or connecting the sealing latches to the main aluminum housing. MARINE GRADE ANTI-SEIZE is applied to all other bolts/screws threading into aluminum prior to fastening. 8-32 bolts used to compress gasket should be tightened to a torque of 9 inch-pounds. All other bolts/screws should be hand-tightened.
 
 .. warning::
    The heads of all bolts/screws must be free of wear and show no indication of stripping (damaged fasteners should be discarded immediately).
@@ -26,6 +26,16 @@ O-Rings
 
 The rubber is free of all nicks, cuts, excessive wear, discoloration, and/or permanent deformation. The o-ring groove is free of water and solid particles. The o-ring has been greased with MOLYKOTE 55 o-ring grease prior to every fitting.
 
+Star Pattern
+~~~~~~~~~~~~
+
+Do it twice. Then, starting at the 12 o'clock position and working clockwise, tighten each bolt.
+
+Anti-Seize
+~~~~~~~~~~
+
+Roll the last quarter inch of the bolt in anti-seize making sure to thoroughly coat all threads.
+Wipe the excess off such that the remaining anti-seize completely fills the space between threads.
 
 Frame
 -----
@@ -38,6 +48,42 @@ Assembly
 
 Mounting
 ~~~~~~~~
+
+
+Chassis
+-------
+
+Thrusters
+~~~~~~~~~
+
+The thrusters have been taped in colored bands.
+
+The taped bands can be read as follows:
+
+**Band #1**
+
+===== ====== ====
+Red   Yellow Blue
+===== ====== ====
+Surge Heave  Sway
+===== ====== ====
+
+**Band #2**
+
+======= ======
+Green   White
+======= ======
+Forward Aft
+Top     Bottom
+======= ======
+
+**Band #3**
+
+===== =========
+Green White
+===== =========
+Port  Starboard
+===== =========
 
 
 Electronics Housing
@@ -71,6 +117,7 @@ DVL Tube Cap 1     Gasket      None
 I/O Panels   2     Gasket      None
 ============ ===== ====== ==== =============
 
+* Black Gaskets: Buna N 1/16" Thick (Formed from o-ring material.)
 * See `Exterior Cables & Hoses`_ for SubConn connections.
 
 Assembly
@@ -83,27 +130,101 @@ Assembly
 
 #. Place the DVL Tube Cap gasket on the tube.
 #. Place the DVL cap on the DVL Tube Cap gasket.
-#. Secure the DVL cap using DVL Tube Cap fasteners (star pattern?).
+#. Secure the DVL cap using 6 DVL Tube Cap fasteners.
+#. With the SubConn plates removed, push the pressure sensor wire out of the way.
+
+.. note::
+   For the time being the outermost rear fan bolts must be removed to insert and remove the electronics rocket.
+
+#. Insert electronics rocket from the forward side of the tube.
 #. Place an I/O Panel gasket into the port mid housing receptacle.
-#. Place the Port I/O panel atop the I/O panel gasket.
-#. Secure the Port I/O panel using [some fasteners].
-#. Place the remaining I/O Panel gasket into the starboard mid housing receptacle.
+#. Place the Port I/O panel atop the I/O panel gasket with the giant power subconn facing forward.
+
+.. warning::
+   Using a flashlight inspect the interior mating face to ensure the gasket is properly.
+
+#. Secure the Port I/O panel using 10 Port I/O Panel bolts by first finger-tightening them and then preceding  to do the start stuff.
+
+.. warning::
+   Ensure the I/O panel bolts pass through the electronics rocket without being forced, or they'll bend int and warp it.
+
+REPEAT THE PORT PROCEDURE WITH THE STARBOARD SIDE...
+
+#. Place the Starboard I/O Panel gasket into the starboard mid housing receptacle.
 #. Place the starboard I/O panel atop the I/O panel gasket.
 #. Secure the starboard I/O panel using [some fasteners].
 
-**Forward Extension:**
+**Backplane:**
 
-#. Place a Clear Tube gasket between the mid-sealing ring and clear tube.
-#. Use some fastener to compress this thing?
-#. Place a Clear Tube gasket between the front-sealing ring and clear tube.
-#. Use some (other) fastener to compress this thing?
-#. Coat a Mid Housing o-ring and insert into the (furthest back?) groove.
-#. Coat a Mid Housing o-ring and insert into the remaining (forward) groove.
+* Add screws! Four, 4-40, 3/8", hand-tight, stainless
+
+#. Bolt the backplane to the electronics rocket's four canty-lever rods using backplane screws and washers.
+#. Connect all the cables, good luck bro.
 
 **After Extension:**
 
-#. Coat a Mid Housing o-ring and insert into the (furthest back?) groove.
-#. Coat a Mid Housing o-ring and insert into the remaining (forward) groove.
+Attaching the lid:
+
+#. Clean the mating surfaces and gasket, ensuring to remove any excess anti-seize.
+#. Place the gasket onto the housing mating surface and then place the lid onto the gasket.
+#. For each of the 8 lid bolts, apply anti-seize and then insert the bolt about 3/4 of the way.
+#. Tighten all bolts using the star pattern procedure.
+
+Preparing the o-rings:
+
+#. Clean out the o-ring grooves with cotton swabs, wash yo bitch as hands or don glove style ppe.
+#. With clean hands squeeze a "pea and a schmear" sized amount of o-ring grease onto your thumb and forefinger.
+#. Pull the o-ring through the grease while applying steady pressure to ensure the o-ring is evenly coated.
+#. Starting with the o-ring in contact with a groove stretch the first o-ring around the circumference of the tube and release it into it's slot.
+
+.. warning::
+   Check the o-ring to make sure it is not twisted.
+
+#. Repeat for the second o-ring.
+
+Inserting the tube:
+
+#. Align the housing so that the latch tabs are horizontal.
+#. Place the leading edge of the housing onto the after frame curved crossbar.
+#. While being carefull to avoid contact with the backplane, slide the housing forward until, it is within an inch of the central portion.
+#. Slide the mating surfaces together, pushing firmly to engage the first o-ring.
+#. Hook the latches over the latch tabs, and close them until the locks catch. Pull back to ensure successful locking mechanism engagement.
+#. The  housing is sealed if and only if both mating surfaces are now in full contact with oneanother.
+
+**Forward Extension:**
+
+Attaching the lid:
+
+#. Clean the mating surfaces and gasket, being careful to remove excess anti-seize.
+#. Place the gasket onto the housing mating surface and then place the lid onto the gasket.
+#. For each of the 8 lid bolts, apply anti-seize and then insert the bolt about 3/4 of the way.
+#. Tighten all bolts using the star pattern procedure.
+
+Preparing the o-rings:
+
+#. Clean out the o-ring grooves with cotton swabs, wash yo bitch as hands or don glove-style PPE.
+#. With clean hands squeeze a "pea and a schmear" sized amount of o-ring grease onto your thumb and forefinger.
+#. Pull the o-ring through the grease while applying steady pressure to ensure the o-ring is evenly coated.
+#. Starting with the o-ring in contact with a groove stretch the first o-ring around the circumference of the tube and release it into it's slot.
+
+.. warning::
+   Check the o-ring to make sure it is not twisted.
+
+#. Repeat for the second o-ring.
+
+Inserting the tube:
+
+#. Align the housing so that the latch tabs are horizontal.
+#. Place the leading edge of the housing onto the forward frame curved crossbar.
+
+#. Tilt the housing forward until the lower leading edge is low enough to pass below the downward-facing camera.
+#. Push the housing longitudinally for an inch before leveling the housing.
+
+#. While being careful to avoid contact with the camera, slide the housing aft until, it is within an inch of the central portion.
+#. Slide the mating surfaces together, pushing firmly to engage the first o-ring.
+#. Hook the latches over the latch tabs, and close them until the locks catch. Pull back to ensure successful locking mechanism engagement.
+#. The housing is sealed if and only if both mating surfaces are now in full contact with oneanother.
+
 
 Mounting
 ~~~~~~~~
@@ -112,7 +233,11 @@ Mounting
 
 **Attaching Forward Extension to Central Core**
 
+See above, for now.
+
 **Attaching After Extension to Central Core**
+
+See above, for now.
 
 
 Acoustics Housing
@@ -202,12 +327,18 @@ Assembly
 Mounting
 ~~~~~~~~
 
-#. Battery housing secured to main housing. HOW?
-#. Latch secured. WHO? WHAT? WHERE? WHY? WHEN?
+.. note::
+   The data SubConn must be attached to the battery housing and all other main housing subconns must be attached prior to placing the battery housing into it's receptacle.
 
+#. Alight the battery housing such that the power cable is facing forward and the data cable is facing upward (relief valve down).
+#. Place the battery housing into the chassis receptacle by first inserting the aft end working the forward portion in.
+#. Secure the battery housing by closing the retaining arms and engaging the latch.
 
 Pneumatics Housing
 ------------------
+
+.. warning::
+   If the pneumatics system will not be used and the hoses will not be inserted the grabbers and pnuematics housing must be removed from the vehicle prior to submerging.
 
 Fasteners
 ~~~~~~~~~
@@ -264,6 +395,20 @@ Mounting
 Manipulator
 -----------
 
+* Cameron
+
+**Control matrix:**
+
+=== === =======
+A   B   Effect
+=== === =======
+on  on  lock
+on  off fwd/rev
+off on  rev/fwd
+off off relax
+=== === =======
+
+
 Fasteners
 ~~~~~~~~~
 
@@ -273,10 +418,14 @@ Assembly
 Mounting
 ~~~~~~~~
 
+.. note::
+   Remove all velcro ties before use, and replace them after.
 
 Marker Droppers
 ---------------
 
+* Nathan
+
 Fasteners
 ~~~~~~~~~
 
@@ -285,6 +434,12 @@ Assembly
 
 Mounting
 ~~~~~~~~
+
+**Attaching the hoses:**
+
+#. Loosen the retaining nut.
+#. Insert the hose until it stops.
+#. Tighten the retaining nut.
 
 
 Torpedo Launchers
@@ -299,6 +454,10 @@ Assembly
 Mounting
 ~~~~~~~~
 
+#. Push the black plastic thing in.
+#. Push the hose in until it stops.
+#. Release the black plastic thing.
+
 
 Exterior Cables & Hoses
 -----------------------
@@ -312,12 +471,20 @@ Exterior Cables & Hoses
 
 You can download :download:`this cabling diagram </_static/CablingDiagram.pdf>` or :download:`this block diagram </_static/FunctionalBlockDiagram(8).pdf>`.
 
+
 Main Housing I/O Panel -- Port
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. note::
+   All SubConns have strain reliefs with the exception of bottom port surge.
 
 +---------------------------+-----------------+--------+----------------+
 | Connection                | Series          | # Pins | Amps/Connector |
 +===========================+=================+========+================+
+| Acoustics Housing         | Micro Circular  |  4     |  20            |
++---------------------------+-----------------+--------+----------------+
+| Kill Switch               | Micro Circular  |  4     |  20            |
++---------------------------+-----------------+--------+----------------+
 | Battery Housing -- Port   | Micro Circular  |  4     |  20            |
 +---------------------------+-----------------+--------+----------------+
 | Battery Housing -- Port   | Power           |  4     |  50            |
@@ -334,16 +501,17 @@ Main Housing I/O Panel -- Port
 +---------------------------+-----------------+--------+----------------+
 | Thruster -- Forward Sway  | Micro Circular  |  3     |  20            |
 +---------------------------+-----------------+--------+----------------+
-| Tether                    | Ethernet        |  8     |                |
-+---------------------------+-----------------+--------+----------------+
 
 Main Housing I/O Panel -- Starboard
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+.. note::
+   All SubConns have strain reliefs with the exception of bottom starboard surge.
+
 +---------------------------+-----------------+--------+----------------+
 | Connection                | Series          | # Pins | Amps/Connector |
 +===========================+=================+========+================+
-| Acoustics Housing         | Micro Circular  |  4     |  20            |
+| Pneumatics Housing        | Micro Circular  |  4     |  20            |
 +---------------------------+-----------------+--------+----------------+
 | Battery Housing -- Stbd   | Micro Circular  |  4     |  20            |
 +---------------------------+-----------------+--------+----------------+
@@ -357,9 +525,9 @@ Main Housing I/O Panel -- Starboard
 +---------------------------+-----------------+--------+----------------+
 | Thruster -- After Heave   | Micro Circular  |  3     |  20            |
 +---------------------------+-----------------+--------+----------------+
-| Thruster -- Forward Sway  | Micro Circular  |  3     |  20            |
+| Thruster -- Aft Sway      | Micro Circular  |  3     |  20            |
 +---------------------------+-----------------+--------+----------------+
-|                           | Micro Circular  |  4     |  20            |
+| Tether                    | Ethernet        |  8     |                |
 +---------------------------+-----------------+--------+----------------+
 
 Pneumatics Housing (Hoses)
