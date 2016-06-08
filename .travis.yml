@@ -5,10 +5,10 @@ dist: trusty
 branches:
   only:
     - master
+    - travis
 
 before_install:
   - ./scripts/workspace-prep
-  - cd ~/osu-uwrt/riptide_ws/src
 
 install:
   - ./scripts/install-ros

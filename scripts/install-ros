@@ -91,7 +91,7 @@ rosdep -yq update # Do not sudo!
 echo -e "...done.\n"
 
 echo -e "Installing ROS dependencies...\n"
-rosdep install -yqi --rosdistro="$ROS_DISTRO" --from-paths ./
+rosdep install -yqi --rosdistro="$ROS_DISTRO" --from-paths ~/osu-uwrt/riptide_ws
 echo -e "...done.\n"
 
 

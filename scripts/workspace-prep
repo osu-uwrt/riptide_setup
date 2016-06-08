@@ -17,4 +17,7 @@ cp -rf ../riptide ~/osu-uwrt/riptide_ws/src
 # List the contentents of the destination:
 ls -al ~/osu-uwrt/riptide_ws/src
 
-# The source can now be removed. (!TRAVIS)
+# The original copy of the repo can be deleted:
+if [ "$TRAVIS" != true ]; then
+   echo "This copy of the repository can now be removed."
+fi
