@@ -50,11 +50,8 @@ Mounting
 ~~~~~~~~
 
 
-Chassis
--------
-
 Thrusters
-~~~~~~~~~
+---------
 
 The thrusters have been taped in colored bands.
 
@@ -91,7 +88,7 @@ Electronics Housing
 
 Fasteners
 ~~~~~~~~~
-
+                                                   add metric conversion
 =================== ===== ======== ====== ======= ========== ==========
 Mating              Count Material Thread Length  Torque     Coating
 =================== ===== ======== ====== ======= ========== ==========
@@ -129,21 +126,21 @@ Assembly
 **Central Core:**
 
 #. Place the DVL Tube Cap gasket on the tube.
-#. Place the DVL cap on the DVL Tube Cap gasket.
-#. Secure the DVL cap using 6 DVL Tube Cap fasteners.
-#. With the SubConn plates removed, push the pressure sensor wire out of the way.
+#. Place the DVL Cap on the DVL Tube Cap gasket.
+#. Secure the DVL Tube Cap using 6 DVL Tube Cap fasteners.
 
 .. note::
    For the time being the outermost rear fan bolts must be removed to insert and remove the electronics rocket.
 
-#. Insert electronics rocket from the forward side of the tube.
-#. Place an I/O Panel gasket into the port mid housing receptacle.
-#. Place the Port I/O panel atop the I/O panel gasket with the giant power subconn facing forward.
+#. Secure the pressure sensor wire out to the upper surface of the housing to prevent it from catch on the electronics rocket.
+#. Insert (Land) the electronics rocket from the forward side of the tube.
+#. Place an I/O Panel gasket into the port mid housing receptacle. (Add link to panel chart.)
+#. Place the Port I/O panel against the I/O panel gasket with the giant power SubConn on the forward side.
 
 .. warning::
-   Using a flashlight inspect the interior mating face to ensure the gasket is properly.
+   Using a flashlight, inspect the interior mating face to ensure the gasket is properly seated, repeat with your finger.
 
-#. Secure the Port I/O panel using 10 Port I/O Panel bolts by first finger-tightening them and then preceding  to do the start stuff.
+#. Secure the Port I/O panel using 10 Port I/O Panel bolts by first applying anti-seize then finger-tightening them and then preceding to do the star stuff. (Add links.)
 
 .. warning::
    Ensure the I/O panel bolts pass through the electronics rocket without being forced, or they'll bend int and warp it.
@@ -186,7 +183,7 @@ Inserting the tube:
 
 #. Align the housing so that the latch tabs are horizontal.
 #. Place the leading edge of the housing onto the after frame curved crossbar.
-#. While being carefull to avoid contact with the backplane, slide the housing forward until, it is within an inch of the central portion.
+#. While being careful to avoid contact with the backplane, slide the housing forward until, it is within an inch of the central portion.
 #. Slide the mating surfaces together, pushing firmly to engage the first o-ring.
 #. Hook the latches over the latch tabs, and close them until the locks catch. Pull back to ensure successful locking mechanism engagement.
 #. The  housing is sealed if and only if both mating surfaces are now in full contact with oneanother.
@@ -203,7 +200,7 @@ Attaching the lid:
 Preparing the o-rings:
 
 #. Clean out the o-ring grooves with cotton swabs, wash yo bitch as hands or don glove-style PPE.
-#. With clean hands squeeze a "pea and a schmear" sized amount of o-ring grease onto your thumb and forefinger.
+#. With clean hands squeeze a "pea and a shmear" sized amount of o-ring grease onto your thumb and forefinger.
 #. Pull the o-ring through the grease while applying steady pressure to ensure the o-ring is evenly coated.
 #. Starting with the o-ring in contact with a groove stretch the first o-ring around the circumference of the tube and release it into it's slot.
 
@@ -330,7 +327,7 @@ Mounting
 .. note::
    The data SubConn must be attached to the battery housing and all other main housing subconns must be attached prior to placing the battery housing into it's receptacle.
 
-#. Alight the battery housing such that the power cable is facing forward and the data cable is facing upward (relief valve down).
+#. Align the battery housing such that the power cable is facing forward and the data cable is facing upward (relief valve down).
 #. Place the battery housing into the chassis receptacle by first inserting the aft end working the forward portion in.
 #. Secure the battery housing by closing the retaining arms and engaging the latch.
 
