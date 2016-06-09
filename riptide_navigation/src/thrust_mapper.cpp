@@ -20,7 +20,7 @@ double desiredRoll = 0.0; // Desired angular acceleration about X (rad/s^2)
 double desiredPitch = 0.0; // Desired angular acceleration about Y (rad/s^2)
 double desiredYaw = 0.0; // Desired angular acceleration about Z (rad/s^2)
 
-double IX = 1.0; // Moment of inertia about X 
+double IX = 1.0; // Moment of inertia about X
 double IY = 1.0; // Moment of inertia about Y
 double IZ = 1.0; // Moment of inertia about Z
 
@@ -105,7 +105,7 @@ struct a_roll {
 		const T* const s1,
 		const T* const s2,
 		T* residual) const {
-		residual[0] = (u1[0]*T(pos_u1.y)+u2[0]*T(pos_u2.y)+u3[0]*T(pos_u3.y)+u4[0]*T(pos_u4.y)+s1[0]*T(pos_s1.z)+s1[0]*T(pos_s2.z)) / T(IX) - T(desiredRoll);
+		residual[0] = (u1[0]*T(pos_u1.y)+u2[0]*T(pos_u2.y)+u3[0]*T(pos_u3.y)+u4[0]*T(pos_u4.y)+s1[0]*T(pos_s1.z)+s2[0]*T(pos_s2.z)) / T(IX) - T(desiredRoll);
 		return true;
 	}
 };
@@ -133,7 +133,7 @@ struct a_yaw{
 		const T* const s1,
 		const T* const s2,
 		T* residual) const {
-	residual[0] = (f1[0]*T(pos_f1.y) + f2[0]*T(pos_f2.y) + f3[0]*T(pos_f3.y) + f4[0]*T(pos_f4.y) + s1[0]*T(pos_s1.x) + s1[0]*T(pos_s2.x)) / T(IZ) - T(desiredYaw);
+	residual[0] = (f1[0]*T(pos_f1.y) + f2[0]*T(pos_f2.y) + f3[0]*T(pos_f3.y) + f4[0]*T(pos_f4.y) + s1[0]*T(pos_s1.x) + s2[0]*T(pos_s2.x)) / T(IZ) - T(desiredYaw);
 	return true;
 }
 };
@@ -272,7 +272,7 @@ void Solver::callback(const geometry_msgs::Accel::ConstPtr& a)
 		<< ", s2 = " << s2
 		<< std::endl;
 
-	
+
 	// Solve all my problems
 	ceres::Solve(options, &problem, &summary);
 
