@@ -549,5 +549,20 @@ Pneumatics Housing (Hoses)
 +---------------------------+----------+----------+
 
 
+SubConn Pinouts
+~~~~~~~~~~~~~~~
+
+**Power**
+
+=== ===== ======
+Pin Color Signal
+=== ===== ======
+1   White B+
+2   White B-
+3   White NC
+4   White NC
+=== ===== ======
+
+
 .. _Power: http://www.macartney.com/what-we-offer/systems-and-products/connectivity/subconn/subconn-power-series/subconn-power-battery-2-3-and-4-contacts/
 .. _Micro: http://www.macartney.com/what-we-offer/systems-and-products/connectivity/subconn/subconn-micro-circular-series/subconn-micro-circular-2-3-4-5-6-and-8-contacts-and-g2-2-3-and-4-contacts/
