@@ -64,6 +64,17 @@ make
 make install
 
 
+# Build and install avrdude:
+
+cd ~/build-avr
+wget http://download.savannah.gnu.org/releases/avrdude/avrdude-6.3.tar.gz
+tar xvfz avrdude-6.3.tar.gz
+cd ~/build-avr/avrdude-6.3
+../configure --prefix=$PREFIX
+make
+make install
+
+
 # Remove installation artifacts:
 
 cd ~
