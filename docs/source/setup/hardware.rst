@@ -34,8 +34,7 @@ Do it twice. Then, starting at the 12 o'clock position and working clockwise, ti
 Anti-Seize
 ~~~~~~~~~~
 
-Roll the last quarter inch of the bolt in anti-seize making sure to thoroughly coat all threads.
-Wipe the excess off such that the remaining anti-seize completely fills the space between threads.
+Roll the last quarter inch of the bolt in anti-seize making sure to thoroughly coat all threads. Wipe the excess off such that the remaining anti-seize completely fills the space between threads. (Roll threads of coated bolt around threads of uncoated bolt to transfer excess anti-seize and ensure threads are fully coated.)
 
 Frame
 -----
@@ -48,6 +47,7 @@ Assembly
 
 Mounting
 ~~~~~~~~
+
 
 
 Thrusters
@@ -88,7 +88,8 @@ Electronics Housing
 
 Fasteners
 ~~~~~~~~~
-                                                   add metric conversion
+
+                                                 add metric conversion
 =================== ===== ======== ====== ======= ========== ==========
 Mating              Count Material Thread Length  Torque     Coating
 =================== ===== ======== ====== ======= ========== ==========
@@ -126,24 +127,27 @@ Assembly
 **Central Core:**
 
 #. Place the DVL Tube Cap gasket on the tube.
-#. Place the DVL Cap on the DVL Tube Cap gasket.
-#. Secure the DVL Tube Cap using 6 DVL Tube Cap fasteners.
+#. Place the DVL cap on the DVL Tube Cap gasket.
+#. Secure the DVL cap using 6 DVL Tube Cap fasteners.
 
 .. note::
    For the time being the outermost rear fan bolts must be removed to insert and remove the electronics rocket.
 
 #. Secure the pressure sensor wire out to the upper surface of the housing to prevent it from catch on the electronics rocket.
-#. Insert (Land) the electronics rocket from the forward side of the tube.
+#. Insert (Land) electronics rocket from the forward side of the tube.
+
+#. PUT THE O-RING ON THE PANEL THEN PUT THE SCREWS IN AND THEN PUT IT ON.
+
 #. Place an I/O Panel gasket into the port mid housing receptacle. (Add link to panel chart.)
 #. Place the Port I/O panel against the I/O panel gasket with the giant power SubConn on the forward side.
 
 .. warning::
-   Using a flashlight, inspect the interior mating face to ensure the gasket is properly seated, repeat with your finger.
+   Using a flashlight inspect the interior mating face to ensure the gasket is properly seated, repeat with finger.
 
-#. Secure the Port I/O panel using 10 Port I/O Panel bolts by first applying anti-seize then finger-tightening them and then preceding to do the star stuff. (Add links.)
+#. Secure the Port I/O panel using 10 Port I/O Panel bolts by first applying anti-seize then finger-tightening them and then preceding  to do the star stuff. (Add links.)
 
 .. warning::
-   Ensure the I/O panel bolts pass through the electronics rocket without being forced, or they'll bend int and warp it.
+   Ensure the I/O panel bolts pass through the electronics rocket without being forced, or they'll bend it and warp it.
 
 REPEAT THE PORT PROCEDURE WITH THE STARBOARD SIDE...
 
@@ -169,10 +173,10 @@ Attaching the lid:
 
 Preparing the o-rings:
 
-#. Clean out the o-ring grooves with cotton swabs, wash yo bitch as hands or don glove style ppe.
+#. Clean out the o-ring housing grooves with cotton swabs, wash yo bitch as hands or don glove style ppe.
 #. With clean hands squeeze a "pea and a schmear" sized amount of o-ring grease onto your thumb and forefinger.
-#. Pull the o-ring through the grease while applying steady pressure to ensure the o-ring is evenly coated.
-#. Starting with the o-ring in contact with a groove stretch the first o-ring around the circumference of the tube and release it into it's slot.
+#. Pull the o-ring through the grease while applying steady pressure to ensure the o-ring is evenly coated. (Perform 3 revolutions of the o-ring to ensure an even coating.)
+#. Starting with the o-ring in contact with the aftermost groove, stretch the o-ring around the circumference of the tube and release it into it's slot.
 
 .. warning::
    Check the o-ring to make sure it is not twisted.
@@ -181,12 +185,12 @@ Preparing the o-rings:
 
 Inserting the tube:
 
-#. Align the housing so that the latch tabs are horizontal.
+#. Align the housing with the vehicle so that the latch tabs are horizontal.
 #. Place the leading edge of the housing onto the after frame curved crossbar.
 #. While being careful to avoid contact with the backplane, slide the housing forward until, it is within an inch of the central portion.
 #. Slide the mating surfaces together, pushing firmly to engage the first o-ring.
 #. Hook the latches over the latch tabs, and close them until the locks catch. Pull back to ensure successful locking mechanism engagement.
-#. The  housing is sealed if and only if both mating surfaces are now in full contact with oneanother.
+#. The housing is sealed if and only if both mating surfaces are now in full contact with one-another. (The upper portion will be more "in full contact" than the lower portion.)
 
 **Forward Extension:**
 
@@ -200,7 +204,7 @@ Attaching the lid:
 Preparing the o-rings:
 
 #. Clean out the o-ring grooves with cotton swabs, wash yo bitch as hands or don glove-style PPE.
-#. With clean hands squeeze a "pea and a shmear" sized amount of o-ring grease onto your thumb and forefinger.
+#. With clean hands squeeze a "pea and a schmear" sized amount of o-ring grease onto your thumb and forefinger.
 #. Pull the o-ring through the grease while applying steady pressure to ensure the o-ring is evenly coated.
 #. Starting with the o-ring in contact with a groove stretch the first o-ring around the circumference of the tube and release it into it's slot.
 
@@ -331,6 +335,8 @@ Mounting
 #. Place the battery housing into the chassis receptacle by first inserting the aft end working the forward portion in.
 #. Secure the battery housing by closing the retaining arms and engaging the latch.
 
+#. Repeat for the other side.
+
 Pneumatics Housing
 ------------------
 
@@ -368,6 +374,9 @@ Pneumatic Connections:
 
 Assembly
 ~~~~~~~~
+
+.. warning::
+   The housing lid and gasket appear to be a square, but are in fact rectangular. Take special care to align the lid and gasket properly or
 
 #. Put the relief valve itself onto something.
 #. Place relief valve gaskets where they go.
