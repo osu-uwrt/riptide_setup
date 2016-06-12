@@ -11,7 +11,7 @@ ros::Publisher state_pub("state", &state);
 
 void callback(const std_msgs::Int8 &cmd)
 {
-  state.data = 0;
+  state.data = cmd.data;
   state_pub.publish(&state);
 
   Wire.beginTransmission(3);
@@ -48,7 +48,7 @@ void setup()
 
   nh.initNode();
   nh.advertise(state_pub);
-
+  nh.subscribe(cmd_sub);
 }
 
 void loop()
