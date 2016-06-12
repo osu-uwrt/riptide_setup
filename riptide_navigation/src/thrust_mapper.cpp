@@ -1,28 +1,36 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Accel.h"
 #include "geometry_msgs/Vector3.h"
-#include "sensor_msgs/JointState.h"
 #include "riptide_msgs/ThrustStamped.h"
+
 #include <math.h>
 #include <vector>
 #include "ceres/ceres.h"
 #include "glog/logging.h"
 
-#undef debug
+#define debug
+#define report
+#define progress
 
-double mass = 24.9476;	// Mass of the vehicle (KG)
+// Thrust limits (N):
+double MIN_THRUST = -18.0;
+double MAX_THRUST = 18.0;
 
-double desiredSurge = 0.0; // Desired linear acceleration in X (m/s^2)
-double desiredSway = 0.0; // Desired linear acceleration in Y (m/s^2)
-double desiredHeave = 0.0; // Desired linear acceleration in Z (m/s^2)
+// Vehicle mass (kg):
+double MASS = 24.9476;
 
-double desiredRoll = 0.0; // Desired angular acceleration about X (rad/s^2)
-double desiredPitch = 0.0; // Desired angular acceleration about Y (rad/s^2)
-double desiredYaw = 0.0; // Desired angular acceleration about Z (rad/s^2)
+// Moments of inertia (kg*m^2)
+double Ix = 1.0;
+double Iy = 1.0;
+double Iz = 1.0;
 
-double IX = 1.0; // Moment of inertia about X
-double IY = 1.0; // Moment of inertia about Y
-double IZ = 1.0; // Moment of inertia about Z
+// Acceleration commands (m/s^):
+double cmdSurge = 0.0;
+double cmdSway = 0.0;
+double cmdHeave = 0.0;
+double cmdRoll = 0.0;
+double cmdPitch = 0.0;
+double cmdYaw = 0.0;
 
 struct vector
 {
@@ -42,121 +50,121 @@ vector makeVector(double X, double Y, double Z)
 
 /*** Thruster Positions ***/
 // Positions are in meters relative to the center of mass.
-// Forward Thrusters
-vector pos_u1 = makeVector(-.25, .127, -.05);
-vector pos_u2 = makeVector(-.25, -.127, -.05);
-vector pos_u3 = makeVector(.25, -.127, -.05);
-vector pos_u4 = makeVector(.25, .127, -.05);
-// Upwards Thrusters
-vector pos_f1 = makeVector(-.3, -.127, 1.0);
-vector pos_f2 = makeVector(-.3, .127, 1.0);
-vector pos_f3 = makeVector(-.3, .127, -1.0);
-vector pos_f4 = makeVector(-.3, -.127, -1.0);
-// Sideways Thrusters
-vector pos_s1 = makeVector(.5, 0.0, -1.0);
-vector pos_s2 = makeVector(-.5, 0.0, -1.0);
-
-/*** Thruster Definitions ***/
-// f1 = forward top right		u1 = vertical back left		s1 = sideways front
-// f2 = forward top left		u2 = vertical back right	s2 = sideways back
-// f3 = forward bottom left		u3 = vertical front right
-// f4 = forward bottom right	u4 = vertical front left
+vector pos_heave_port_aft = makeVector(-.25, .127, -.05);
+vector pos_heave_stbd_aft = makeVector(-.25, -.127, -.05);
+vector pos_heave_stbd_fwd = makeVector(.25, -.127, -.05);
+vector pos_heave_port_fwd = makeVector(.25, .127, -.05);
+vector pos_surge_stbd_hi = makeVector(-.3, -.127, 1.0);
+vector pos_surge_port_hi = makeVector(-.3, .127, 1.0);
+vector pos_surge_port_lo = makeVector(-.3, .127, -1.0);
+vector pos_surge_stbd_lo = makeVector(-.3, -.127, -1.0);
+vector pos_sway_fwd = makeVector(.5, 0.0, -1.0);
+vector pos_sway_aft = makeVector(-.5, 0.0, -1.0);
 
 /*** EQUATIONS ***/
 // These equations solve for linear/angular acceleration in all axes
+
 // Linear Equations
-struct a_surge {
-	template <typename T> bool operator()(const T* const f1,
-		const T* const f2,
-		const T* const f3,
-		const T* const f4,
-		T* residual) const {
-		residual[0] = (f1[0] + f2[0] + f3[0] + f4[0]) / T(mass) - T(desiredSurge); // Sum forces and subtract desired
+struct surge {
+	template <typename T> bool operator()(const T* const surge_stbd_hi,
+																				const T* const surge_port_hi,
+																				const T* const surge_port_lo,
+																				const T* const surge_stbd_lo,
+																				T* residual) const
+	{
+		residual[0] = (surge_stbd_hi[0] + surge_port_hi[0] + surge_port_lo[0] + surge_stbd_lo[0]) / T(MASS) - T(cmdSurge);
 		return true;
 	}
 };
 
-struct a_sway {
-	template <typename T> bool operator()(const T* const s1,
-		const T* const s2,
-		T* residual) const {
-		residual[0] = (s1[0] + s2[0]) / T(mass) - T(desiredSway);
+struct sway {
+	template <typename T> bool operator()(const T* const sway_fwd,
+																				const T* const sway_aft,
+																				T* residual) const
+	{
+		residual[0] = (sway_fwd[0] + sway_aft[0]) / T(MASS) - T(cmdSway);
 		return true;
 	}
 };
 
-struct a_heave {
-	template <typename T> bool operator()(const T* const u1,
-		const T* const u2,
-		const T* const u3,
-		const T* const u4,
-		T* residual) const {
-		residual[0] = (u1[0] + u2[0] + u3[0] + u4[0]) / T(mass) - T(desiredHeave);
+struct heave {
+	template <typename T> bool operator()(const T* const heave_port_aft,
+																				const T* const heave_stbd_aft,
+																				const T* const heave_stbd_fwd,
+																				const T* const heave_port_fwd,
+																				T* residual) const
+	{
+		residual[0] = (heave_port_aft[0] + heave_stbd_aft[0] + heave_stbd_fwd[0] + heave_port_fwd[0]) / T(MASS) - T(cmdHeave);
 		return true;
 	}
 };
 
 // Angular equations
-struct a_roll {
-	template <typename T> bool operator()(const T* const u1,
-		const T* const u2,
-		const T* const u3,
-		const T* const u4,
-		const T* const s1,
-		const T* const s2,
-		T* residual) const {
-		residual[0] = (u1[0]*T(pos_u1.y)+u2[0]*T(pos_u2.y)+u3[0]*T(pos_u3.y)+u4[0]*T(pos_u4.y)+s1[0]*T(pos_s1.z)+s2[0]*T(pos_s2.z)) / T(IX) - T(desiredRoll);
+struct roll {
+	template <typename T> bool operator()(const T* const heave_port_aft,
+																				const T* const heave_stbd_aft,
+																				const T* const heave_stbd_fwd,
+																				const T* const heave_port_fwd,
+																				const T* const sway_fwd,
+																				const T* const sway_aft,
+																				T* residual) const
+	{
+		residual[0] = (heave_port_aft[0]*T(pos_heave_port_aft.y)+heave_stbd_aft[0]*T(pos_heave_stbd_aft.y)+heave_stbd_fwd[0]*T(pos_heave_stbd_fwd.y)+heave_port_fwd[0]*T(pos_heave_port_fwd.y)+sway_fwd[0]*T(pos_sway_fwd.z)+sway_aft[0]*T(pos_sway_aft.z)) / T(Ix) - T(cmdRoll);
 		return true;
 	}
 };
 
-struct a_pitch {
-	template <typename T> bool operator()(const T* const f1,
-		const T* const f2,
-		const T* const f3,
-		const T* const f4,
-		const T* const u1,
-		const T* const u2,
-		const T* const u3,
-		const T* const u4,
-		T* residual) const {
-		residual[0] = (f1[0] * T(pos_f1.z) + f2[0]*T(pos_f2.z) + f3[0]*T(pos_f3.z) + f4[0]*T(pos_f4.z) + u1[0]*T(pos_u1.x) + u2[0]*T(pos_u2.x) + u3[0]*T(pos_u3.x) + u4[0]*T(pos_u4.x)) / T(IY) - T(desiredPitch);
+struct pitch {
+	template <typename T> bool operator()(const T* const surge_stbd_hi,
+																				const T* const surge_port_hi,
+																				const T* const surge_port_lo,
+																				const T* const surge_stbd_lo,
+																				const T* const heave_port_aft,
+																				const T* const heave_stbd_aft,
+																				const T* const heave_stbd_fwd,
+																				const T* const heave_port_fwd,
+																				T* residual) const
+	{
+		residual[0] = (surge_stbd_hi[0] * T(pos_surge_stbd_hi.z) + surge_port_hi[0]*T(pos_surge_port_hi.z) + surge_port_lo[0]*T(pos_surge_port_lo.z) + surge_stbd_lo[0]*T(pos_surge_stbd_lo.z) + heave_port_aft[0]*T(pos_heave_port_aft.x) + heave_stbd_aft[0]*T(pos_heave_stbd_aft.x) + heave_stbd_fwd[0]*T(pos_heave_stbd_fwd.x) + heave_port_fwd[0]*T(pos_heave_port_fwd.x)) / T(Iy) - T(cmdPitch);
 		return true;
 	}
 };
 
-struct a_yaw{
-	template <typename T> bool operator()(const T* const f1,
-		const T* const f2,
-		const T* const f3,
-		const T* const f4,
-		const T* const s1,
-		const T* const s2,
-		T* residual) const {
-	residual[0] = (f1[0]*T(pos_f1.y) + f2[0]*T(pos_f2.y) + f3[0]*T(pos_f3.y) + f4[0]*T(pos_f4.y) + s1[0]*T(pos_s1.x) + s2[0]*T(pos_s2.x)) / T(IZ) - T(desiredYaw);
-	return true;
-}
+struct yaw{
+	template <typename T> bool operator()(const T* const surge_stbd_hi,
+																								 const T* const surge_port_hi,
+																			 					 const T* const surge_port_lo,
+																			 					 const T* const surge_stbd_lo,
+																			 					 const T* const sway_fwd,
+																			 					 const T* const sway_aft,
+																			 					 T* residual) const
+	{
+		residual[0] = (surge_stbd_hi[0]*T(pos_surge_stbd_hi.y) + surge_port_hi[0]*T(pos_surge_port_hi.y) + surge_port_lo[0]*T(pos_surge_port_lo.y) + surge_stbd_lo[0]*T(pos_surge_stbd_lo.y) + sway_fwd[0]*T(pos_sway_fwd.x) + sway_aft[0]*T(pos_sway_aft.x)) / T(Iz) - T(cmdYaw);
+		return true;
+	}
 };
 
-// Solver class
 class Solver
 {
-private:
-	ros::NodeHandle nh;
-	ros::Subscriber accels;
-	ros::Publisher forces;
-	riptide_msgs::ThrustStamped thrust_msg;
-	double f1, f2, f3, f4;
-	double u1, u2, u3, u4;
-	double s1, s2;
-	ceres::Problem problem;
-	ceres::Solver::Options options;
-	ceres::Solver::Summary summary;
+	private:
+		// Comms
+		ros::NodeHandle nh;
+		ros::Subscriber accels;
+		ros::Publisher forces;
+		riptide_msgs::ThrustStamped thrust_msg;
+		// Math
+		ceres::Problem problem;
+		ceres::Solver::Options options;
+		ceres::Solver::Summary summary;
+		// Results
+		double surge_stbd_hi, surge_port_hi, surge_port_lo, surge_stbd_lo;
+		double heave_port_aft, heave_stbd_aft, heave_stbd_fwd, heave_port_fwd;
+		double sway_fwd, sway_aft;
 
-public:
-	Solver(char** argv);
-	void callback(const geometry_msgs::Accel::ConstPtr& a);
-	void loop();
+	public:
+		Solver(char** argv);
+		void callback(const geometry_msgs::Accel::ConstPtr& a);
+		void loop();
 };
 
 int main(int argc, char **argv)
@@ -168,7 +176,7 @@ int main(int argc, char **argv)
 
 Solver::Solver(char** argv)
 {
-	accels = nh.subscribe<geometry_msgs::Accel>("accel_error", 1, &Solver::callback, this); // Message to give desired accelerations
+	accels = nh.subscribe<geometry_msgs::Accel>("accel_cmd", 1, &Solver::callback, this);
 	forces = nh.advertise<riptide_msgs::ThrustStamped>("solver/thrust", 1); // Message containing force required from each thruster to achieve given acceleration
 
 	google::InitGoogleLogging(argv[0]);
@@ -176,136 +184,142 @@ Solver::Solver(char** argv)
 	// PROBLEM SETUP
 	// Add residual blocks (equations)
 	// Linear
-	problem.AddResidualBlock(new ceres::AutoDiffCostFunction<a_surge, 1, 1, 1, 1, 1>(new a_surge),
+	problem.AddResidualBlock(new ceres::AutoDiffCostFunction<surge, 1, 1, 1, 1, 1>(new surge),
 		NULL,
-		&f1, &f2, &f3, &f4);
-	problem.AddResidualBlock(new ceres::AutoDiffCostFunction<a_sway, 1, 1, 1>(new a_sway),
+		&surge_stbd_hi, &surge_port_hi, &surge_port_lo, &surge_stbd_lo);
+	problem.AddResidualBlock(new ceres::AutoDiffCostFunction<sway, 1, 1, 1>(new sway),
 		NULL,
-		&s1, &s2);
-	problem.AddResidualBlock(new ceres::AutoDiffCostFunction<a_heave, 1, 1, 1, 1, 1>(new a_heave),
+		&sway_fwd, &sway_aft);
+	problem.AddResidualBlock(new ceres::AutoDiffCostFunction<heave, 1, 1, 1, 1, 1>(new heave),
 		NULL,
-		&u1, &u2, &u3, &u4);
+		&heave_port_aft, &heave_stbd_aft, &heave_stbd_fwd, &heave_port_fwd);
 	// Angular
-	problem.AddResidualBlock(new ceres::AutoDiffCostFunction<a_roll, 1, 1, 1, 1, 1, 1, 1>(new a_roll),
+	problem.AddResidualBlock(new ceres::AutoDiffCostFunction<roll, 1, 1, 1, 1, 1, 1, 1>(new roll),
 		NULL,
-		&u1, &u2, &u3, &u4, &s1, &s2);
-	problem.AddResidualBlock(new ceres::AutoDiffCostFunction<a_pitch, 1, 1, 1, 1, 1, 1, 1, 1, 1>(new a_pitch),
+		&heave_port_aft, &heave_stbd_aft, &heave_stbd_fwd, &heave_port_fwd, &sway_fwd, &sway_aft);
+	problem.AddResidualBlock(new ceres::AutoDiffCostFunction<pitch, 1, 1, 1, 1, 1, 1, 1, 1, 1>(new pitch),
 		NULL,
-		&f1, &f2, &f3, &f4, &u1, &u2, &u3, &u4);
-	problem.AddResidualBlock(new ceres::AutoDiffCostFunction<a_yaw, 1, 1, 1, 1, 1, 1, 1>(new a_yaw),
+		&surge_stbd_hi, &surge_port_hi, &surge_port_lo, &surge_stbd_lo, &heave_port_aft, &heave_stbd_aft, &heave_stbd_fwd, &heave_port_fwd);
+	problem.AddResidualBlock(new ceres::AutoDiffCostFunction<yaw, 1, 1, 1, 1, 1, 1, 1>(new yaw),
 		NULL,
-		&f1, &f2, &f3, &f4, &s1, &s2);
+		&surge_stbd_hi, &surge_port_hi, &surge_port_lo, &surge_stbd_lo, &sway_fwd, &sway_aft);
+
 	// Set constraints (min, max thruster force)
-	// Forward thrusters
-	problem.SetParameterLowerBound(&f1, 0, -25.0);
-	problem.SetParameterUpperBound(&f1, 0, 25.0);
+	// Surge thrusters
+	problem.SetParameterLowerBound(&surge_stbd_hi, 0, MIN_THRUST);
+	problem.SetParameterUpperBound(&surge_stbd_hi, 0, MAX_THRUST);
 
-	problem.SetParameterLowerBound(&f2, 0, -25.0);
-	problem.SetParameterUpperBound(&f2, 0, 25.0);
+	problem.SetParameterLowerBound(&surge_port_hi, 0, MIN_THRUST);
+	problem.SetParameterUpperBound(&surge_port_hi, 0, MAX_THRUST);
 
-	problem.SetParameterLowerBound(&f3, 0, -25.0);
-	problem.SetParameterUpperBound(&f3, 0, 25.0);
+	problem.SetParameterLowerBound(&surge_port_lo, 0, MIN_THRUST);
+	problem.SetParameterUpperBound(&surge_port_lo, 0, MAX_THRUST);
 
-	problem.SetParameterLowerBound(&f4, 0, -25.0);
-	problem.SetParameterUpperBound(&f4, 0, 25.0);
-	// Upward thrusters
-	problem.SetParameterLowerBound(&u1, 0, -25.0);
-	problem.SetParameterUpperBound(&u1, 0, 25.0);
+	problem.SetParameterLowerBound(&surge_stbd_lo, 0, MIN_THRUST);
+	problem.SetParameterUpperBound(&surge_stbd_lo, 0, MAX_THRUST);
+	// Heave thrusters
+	problem.SetParameterLowerBound(&heave_port_aft, 0, MIN_THRUST);
+	problem.SetParameterUpperBound(&heave_port_aft, 0, MAX_THRUST);
 
-	problem.SetParameterLowerBound(&u2, 0, -25.0);
-	problem.SetParameterUpperBound(&u2, 0, 25.0);
+	problem.SetParameterLowerBound(&heave_stbd_aft, 0, MIN_THRUST);
+	problem.SetParameterUpperBound(&heave_stbd_aft, 0, MAX_THRUST);
 
-	problem.SetParameterLowerBound(&u3, 0, -25.0);
-	problem.SetParameterUpperBound(&u3, 0, 25.0);
+	problem.SetParameterLowerBound(&heave_stbd_fwd, 0, MIN_THRUST);
+	problem.SetParameterUpperBound(&heave_stbd_fwd, 0, MAX_THRUST);
 
-	problem.SetParameterLowerBound(&u4, 0, -25.0);
-	problem.SetParameterUpperBound(&u4, 0, 25.0);
-	// Sideways thrusters
-	problem.SetParameterLowerBound(&s1, 0, -25.0);
-	problem.SetParameterUpperBound(&s1, 0, 25.0);
+	problem.SetParameterLowerBound(&heave_port_fwd, 0, MIN_THRUST);
+	problem.SetParameterUpperBound(&heave_port_fwd, 0, MAX_THRUST);
+	// Sway thrusters
+	problem.SetParameterLowerBound(&sway_fwd, 0, MIN_THRUST);
+	problem.SetParameterUpperBound(&sway_fwd, 0, MAX_THRUST);
 
-	problem.SetParameterLowerBound(&s2, 0, -25.0);
-	problem.SetParameterUpperBound(&s2, 0, 25.0);
+	problem.SetParameterLowerBound(&sway_aft, 0, MIN_THRUST);
+	problem.SetParameterUpperBound(&sway_aft, 0, MAX_THRUST);
 
 	// Configure solver
 	options.max_num_iterations = 100;
 	options.linear_solver_type = ceres::DENSE_QR;
 
-#ifdef debug
-	options.minimizer_progress_to_stdout = true;
+#ifdef progress
+	options.minimIzer_progress_to_stdout = true;
 #endif
 }
 
 void Solver::callback(const geometry_msgs::Accel::ConstPtr& a)
 {
-	desiredSurge = a->linear.x;
-	desiredSway = a->linear.y;
-	desiredHeave = a->linear.z;
+	cmdSurge = a->linear.x;
+	cmdSway = a->linear.y;
+	cmdHeave = a->linear.z;
 
-	desiredRoll = a->angular.x;
-	desiredPitch = a->angular.y;
-	desiredYaw = a->angular.z;
+	cmdRoll = a->angular.x;
+	cmdPitch = a->angular.y;
+	cmdYaw = a->angular.z;
 
 	// These forced initial guesses don't make much of a difference.
 	// We currently experience a sort of gimbal lock w/ or w/o them.
-	f1 = 0.0;
-	f2 = 0.0;
-	f3 = 0.0;
-	f4 = 0.0;
-	u1 = 0.0;
-	u2 = 0.0;
-	u3 = 0.0;
-	u4 = 0.0;
-	s1 = 0.0;
-	s2 = 0.0;
+	surge_stbd_hi = 0.0;
+	surge_port_hi = 0.0;
+	surge_port_lo = 0.0;
+	surge_stbd_lo = 0.0;
+	heave_port_aft = 0.0;
+	heave_stbd_aft = 0.0;
+	heave_stbd_fwd = 0.0;
+	heave_port_fwd = 0.0;
+	sway_fwd = 0.0;
+	sway_aft = 0.0;
 
-
-	std::cout << "Initial f1 = " << f1
-		<< ", f2 = " << f2
-		<< ", f3 = " << f3
-		<< ", f4 = " << f4
-		<< ", u1 = " << u1
-		<< ", u2 = " << u2
-		<< ", u3 = " << u3
-		<< ", u4 = " << u4
-		<< ", s1 = " << s1
-		<< ", s2 = " << s2
-		<< std::endl;
-
+#ifdef debug
+	std::cout << "Initial surge_stbd_hi = " << surge_stbd_hi
+						<< ", surge_port_hi = " << surge_port_hi
+						<< ", surge_port_lo = " << surge_port_lo
+						<< ", surge_stbd_lo = " << surge_stbd_lo
+						<< ", heave_port_aft = " << heave_port_aft
+						<< ", heave_stbd_aft = " << heave_stbd_aft
+						<< ", heave_stbd_fwd = " << heave_stbd_fwd
+						<< ", heave_port_fwd = " << heave_port_fwd
+						<< ", sway_fwd = " << sway_fwd
+						<< ", sway_aft = " << sway_aft
+						<< std::endl;
+#endif
 
 	// Solve all my problems
 	ceres::Solve(options, &problem, &summary);
 
-
+#ifdef report
 	std::cout << summary.FullReport() << std::endl;
-	std::cout << "Final f1 = " << f1
-		<< ", f2 = " << f2
-		<< ", f3 = " << f3
-		<< ", f4 = " << f4
-		<< ", u1 = " << u1
-		<< ", u2 = " << u2
-		<< ", u3 = " << u3
-		<< ", u4 = " << u4
-		<< ", s1 = " << s1
-		<< ", s2 = " << s2
-		<< std::endl;
+#endif
 
+#ifdef debug
+	std::cout << "Final surge_stbd_hi = " << surge_stbd_hi
+						<< ", surge_port_hi = " << surge_port_hi
+						<< ", surge_port_lo = " << surge_port_lo
+						<< ", surge_stbd_lo = " << surge_stbd_lo
+						<< ", heave_port_aft = " << heave_port_aft
+						<< ", heave_stbd_aft = " << heave_stbd_aft
+						<< ", heave_stbd_fwd = " << heave_stbd_fwd
+						<< ", heave_port_fwd = " << heave_port_fwd
+						<< ", sway_fwd = " << sway_fwd
+						<< ", sway_aft = " << sway_aft
+						<< std::endl;
+#endif
 
 	// Get time
 	ros::Time time = ros::Time::now();
 
 	// Create stamped thrust message
 	thrust_msg.header.stamp = time;
-	thrust_msg.thrust.f1 = f1;
-	thrust_msg.thrust.f2 = f2;
-	thrust_msg.thrust.f3 = f3;
-	thrust_msg.thrust.f4 = f4;
-	thrust_msg.thrust.u1 = u1;
-	thrust_msg.thrust.u2 = u2;
-	thrust_msg.thrust.u3 = u3;
-	thrust_msg.thrust.u4 = u4;
-	thrust_msg.thrust.s1 = s1;
-	thrust_msg.thrust.s2 = s2;
+
+	thrust_msg.thrust.f1 = surge_stbd_hi;
+	thrust_msg.thrust.f2 = surge_port_hi;
+	thrust_msg.thrust.f3 = surge_port_lo;
+	thrust_msg.thrust.f4 = surge_stbd_lo;
+	thrust_msg.thrust.u1 = heave_port_aft;
+	thrust_msg.thrust.u2 = heave_stbd_aft;
+	thrust_msg.thrust.u3 = heave_stbd_fwd;
+	thrust_msg.thrust.u4 = heave_port_fwd;
+	thrust_msg.thrust.s1 = sway_fwd;
+	thrust_msg.thrust.s2 = sway_aft;
+
 	forces.publish(thrust_msg);
 }
 
