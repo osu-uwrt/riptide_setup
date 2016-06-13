@@ -54,12 +54,12 @@
 
   </xacro:macro>
 
-  <xacro:t200_thruster name="surge_stbd_hi" position="${ssh_pos}" orientation="0 0 0"/>
-  <xacro:t200_thruster name="surge_port_hi" position="${sph_pos}" orientation="0 0 0"/>
-  <xacro:t200_thruster name="surge_stbd_lo" position="${ssl_pos}" orientation="0 0 0"/>
-  <xacro:t200_thruster name="surge_port_lo" position="${spl_pos}" orientation="0 0 0"/>
-  <xacro:t200_thruster name="sway_fwd" position="${sf_pos}" orientation="0 0 0"/>
-  <xacro:t200_thruster name="sway_aft" position="${sa_pos}" orientation="0 0 0"/>
+  <xacro:t200_thruster name="surge_stbd_hi" position="${ssh_pos}" orientation="0 ${M_PI/2} 0"/>
+  <xacro:t200_thruster name="surge_port_hi" position="${sph_pos}" orientation="0 ${M_PI/2} 0"/>
+  <xacro:t200_thruster name="surge_stbd_lo" position="${ssl_pos}" orientation="0 ${M_PI/2} 0"/>
+  <xacro:t200_thruster name="surge_port_lo" position="${spl_pos}" orientation="0 ${M_PI/2} 0"/>
+  <xacro:t200_thruster name="sway_fwd" position="${sf_pos}" orientation="${M_PI/2} 0 0"/>
+  <xacro:t200_thruster name="sway_aft" position="${sa_pos}" orientation="${M_PI/2} 0 0"/>
   <xacro:t200_thruster name="heave_stbd_fwd" position="${hsf_pos}" orientation="0 0 0"/>
   <xacro:t200_thruster name="heave_port_fwd" position="${hpf_pos}" orientation="0 0 0"/>
   <xacro:t200_thruster name="heave_stbd_aft" position="${hsa_pos}" orientation="0 0 0"/>
