@@ -158,8 +158,8 @@ class Solver
 		ceres::Solver::Summary summary;
 		// Results
 		double surge_stbd_hi, surge_port_hi, surge_port_lo, surge_stbd_lo;
-		double heave_port_aft, heave_stbd_aft, heave_stbd_fwd, heave_port_fwd;
 		double sway_fwd, sway_aft;
+		double heave_port_aft, heave_stbd_aft, heave_stbd_fwd, heave_port_fwd;
 
 	public:
 		Solver(char** argv);
@@ -241,7 +241,7 @@ Solver::Solver(char** argv)
 	options.linear_solver_type = ceres::DENSE_QR;
 
 #ifdef progress
-	options.minimIzer_progress_to_stdout = true;
+	options.minimizer_progress_to_stdout = true;
 #endif
 }
 
