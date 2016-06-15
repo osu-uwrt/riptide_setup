@@ -32,6 +32,7 @@ Riptide Documentation
    :maxdepth: 2
    :caption: Vehicle Setup
 
+   setup/electronics
    setup/hardware
    setup/software
 
