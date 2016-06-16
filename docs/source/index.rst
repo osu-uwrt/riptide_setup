@@ -1,47 +1,45 @@
-.. Riptide documentation master file, created by
-   sphinx-quickstart on Wed Feb 10 16:30:15 2016.
-
-Riptide
-=======
-
-
-Software
---------
+Riptide Documentation
+=====================
 
 .. toctree::
    :maxdepth: 2
+   :caption: Introduction
 
-   installation
-
-
-Electronics
------------
+   safety
+   start
 
 .. toctree::
    :maxdepth: 2
+   :caption: Hardware Overview
 
-   schematics
-   components
-   interconnect
-   layouts
-
-Assembly
---------
-
-.. toctree::
-   :maxdepth: 2
-
-   motherboard
-   backplane
-   fasteners
-   subconns
-
-
-Miscellaneous
--------------
+   overview/sensors
+   overview/computer
+   overview/backplane
+   overview/primary
+   overview/secondary
+   overview/chassis
+   overview/actuators
 
 .. toctree::
    :maxdepth: 2
+   :caption: Software Overview
 
-   editthis
+   overview/ros
+   overview/packages
+   overview/smach
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Vehicle Setup
+
+   setup/electronics
+   setup/hardware
+   setup/software
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Miscellaneous
+
+   release
+   editing
    license

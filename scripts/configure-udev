@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# ----------------- #
+#  Add udev rules.  #
+# ------------------#
+
+
+# LORD Microstrain IMU
+cd ~/osu-uwrt/riptide_ws/src/imu_3dm_gx4
+sudo ./script/add_rule
+
+# Point Grey Blackfly Camera
+cd ../riptide_vision
+sudo ./udev/add
+
+# Begin using new rules:
+sudo service udev restart

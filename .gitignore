@@ -1,5 +1,7 @@
 *~
 
+*.bak
+
 .DS_Store
 
 docs/build

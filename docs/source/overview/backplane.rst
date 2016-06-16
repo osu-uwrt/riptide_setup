@@ -1,6 +1,5 @@
-Backplane
-=========
-
+Backplane Electronics
+=====================
 
 .. note::
   Gravity does not apply to this element, it will stay in place of its own free will.
@@ -8,31 +7,26 @@ Backplane
 .. warning::
   Gravity applies to the following elements, push them in really really hard, or else.
 
-Power Distribution Board
-------------------------
 
-- Battery Cables connect here?
+Mechanical
+----------
 
 
-5v DC-DC Converter
-------------------
+5vdc
+----
 
 You had one job!
 
+.. image:: /_static/schematic.png
 
-12v DC-DC Converter
--------------------
+12vdc
+-----
 
 Just to the backplane or to other things?
 
-Thruster Control Board
-----------------------
 
-The Boss!
-
-
-ESC Boards
-----------
+ESC Controller
+--------------
 
 ===== ========
 Board Thruster
@@ -48,3 +42,17 @@ Board Thruster
 5     SurgeLL
 "     SurgeLR
 ===== ========
+
+.. image:: /_static/board.png
+
+
+Power Distribution
+------------------
+
+- Battery Cables connect here?
+
+
+Thruster Controller
+-------------------
+
+The Boss!
