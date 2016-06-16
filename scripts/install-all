@@ -8,8 +8,8 @@
 
 
 sudo apt-get install git python-pip
-git clone https://github.com/osu-uwrt/riptide.git --recursive
-cd riptide
+git clone --recursive https://github.com/osu-uwrt/riptide.git delete_me
+cd delete_me
 
 ./scripts/prep-workspace
 cd ~/osu-uwrt/riptide_ws/src

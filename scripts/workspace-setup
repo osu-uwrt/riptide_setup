@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# --------------------------- #
-#  Set up a Catkin Workspace  #
-# --------------------------- #
+# -------------------------- #
+#  Set up catkin workspace.  #
+# -------------------------- #
 
 
 # Having already run `./scripts/install-ros`

@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# ---------------------------- #
-#  Prepare a Catkin Workspace  #
-# ---------------------------- #
+# --------------------------- #
+#  Prepare catkin workspace.  #
+# --------------------------- #
 
 
 # Having just run `git clone ...`
