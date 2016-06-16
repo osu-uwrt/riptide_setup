@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(riptide_navigation)
 
 find_package(catkin REQUIRED COMPONENTS
-  control_toolbox message_filters
+  tf control_toolbox message_filters
   riptide_msgs sensor_msgs geometry_msgs
 )
 find_package(Ceres REQUIRED)
@@ -12,6 +12,9 @@ generate_dynamic_reconfigure_options(cfg/pid_orient.cfg cfg/pid.cfg)
 catkin_package()
 
 include_directories(${catkin_INCLUDE_DIRS} ${CERES_INCLUDE_DIRS})
+
+add_executable(accel_cmdr src/accel_cmd.cpp)
+target_link_libraries(accel_cmdr ${catkin_LIBRARIES})
 
 add_executable(thrust_cal src/thrust_cal.cpp)
 add_executable(thrust_mapper src/thrust_mapper.cpp)
