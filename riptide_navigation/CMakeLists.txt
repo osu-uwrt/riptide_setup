@@ -13,15 +13,11 @@ catkin_package()
 
 include_directories(${catkin_INCLUDE_DIRS} ${CERES_INCLUDE_DIRS})
 
-add_executable(accel_cmdr src/accel_cmd.cpp)
-target_link_libraries(accel_cmdr ${catkin_LIBRARIES})
-
 add_executable(thrust_mapper src/thrust_mapper.cpp)
 
 add_executable(fake_data src/fake_data.cpp)
 add_executable(fake_imu src/fake_imu.cpp)
 add_executable(pid_linear src/pid_linear.cpp)
-add_executable(joy_accel_set src/accel_set.cpp)
 add_executable(pid_roll src/pid_roll.cpp)
 add_executable(pid_pitch src/pid_pitch.cpp)
 add_executable(pid_yaw src/pid_yaw.cpp)
@@ -38,7 +34,6 @@ target_link_libraries(thrust_mapper ${catkin_LIBRARIES} ${CERES_LIBRARIES})
 target_link_libraries(fake_data ${catkin_LIBRARIES})
 target_link_libraries(fake_imu  ${catkin_LIBRARIES})
 target_link_libraries(pid_linear ${catkin_LIBRARIES})
-target_link_libraries(joy_accel_set ${catkin_LIBRARIES})
 target_link_libraries(pid_roll ${catkin_LIBRARIES})
 target_link_libraries(pid_pitch ${catkin_LIBRARIES})
 target_link_libraries(pid_yaw ${catkin_LIBRARIES})
