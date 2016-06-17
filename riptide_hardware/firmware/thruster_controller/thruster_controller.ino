@@ -1,107 +1,24 @@
 #include <Wire.h>
-
 #include <ros.h>
 #include <riptide_msgs/PwmStamped.h>
+#include <riptide_msgs/EscStamped.h>
 
+// Thrusters off!
+int STOP = 1500;
+// Checksum size
+int ONE_BYTE = 1;
+// Addresses
+int ESC_BOARD[] = {1, 2, 4, 8, 16};
+
+// Function prototypes
+int16_t valid(int16_t pwm);
+void callback(const riptide_msgs::PwmStamped &cmd);
+
+// ROS is the best
 ros::NodeHandle nh;
-
-riptide_msgs::Pwm checksum;
-
-ros::Publisher state_pub("checksum", &checksum);
-
-void callback(const riptide_msgs::PwmStamped &cmd)
-{
-  checksum.f1 = -512;
-  checksum.f2 = -512;
-  checksum.f3 = -512;
-  checksum.f4 = -512;
-  checksum.u1 = -512;
-  checksum.u2 = -512;
-  checksum.u3 = -512;
-  checksum.u4 = -512;
-  checksum.s1 = -512;
-  checksum.s2 = -512;
-
-  Wire.beginTransmission(1);
-  Wire.write(cmd.pwm.f2>>8); //port
-  Wire.write(cmd.pwm.f2 %256);
-  Wire.write(cmd.pwm.f1>>8);
-  Wire.write(cmd.pwm.f1%256);
-  Wire.endTransmission();
-
-  Wire.requestFrom(1, 1);
-  checksum.f2  = Wire.read();
-  checksum.f1 = checksum.f2;
-
-  Wire.beginTransmission(2);
-  Wire.write(cmd.pwm.f3>>8);
-  Wire.write(cmd.pwm.f3%256);
-  Wire.write(cmd.pwm.f4>>8);
-  Wire.write(cmd.pwm.f4%256);
-  Wire.endTransmission();
-
-  Wire.requestFrom(2, 1);
-  checksum.f3  = Wire.read();
-  checksum.f4 = checksum.f3;
-
-  Wire.beginTransmission(4);
-  Wire.write(cmd.pwm.s1>>8);
-  Wire.write(cmd.pwm.s1%256);
-  Wire.write(cmd.pwm.s2>>8);
-  Wire.write(cmd.pwm.s2%256);
-  Wire.endTransmission();
-
-  Wire.requestFrom(4, 1);
-  checksum.s1  = Wire.read();
-  checksum.s2 = checksum.s1;
-
-  Wire.beginTransmission(8);
-  Wire.write(cmd.pwm.u4>>8);
-  Wire.write(cmd.pwm.u4%256);
-  Wire.write(cmd.pwm.u3>>8);
-  Wire.write(cmd.pwm.u3%256);
-  Wire.endTransmission();
-
-  Wire.requestFrom(8, 1);
-  checksum.u4  = Wire.read();
-  checksum.u3 = checksum.u4;
-
-  Wire.beginTransmission(16);
-  Wire.write(cmd.pwm.u1>>8);
-  Wire.write(cmd.pwm.u1%256);
-  Wire.write(cmd.pwm.u2>>8);
-  Wire.write(cmd.pwm.u2%256);
-  Wire.endTransmission();
-
-  Wire.requestFrom(16, 100);
-  checksum.u1  = Wire.read();
-  checksum.u2 = checksum.u1;
-
-  state_pub.publish(&checksum);
-  if(cmd.pwm.f1 != 1500) { digitalWrite(2, HIGH); }
-  else {digitalWrite(2, LOW); }
-  if(cmd.pwm.f2 != 1500) { digitalWrite(3, HIGH); }
-  else {digitalWrite(3, LOW); }
-  if(cmd.pwm.f3 != 1500) { digitalWrite(4, HIGH); }
-  else {digitalWrite(4, LOW); }
-  if(cmd.pwm.f4 != 1500) { digitalWrite(5, HIGH); }
-  else {digitalWrite(5, LOW); }
-  if(cmd.pwm.u1 != 1500) { digitalWrite(6, HIGH); }
-  else {digitalWrite(6, LOW); }
-  if(cmd.pwm.u2 != 1500) { digitalWrite(7, HIGH); }
-  else {digitalWrite(7, LOW); }
-  if(cmd.pwm.u3 != 1500) { digitalWrite(8, HIGH); }
-  else {digitalWrite(8, LOW); }
-  if(cmd.pwm.u4 != 1500) { digitalWrite(9, HIGH); }
-  else {digitalWrite(9, LOW); }
-  if(cmd.pwm.s1 != 1500) { digitalWrite(10, HIGH); }
-  else {digitalWrite(10, LOW); }
-  if(cmd.pwm.s2 != 1500) { digitalWrite(11, HIGH); }
-  else {digitalWrite(11, LOW); }
-  
-}
-
-ros::Subscriber<riptide_msgs::PwmStamped> cmd_sub("thrust_cal/pwm", &callback);
+riptide_msgs::Esc state;
+ros::Publisher state_pub("state/esc", &state);
+ros::Subscriber<riptide_msgs::PwmStamped> cmd_sub("command/pwm", &callback);
 
 void setup()
 {
@@ -110,25 +27,118 @@ void setup()
   nh.initNode();
   nh.advertise(state_pub);
   nh.subscribe(cmd_sub);
-  
+
+  // Surge LEDs
   pinMode(2, OUTPUT);
   pinMode(3, OUTPUT);
   pinMode(4, OUTPUT);
   pinMode(5, OUTPUT);
+
+  // Heave LEDs
   pinMode(6, OUTPUT);
   pinMode(7, OUTPUT);
   pinMode(8, OUTPUT);
   pinMode(9, OUTPUT);
+
+  // Sway LEDs
   pinMode(10, OUTPUT);
   pinMode(11, OUTPUT);
-  
-          
-  
 }
 
 void loop()
 {
+  // Check msgs for callback
   nh.spinOnce();
+}
 
-  delay(33);
+// Production ready function
+void callback(const riptide_msgs::PwmStamped &cmd)
+{
+  // Create local checksums
+  state.surge_hi = cmd.pwm.surge_port_hi ^ cmd.pwm.surge_stbd_hi;
+  state.surge_lo = cmd.pwm.surge_port_lo ^ cmd.pwm.surge_stbd_lo;
+  state.sway = cmd.pwm.sway_fwd ^ cmd.pwm.sway_aft;
+  state.heave_fwd = cmd.pwm.heave_port_fwd ^ cmd.pwm.heave_stbd_fwd;
+  state.heave_aft = cmd.pwm.heave_port_aft ^ cmd.pwm.heave_port_aft;
+
+  //
+  // Write PWM data & request remote checksums
+  //
+
+  Wire.beginTransmission(ESC_BOARD[1]);
+  Wire.write(valid(cmd.pwm.surge_port_hi));
+  Wire.write(valid(cmd.pwm.surge_stbd_hi));
+  Wire.endTransmission();
+
+  Wire.requestFrom(ESC_BOARD[1], ONE_BYTE);
+  state.surge_hi ^= Wire.read();
+
+  Wire.beginTransmission(ESC_BOARD[2]);
+  Wire.write(valid(cmd.pwm.surge_port_lo));
+  Wire.write(valid(cmd.pwm.surge_stbd_lo));
+  Wire.endTransmission();
+
+  Wire.requestFrom(ESC_BOARD[2], ONE_BYTE);
+  state.surge_lo ^= Wire.read();
+
+  Wire.beginTransmission(ESC_BOARD[3]);
+  Wire.write(valid(cmd.pwm.sway_fwd));
+  Wire.write(valid(cmd.pwm.sway_aft));
+  Wire.endTransmission();
+
+  Wire.requestFrom(ESC_BOARD[3], ONE_BYTE);
+  state.sway ^= Wire.read();
+
+  Wire.beginTransmission(ESC_BOARD[4]);
+  Wire.write(valid(cmd.pwm.heave_port_fwd));
+  Wire.write(valid(cmd.pwm.heave_stbd_fwd));
+  Wire.endTransmission();
+
+  Wire.requestFrom(ESC_BOARD[4], ONE_BYTE);
+  state.heave_fwd ^= Wire.read();
+
+  Wire.beginTransmission(ESC_BOARD[5]);
+  Wire.write(valid(cmd.pwm.heave_port_aft));
+  Wire.write(valid(cmd.pwm.heave_stbd_aft));
+  Wire.endTransmission();
+
+  Wire.requestFrom(ESC_BOARD[5], ONE_BYTE);
+  state.heave_aft ^= Wire.read();
+
+  // Publish checksum results
+  state_pub.publish(&state);
+
+  // Red LEDs
+  if(cmd.pwm.surge_port_hi != STOP) { digitalWrite(2, HIGH); }
+  else {digitalWrite(2, LOW); }
+  if(cmd.pwm.surge_stbd_hi != STOP) { digitalWrite(3, HIGH); }
+  else {digitalWrite(3, LOW); }
+  if(cmd.pwm.surge_port_lo != STOP) { digitalWrite(4, HIGH); }
+  else {digitalWrite(4, LOW); }
+  if(cmd.pwm.surge_stbd_lo != STOP) { digitalWrite(5, HIGH); }
+  else {digitalWrite(5, LOW); }
+
+  // Amber LEDs
+  if(cmd.pwm.heave_port_fwd != STOP) { digitalWrite(6, HIGH); }
+  else {digitalWrite(6, LOW); }
+  if(cmd.pwm.heave_stbd_fwd != STOP) { digitalWrite(7, HIGH); }
+  else {digitalWrite(7, LOW); }
+  if(cmd.pwm.heave_port_aft != STOP) { digitalWrite(8, HIGH); }
+  else {digitalWrite(8, LOW); }
+  if(cmd.pwm.heave_stbd_aft != STOP) { digitalWrite(9, HIGH); }
+  else {digitalWrite(9, LOW); }
+
+  // Blue LEDs
+  if(cmd.pwm.sway_fwd != STOP) { digitalWrite(10, HIGH); }
+  else {digitalWrite(10, LOW); }
+  if(cmd.pwm.sway_aft != STOP) { digitalWrite(11, HIGH); }
+  else {digitalWrite(11, LOW); }
+}
+
+// Ensure 1100 <= pwm <= 1900
+int16_t valid(int16_t pwm)
+{
+  pwm = pwm > 1900 ? 1900 : pwm;
+  pwm = pwm < 1100 ? 1100 : pwm;
+  return pwm;
 }

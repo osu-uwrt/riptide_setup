@@ -1,11 +1,10 @@
-int16 f1
-int16 f2
-int16 f3
-int16 f4
-int16 u1
-int16 u2
-int16 u3
-int16 u4
-int16 s1
-int16 s2
-
+int16 surge_port_hi
+int16 surge_stbd_hi
+int16 surge_port_lo
+int16 surge_stbd_lo
+int16 sway_fwd
+int16 sway_aft
+int16 heave_port_fwd
+int16 heave_stbd_fwd
+int16 heave_port_aft
+int16 heave_stbd_aft
