@@ -13,7 +13,6 @@ catkin_package()
 
 include_directories(${catkin_INCLUDE_DIRS} ${CERES_INCLUDE_DIRS})
 
-add_executable(thrust_cal src/thrust_cal.cpp)
 add_executable(thrust_mapper src/thrust_mapper.cpp)
 
 add_executable(fake_data src/fake_data.cpp)
@@ -24,7 +23,6 @@ add_executable(pid_roll src/pid_roll.cpp)
 add_executable(pid_pitch src/pid_pitch.cpp)
 add_executable(pid_yaw src/pid_yaw.cpp)
 
-add_dependencies(thrust_cal riptide_msgs_gencpp)
 add_dependencies(thrust_mapper riptide_msgs_gencpp)
 
 add_dependencies(pid_linear riptide_navigation_gencfg)
@@ -32,7 +30,6 @@ add_dependencies(pid_roll riptide_navigation_gencfg)
 add_dependencies(pid_pitch riptide_navigation_gencfg)
 add_dependencies(pid_yaw riptide_navigation_gencfg)
 
-target_link_libraries(thrust_cal ${catkin_LIBRARIES})
 target_link_libraries(thrust_mapper ${catkin_LIBRARIES} ${CERES_LIBRARIES})
 
 target_link_libraries(fake_data ${catkin_LIBRARIES})
