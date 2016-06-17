@@ -51,16 +51,16 @@ vector makeVector(double X, double Y, double Z)
 
 /*** Thruster Positions ***/
 // Positions are in meters relative to the center of mass.
-vector pos_heave_port_aft;
-vector pos_heave_stbd_aft;
-vector pos_heave_stbd_fwd;
-vector pos_heave_port_fwd;
 vector pos_surge_stbd_hi;
 vector pos_surge_port_hi;
 vector pos_surge_port_lo;
 vector pos_surge_stbd_lo;
 vector pos_sway_fwd;
 vector pos_sway_aft;
+vector pos_heave_port_aft;
+vector pos_heave_stbd_aft;
+vector pos_heave_stbd_fwd;
+vector pos_heave_port_fwd;
 
 /*** EQUATIONS ***/
 // These equations solve for linear/angular acceleration in all axes
@@ -150,9 +150,9 @@ class Solver
 	private:
 		// Comms
 		ros::NodeHandle nh;
-		ros::Subscriber accels;
-		ros::Publisher forces;
-		riptide_msgs::ThrustStamped thrust_msg;
+		ros::Subscriber cmd_sub;
+		ros::Publisher cmd_pub;
+		riptide_msgs::ThrustStamped thrust;
 		// Math
 		ceres::Problem problem;
 		ceres::Solver::Options options;
@@ -192,45 +192,47 @@ Solver::Solver(char** argv, tf::TransformListener& listener_adr)
 {
 	listener = &listener_adr;
 
+	listener->waitForTransform("/base_link", "/surge_port_hi_thruster", ros::Time(0), ros::Duration(10.0) );
+	listener->lookupTransform("/base_link", "/surge_port_hi_thruster", ros::Time(0), surge_2);
 	listener->waitForTransform("/base_link", "/surge_stbd_hi_thruster", ros::Time(0), ros::Duration(10.0) );
 	listener->lookupTransform("/base_link", "/surge_stbd_hi_thruster", ros::Time(0), surge_1);
-  listener->waitForTransform("/base_link", "/surge_port_hi_thruster", ros::Time(0), ros::Duration(10.0) );
-	listener->lookupTransform("/base_link", "/surge_port_hi_thruster", ros::Time(0), surge_2);
-  listener->waitForTransform("/base_link", "/surge_stbd_lo_thruster", ros::Time(0), ros::Duration(10.0) );
-	listener->lookupTransform("/base_link", "/surge_stbd_lo_thruster", ros::Time(0), surge_3);
   listener->waitForTransform("/base_link", "/surge_port_lo_thruster", ros::Time(0), ros::Duration(10.0) );
 	listener->lookupTransform("/base_link", "/surge_port_lo_thruster", ros::Time(0), surge_4);
+  listener->waitForTransform("/base_link", "/surge_stbd_lo_thruster", ros::Time(0), ros::Duration(10.0) );
+	listener->lookupTransform("/base_link", "/surge_stbd_lo_thruster", ros::Time(0), surge_3);
 	listener->waitForTransform("/base_link", "/sway_fwd_thruster", ros::Time(0), ros::Duration(10.0) );
 	listener->lookupTransform("/base_link", "/sway_fwd_thruster", ros::Time(0), sway_1);
 	listener->waitForTransform("/base_link", "/sway_aft_thruster", ros::Time(0), ros::Duration(10.0) );
 	listener->lookupTransform("/base_link", "/sway_aft_thruster", ros::Time(0), sway_2);
-	listener->waitForTransform("/base_link", "/heave_stbd_fwd_thruster", ros::Time(0), ros::Duration(10.0) );
-	listener->lookupTransform("/base_link", "/heave_stbd_fwd_thruster", ros::Time(0), heave_1);
 	listener->waitForTransform("/base_link", "/heave_port_fwd_thruster", ros::Time(0), ros::Duration(10.0) );
 	listener->lookupTransform("/base_link", "/heave_port_fwd_thruster", ros::Time(0), heave_2);
-	listener->waitForTransform("/base_link", "/heave_stbd_aft_thruster", ros::Time(0), ros::Duration(10.0) );
-	listener->lookupTransform("/base_link", "/heave_stbd_aft_thruster", ros::Time(0), heave_3);
+	listener->waitForTransform("/base_link", "/heave_stbd_fwd_thruster", ros::Time(0), ros::Duration(10.0) );
+	listener->lookupTransform("/base_link", "/heave_stbd_fwd_thruster", ros::Time(0), heave_1);
 	listener->waitForTransform("/base_link", "/heave_port_aft_thruster", ros::Time(0), ros::Duration(10.0) );
 	listener->lookupTransform("/base_link", "/heave_port_aft_thruster", ros::Time(0), heave_4);
+	listener->waitForTransform("/base_link", "/heave_stbd_aft_thruster", ros::Time(0), ros::Duration(10.0) );
+	listener->lookupTransform("/base_link", "/heave_stbd_aft_thruster", ros::Time(0), heave_3);
 
-	vector pos_surge_stbd_hi = makeVector(surge_1.getOrigin().x(), surge_1.getOrigin().y(), surge_1.getOrigin().z());
-	vector pos_surge_port_hi = makeVector(surge_2.getOrigin().x(), surge_2.getOrigin().y(), surge_2.getOrigin().z());
-	vector pos_surge_port_lo = makeVector(surge_3.getOrigin().x(), surge_3.getOrigin().y(), surge_3.getOrigin().z());
-	vector pos_surge_stbd_lo = makeVector(surge_4.getOrigin().x(), surge_4.getOrigin().y(), surge_4.getOrigin().z());
-	vector pos_sway_fwd = makeVector(sway_1.getOrigin().x(), sway_1.getOrigin().y(), sway_1.getOrigin().z());
-	vector pos_sway_aft = makeVector(sway_2.getOrigin().x(), sway_2.getOrigin().y(), sway_2.getOrigin().z());
-	vector pos_heave_port_aft = makeVector(heave_1.getOrigin().x(), heave_1.getOrigin().y(), heave_1.getOrigin().z());
-	vector pos_heave_stbd_aft = makeVector(heave_2.getOrigin().x(), heave_2.getOrigin().y(), heave_2.getOrigin().z());
-	vector pos_heave_stbd_fwd = makeVector(heave_3.getOrigin().x(), heave_3.getOrigin().y(), heave_3.getOrigin().z());
-	vector pos_heave_port_fwd = makeVector(heave_4.getOrigin().x(), heave_4.getOrigin().y(), heave_4.getOrigin().z());
+	pos_surge_port_hi = makeVector(surge_2.getOrigin().x(), surge_2.getOrigin().y(), surge_2.getOrigin().z());
+	pos_surge_stbd_hi = makeVector(surge_1.getOrigin().x(), surge_1.getOrigin().y(), surge_1.getOrigin().z());
+	pos_surge_port_lo = makeVector(surge_3.getOrigin().x(), surge_3.getOrigin().y(), surge_3.getOrigin().z());
+	pos_surge_stbd_lo = makeVector(surge_4.getOrigin().x(), surge_4.getOrigin().y(), surge_4.getOrigin().z());
+	pos_sway_fwd = makeVector(sway_1.getOrigin().x(), sway_1.getOrigin().y(), sway_1.getOrigin().z());
+	pos_sway_aft = makeVector(sway_2.getOrigin().x(), sway_2.getOrigin().y(), sway_2.getOrigin().z());
+	pos_heave_port_fwd = makeVector(heave_4.getOrigin().x(), heave_4.getOrigin().y(), heave_4.getOrigin().z());
+	pos_heave_stbd_fwd = makeVector(heave_3.getOrigin().x(), heave_3.getOrigin().y(), heave_3.getOrigin().z());
+	pos_heave_port_aft = makeVector(heave_1.getOrigin().x(), heave_1.getOrigin().y(), heave_1.getOrigin().z());
+	pos_heave_stbd_aft = makeVector(heave_2.getOrigin().x(), heave_2.getOrigin().y(), heave_2.getOrigin().z());
 
-	accels = nh.subscribe<geometry_msgs::Accel>("accel_cmd", 1, &Solver::callback, this);
-	forces = nh.advertise<riptide_msgs::ThrustStamped>("solver/thrust", 1); // Message containing force required from each thruster to achieve given acceleration
+	cmd_sub = nh.subscribe<geometry_msgs::Accel>("command/accel", 1, &Solver::callback, this);
+	cmd_pub = nh.advertise<riptide_msgs::ThrustStamped>("command/thrust", 1); // Message containing force required from each thruster to achieve given acceleration
 
 	google::InitGoogleLogging(argv[0]);
 
 	// PROBLEM SETUP
+
 	// Add residual blocks (equations)
+
 	// Linear
 	problem.AddResidualBlock(new ceres::AutoDiffCostFunction<surge, 1, 1, 1, 1, 1>(new surge),
 		NULL,
@@ -241,6 +243,7 @@ Solver::Solver(char** argv, tf::TransformListener& listener_adr)
 	problem.AddResidualBlock(new ceres::AutoDiffCostFunction<heave, 1, 1, 1, 1, 1>(new heave),
 		NULL,
 		&heave_port_aft, &heave_stbd_aft, &heave_stbd_fwd, &heave_port_fwd);
+
 	// Angular
 	problem.AddResidualBlock(new ceres::AutoDiffCostFunction<roll, 1, 1, 1, 1, 1, 1, 1>(new roll),
 		NULL,
@@ -252,37 +255,40 @@ Solver::Solver(char** argv, tf::TransformListener& listener_adr)
 		NULL,
 		&surge_stbd_hi, &surge_port_hi, &surge_port_lo, &surge_stbd_lo, &sway_fwd, &sway_aft);
 
-	// Set constraints (min, max thruster force)
-	// Surge thrusters
-	problem.SetParameterLowerBound(&surge_stbd_hi, 0, MIN_THRUST);
-	problem.SetParameterUpperBound(&surge_stbd_hi, 0, MAX_THRUST);
+	// Set constraints (min/max thruster force)
 
+	// Surge thrusters
 	problem.SetParameterLowerBound(&surge_port_hi, 0, MIN_THRUST);
 	problem.SetParameterUpperBound(&surge_port_hi, 0, MAX_THRUST);
+
+	problem.SetParameterLowerBound(&surge_stbd_hi, 0, MIN_THRUST);
+	problem.SetParameterUpperBound(&surge_stbd_hi, 0, MAX_THRUST);
 
 	problem.SetParameterLowerBound(&surge_port_lo, 0, MIN_THRUST);
 	problem.SetParameterUpperBound(&surge_port_lo, 0, MAX_THRUST);
 
 	problem.SetParameterLowerBound(&surge_stbd_lo, 0, MIN_THRUST);
 	problem.SetParameterUpperBound(&surge_stbd_lo, 0, MAX_THRUST);
-	// Heave thrusters
-	problem.SetParameterLowerBound(&heave_port_aft, 0, MIN_THRUST);
-	problem.SetParameterUpperBound(&heave_port_aft, 0, MAX_THRUST);
 
-	problem.SetParameterLowerBound(&heave_stbd_aft, 0, MIN_THRUST);
-	problem.SetParameterUpperBound(&heave_stbd_aft, 0, MAX_THRUST);
-
-	problem.SetParameterLowerBound(&heave_stbd_fwd, 0, MIN_THRUST);
-	problem.SetParameterUpperBound(&heave_stbd_fwd, 0, MAX_THRUST);
-
-	problem.SetParameterLowerBound(&heave_port_fwd, 0, MIN_THRUST);
-	problem.SetParameterUpperBound(&heave_port_fwd, 0, MAX_THRUST);
 	// Sway thrusters
 	problem.SetParameterLowerBound(&sway_fwd, 0, MIN_THRUST);
 	problem.SetParameterUpperBound(&sway_fwd, 0, MAX_THRUST);
 
 	problem.SetParameterLowerBound(&sway_aft, 0, MIN_THRUST);
 	problem.SetParameterUpperBound(&sway_aft, 0, MAX_THRUST);
+
+	// Heave thrusters
+	problem.SetParameterLowerBound(&heave_port_fwd, 0, MIN_THRUST);
+	problem.SetParameterUpperBound(&heave_port_fwd, 0, MAX_THRUST);
+
+	problem.SetParameterLowerBound(&heave_stbd_fwd, 0, MIN_THRUST);
+	problem.SetParameterUpperBound(&heave_stbd_fwd, 0, MAX_THRUST);
+
+	problem.SetParameterLowerBound(&heave_port_aft, 0, MIN_THRUST);
+	problem.SetParameterUpperBound(&heave_port_aft, 0, MAX_THRUST);
+
+	problem.SetParameterLowerBound(&heave_stbd_aft, 0, MIN_THRUST);
+	problem.SetParameterUpperBound(&heave_stbd_aft, 0, MAX_THRUST);
 
 	// Configure solver
 	options.max_num_iterations = 100;
@@ -309,24 +315,24 @@ void Solver::callback(const geometry_msgs::Accel::ConstPtr& a)
 	surge_port_hi = 0.0;
 	surge_port_lo = 0.0;
 	surge_stbd_lo = 0.0;
+	sway_fwd = 0.0;
+	sway_aft = 0.0;
 	heave_port_aft = 0.0;
 	heave_stbd_aft = 0.0;
 	heave_stbd_fwd = 0.0;
 	heave_port_fwd = 0.0;
-	sway_fwd = 0.0;
-	sway_aft = 0.0;
 
 #ifdef debug
 	std::cout << "Initial surge_stbd_hi = " << surge_stbd_hi
 						<< ", surge_port_hi = " << surge_port_hi
 						<< ", surge_port_lo = " << surge_port_lo
 						<< ", surge_stbd_lo = " << surge_stbd_lo
+						<< ", sway_fwd = " << sway_fwd
+						<< ", sway_aft = " << sway_aft
 						<< ", heave_port_aft = " << heave_port_aft
 						<< ", heave_stbd_aft = " << heave_stbd_aft
 						<< ", heave_stbd_fwd = " << heave_stbd_fwd
 						<< ", heave_port_fwd = " << heave_port_fwd
-						<< ", sway_fwd = " << sway_fwd
-						<< ", sway_aft = " << sway_aft
 						<< std::endl;
 #endif
 
@@ -342,33 +348,30 @@ void Solver::callback(const geometry_msgs::Accel::ConstPtr& a)
 						<< ", surge_port_hi = " << surge_port_hi
 						<< ", surge_port_lo = " << surge_port_lo
 						<< ", surge_stbd_lo = " << surge_stbd_lo
+						<< ", sway_fwd = " << sway_fwd
+						<< ", sway_aft = " << sway_aft
 						<< ", heave_port_aft = " << heave_port_aft
 						<< ", heave_stbd_aft = " << heave_stbd_aft
 						<< ", heave_stbd_fwd = " << heave_stbd_fwd
 						<< ", heave_port_fwd = " << heave_port_fwd
-						<< ", sway_fwd = " << sway_fwd
-						<< ", sway_aft = " << sway_aft
 						<< std::endl;
 #endif
 
-	// Get time
-	ros::Time time = ros::Time::now();
-
 	// Create stamped thrust message
-	thrust_msg.header.stamp = time;
+	thrust.header.stamp = ros::Time::now();;
 
-	thrust_msg.force.surge_stbd_hi = surge_stbd_hi;
-	thrust_msg.force.surge_port_hi = surge_port_hi;
-	thrust_msg.force.surge_port_lo = surge_port_lo;
-	thrust_msg.force.surge_stbd_lo = surge_stbd_lo;
-	thrust_msg.force.sway_fwd = sway_fwd;
-	thrust_msg.force.sway_aft = sway_aft;
-	thrust_msg.force.heave_port_aft = heave_port_aft;
-	thrust_msg.force.heave_stbd_aft = heave_stbd_aft;
-	thrust_msg.force.heave_stbd_fwd = heave_stbd_fwd;
-	thrust_msg.force.heave_port_fwd = heave_port_fwd;
+	thrust.force.surge_stbd_hi = surge_stbd_hi;
+	thrust.force.surge_port_hi = surge_port_hi;
+	thrust.force.surge_port_lo = surge_port_lo;
+	thrust.force.surge_stbd_lo = surge_stbd_lo;
+	thrust.force.sway_fwd = sway_fwd;
+	thrust.force.sway_aft = sway_aft;
+	thrust.force.heave_port_aft = heave_port_aft;
+	thrust.force.heave_stbd_aft = heave_stbd_aft;
+	thrust.force.heave_stbd_fwd = heave_stbd_fwd;
+	thrust.force.heave_port_fwd = heave_port_fwd;
 
-	forces.publish(thrust_msg);
+	cmd_pub.publish(thrust);
 }
 
 void Solver::loop()
