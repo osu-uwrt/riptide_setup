@@ -1,5 +1,5 @@
 <launch>
-  <node pkg="rosserial_python" type="serial_node.py" name="ttyS3_acoustics">
+  <node pkg="rosserial_python" type="serial_node.py" name="ttyS3_acoustic_monitor">
     <param name="port" value="/dev/ttyS3"/>
     <param name="baud" value="57600"/>
   </node>

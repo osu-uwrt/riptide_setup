@@ -1,5 +1,5 @@
 <launch>
-  <node pkg="rosserial_python" type="serial_node.py" name="ttyS1_power">
+  <node pkg="rosserial_python" type="serial_node.py" name="ttyS1_power_monitor">
     <param name="port" value="/dev/ttyS1"/>
     <param name="baud" value="57600"/>
   </node>
