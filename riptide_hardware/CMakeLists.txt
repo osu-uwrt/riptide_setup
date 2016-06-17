@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(riptide_serial)
+project(riptide_hardware)
 
 find_package(catkin REQUIRED COMPONENTS riptide_msgs)
 

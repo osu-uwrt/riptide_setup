@@ -1,20 +1,18 @@
 <?xml version="1.0"?>
 <package>
-  <name>riptide_serial</name>
+  <name>riptide_hardware</name>
   <version>0.0.5</version>
-  <description>Serial relay for OSU's Riptide AUV.</description>
+  <description>Hardware abstraction layer for OSU's Riptide AUV.</description>
 
   <maintainer email="cary.42@osu.edu">Conor Cary</maintainer>
 
   <license>BSD</license>
 
   <url type="website">http://go.osu.edu/uwrt</url>
-  <url type="repository">http://github.com/uwrt-osu/riptide_msgs</url>
+  <url type="repository">http://github.com/uwrt-osu/riptide</url>
 
   <author email="cary.42@osu.edu">Conor Cary</author>
-  <author email="edin.3@osu.edu">Peter Edin</author>
   <author email="fletcher.236@osu.edu">Charles Fletcher</author>
-  <author email="mahaffey.60@osu.edu">Sara Mahaffey</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 
