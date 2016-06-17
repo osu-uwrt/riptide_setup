@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>riptide_gazebo</name>
-  <version>0.0.5</version>
+  <version>0.0.6</version>
   <description>Simulation package for OSU's Riptide AUV.</description>
 
   <maintainer email="cary.42@osu.edu">Conor Cary</maintainer>
@@ -9,7 +9,7 @@
   <license>BSD</license>
 
   <url type="website">http://go.osu.edu/uwrt</url>
-  <url type="repository">http://github.com/uwrt-osu/riptide_msgs</url>
+  <url type="repository">http://github.com/uwrt-osu/riptide</url>
 
   <author email="cary.42@osu.edu">Conor Cary</author>
 
