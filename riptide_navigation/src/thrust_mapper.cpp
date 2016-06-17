@@ -357,16 +357,16 @@ void Solver::callback(const geometry_msgs::Accel::ConstPtr& a)
 	// Create stamped thrust message
 	thrust_msg.header.stamp = time;
 
-	thrust_msg.thrust.f1 = surge_stbd_hi;
-	thrust_msg.thrust.f2 = surge_port_hi;
-	thrust_msg.thrust.f3 = surge_port_lo;
-	thrust_msg.thrust.f4 = surge_stbd_lo;
-	thrust_msg.thrust.u1 = heave_port_aft;
-	thrust_msg.thrust.u2 = heave_stbd_aft;
-	thrust_msg.thrust.u3 = heave_stbd_fwd;
-	thrust_msg.thrust.u4 = heave_port_fwd;
-	thrust_msg.thrust.s1 = sway_fwd;
-	thrust_msg.thrust.s2 = sway_aft;
+	thrust_msg.force.surge_stbd_hi = surge_stbd_hi;
+	thrust_msg.force.surge_port_hi = surge_port_hi;
+	thrust_msg.force.surge_port_lo = surge_port_lo;
+	thrust_msg.force.surge_stbd_lo = surge_stbd_lo;
+	thrust_msg.force.sway_fwd = sway_fwd;
+	thrust_msg.force.sway_aft = sway_aft;
+	thrust_msg.force.heave_port_aft = heave_port_aft;
+	thrust_msg.force.heave_stbd_aft = heave_stbd_aft;
+	thrust_msg.force.heave_stbd_fwd = heave_stbd_fwd;
+	thrust_msg.force.heave_port_fwd = heave_port_fwd;
 
 	forces.publish(thrust_msg);
 }
