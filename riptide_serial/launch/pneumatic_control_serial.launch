@@ -1,6 +1,6 @@
 <launch>
   <node pkg="rosserial_python" type="serial_node.py" name="pneumatic_control_serial">
-    <param name="port" value="/dev/ttyACM0"/>
+    <param name="port" value="/dev/ttyS3"/>
     <param name="baud" value="57600"/>
   </node>
 </launch>
