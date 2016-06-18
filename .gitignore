@@ -1,5 +1,7 @@
 *~
 
+*.hex
+
 .DS_Store
 
 docs/build
