@@ -4,7 +4,9 @@
   <arg name="right_camera_serial" default="14432788" />
   <arg name="right_calibrated" default="0" />
   <group ns="stereo">
-    <include file="$(find stereo_image_proc)/launch/stereo_image_proc.launch" />
+      <node pkg="nodelet" type="nodelet" name="stereo_image_proc_debayer"
+        args="load stereo_image_proc/debayer camera_nodelet_manager">
+      </node>
 
     <group ns="left">
       <node pkg="nodelet" type="nodelet" name="camera_nodelet_manager" args="manager" />
@@ -30,3 +32,4 @@
 
   </group>
 </launch>
+

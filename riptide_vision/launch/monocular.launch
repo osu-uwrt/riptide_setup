@@ -2,7 +2,6 @@
   <arg name="monocular_camera_serial" default="14490542" />
   <arg name="monocular_calibrated" default="0" />
   <group ns="monocular">
-    <include file="$(find image_proc)/launch/image_proc.launch" />
     <node pkg="nodelet" type="nodelet" name="camera_nodelet_manager" args="manager" />
     <node pkg="nodelet" type="nodelet" name="camera_nodelet"
           args="load pointgrey_camera_driver/PointGreyCameraNodelet camera_nodelet_manager" >
@@ -10,6 +9,9 @@
       <param name="serial" value="$(arg monocular_camera_serial)" />
       <param name="camera_info_url" if="$(arg monocular_calibrated)"
              value="file://$(env HOME)/.ros/camera_info/$(arg monocular_camera_serial).yaml" />
+    </node>
+    <node pkg="nodelet" type="nodelet" name="image_proc_debayer"
+      args="load image_proc/debayer camera_nodelet_manager">
     </node>
   </group>
 </launch>
