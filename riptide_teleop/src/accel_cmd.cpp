@@ -63,7 +63,7 @@ void Accel::joy_callback(const sensor_msgs::Joy::ConstPtr& joy)
 
 void Accel::loop()
 {
-  ros::Rate rate(30);
+  ros::Rate rate(10);
   while(ros::ok())
   {
     ros::spinOnce();
