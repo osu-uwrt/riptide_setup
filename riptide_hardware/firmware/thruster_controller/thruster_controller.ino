@@ -65,44 +65,54 @@ void callback(const riptide_msgs::PwmStamped &cmd)
   // Write PWM data & request remote checksums
   //
 
-  Wire.beginTransmission(ESC_BOARD[1]);
+  Wire.beginTransmission(ESC_BOARD[0]);
+  Wire.write(valid(cmd.pwm.surge_port_hi >> 8));
   Wire.write(valid(cmd.pwm.surge_port_hi));
+  Wire.write(valid(cmd.pwm.surge_stbd_hi >> 8));
   Wire.write(valid(cmd.pwm.surge_stbd_hi));
   Wire.endTransmission();
 
-  Wire.requestFrom(ESC_BOARD[1], ONE_BYTE);
+  Wire.requestFrom(ESC_BOARD[0], ONE_BYTE);
   state.surge_hi ^= Wire.read();
 
-  Wire.beginTransmission(ESC_BOARD[2]);
+  Wire.beginTransmission(ESC_BOARD[1]);
+  Wire.write(valid(cmd.pwm.surge_port_lo >> 8));
   Wire.write(valid(cmd.pwm.surge_port_lo));
+  Wire.write(valid(cmd.pwm.surge_stbd_lo >> 8));
   Wire.write(valid(cmd.pwm.surge_stbd_lo));
   Wire.endTransmission();
 
-  Wire.requestFrom(ESC_BOARD[2], ONE_BYTE);
+  Wire.requestFrom(ESC_BOARD[1], ONE_BYTE);
   state.surge_lo ^= Wire.read();
 
-  Wire.beginTransmission(ESC_BOARD[3]);
+  Wire.beginTransmission(ESC_BOARD[2]);
+  Wire.write(valid(cmd.pwm.sway_fwd >> 8));
   Wire.write(valid(cmd.pwm.sway_fwd));
+  Wire.write(valid(cmd.pwm.sway_aft >> 8));
   Wire.write(valid(cmd.pwm.sway_aft));
   Wire.endTransmission();
 
-  Wire.requestFrom(ESC_BOARD[3], ONE_BYTE);
+  Wire.requestFrom(ESC_BOARD[2], ONE_BYTE);
   state.sway ^= Wire.read();
 
-  Wire.beginTransmission(ESC_BOARD[4]);
+  Wire.beginTransmission(ESC_BOARD[3]);
+  Wire.write(valid(cmd.pwm.heave_port_fwd >> 8));
   Wire.write(valid(cmd.pwm.heave_port_fwd));
+  Wire.write(valid(cmd.pwm.heave_stbd_fwd >> 8));
   Wire.write(valid(cmd.pwm.heave_stbd_fwd));
   Wire.endTransmission();
 
-  Wire.requestFrom(ESC_BOARD[4], ONE_BYTE);
+  Wire.requestFrom(ESC_BOARD[3], ONE_BYTE);
   state.heave_fwd ^= Wire.read();
 
-  Wire.beginTransmission(ESC_BOARD[5]);
+  Wire.beginTransmission(ESC_BOARD[4]);
+  Wire.write(valid(cmd.pwm.heave_port_aft >> 8));
   Wire.write(valid(cmd.pwm.heave_port_aft));
+  Wire.write(valid(cmd.pwm.heave_stbd_aft >> 8));
   Wire.write(valid(cmd.pwm.heave_stbd_aft));
   Wire.endTransmission();
 
-  Wire.requestFrom(ESC_BOARD[5], ONE_BYTE);
+  Wire.requestFrom(ESC_BOARD[4], ONE_BYTE);
   state.heave_aft ^= Wire.read();
 
   // Publish checksum results
