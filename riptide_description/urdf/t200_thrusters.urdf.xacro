@@ -34,9 +34,9 @@
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0" />
         <geometry>
-          <cylinder radius="0.0483" length="0.1127"/>
+          <mesh filename="package://riptide_description/meshes/t200.stl"/>
         </geometry>
-        <material name="Red"/>
+        <material name="thruster"/>
       </visual>
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0"/>

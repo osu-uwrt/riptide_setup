@@ -21,19 +21,6 @@
                iyy="1.89075467" iyz="0.00000000"
                izz="1.9057706"/>
     </inertial>
-    <visual>
-      <origin xyz="0 0 0" rpy="0 ${M_PI/2} 0"/>
-      <geometry>
-        <cylinder radius="0.4" length="1.0"/>
-      </geometry>
-      <material name="Grey"/>
-    </visual>
-    <collision>
-      <origin xyz="0 0 0" rpy="0 ${M_PI/2} 0"/>
-      <geometry>
-        <cylinder radius="0.0483" length="0.1127"/>
-      </geometry>
-    </collision>
   </link>
 
   <joint name="base_frame" type="fixed">
@@ -44,12 +31,38 @@
 
   <link name="frame_link">
     <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <origin xyz="0 -0.0483 0.08" rpy="${M_PI/2} 0 ${M_PI/2}"/>
       <geometry>
-        <box size="1.0 0.4 0.3"/>
+        <mesh filename="package://riptide_description/meshes/chassis.stl"/>
       </geometry>
-      <material name="Black"/>
+      <material name="frame"/>
     </visual>
   </link>
+
+  <joint name="base_housing" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="housing_link"/>
+  </joint>
+
+  <link name="housing_link">
+    <visual>
+      <origin xyz="0 -0.0483 0.08" rpy="${M_PI/2} 0 ${M_PI/2}"/>
+      <geometry>
+        <mesh filename="package://riptide_description/meshes/main_housing.stl"/>
+      </geometry>
+      <material name="housing"/>
+    </visual>
+  </link>
+
+  <material name="frame">
+  <color rgba="0 0 0 1.0"/>
+  </material>
+  <material name="housing">
+  <color rgba="0.2 0.2 0.2 1.0"/>
+  </material>
+  <material name="thruster">
+    <color rgba="0.365 0 0 1.0"/>
+  </material>
 
 </robot>
