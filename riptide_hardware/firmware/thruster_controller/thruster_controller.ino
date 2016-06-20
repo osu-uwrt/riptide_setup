@@ -66,9 +66,9 @@ void callback(const riptide_msgs::PwmStamped &cmd)
   //
 
   Wire.beginTransmission(ESC_BOARD[0]);
-  Wire.write(valid(cmd.pwm.surge_port_hi >> 8));
+  Wire.write(valid(cmd.pwm.surge_port_hi) >> 8);
   Wire.write(valid(cmd.pwm.surge_port_hi));
-  Wire.write(valid(cmd.pwm.surge_stbd_hi >> 8));
+  Wire.write(valid(cmd.pwm.surge_stbd_hi) >> 8);
   Wire.write(valid(cmd.pwm.surge_stbd_hi));
   Wire.endTransmission();
 
@@ -76,9 +76,9 @@ void callback(const riptide_msgs::PwmStamped &cmd)
   state.surge_hi ^= Wire.read();
 
   Wire.beginTransmission(ESC_BOARD[1]);
-  Wire.write(valid(cmd.pwm.surge_port_lo >> 8));
+  Wire.write(valid(cmd.pwm.surge_port_lo) >> 8);
   Wire.write(valid(cmd.pwm.surge_port_lo));
-  Wire.write(valid(cmd.pwm.surge_stbd_lo >> 8));
+  Wire.write(valid(cmd.pwm.surge_stbd_lo) >> 8);
   Wire.write(valid(cmd.pwm.surge_stbd_lo));
   Wire.endTransmission();
 
@@ -86,9 +86,9 @@ void callback(const riptide_msgs::PwmStamped &cmd)
   state.surge_lo ^= Wire.read();
 
   Wire.beginTransmission(ESC_BOARD[2]);
-  Wire.write(valid(cmd.pwm.sway_fwd >> 8));
+  Wire.write(valid(cmd.pwm.sway_fwd) >> 8);
   Wire.write(valid(cmd.pwm.sway_fwd));
-  Wire.write(valid(cmd.pwm.sway_aft >> 8));
+  Wire.write(valid(cmd.pwm.sway_aft) >> 8);
   Wire.write(valid(cmd.pwm.sway_aft));
   Wire.endTransmission();
 
@@ -96,9 +96,9 @@ void callback(const riptide_msgs::PwmStamped &cmd)
   state.sway ^= Wire.read();
 
   Wire.beginTransmission(ESC_BOARD[3]);
-  Wire.write(valid(cmd.pwm.heave_port_fwd >> 8));
+  Wire.write(valid(cmd.pwm.heave_port_fwd) >> 8);
   Wire.write(valid(cmd.pwm.heave_port_fwd));
-  Wire.write(valid(cmd.pwm.heave_stbd_fwd >> 8));
+  Wire.write(valid(cmd.pwm.heave_stbd_fwd) >> 8);
   Wire.write(valid(cmd.pwm.heave_stbd_fwd));
   Wire.endTransmission();
 
@@ -106,9 +106,9 @@ void callback(const riptide_msgs::PwmStamped &cmd)
   state.heave_fwd ^= Wire.read();
 
   Wire.beginTransmission(ESC_BOARD[4]);
-  Wire.write(valid(cmd.pwm.heave_port_aft >> 8));
+  Wire.write(valid(cmd.pwm.heave_port_aft) >> 8);
   Wire.write(valid(cmd.pwm.heave_port_aft));
-  Wire.write(valid(cmd.pwm.heave_stbd_aft >> 8));
+  Wire.write(valid(cmd.pwm.heave_stbd_aft) >> 8);
   Wire.write(valid(cmd.pwm.heave_stbd_aft));
   Wire.endTransmission();
 
