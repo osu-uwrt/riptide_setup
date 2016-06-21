@@ -20,6 +20,8 @@ before_script:
 script:
   - ./scripts/workspace-setup
   - source ~/.bashrc
+  - cd ~/osu-uwrt/riptide_ws
+  - catkin_make
   - cd $TRAVIS_BUILD_DIR
   - travis-sphinx build
 

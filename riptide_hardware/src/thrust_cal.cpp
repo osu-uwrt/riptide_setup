@@ -91,6 +91,5 @@ int ThrustCal::cal(double raw_force, double fwd_scale, double rev_scale)
   else
     raw_force /= fwd_scale;
 
-  return 1500 + int(raw_force * 7.673 - raw_force * raw_force * 0.0616
-     - raw_force * raw_force * raw_force * 0.4352);
+  return 1500 + int(raw_force * 14);
 }
