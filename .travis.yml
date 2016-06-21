@@ -30,4 +30,4 @@ after_success:
 
 notifications:
   email: false
-  # slack: osu-uwrt:QiKTeRcKbKhS82FG4s1SGMb6
+  slack: osu-uwrt:QiKTeRcKbKhS82FG4s1SGMb6
