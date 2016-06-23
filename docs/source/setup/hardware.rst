@@ -90,7 +90,7 @@ Fasteners
 ~~~~~~~~~
 
                                                  add metric conversion
-                                                 
+
 =================== ===== ======== ====== ======= ========== ==========
 Mating              Count Material Thread Length  Torque     Coating
 =================== ===== ======== ====== ======= ========== ==========
@@ -482,6 +482,8 @@ You can download :download:`this cabling diagram </_static/CablingDiagram.pdf>` 
 Main Housing I/O Panel -- Port
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+.. image:: /_static/io_panel_port.png
+
 .. note::
    All SubConns have strain reliefs with the exception of bottom port surge.
 
@@ -511,6 +513,8 @@ Main Housing I/O Panel -- Port
 
 Main Housing I/O Panel -- Starboard
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. image:: /_static/io_panel_stbd.png
 
 .. note::
    All SubConns have strain reliefs with the exception of bottom starboard surge.
