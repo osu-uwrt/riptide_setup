@@ -20,6 +20,8 @@ before_script:
 script:
   - ./scripts/workspace-setup
   - source ~/.bashrc
+  - cd ~/osu-uwrt/riptide_ws
+  - catkin_make
   - cd $TRAVIS_BUILD_DIR
   - travis-sphinx build
 
@@ -28,4 +30,4 @@ after_success:
 
 notifications:
   email: false
-  # slack: osu-uwrt:QiKTeRcKbKhS82FG4s1SGMb6
+  slack: osu-uwrt:QiKTeRcKbKhS82FG4s1SGMb6

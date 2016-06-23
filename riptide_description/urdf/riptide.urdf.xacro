@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+
+<!--                                  -->
+<!--  Description of the Riptide AUV  -->
+<!--                                  -->
+<!--  The Underwater Robotics Team    -->
+<!--     @ The Ohio State University  -->
+<!--                                  -->
+
+<robot name="riptide" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:property name="M_PI" value="3.14159266"/>
+
+  <xacro:include filename="t200_thrusters.urdf.xacro"/>
+
+  <link name="base_link">
+    <inertial>
+      <origin xyz="0.00043180 0.03202940 -0.13947140" rpy="0 0 0"/>
+      <mass value="48.84278656"/>
+      <inertia ixx="0.55649783" ixy="0.00000000" ixz="0.00000000"
+               iyy="1.89075467" iyz="0.00000000"
+               izz="1.9057706"/>
+    </inertial>
+  </link>
+
+  <joint name="base_frame" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="frame_link"/>
+  </joint>
+
+  <link name="frame_link">
+    <visual>
+      <origin xyz="0 -0.0483 0.08" rpy="${M_PI/2} 0 ${M_PI/2}"/>
+      <geometry>
+        <mesh filename="package://riptide_description/meshes/chassis.stl"/>
+      </geometry>
+      <material name="frame"/>
+    </visual>
+  </link>
+
+  <joint name="base_housing" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="housing_link"/>
+  </joint>
+
+  <link name="housing_link">
+    <visual>
+      <origin xyz="0 -0.0483 0.08" rpy="${M_PI/2} 0 ${M_PI/2}"/>
+      <geometry>
+        <mesh filename="package://riptide_description/meshes/main_housing.stl"/>
+      </geometry>
+      <material name="housing"/>
+    </visual>
+  </link>
+
+  <material name="frame">
+  <color rgba="0 0 0 1.0"/>
+  </material>
+  <material name="housing">
+  <color rgba="0.2 0.2 0.2 1.0"/>
+  </material>
+  <material name="thruster">
+    <color rgba="0.365 0 0 1.0"/>
+  </material>
+
+</robot>

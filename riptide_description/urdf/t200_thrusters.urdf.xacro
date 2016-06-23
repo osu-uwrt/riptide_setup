@@ -1,0 +1,68 @@
+<?xml version="1.0" ?>
+
+<!--                               -->
+<!--  BlueRobotics T200 Thrusters  -->
+<!--                               -->
+
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:property name="surge" value="${M_PI/2} 0 0"/>
+  <xacro:property name="sway" value="0 ${M_PI/2} 0"/>
+  <xacro:property name="heave" value="0 0 ${M_PI/2}"/>
+
+  <xacro:property name="ssh_pos" value="-0.2128 -0.1823 0.1384"/>
+  <xacro:property name="sph_pos" value="-0.2128 0.1823 0.1384"/>
+  <xacro:property name="ssl_pos" value="-0.2128 -0.1823 -0.0762"/>
+  <xacro:property name="spl_pos" value="-0.2128 0.1823 -0.0762"/>
+  <xacro:property name="sf_pos" value="0.3776 0.0110 -0.0838"/>
+  <xacro:property name="sa_pos" value="-0.3744 0.0110 -0.0838"/>
+  <xacro:property name="hsf_pos" value="0.2824 -0.1823 0.007"/>
+  <xacro:property name="hpf_pos" value="0.2824 0.1823 0.007"/>
+  <xacro:property name="hsa_pos" value="-0.2724 -0.1823 0.0077"/>
+  <xacro:property name="hpa_pos" value="-0.2724 0.1823 0.0077"/>
+
+  <xacro:macro name="t200_thruster" params="name position orientation">
+
+    <link name="${name}_thruster">
+      <inertial>
+        <origin xyz="-0.00000254 0.00006604 0.0074422" rpy="0 0 0"/>
+        <mass value="0.3520"/>
+        <inertia ixx="0.00028913" ixy="0.00000000" ixz="0.00000000"
+                 iyy="0.00029762" iyz="0.00000000"
+                 izz="0.00032951"/>
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://riptide_description/meshes/t200.stl"/>
+        </geometry>
+        <material name="thruster"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="0.0483" length="0.1127"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="${name}_thruster_joint" type="fixed">
+      <origin xyz="${position}" rpy="${orientation}"/>
+      <parent link="frame_link"/>
+      <child link="${name}_thruster"/>
+    </joint>
+
+  </xacro:macro>
+
+  <xacro:t200_thruster name="surge_stbd_hi" position="${ssh_pos}" orientation="0 ${M_PI/2} 0"/>
+  <xacro:t200_thruster name="surge_port_hi" position="${sph_pos}" orientation="0 ${M_PI/2} 0"/>
+  <xacro:t200_thruster name="surge_stbd_lo" position="${ssl_pos}" orientation="0 ${M_PI/2} 0"/>
+  <xacro:t200_thruster name="surge_port_lo" position="${spl_pos}" orientation="0 ${M_PI/2} 0"/>
+  <xacro:t200_thruster name="sway_fwd" position="${sf_pos}" orientation="${M_PI/2} 0 0"/>
+  <xacro:t200_thruster name="sway_aft" position="${sa_pos}" orientation="${M_PI/2} 0 0"/>
+  <xacro:t200_thruster name="heave_stbd_fwd" position="${hsf_pos}" orientation="0 0 0"/>
+  <xacro:t200_thruster name="heave_port_fwd" position="${hpf_pos}" orientation="0 0 0"/>
+  <xacro:t200_thruster name="heave_stbd_aft" position="${hsa_pos}" orientation="0 0 0"/>
+  <xacro:t200_thruster name="heave_port_aft" position="${hpa_pos}" orientation="0 0 0"/>
+
+</robot>

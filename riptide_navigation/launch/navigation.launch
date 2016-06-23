@@ -1,0 +1,6 @@
+<launch>
+  <include file="$(find riptide_description)/launch/riptide_description.launch"/>
+  <node type="thrust_mapper" pkg="riptide_navigation" name="thrust_mapper" />
+  <!-- <node type="position_controller" pkg="riptide_navigation" name="position_controller" />
+  <node type="attitude_controller" pkg="riptide_navigation" name="attitude_controller" /> -->
+</launch>

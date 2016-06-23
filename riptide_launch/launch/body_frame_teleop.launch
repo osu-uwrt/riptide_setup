@@ -1,0 +1,5 @@
+<launch>
+  <include file="$(find riptide_teleop)/launch/teleop.launch"/>
+  <include file="$(find riptide_navigation)/launch/navigation.launch"/>
+  <include file="$(find riptide_hardware)/launch/hardware.launch"/>
+</launch>
