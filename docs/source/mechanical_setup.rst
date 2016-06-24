@@ -2,8 +2,9 @@ Assembly & Mounting
 ===================
 
 .. contents::
-   :depth: 1
+   :backlinks: top
    :local:
+
 
 Guidelines
 ----------

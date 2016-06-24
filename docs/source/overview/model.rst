@@ -1,8 +1,0 @@
-Modeling and Simulation
-=======================
-
-The vehicle is modeled using the Universal Robot Description Format (URDF) to create a single point of control for many of the vehicle’s physical and operating parameters. All packages can access the model as necessary. For example, the subsystem which maps the commanded acceleration on Riptide’s body to forces at each thruster references the model each time it is initialized. Referencing the model allows this subsystem to update the equations it uses for mapping accelerations to forces for the current vehicle configuration. Should a thruster or massive component be moved, all packages are effectively updated whenever the model is updated.
-
-The URDF models the vehicle as a graph. This graph takes the form of a tree, where each node represents a physical section of the vehicle (link) and each edge represents how those links are connected (joints). Storing vehicle parameters in this way allows graph-based algorithms to easily determine how various portions of the vehicle are related to others. For example, determining the transformation between two links by identifying all intermediate links and combining their transformations.
-
-The team is working to utilize its models in the future to add significant simulation capabilities to the development cycle. This addition would allow the software team to better prepare for vehicle testing before construction has been completed. It is hoped that this will eventually lead to the ability to simulate designs before they are finalized, further enhancing the design cycle. The progress of the simulator can be seen in Fig 17.
