@@ -13,9 +13,9 @@ catkin_package()
 
 include_directories(${catkin_INCLUDE_DIRS} ${CERES_INCLUDE_DIRS})
 
-add_executable(thrust_mapper src/thrust_mapper.cpp)
-target_link_libraries(thrust_mapper ${catkin_LIBRARIES} ${CERES_LIBRARIES})
-add_dependencies(thrust_mapper riptide_msgs_gencpp)
+add_executable(thruster_controller src/thruster_controller.cpp)
+target_link_libraries(thruster_controller ${catkin_LIBRARIES} ${CERES_LIBRARIES})
+add_dependencies(thruster_controller riptide_msgs_gencpp)
 
 add_executable(fake_data src/fake_data.cpp)
 add_executable(fake_imu src/fake_imu.cpp)
