@@ -1,19 +1,9 @@
-Primary Module
-==============
+Primary Housing Module
+======================
 
-Electrical
-----------
-
-
-Mechanical
-----------
-
-The main housing is designed to provide easy access to the electronics for installation, maintenance, and diagnostics while minimizing disassembly. The vessel is made up of of three main components. The central cylinder is secures the main housing to the chassis, and is not removed for regular maintenance. The bulkhead connectors pass through flat surfaces that are machined into the side of housing, which allows the electronics to be accessed without disconnecting any connectors. There is also a port on the underside of the housing support a DVL transducer array if our sensor-suite is expanded in the future.
-
-The front and rear parts of the main housing are fully removable. The assembly is sealed on both sides by double x-profile radial o rings and secured by locking stainless steel latches. This allows for quick disassembly without risking incorrect reassembly resulting in a leak. The front cylinders wall is made of an acrylic tube to allow an observer clear view of the main electronics boards for diagnostic purposes, as well as a downward facing camera view. This housing can be easily expanded and reused in the future if the electronics volume changes. Both the front and rear cylinders have clear acrylic end caps to support stereoscopic cameras and a diagnostic screen.
-
-The main housing was entirely custom made for this vehicle. The sealing rings on the front and rear of the three main cyclinders, the bulkhead connector inserts, and the DVL port were machined in-house on our CNC machine. The parts were welded to reduce the machining complexity, and then post-weld maching was competed to bring the parts to final dimension.
+The main housing is designed to provide easy access to the electronics for installation, maintenance, and diagnostics while minimizing disassembly. The vessel is made up of three main components, the central cylinder, and the forward and aft compartments. The central cylinder (Fig 4) secures the main housing to the chassis, and is not removed for regular maintenance. SubConn bulkhead connectors are able to pass through flat surfaces which were machined into the side of the housing. This allows for access to electrical components without disconnecting any connectors. To ensure the housing has the ability to be utilized in future years, a port on the underside of the central cylinder was machined to support a Doppler Velocity Logger.
 
 
-Software
---------
+The forward and aft compartments are fully removable. The assembly is sealed on both sides by double x-profile radial O-rings and secured by locking stainless steel latches. This allows for quick disassembly without risking incorrect reassembly, which could result in a leak. The forward compartment is made of an acrylic tube to allow an observer clear view of the main electronics boards for diagnostic purposes, as well as a downward facing camera view. This housing can be easily expanded and re-used in the future if the electronics volume changes. Both compartments have clear acrylic end caps to support stereoscopic cameras and a  diagnostic screen. A CAD rendering of the primary module can be seen in Fig 5.
+
+The main housing was entirely custom made for this vehicle. The sealing rings on the front and rear of the three main cylinders, the bulkhead connector inserts, and the DVL port were machined in-house on a CNC machine. The parts were welded to reduce the machining complexity, and then post-weld machining was completed to bring the parts to final dimension.

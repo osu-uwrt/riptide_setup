@@ -1,6 +1,9 @@
 Onboard Computer
 ================
 
+The computer onboard Riptide for running all software packages and sensors consists of a BCM Advanced Research MX87QD motherboard with an Intel Core i7-4790S CPU.
+
+
 Mounting
 --------
 

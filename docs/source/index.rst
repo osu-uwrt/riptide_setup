@@ -8,25 +8,36 @@ Riptide Documentation
    safety
    start
 
+
 .. toctree::
    :maxdepth: 2
-   :caption: Hardware Overview
+   :caption: Mechanical System Overview
 
-   overview/sensors
-   overview/computer
-   overview/backplane
    overview/primary
    overview/secondary
    overview/chassis
    overview/actuators
 
+
 .. toctree::
    :maxdepth: 2
-   :caption: Software Overview
+   :caption: Electrical System Overview
+
+   overview/external
+   overview/backplane
+   overview/computer
+   overview/sensors
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Software System Overview
 
    overview/ros
    overview/packages
-   overview/smach
+   overview/model
+   overview/acoustics
+
 
 .. toctree::
    :maxdepth: 2
@@ -35,6 +46,7 @@ Riptide Documentation
    setup/electronics
    setup/hardware
    setup/software
+
 
 .. toctree::
    :maxdepth: 2

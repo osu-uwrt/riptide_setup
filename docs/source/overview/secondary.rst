@@ -1,67 +1,8 @@
-Secondary Modules
-=================
+Auxiliary Housing Modules
+=========================
 
-Acoustics Module
-----------------
+The auxiliary external housings contain the batteries, pneumatic valves and switches, and acoustic sensors. These were designed to be able to be moved around on the vehicle during the final design phase to evenly balance the vehicle, reducing the need for additional ballast weight or buoyant material. The auxiliary housing locations on Riptide can be seen in Fig 6.
 
-Electrical
-~~~~~~~~~~
+The four housings have similar sealing methods that have been implemented and tested on previous vehicles. A lid is secured against a sealing flange using evenly spaced fasteners that are tightened to a specified torque, as shown in Fig 7. Housings that require a pass-through connection to the external environment were designed to have a reinforced bulkhead in the region that the connector will pass through. All structural features of the external housings were designed specifically for Riptide and were machined from raw aluminum alloy stock in-house using CNC and manual machining processes.
 
-
-Mechanical
-~~~~~~~~~~
-
-
-Software
-~~~~~~~~
-
-The TMS320C5515 eZDSP USB Stick was programmed using Code Composer Studio in the language of C++. After receiving a signal from the hydrophone array, the microcontroller would filter out unwanted frequency ranges using a digital bandpass filter. The specified frequency range is 25-40 kHz.
-
-Once the signal is received by the vehicle’s three hydrophones, the angle of arrival of the emitted wave is calculated using phase difference between the three received signals. The hydrophones are separated such that, the underwater pinger’s transmitting wave cannot travel one whole wavelength in between the hydrophones. The angle of arrival of the wave is then calculated using the phase difference between each of the hydrophones and simple trigonometry. If the hydrophones were separated further than one wavelength then the phase difference could not be used because we would not be able to know which hydrophone received the signal first.
-
-The heading information containing the direction that the vehicle needs to travel in order to reach the pinger is then sent to the central processing computer continuously until the breeching sequence activates.
-
-
-Battery Modules
----------------
-
-Mechanical
-~~~~~~~~~~
-
-
-Electrical
-~~~~~~~~~~
-
-
-Software
-~~~~~~~~
-
-
-Safety Module
--------------
-
-Mechanical
-~~~~~~~~~~
-
-
-Electrical
-~~~~~~~~~~
-
-
-Software
-~~~~~~~~
-
-
-Pneumatics Module
------------------
-
-Mechanical
-~~~~~~~~~~
-
-
-Electrical
-~~~~~~~~~~
-
-
-Software
-~~~~~~~~
+To make Riptide start and stop a run, or stop in an emergency, an external switch was designed. Since there were no good options for a commercial watertight button, a housing was designed to hold the buttons. The base consists of a Delrin block with holes for the two buttons as well for the SubConn bulkhead connector. On top of the base is a series of gaskets and aluminum plates to hold the gasket and buttons in place, as shown in Fig 8. There is a momentary switch for starting and a maintained switch for the emergency shutoff. To ensure the kill switch can be pressed in an emergency an additional shaft and large button head was machined and placed on top of the design base.
