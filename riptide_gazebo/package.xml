@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>riptide_gazebo</name>
-  <version>0.0.8</version>
+  <version>0.0.9</version>
   <description>Simulation package for OSU's Riptide AUV.</description>
 
   <maintainer email="cary.42@osu.edu">Conor Cary</maintainer>
