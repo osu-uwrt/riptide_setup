@@ -42,13 +42,13 @@ void Accel::joy_callback(const sensor_msgs::Joy::ConstPtr& joy)
   accel.angular.y = 0;
   accel.angular.z = 0;
 #else
-  accel.linear.x = joy->axes[1];
+  accel.linear.x = 0.75 * joy->axes[1];
   accel.linear.y = joy->axes[0];
   accel.linear.z = (joy->axes[14] - joy->axes[15]);
 
-  accel.angular.x = 3.14159 * joy->axes[2] * -1;
-  accel.angular.y = 3.14159 * joy->axes[3];
-  accel.angular.z = 3.14159 * (joy->axes[13] - joy->axes[12]);
+  accel.angular.x = 2.0 * 3.14159 * joy->axes[2] * -1;
+  accel.angular.y = 1.2 * 3.14159 * joy->axes[3];
+  accel.angular.z = 2.0 * 3.14159 * (joy->axes[13] - joy->axes[12]);
 #endif
   // accel.linear.x = 5 * joy->axes[1];
   // accel.linear.y = 0;
