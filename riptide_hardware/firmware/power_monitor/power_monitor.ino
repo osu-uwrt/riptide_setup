@@ -1,31 +1,27 @@
 #include <ros.h>
+#include <riiptide_msgs/BatStamped.h>
 
 ros::NodeHandle nh;
-std_msgs::Float64 state;
+riptide_msgs::BatStamped batteries;
 
-void callback(const std_msgs::Float64 cmd);
-{
-
-}
-
-ros::Publisher state_pub("state", &state);
-ros::Subscriber<std_msgs::Float64> cmd_sub("command", &callback);
+ros::Publisher state_pub("state/batteries", &state);
 
 void setup()
 {
   nh.initNode();
   nh.advertise(state_pub);
-
 }
 
 void loop()
 {
   nh.spinOnce();
 
-  state[0] = port_servo_pos;
-  state[1] = stbd_servo_pos;
+  battery.port.current = analogRead(A3);
+  battery.port.voltage = analogRead(A2);
+  battery.stbd.current = analogRead(A0);
+  battery.stbd.voltage = analogRead(A1);
 
-  state_pub.publish(&state);
+  state_pub.publish(&battery);
 
-  delay(33);
+  delay(10);
 }

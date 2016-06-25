@@ -1,2 +1,0 @@
-Robot Operating System
-======================
