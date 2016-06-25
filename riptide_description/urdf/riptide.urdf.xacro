@@ -16,15 +16,15 @@
   <link name="base_link">
     <inertial>
       <origin xyz="0.00043180 0.03202940 -0.13947140" rpy="0 0 0"/>
-      <mass value="48.84278656"/>
-      <inertia ixx="0.55649783" ixy="0.00000000" ixz="0.00000000"
-               iyy="1.89075467" iyz="0.00000000"
-               izz="1.9057706"/>
+      <mass value="34.47940950"/>
+      <inertia ixx="0.50862680" ixy="-0.00114566" ixz="-0.03874012"
+               iyy="1.70892348" iyz="-0.00286748"
+               izz="1.77586420"/>
     </inertial>
   </link>
 
   <joint name="base_frame" type="fixed">
-    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <origin xyz="0.1354 0.0003 0.0436" rpy="0 0 0"/>
     <parent link="base_link"/>
     <child link="frame_link"/>
   </joint>
@@ -39,9 +39,9 @@
     </visual>
   </link>
 
-  <joint name="base_housing" type="fixed">
+  <joint name="frame_housing" type="fixed">
     <origin xyz="0 0 0" rpy="0 0 0"/>
-    <parent link="base_link"/>
+    <parent link="frame_link"/>
     <child link="housing_link"/>
   </joint>
 

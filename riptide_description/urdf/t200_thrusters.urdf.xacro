@@ -6,16 +6,16 @@
 
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 
-  <xacro:property name="sph_pos" value="-0.2128 0.1823 0.1384"/>
-  <xacro:property name="ssh_pos" value="-0.2128 -0.1823 0.1384"/>
-  <xacro:property name="spl_pos" value="-0.2128 0.1823 -0.0762"/>
-  <xacro:property name="ssl_pos" value="-0.2128 -0.1823 -0.0762"/>
-  <xacro:property name="sf_pos" value="0.3776 0.0110 -0.0838"/>
-  <xacro:property name="sa_pos" value="-0.3744 0.0110 -0.0838"/>
-  <xacro:property name="hpf_pos" value="0.2824 0.1823 0.007"/>
-  <xacro:property name="hsf_pos" value="0.2824 -0.1823 0.007"/>
-  <xacro:property name="hpa_pos" value="-0.2724 0.1823 0.0077"/>
-  <xacro:property name="hsa_pos" value="-0.2724 -0.1823 0.0077"/>
+  <xacro:property name="sph_pos" value="-0.2794 0.1824 0.0635"/>
+  <xacro:property name="ssh_pos" value="-0.2794 -0.1824 0.0635"/>
+  <xacro:property name="spl_pos" value="-0.2794 0.1824 -0.1588"/>
+  <xacro:property name="ssl_pos" value="-0.2794 -0.1824 -0.1588"/>
+  <xacro:property name="sf_pos" value="0.3220 0.0000 -0.1588"/>
+  <xacro:property name="sa_pos" value="-0.4300 0.0000 -0.1588"/>
+  <xacro:property name="hpf_pos" value="0.2268 0.1824 0.00782"/>
+  <xacro:property name="hsf_pos" value="0.2268 -0.1824 0.00782"/>
+  <xacro:property name="hpa_pos" value="-0.3279 0.1824 0.00782"/>
+  <xacro:property name="hsa_pos" value="-0.3279 -0.1824 0.00782"/>
 
   <xacro:macro name="t200_thruster" params="name position orientation">
 
