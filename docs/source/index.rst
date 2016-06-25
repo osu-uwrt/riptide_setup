@@ -2,44 +2,26 @@ Riptide Documentation
 =====================
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Introduction
+   :maxdepth: 3
+   :caption: Design Overview
 
-   safety
-   start
+   electrical_overview
+   mechanical_overview
+   software_overview
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Hardware Overview
-
-   overview/sensors
-   overview/computer
-   overview/backplane
-   overview/primary
-   overview/secondary
-   overview/chassis
-   overview/actuators
 
 .. toctree::
    :maxdepth: 2
-   :caption: Software Overview
+   :caption: Setup & Assembly
 
-   overview/ros
-   overview/packages
-   overview/smach
+   electrical_setup
+   mechanical_setup
+   software_setup
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Vehicle Setup
-
-   setup/electronics
-   setup/hardware
-   setup/software
 
 .. toctree::
    :maxdepth: 2
    :caption: Miscellaneous
 
-   release
    editing
    license
