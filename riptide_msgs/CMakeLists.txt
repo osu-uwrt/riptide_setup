@@ -3,7 +3,7 @@ project(riptide_msgs)
 
 find_package(catkin REQUIRED COMPONENTS message_generation std_msgs)
 
-add_message_files(FILES Thrust.msg ThrustStamped.msg Pwm.msg PwmStamped.msg Esc.msg EscStamped.msg)
+add_message_files(FILES Thrust.msg ThrustStamped.msg Pwm.msg PwmStamped.msg Esc.msg EscStamped.msg Bat.msg BatStamped.msg)
 
 generate_messages(DEPENDENCIES std_msgs)
 
