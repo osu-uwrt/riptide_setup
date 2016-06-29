@@ -1,7 +1,7 @@
 <launch>
   <node type="thrust_cal" pkg="riptide_hardware" name="thruster_calibration" />
   <include file="$(find riptide_hardware)/launch/thruster_controller.launch" />
-  <!-- <include file="$(find riptide_hardware)/launch/power_monitor.launch" />
-  <include file="$(find riptide_hardware)/launch/pneumatic_controller.launch" />
+  <include file="$(find riptide_hardware)/launch/power_monitor.launch" />
+  <!-- <include file="$(find riptide_hardware)/launch/pneumatic_controller.launch" />
   <include file="$(find riptide_hardware)/launch/acoustic_monitor.launch" /> -->
 </launch>

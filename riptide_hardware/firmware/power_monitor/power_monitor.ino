@@ -16,9 +16,9 @@ void loop()
 {
   nh.spinOnce();
 
-  battery.port.current = analogRead(A3)*0.03255;
+  battery.port.current = (analogRead(A3)-104)*0.03755;
   battery.port.voltage = analogRead(A2)*0.03015;
-  battery.stbd.current = analogRead(A0)*0.03255;
+  battery.stbd.current = (analogRead(A0)-104)*0.03755;
   battery.stbd.voltage = analogRead(A1)*0.03016;
 
   state_pub.publish(&battery);
