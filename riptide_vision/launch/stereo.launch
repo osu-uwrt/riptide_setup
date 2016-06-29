@@ -1,21 +1,22 @@
 <launch>
-  <arg name="left_camera_serial" default="14490573" />
-  <arg name="left_calibrated" default="0" />
-  <arg name="right_camera_serial" default="14432788" />
-  <arg name="right_calibrated" default="0" />
+  <arg name="left_serial_number" value="14432788" />
+  <arg name="right_serial_number" value="14490573" />
+
   <group ns="stereo">
-      <node pkg="nodelet" type="nodelet" name="stereo_image_proc_debayer"
-        args="load stereo_image_proc/debayer camera_nodelet_manager">
-      </node>
+
+    <node pkg="stereo_image_proc" type="stereo_image_proc" name="stereo_image_proc">
+      <param name="approximate_sync" value="true" />
+      <param name="queue_size" value="20" />
+    </node>
 
     <group ns="left">
       <node pkg="nodelet" type="nodelet" name="camera_nodelet_manager" args="manager" />
       <node pkg="nodelet" type="nodelet" name="camera_nodelet"
             args="load pointgrey_camera_driver/PointGreyCameraNodelet camera_nodelet_manager" >
-        <param name="frame_id" value="left_camera" />
-        <param name="serial" value="$(arg left_camera_serial)" />
-        <param name="camera_info_url" if="$(arg left_calibrated)"
-               value="file://$(env HOME)/.ros/camera_info/$(arg left_serial).yaml" />
+        <param name="frame_id" value="camera_left" />
+        <param name="serial" value="$(arg left_serial_number)" />
+        <param name="camera_info_url"
+               value="file://$(find riptide_vision)/camera_info/$(arg left_serial_number).yaml" />
       </node>
     </group>
 
@@ -23,13 +24,13 @@
       <node pkg="nodelet" type="nodelet" name="camera_nodelet_manager" args="manager" />
       <node pkg="nodelet" type="nodelet" name="camera_nodelet"
             args="load pointgrey_camera_driver/PointGreyCameraNodelet camera_nodelet_manager" >
-        <param name="frame_id" value="right_camera" />
-        <param name="serial" value="$(arg right_camera_serial)" />
-        <param name="camera_info_url" if="$(arg right_calibrated)"
-               value="file://$(env HOME)/.ros/camera_info/$(arg right_serial).yaml" />
+        <param name="frame_id" value="camera_right" />
+        <param name="serial" value="$(arg right_serial_number)" />
+        <param name="camera_info_url"
+               value="file://$(find riptide_vision)/camera_info/$(arg right_serial_number).yaml" />
       </node>
     </group>
 
   </group>
-</launch>
 
+</launch>
