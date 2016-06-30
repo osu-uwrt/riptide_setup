@@ -26,14 +26,17 @@ void init_pwm() {
 
 void setup_adc()
 {
-  //turn on adc
-  ADCSRA = (ADEN<<1)| (ADIE<<1);
+  //turn on adc set clock prescaler to 128
+  ADCSRA = 0b10000111;
 
 }
 void analogRead(uint8_t pin)
 {
   ADMUX = pin;
-  ADCSRA = (ADSC<<1);
+  ADCSRA |= (1<<ADSC);
+  while (ADCSRA & (1 << ADSC));
+  TWI_buf[analog_ptr++] = ADCL;
+  TWI_buf[analog_ptr++] = ADCH;
 }
 
 
@@ -43,12 +46,12 @@ void main()
 
   //calibrate the internal ocillilator
   OSCCAL0 = 67;
-    //addr #1    66
-    //addr #2    66
-    //addr #4    93
-    //addr #8    46
-    //addr #16   65
-    //spare esc board 67
+  //addr #1    66
+  //addr #2    66
+  //addr #4    93
+  //addr #8    46
+  //addr #16   65
+  //spare esc board 67
   //change the system clock prescaler
   CCP = 0xD8;
   CLKPR = 0b00000000;
@@ -69,8 +72,11 @@ void main()
 
   for(;;)
   {
-    analog_ptr = 4;
-    analogRead(1);//temp esc 1
+    analog_ptr = 6;
+    analogRead(1);//temp sensor 1
+    analogRead(4);//current sensor 1
+    analogRead(0);//temp sensor 2
+    analogRead(5);//current sensor 2
 
   }
 }
@@ -105,11 +111,6 @@ ISR(TIM1_OVF_vect)
   OCR1AL = TWI_buf[1];
   OCR1BH = TWI_buf[2];
   OCR1BL = TWI_buf[3];
-  //TWI_buf[4] = (TWI_buf[0]^TWI_buf[2])^(TWI_buf[1]^TWI_buf[3]);
+  TWI_buf[4] = (TWI_buf[0]^TWI_buf[2])^(TWI_buf[1]^TWI_buf[3]);
 
-}
-
-ISR(ADC_READY_vect)
-{
-  TWI_buf[4] = 0b11111111;//ADCL;
 }
