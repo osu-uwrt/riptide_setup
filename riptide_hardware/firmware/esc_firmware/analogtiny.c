@@ -27,13 +27,15 @@ void init_pwm() {
 void setup_adc()
 {
   //turn on adc
-  ADCSRA = (ADEN<<1)| (ADIE<<1);
+  ADCSRA = 0b10000111;// (1<<ADEN)| (1<<ADIE); 0b10001111
+
 
 }
 void analogRead(uint8_t pin)
 {
   ADMUX = pin;
-  ADCSRA = (ADSC<<1);
+  ADCSRA |= (1<<ADSC);
+  while (ADCSRA & (1 << ADSC));
 }
 
 
@@ -67,11 +69,16 @@ void main()
 
   TWI_Start_Transceiver();
 
+
   for(;;)
   {
-    analog_ptr = 4;
-    analogRead(1);//temp esc 1
 
+    // analogRead(1);//temp sensor 1
+     analogRead(4);//current sensor 1
+     OCR1AL = ADCL;
+     OCR1AH = ADCH;
+     //analogRead(0);//temp sensor 2
+     //analogRead(5);//current sensor 2
   }
 }
 
@@ -101,15 +108,5 @@ ISR(TIM1_OVF_vect)
   //turn both pins on
   PORTA |= 0b01100000;
 
-  OCR1AH = TWI_buf[0];
-  OCR1AL = TWI_buf[1];
-  OCR1BH = TWI_buf[2];
-  OCR1BL = TWI_buf[3];
-  //TWI_buf[4] = (TWI_buf[0]^TWI_buf[2])^(TWI_buf[1]^TWI_buf[3]);
 
-}
-
-ISR(ADC_READY_vect)
-{
-  TWI_buf[4] = 0b11111111;//ADCL;
 }
