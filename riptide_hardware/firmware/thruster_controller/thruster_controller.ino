@@ -60,8 +60,8 @@ void callback(const riptide_msgs::PwmStamped &cmd)
   state.surge_port_hi.checksum = (uint8_t)(cmd.pwm.surge_stbd_hi >> 8) ^ (cmd.pwm.surge_stbd_hi);
   state.surge_port_hi.checksum = (uint8_t)(cmd.pwm.surge_port_lo >> 8) ^ (cmd.pwm.surge_port_lo);
   state.surge_port_hi.checksum = (uint8_t)(cmd.pwm.surge_stbd_lo >> 8) ^ (cmd.pwm.surge_stbd_lo);
-  state.surge_port_hi.checksum = (uint8_t)(cmd.pwm.surge_sway_fwd >> 8) ^ (cmd.pwm.surge_sway_fwd);
-  state.surge_port_hi.checksum = (uint8_t)(cmd.pwm.surge_sway_aft >> 8) ^ (cmd.pwm.surge_sway_aft);
+  state.surge_port_hi.checksum = (uint8_t)(cmd.pwm.sway_fwd >> 8) ^ (cmd.pwm.sway_fwd);
+  state.surge_port_hi.checksum = (uint8_t)(cmd.pwm.sway_aft >> 8) ^ (cmd.pwm.sway_aft);
   state.surge_port_hi.checksum = (uint8_t)(cmd.pwm.heave_port_fwd >> 8) ^ (cmd.pwm.heave_port_fwd);
   state.surge_port_hi.checksum = (uint8_t)(cmd.pwm.heave_stbd_fwd >> 8) ^ (cmd.pwm.heave_stbd_fwd);
   state.surge_port_hi.checksum = (uint8_t)(cmd.pwm.heave_port_aft >> 8) ^ (cmd.pwm.heave_port_aft);
@@ -81,10 +81,10 @@ void callback(const riptide_msgs::PwmStamped &cmd)
   Wire.requestFrom(ESC_BOARD[0], ONE_PACKET);
   state.surge_port_hi.checksum ^= Wire.read();
   state.surge_stbd_hi.checksum ^= Wire.read();
-  state.surge_port_hi.temp = (Wire.read() | Wire.read() << 8)*;
-  state.surge_port_hi.current = ((Wire.read() | Wire.read() << 8)-96.0)/36.0;
+  state.surge_port_hi.temp = (Wire.read() | Wire.read() << 8);
+  state.surge_port_hi.current = get_current();
   state.surge_stbd_hi.temp = Wire.read() | Wire.read() << 8;
-  state.surge_stbd_hi.current = Wire.read() | Wire.read() << 8;
+  state.surge_stbd_hi.current = get_current();
 
   Wire.beginTransmission(ESC_BOARD[1]);
   Wire.write(valid(cmd.pwm.surge_port_lo) >> 8);
@@ -97,9 +97,9 @@ void callback(const riptide_msgs::PwmStamped &cmd)
   state.surge_port_lo.checksum ^= Wire.read();
   state.surge_stbd_lo.checksum ^= Wire.read();
   state.surge_port_lo.temp = Wire.read() | Wire.read() << 8;
-  state.surge_port_lo.current = Wire.read() | Wire.read() << 8;
+  state.surge_port_lo.current = get_current();
   state.surge_stbd_lo.temp = Wire.read() | Wire.read() << 8;
-  state.surge_stbd_lo.current = Wire.read() | Wire.read() << 8;
+  state.surge_stbd_lo.current = get_current();
 
   Wire.beginTransmission(ESC_BOARD[2]);
   Wire.write(valid(cmd.pwm.sway_fwd) >> 8);
@@ -112,9 +112,9 @@ void callback(const riptide_msgs::PwmStamped &cmd)
   state.sway_fwd.checksum ^= Wire.read();
   state.sway_aft.checksum ^= Wire.read();
   state.sway_fwd.temp = Wire.read() | Wire.read() << 8;
-  state.sway_fwd.current = Wire.read() | Wire.read() << 8;
+  state.sway_fwd.current = get_current();
   state.sway_aft.temp = Wire.read() | Wire.read() << 8;
-  state.sway_aft.current = Wire.read() | Wire.read() << 8;
+  state.sway_aft.current = get_current();
 
   Wire.beginTransmission(ESC_BOARD[3]);
   Wire.write(valid(cmd.pwm.heave_port_fwd) >> 8);
@@ -127,9 +127,9 @@ void callback(const riptide_msgs::PwmStamped &cmd)
   state.heave_port_fwd.checksum ^= Wire.read();
   state.heave_stbd_fwd.checksum ^= Wire.read();
   state.heave_port_fwd.temp = Wire.read() | Wire.read() << 8;
-  state.heave_port_fwd.current = Wire.read() | Wire.read() << 8;
+  state.heave_port_fwd.current = get_current();
   state.heave_stbd_fwd.temp = Wire.read() | Wire.read() << 8;
-  state.heave_stbd_fwd.current = Wire.read() | Wire.read() << 8;
+  state.heave_stbd_fwd.current = get_current();
 
   Wire.beginTransmission(ESC_BOARD[4]);
   Wire.write(valid(cmd.pwm.heave_port_aft) >> 8);
@@ -142,9 +142,9 @@ void callback(const riptide_msgs::PwmStamped &cmd)
   state.heave_port_aft.checksum ^= Wire.read();
   state.heave_stbd_aft.checksum ^= Wire.read();
   state.heave_port_aft.temp = Wire.read() | Wire.read() << 8;
-  state.heave_port_aft.current = Wire.read() | Wire.read() << 8;
+  state.heave_port_aft.current = get_current();
   state.heave_stbd_aft.temp = Wire.read() | Wire.read() << 8;
-  state.heave_stbd_aft.current = Wire.read() | Wire.read() << 8;
+  state.heave_stbd_aft.current = get_current();
 
   // Publish checksum results
   state_pub.publish(&state);
@@ -176,11 +176,15 @@ void callback(const riptide_msgs::PwmStamped &cmd)
   else {digitalWrite(11, LOW); }
 }
 
-// Ensure 1100 <= pwm <= 1900  state.surge_port_hi.checksum ^= Wire.read();
-  state.surge_stbd_hi.checksum ^= Wire.read();
 int16_t valid(int16_t pwm)
 {
   pwm = pwm > 1900 ? 1900 : pwm;
   pwm = pwm < 1100 ? 1100 : pwm;
   return pwm;
 }
+
+float get_current()
+{
+  return ((Wire.read() | Wire.read() << 8) - 96.0) / 36.0;
+}
+
