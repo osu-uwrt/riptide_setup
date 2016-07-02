@@ -13,7 +13,7 @@ void callback(const imu_3dm_gx4::FilterOutput::ConstPtr& filter)
 {
   tf::Quaternion quaternion;
   tf::quaternionMsgToTF(filter->orientation, quaternion);
-  tf::Matrix3x3 rotation = tf::Matrix3x3(1, 0, 0, 0, -1, 0, 0, 0, -1);
+  tf::Matrix3x3 rotation = tf::Matrix3x3(1, 0, 0, 0, 1, 0, 0, 0, 1);
   tf::Matrix3x3 attitude = rotation * tf::Matrix3x3(quaternion);
   attitude.getRPY(angles.vector.x, angles.vector.y, angles.vector.z);
   angles.header.stamp = filter->header.stamp;
@@ -24,8 +24,8 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "orientation");
   ros::NodeHandle nh;
-  imu = nh.subscribe<imu_3dm_gx4::FilterOutput>("imu/filter", 1, callback);
-  rpy = nh.advertise<geometry_msgs::Vector3Stamped>("imu/angles", 1);
+  imu = nh.subscribe<imu_3dm_gx4::FilterOutput>("state/filter", 1, callback);
+  rpy = nh.advertise<geometry_msgs::Vector3Stamped>("state/rpy", 1);
   angles.header.frame_id = "base_link";
   ros::spin();
 }
