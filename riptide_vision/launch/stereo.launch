@@ -1,0 +1,36 @@
+<launch>
+  <arg name="left_serial_number" value="14432788" />
+  <arg name="right_serial_number" value="14490573" />
+
+  <group ns="stereo">
+
+    <node pkg="stereo_image_proc" type="stereo_image_proc" name="stereo_image_proc">
+      <param name="approximate_sync" value="true" />
+      <param name="queue_size" value="20" />
+    </node>
+
+    <group ns="left">
+      <node pkg="nodelet" type="nodelet" name="camera_nodelet_manager" args="manager" />
+      <node pkg="nodelet" type="nodelet" name="camera_nodelet"
+            args="load pointgrey_camera_driver/PointGreyCameraNodelet camera_nodelet_manager" >
+        <param name="frame_id" value="camera_left" />
+        <param name="serial" value="$(arg left_serial_number)" />
+        <param name="camera_info_url"
+               value="file://$(find riptide_vision)/camera_info/$(arg left_serial_number).yaml" />
+      </node>
+    </group>
+
+    <group ns="right">
+      <node pkg="nodelet" type="nodelet" name="camera_nodelet_manager" args="manager" />
+      <node pkg="nodelet" type="nodelet" name="camera_nodelet"
+            args="load pointgrey_camera_driver/PointGreyCameraNodelet camera_nodelet_manager" >
+        <param name="frame_id" value="camera_right" />
+        <param name="serial" value="$(arg right_serial_number)" />
+        <param name="camera_info_url"
+               value="file://$(find riptide_vision)/camera_info/$(arg right_serial_number).yaml" />
+      </node>
+    </group>
+
+  </group>
+
+</launch>

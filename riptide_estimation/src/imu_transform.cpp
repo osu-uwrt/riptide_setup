@@ -33,6 +33,7 @@ private:
   // Correction term:
   tf::Matrix3x3 rotation_matrix;
   tf::Transform rotation;
+  double roll, pitch, yaw;
   // Type conversion helper functions:
   static tf::Vector3 vector3(geometry_msgs::Vector3 msg);
   static geometry_msgs::Vector3 vector3(tf::Vector3 tf);
@@ -53,7 +54,7 @@ public:
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "orientation");
+  ros::init(argc, argv, "transformation");
   Orientation orientation;
   orientation.loop();
 }
@@ -91,18 +92,29 @@ void Orientation::filter_cb(const imu_3dm_gx4::FilterOutput::ConstPtr& filter)
   filter_.header.stamp = filter->header.stamp;
   filter_.quat_status = filter->quat_status;
   filter_.bias_status = filter->bias_status;
-  filter_.orientation = quaternion(rotation * quaternion(filter->orientation));
-  //filter_.orientation_covariance = filter->orientation_covariance;
+
+  // Pull RPY out of Quaternion to make corrections and replace.
+  tf::Quaternion quaternion;
+  tf::quaternionMsgToTF(filter->orientation, quaternion);
+  tf::Matrix3x3 attitude = tf::Matrix3x3(quaternion);
+  attitude.getRPY(roll, pitch, yaw);
+  roll -= M_PI;
+  pitch *= -1;
+  yaw *= -1;
+  quaternion = tf::createQuaternionFromRPY(roll, pitch, yaw);
+  // Orientation signs are inverterd and x is rotated by M_PI.
+  quaternionTFToMsg(quaternion, filter_.orientation);
+  filter_.orientation_covariance = filter->orientation_covariance; // ?!
   filter_.bias = vector3(rotation * vector3(filter->bias));
-  //filter_.bias_covariance = filter->bias_covariance;
+  filter_.bias_covariance = filter->bias_covariance; // ?!
   filter_.bias_covariance_status = filter->bias_covariance_status;
   filter_.orientation_covariance_status = filter->orientation_covariance_status;
   filter_pub.publish(filter_);
 
   imu_pose.header.stamp=filter->header.stamp;
   imu_pose.pose.pose.orientation=filter_.orientation;
-  //  imu_pose.pose.covariance  
-  
+  //  imu_pose.pose.covariance
+
   pose_pub.publish(imu_pose);
 
   // Send orientation to TF
@@ -114,14 +126,15 @@ void Orientation::filter_cb(const imu_3dm_gx4::FilterOutput::ConstPtr& filter)
 void Orientation::imu_cb(const sensor_msgs::Imu::ConstPtr& imu)
 {
   imu_.header.stamp = imu->header.stamp;
-  //Fix line below???
-  imu_.orientation = filter_.orientation;
-//quaternion(rotation * quaternion(imu->orientation));
+  // Orientation is in the FilterOutput message.
+  imu_.orientation = imu->orientation;
   imu_.orientation_covariance = imu->orientation_covariance;
-  imu_.angular_velocity = vector3(rotation * vector3(imu->angular_velocity));
+  // Angular velocity is correct.
+  imu_.angular_velocity = imu->angular_velocity;
   imu_.angular_velocity_covariance = imu->angular_velocity_covariance;
+  // Linear acceleration signs are inverted.
   imu_.linear_acceleration = vector3(rotation * vector3(imu->linear_acceleration));
-  imu_.linear_acceleration_covariance = imu->linear_acceleration_covariance;
+  imu_.linear_acceleration_covariance = imu->linear_acceleration_covariance; // ?!
   imu_pub.publish(imu_);
 }
 
