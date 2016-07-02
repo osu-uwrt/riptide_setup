@@ -217,7 +217,7 @@ Solver::Solver(char** argv, tf::TransformListener& listener_adr)
 
 	thrust.header.frame_id = "base_link";
 
-	rot_sub = nh.subscribe<imu_3dm_gx4::FilterOutput>("state/orientation", 1, &Solver::orientation, this);
+	rot_sub = nh.subscribe<imu_3dm_gx4::FilterOutput>("state/filter", 1, &Solver::orientation, this);
 	cmd_sub = nh.subscribe<geometry_msgs::Accel>("command/accel", 1, &Solver::callback, this);
 	cmd_pub = nh.advertise<riptide_msgs::ThrustStamped>("command/thrust", 1);
 
