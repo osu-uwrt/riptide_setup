@@ -47,11 +47,11 @@ void target_cb(const nav_msgs::Odometry::ConstPtr& new_target)
   target[5] = new_target->twist.twist.angular.z;
 }
 
-void feedfwd_cb(const geometry_msgs::Accel::ConstPtr& feedfwd)
+void feedfwd_cb(const sensor_msgs::Imu::ConstPtr& feedfwd)
 {
-  cmd.linear.x = feedfwd->linear.x;
-  cmd.linear.y = feedfwd->linear.y;
-  cmd.linear.z = feedfwd->linear.z;
+  cmd.linear.x = feedfwd->linear_acceleration.x;
+  cmd.linear.y = feedfwd->linear_acceleration.y;
+  cmd.linear.z = feedfwd->linear_acceleration.z;
 }
 
 int main(int argc, char **argv)
@@ -64,7 +64,7 @@ int main(int argc, char **argv)
 
   filter_sub = nh.subscribe<imu_3dm_gx4::FilterOutput>("state/filter", 1, &filter_cb);
   target_sub = nh.subscribe<nav_msgs::Odometry>("target/odom", 1, &target_cb);
-  feedfwd_sub = nh.subscribe<geometry_msgs::Accel>("state/imu", 1, &feedfwd_cb);
+  feedfwd_sub = nh.subscribe<sensor_msgs::Imu>("state/imu", 1, &feedfwd_cb);
   accel_pub = nh.advertise<geometry_msgs::Accel>("command/accel", 1);
 
   roll.init(r);
