@@ -1,13 +1,12 @@
 #include <Wire.h>
 #include <ros.h>
 #include <riptide_msgs/PwmStamped.h>
-#include <riptide_msgs/Thrusters.h>
+#include <std_msgs/Int8.h>
 
 // Thrusters off!
 int STOP = 1500;
 // Checksum size
-int ONE_PACKET = 10;
-int FIVE_BYTES = 5;
+int ONE_BYTE = 1;
 // Addresses
 int ESC_BOARD[] = {1, 2, 4, 8, 16};
 
@@ -17,7 +16,7 @@ void callback(const riptide_msgs::PwmStamped &cmd);
 
 // ROS is the best
 ros::NodeHandle nh;
-riptide_msgs::Thrusters state;
+std_msgs::Int8 state;
 ros::Publisher state_pub("state/esc", &state);
 ros::Subscriber<riptide_msgs::PwmStamped> cmd_sub("command/pwm", &callback);
 
@@ -26,8 +25,8 @@ void setup()
   Wire.begin();
 
   nh.initNode();
-  nh.advertise(state_pub);
   nh.subscribe(cmd_sub);
+  nh.advertise(state_pub);
 
   // Surge LEDs
   pinMode(2, OUTPUT);
@@ -50,23 +49,13 @@ void loop()
 {
   // Check msgs for callback
   nh.spinOnce();
+
+  delay(5);
 }
 
 // Production ready function
 void callback(const riptide_msgs::PwmStamped &cmd)
 {
-  // Create local checksums
-  state.surge_port_hi.checksum = (uint8_t)(cmd.pwm.surge_port_hi >> 8) ^ (cmd.pwm.surge_port_hi);
-  state.surge_port_hi.checksum = (uint8_t)(cmd.pwm.surge_stbd_hi >> 8) ^ (cmd.pwm.surge_stbd_hi);
-  state.surge_port_hi.checksum = (uint8_t)(cmd.pwm.surge_port_lo >> 8) ^ (cmd.pwm.surge_port_lo);
-  state.surge_port_hi.checksum = (uint8_t)(cmd.pwm.surge_stbd_lo >> 8) ^ (cmd.pwm.surge_stbd_lo);
-  state.surge_port_hi.checksum = (uint8_t)(cmd.pwm.sway_fwd >> 8) ^ (cmd.pwm.sway_fwd);
-  state.surge_port_hi.checksum = (uint8_t)(cmd.pwm.sway_aft >> 8) ^ (cmd.pwm.sway_aft);
-  state.surge_port_hi.checksum = (uint8_t)(cmd.pwm.heave_port_fwd >> 8) ^ (cmd.pwm.heave_port_fwd);
-  state.surge_port_hi.checksum = (uint8_t)(cmd.pwm.heave_stbd_fwd >> 8) ^ (cmd.pwm.heave_stbd_fwd);
-  state.surge_port_hi.checksum = (uint8_t)(cmd.pwm.heave_port_aft >> 8) ^ (cmd.pwm.heave_port_aft);
-  state.surge_port_hi.checksum = (uint8_t)(cmd.pwm.heave_stbd_aft >> 8) ^ (cmd.pwm.heave_stbd_aft);
-
   //
   // Write PWM data & request remote checksums
   //
@@ -78,13 +67,7 @@ void callback(const riptide_msgs::PwmStamped &cmd)
   Wire.write(valid(cmd.pwm.surge_stbd_hi));
   Wire.endTransmission();
 
-  Wire.requestFrom(ESC_BOARD[0], ONE_PACKET);
-  state.surge_port_hi.checksum ^= Wire.read();
-  state.surge_stbd_hi.checksum ^= Wire.read();
-  state.surge_port_hi.temp = (Wire.read() | Wire.read() << 8);
-  state.surge_port_hi.current = get_current();
-  state.surge_stbd_hi.temp = Wire.read() | Wire.read() << 8;
-  state.surge_stbd_hi.current = get_current();
+  Wire.requestFrom(ESC_BOARD[0], ONE_BYTE);
 
   Wire.beginTransmission(ESC_BOARD[1]);
   Wire.write(valid(cmd.pwm.surge_port_lo) >> 8);
@@ -93,13 +76,7 @@ void callback(const riptide_msgs::PwmStamped &cmd)
   Wire.write(valid(cmd.pwm.surge_stbd_lo));
   Wire.endTransmission();
 
-  Wire.requestFrom(ESC_BOARD[1], ONE_PACKET);
-  state.surge_port_lo.checksum ^= Wire.read();
-  state.surge_stbd_lo.checksum ^= Wire.read();
-  state.surge_port_lo.temp = Wire.read() | Wire.read() << 8;
-  state.surge_port_lo.current = get_current();
-  state.surge_stbd_lo.temp = Wire.read() | Wire.read() << 8;
-  state.surge_stbd_lo.current = get_current();
+  Wire.requestFrom(ESC_BOARD[1], ONE_BYTE);
 
   Wire.beginTransmission(ESC_BOARD[2]);
   Wire.write(valid(cmd.pwm.sway_fwd) >> 8);
@@ -108,13 +85,7 @@ void callback(const riptide_msgs::PwmStamped &cmd)
   Wire.write(valid(cmd.pwm.sway_aft));
   Wire.endTransmission();
 
-  Wire.requestFrom(ESC_BOARD[2], ONE_PACKET);
-  state.sway_fwd.checksum ^= Wire.read();
-  state.sway_aft.checksum ^= Wire.read();
-  state.sway_fwd.temp = Wire.read() | Wire.read() << 8;
-  state.sway_fwd.current = get_current();
-  state.sway_aft.temp = Wire.read() | Wire.read() << 8;
-  state.sway_aft.current = get_current();
+  Wire.requestFrom(ESC_BOARD[2], ONE_BYTE);
 
   Wire.beginTransmission(ESC_BOARD[3]);
   Wire.write(valid(cmd.pwm.heave_port_fwd) >> 8);
@@ -123,14 +94,6 @@ void callback(const riptide_msgs::PwmStamped &cmd)
   Wire.write(valid(cmd.pwm.heave_stbd_fwd));
   Wire.endTransmission();
 
-  Wire.requestFrom(ESC_BOARD[3], ONE_PACKET);
-  state.heave_port_fwd.checksum ^= Wire.read();
-  state.heave_stbd_fwd.checksum ^= Wire.read();
-  state.heave_port_fwd.temp = Wire.read() | Wire.read() << 8;
-  state.heave_port_fwd.current = get_current();
-  state.heave_stbd_fwd.temp = Wire.read() | Wire.read() << 8;
-  state.heave_stbd_fwd.current = get_current();
-
   Wire.beginTransmission(ESC_BOARD[4]);
   Wire.write(valid(cmd.pwm.heave_port_aft) >> 8);
   Wire.write(valid(cmd.pwm.heave_port_aft));
@@ -138,15 +101,6 @@ void callback(const riptide_msgs::PwmStamped &cmd)
   Wire.write(valid(cmd.pwm.heave_stbd_aft));
   Wire.endTransmission();
 
-  Wire.requestFrom(ESC_BOARD[4], ONE_PACKET);
-  state.heave_port_aft.checksum ^= Wire.read();
-  state.heave_stbd_aft.checksum ^= Wire.read();
-  state.heave_port_aft.temp = Wire.read() | Wire.read() << 8;
-  state.heave_port_aft.current = get_current();
-  state.heave_stbd_aft.temp = Wire.read() | Wire.read() << 8;
-  state.heave_stbd_aft.current = get_current();
-
-  // Publish checksum results
   state_pub.publish(&state);
 
   // Red LEDs
@@ -176,15 +130,10 @@ void callback(const riptide_msgs::PwmStamped &cmd)
   else {digitalWrite(11, LOW); }
 }
 
+// Ensure 1100 <= pwm <= 1900
 int16_t valid(int16_t pwm)
 {
   pwm = pwm > 1900 ? 1900 : pwm;
   pwm = pwm < 1100 ? 1100 : pwm;
   return pwm;
 }
-
-float get_current()
-{
-  return ((Wire.read() | Wire.read() << 8) - 96.0) / 36.0;
-}
-
