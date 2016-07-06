@@ -16,4 +16,5 @@ add_dependencies(imu_transform imu_3dm_gx4_gencpp)
 target_link_libraries(imu_transform ${catkin_LIBRARIES})
 
 add_executable(imu_orientation src/imu_orientation.cpp)
+add_dependencies(imu_orientation imu_3dm_gx4_gencpp)
 target_link_libraries(imu_orientation ${catkin_LIBRARIES})
