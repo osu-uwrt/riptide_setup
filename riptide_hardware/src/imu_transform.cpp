@@ -32,7 +32,7 @@ private:
   sensor_msgs::FluidPressure pressure_;
   // Correction term:
   tf::Matrix3x3 rotation_matrix;
-  tf::Transform rotation;
+  tf::Transform negative_identity;
   double roll, pitch, yaw;
   // Type conversion helper functions:
   static tf::Vector3 vector3(geometry_msgs::Vector3 msg);
@@ -54,7 +54,7 @@ public:
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "transformation");
+  ros::init(argc, argv, "imu_transformation");
   Orientation orientation;
   orientation.loop();
 }
@@ -63,9 +63,9 @@ Orientation::Orientation()
 {
   target_frame = "imu0";
 
-  filter_sub = nh.subscribe<imu_3dm_gx4::FilterOutput>("imu/filter", 1, &Orientation::filter_cb, this);
+  pose_pub = nh.advertise<nav_msgs::Odometry>("state/orientation", 1);
   filter_pub = nh.advertise<imu_3dm_gx4::FilterOutput>("state/filter", 1);
-  pose_pub = nh.advertise<nav_msgs::Odometry>("imu_orientation",1);
+  filter_sub = nh.subscribe<imu_3dm_gx4::FilterOutput>("imu/filter", 1, &Orientation::filter_cb, this);
   filter_.header.frame_id = target_frame;;
 
   imu_pub = nh.advertise<sensor_msgs::Imu>("state/imu", 1);
@@ -81,10 +81,10 @@ Orientation::Orientation()
   pressure_.header.frame_id = target_frame;;
 
   rotation_matrix = tf::Matrix3x3(-1, 0, 0, 0, -1, 0, 0, 0, -1);
-  rotation = tf::Transform(rotation_matrix);
+  negative_identity = tf::Transform(rotation_matrix);
 
   tform.header.frame_id = "map";
-  tform.child_frame_id = "base_link";
+  tform.child_frame_id = target_frame;
 }
 
 void Orientation::filter_cb(const imu_3dm_gx4::FilterOutput::ConstPtr& filter)
@@ -105,7 +105,7 @@ void Orientation::filter_cb(const imu_3dm_gx4::FilterOutput::ConstPtr& filter)
   // Orientation signs are inverterd and x is rotated by M_PI.
   quaternionTFToMsg(quaternion, filter_.orientation);
   filter_.orientation_covariance = filter->orientation_covariance; // ?!
-  filter_.bias = vector3(rotation * vector3(filter->bias));
+  filter_.bias = vector3(negative_identity * vector3(filter->bias));
   filter_.bias_covariance = filter->bias_covariance; // ?!
   filter_.bias_covariance_status = filter->bias_covariance_status;
   filter_.orientation_covariance_status = filter->orientation_covariance_status;
@@ -133,7 +133,7 @@ void Orientation::imu_cb(const sensor_msgs::Imu::ConstPtr& imu)
   imu_.angular_velocity = imu->angular_velocity;
   imu_.angular_velocity_covariance = imu->angular_velocity_covariance;
   // Linear acceleration signs are inverted.
-  imu_.linear_acceleration = vector3(rotation * vector3(imu->linear_acceleration));
+  imu_.linear_acceleration = vector3(negative_identity * vector3(imu->linear_acceleration));
   imu_.linear_acceleration_covariance = imu->linear_acceleration_covariance; // ?!
   imu_pub.publish(imu_);
 }
@@ -141,7 +141,7 @@ void Orientation::imu_cb(const sensor_msgs::Imu::ConstPtr& imu)
 void Orientation::field_cb(const sensor_msgs::MagneticField::ConstPtr& field)
 {
   field_.header.stamp = field->header.stamp;
-  field_.magnetic_field = vector3(rotation * vector3(field->magnetic_field));
+  field_.magnetic_field = vector3(negative_identity * vector3(field->magnetic_field));
   // field_.magnetic_field_covariance
   field_pub.publish(field_);
 }

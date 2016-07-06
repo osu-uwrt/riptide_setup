@@ -1,41 +1,11 @@
 <launch>
-    <!-- Node Settings -->
-    <arg name="output" value="screen"/>
-    <arg name="imu" value="imu"/>
 
-    <!-- IMU Settings -->
-    <arg name="device" value="/dev/ttyACM0" />
+  <!-- Launch the comprehensive transformation remapping node -->
+  <node name="imu_transform" pkg="riptide_hardware" type="imu_transform" />
 
-    <!-- Verbose logging -->
-    <arg name="verbose" value="false"/>
+  <!-- Launch the imu_3dm_gx4 driver node -->
+  <include file="$(find imu_3dm_gx4)/launch/imu.launch">
+    <arg name="enable_filter" value="true" />
+  </include>
 
-    <!-- Frame ID for messages -->
-    <arg name="frame_id" value="$(arg imu)"/>
-
-    <!-- Baudrate of serial comms (see manual for allowed values) -->
-    <arg name="baudrate" value="115200"/>
-
-    <!-- Data rate in Hz -->
-    <arg name="imu_rate" value="100"/>
-    <arg name="filter_rate" value="100"/>
-
-    <!-- Enable/Disable the filter -->
-    <arg name="enable_filter" value="true"/>
-
-    <!-- Enable/Disable filter updates -->
-    <arg name="enable_accel_update" value="false"/>
-    <arg name="enable_mag_update" value="false"/>
-
-    <!-- Launch the imu_3dm_gx4 driver node -->
-    <node pkg="imu_3dm_gx4" name="imu" type="imu_3dm_gx4" output="$(arg output)">
-        <param name="device" type="string" value="$(arg device)" />
-        <param name="verbose" type="bool" value="$(arg verbose)"/>
-        <param name="baudrate" type="int" value="$(arg baudrate)" />
-        <param name="frame_id" type="string" value="$(arg frame_id)"/>
-        <param name="imu_rate" type="int" value="$(arg imu_rate)" />
-        <param name="filter_rate" type="int" value="$(arg filter_rate)"/>
-        <param name="enable_filter" type="bool" value="$(arg enable_filter)"/>
-        <param name="enable_accel_update" type="bool" value="$(arg enable_accel_update)"/>
-        <param name="enable_mag_update" type="bool" value="$(arg enable_mag_update)"/>
-    </node>
 </launch>
