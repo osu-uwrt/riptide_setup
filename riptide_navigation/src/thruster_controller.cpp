@@ -174,7 +174,7 @@ class Solver
 	private:
 		// Comms
 		ros::NodeHandle nh;
-		ros::Subscriber rot_sub;
+		ros::Subscriber state_sub;
 		ros::Subscriber cmd_sub;
 		ros::Publisher cmd_pub;
 		riptide_msgs::ThrustStamped thrust;
@@ -194,15 +194,14 @@ class Solver
 
 	public:
 		Solver(char** argv, tf::TransformListener& listener_adr);
-		void orientation(const imu_3dm_gx4::FilterOutput::ConstPtr& r);
-		void velocity(const sensor_msgs::Imu::ConstPtr& msg);
+		void state(const sensor_msgs::Imu::ConstPtr& msg);
 		void callback(const geometry_msgs::Accel::ConstPtr& a);
 		void loop();
 };
 
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "thrust_solver");
+	ros::init(argc, argv, "thruster_controller");
   tf::TransformListener tf_listener;
 	Solver solver(argv, tf_listener);
 	solver.loop();
@@ -217,7 +216,7 @@ Solver::Solver(char** argv, tf::TransformListener& listener_adr)
 
 	thrust.header.frame_id = "base_link";
 
-	rot_sub = nh.subscribe<imu_3dm_gx4::FilterOutput>("state/filter", 1, &Solver::orientation, this);
+	state_sub = nh.subscribe<sensor_msgs::Imu>("state/imu", 1, &Solver::state, this);
 	cmd_sub = nh.subscribe<geometry_msgs::Accel>("command/accel", 1, &Solver::callback, this);
 	cmd_pub = nh.advertise<riptide_msgs::ThrustStamped>("command/thrust", 1);
 
@@ -325,17 +324,14 @@ Solver::Solver(char** argv, tf::TransformListener& listener_adr)
 #endif
 }
 
-void Solver::orientation(const imu_3dm_gx4::FilterOutput::ConstPtr& msg)
+void Solver::state(const sensor_msgs::Imu::ConstPtr& msg)
 {
 	tf::Quaternion tf;
   quaternionMsgToTF(msg->orientation, tf);
 	rotation_matrix.setRotation(tf.normalized());
-}
-
-void Solver::velocity(const sensor_msgs::Imu::ConstPtr& msg)
-{
 	vector3MsgToTF(msg->angular_velocity, ang_v);
 }
+
 void Solver::callback(const geometry_msgs::Accel::ConstPtr& a)
 {
 	cmdSurge = a->linear.x;
