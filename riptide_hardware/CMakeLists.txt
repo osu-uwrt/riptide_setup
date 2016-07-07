@@ -11,10 +11,6 @@ add_executable(thrust_cal src/thrust_cal.cpp)
 add_dependencies(thrust_cal riptide_msgs_gencpp)
 target_link_libraries(thrust_cal ${catkin_LIBRARIES})
 
-add_executable(imu_transform src/imu_transform.cpp)
-add_dependencies(imu_transform imu_3dm_gx4_gencpp)
-target_link_libraries(imu_transform ${catkin_LIBRARIES})
-
-add_executable(imu_orientation src/imu_orientation.cpp)
-add_dependencies(imu_orientation imu_3dm_gx4_gencpp)
-target_link_libraries(imu_orientation ${catkin_LIBRARIES})
+add_executable(imu_state src/imu_state.cpp)
+add_dependencies(imu_state imu_3dm_gx4_gencpp)
+target_link_libraries(imu_state ${catkin_LIBRARIES})

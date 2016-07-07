@@ -14,4 +14,6 @@
     <arg name="enable_mag_update" value="false" />
   </include>
 
+  <node pkg="riptide_hardware" type="imu_state" name="imu_state" />
+
 </launch>
