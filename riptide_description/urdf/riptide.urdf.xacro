@@ -55,6 +55,16 @@
     </visual>
   </link>
 
+  <joint name="base_imu" type="fixed">
+    <origin xyz="0 0 0" rpy="${M_PI} 0 0"/>
+    <parent link="base_link"/>
+    <child link="imu"/>
+  </joint>
+
+  <link name="imu">
+  </link>
+
+
   <material name="frame">
   <color rgba="0 0 0 1.0"/>
   </material>
