@@ -23,33 +23,97 @@
     </inertial>
   </link>
 
-  <joint name="base_frame" type="fixed">
-    <origin xyz="0.1354 0.0003 0.0436" rpy="0 0 0"/>
-    <parent link="base_link"/>
-    <child link="frame_link"/>
-  </joint>
-
-  <link name="frame_link">
-    <visual>
-      <origin xyz="0 -0.0483 0.08" rpy="${M_PI/2} 0 ${M_PI/2}"/>
-      <geometry>
-        <mesh filename="package://riptide_description/meshes/chassis.stl"/>
-      </geometry>
-      <material name="frame"/>
-    </visual>
-  </link>
-
-  <joint name="frame_housing" type="fixed">
+  <joint name="base_housing" type="fixed">
     <origin xyz="0 0 0" rpy="0 0 0"/>
-    <parent link="frame_link"/>
+    <parent link="base_link"/>
     <child link="housing_link"/>
   </joint>
 
   <link name="housing_link">
     <visual>
-      <origin xyz="0 -0.0483 0.08" rpy="${M_PI/2} 0 ${M_PI/2}"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="package://riptide_description/meshes/main_housing.stl"/>
+        <mesh filename="package://riptide_description/meshes/riptide_housing.stl"/>
+      </geometry>
+      <material name="housing"/>
+    </visual>
+  </link>
+
+  <joint name="housing_chassis" type="fixed">
+    <origin xyz="-0.0556 0 -0.0749" rpy="0 0 0"/>
+    <parent link="housing_link"/>
+    <child link="chassis_link"/>
+  </joint>
+
+  <link name="chassis_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://riptide_description/meshes/riptide_chassis.stl"/>
+      </geometry>
+      <material name="chassis"/>
+    </visual>
+  </link>
+
+  <joint name="chassis_acoustics" type="fixed">
+    <origin xyz="0.1699 0 -0.0584" rpy="0 0 0"/>
+    <parent link="chassis_link"/>
+    <child link="acoustic_link"/>
+  </joint>
+
+  <link name="acoustic_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://riptide_description/meshes/riptide_acoustics.stl"/>
+      </geometry>
+      <material name="housing"/>
+    </visual>
+  </link>
+
+  <joint name="chassis_pneumatics" type="fixed">
+    <origin xyz="-0.1172 0 -0.0584" rpy="0 0 0"/>
+    <parent link="chassis_link"/>
+    <child link="pneumatic_link"/>
+  </joint>
+
+  <link name="pneumatic_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://riptide_description/meshes/riptide_pneumatics.stl"/>
+      </geometry>
+      <material name="housing"/>
+    </visual>
+  </link>
+
+  <joint name="chassis_bat_port" type="fixed">
+    <origin xyz="-0.1781 0.1302 -0.0140" rpy="0 0 0"/>
+    <parent link="chassis_link"/>
+    <child link="bat_port_link"/>
+  </joint>
+
+  <link name="bat_port_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://riptide_description/meshes/riptide_port_battery.stl"/>
+      </geometry>
+      <material name="housing"/>
+    </visual>
+  </link>
+
+  <joint name="chassis_bat_stbd" type="fixed">
+    <origin xyz="-0.1781 -0.1302 -0.0140" rpy="0 0 0"/>
+    <parent link="chassis_link"/>
+    <child link="bat_stbd_link"/>
+  </joint>
+
+  <link name="bat_stbd_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://riptide_description/meshes/riptide_stbd_battery.stl"/>
       </geometry>
       <material name="housing"/>
     </visual>
@@ -64,8 +128,7 @@
   <link name="imu">
   </link>
 
-
-  <material name="frame">
+  <material name="chassis">
   <color rgba="0 0 0 1.0"/>
   </material>
   <material name="housing">

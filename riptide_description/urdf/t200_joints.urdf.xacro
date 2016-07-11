@@ -29,7 +29,7 @@
 
     <joint name="${name}_thruster_joint" type="fixed">
       <origin xyz="${position}" rpy="${orientation}"/>
-      <parent link="frame"/>
+      <parent link="chassis"/>
       <child link="${name}_thruster"/>
     </joint>
 
