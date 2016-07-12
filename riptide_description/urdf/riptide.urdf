@@ -10,30 +10,145 @@
 <!--     @ The Ohio State University  -->
 <!--                                  -->
 <robot name="riptide" xmlns:xacro="http://ros.org/wiki/xacro">
-  <link name="surge_stbd_hi_thruster">
+  <link name="base_link">
+  </link>
+  <link name="housing_link">
     <inertial>
-      <origin rpy="0 0 0" xyz="-0.00000254 0.00006604 0.0074422"/>
-      <mass value="0.3520"/>
-      <inertia ixx="0.00028913" ixy="0.00000000" ixz="0.00000000" iyy="0.00029762" iyz="0.00000000" izz="0.00032951"/>
+      <origin rpy="0 0 0" xyz="-0.0251 0.0002 -0.0224"/>
+      <mass value="9.59"/>
+      <inertia ixx="0.1027" ixy="0.0000" ixz="0.0000" iyy="0.4425" iyz="0.0000" izz="0.4273"/>
     </inertial>
     <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.1127" radius="0.0483"/>
+        <mesh filename="package://riptide_description/meshes/riptide_housing.stl"/>
       </geometry>
-      <material name="Red"/>
+      <material name="housing"/>
     </visual>
     <collision>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.1127" radius="0.0483"/>
+        <mesh filename="package://riptide_description/meshes/riptide_housing.stl"/>
       </geometry>
     </collision>
   </link>
-  <joint name="surge_stbd_hi_thruster_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="-0.2128 -0.1823 0.1384"/>
-    <parent link="frame_link"/>
-    <child link="surge_stbd_hi_thruster"/>
+  <link name="chassis_link">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.0129 0 0.0561"/>
+      <mass value="2.71"/>
+      <inertia ixx="0.216" ixy="0.0000" ixz="0.0000" iyy="0.1953" iyz="0.0000" izz="0.0952"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://riptide_description/meshes/riptide_chassis.stl"/>
+      </geometry>
+      <material name="chassis"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://riptide_description/meshes/riptide_chassis.stl"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="acoustics_link">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.0027 0.0027 -0.0265"/>
+      <mass value="0.97"/>
+      <inertia ixx="0.0019" ixy="0.0000" ixz="0.0000" iyy="0.0019" iyz="0.0000" izz="0.003"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://riptide_description/meshes/riptide_acoustics.stl"/>
+      </geometry>
+      <material name="housing"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://riptide_description/meshes/riptide_acoustics.stl"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="pneumatics_link">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.0141 0.0015 -0.0392"/>
+      <mass value="1.3503"/>
+      <inertia ixx="0.008" ixy="0.0000" ixz="0.0000" iyy="0.0088" iyz="0.0000" izz="0.0107"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://riptide_description/meshes/riptide_pneumatics.stl"/>
+      </geometry>
+      <material name="housing"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://riptide_description/meshes/riptide_pneumatics.stl"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="port_battery_link">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.0936 0.0278 -0.0003"/>
+      <mass value="1.867"/>
+      <inertia ixx="0.0034" ixy="0.0000" ixz="0.0000" iyy="0.0253" iyz="0.0000" izz="0.0262"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://riptide_description/meshes/riptide_port_battery.stl"/>
+      </geometry>
+      <material name="housing"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://riptide_description/meshes/riptide_port_battery.stl"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="stbd_battery_link">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.0962 -0.0291 -0.0003"/>
+      <mass value="1.867"/>
+      <inertia ixx="0.0034" ixy="0.0000" ixz="0.0000" iyy="0.0253" iyz="0.0000" izz="0.0262"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://riptide_description/meshes/riptide_stbd_battery.stl"/>
+      </geometry>
+      <material name="housing"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://riptide_description/meshes/riptide_stbd_battery.stl"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="base_housing" type="fixed">
+    <origin rpy="0 0 0" xyz="0.0737 0.0005 0.0621"/>
+    <parent link="base_link"/>
+    <child link="housing_link"/>
+  </joint>
+  <joint name="housing_chassis" type="fixed">
+    <origin rpy="0 0 0" xyz="-0.0556 0 -0.0749"/>
+    <parent link="housing_link"/>
+    <child link="chassis_link"/>
+  </joint>
+  <joint name="chassis_acoustics" type="fixed">
+    <origin rpy="0 0 0" xyz="0.1699 0 -0.0584"/>
+    <parent link="chassis_link"/>
+    <child link="acoustics_link"/>
+  </joint>
+  <joint name="chassis_pneumatics" type="fixed">
+    <origin rpy="0 0 0" xyz="-0.1172 0 -0.0584"/>
+    <parent link="chassis_link"/>
+    <child link="pneumatics_link"/>
+  </joint>
+  <joint name="chassis_port_battery" type="fixed">
+    <origin rpy="0 0 0" xyz="-0.1781 0.1302 -0.014"/>
+    <parent link="chassis_link"/>
+    <child link="port_battery_link"/>
+  </joint>
+  <joint name="chassis_stbd_battery" type="fixed">
+    <origin rpy="0 0 0" xyz="-0.1781 -0.1302 -0.014"/>
+    <parent link="chassis_link"/>
+    <child link="stbd_battery_link"/>
   </joint>
   <link name="surge_port_hi_thruster">
     <inertial>
@@ -44,9 +159,9 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.1127" radius="0.0483"/>
+        <mesh filename="package://riptide_description/meshes/blue_robotics_t200.stl"/>
       </geometry>
-      <material name="Red"/>
+      <material name="housing"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -56,11 +171,11 @@
     </collision>
   </link>
   <joint name="surge_port_hi_thruster_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="-0.2128 0.1823 0.1384"/>
-    <parent link="frame_link"/>
+    <origin rpy="0 -1.57079633 3.14159266" xyz="-0.2238 0.1824 0.1384"/>
+    <parent link="chassis_link"/>
     <child link="surge_port_hi_thruster"/>
   </joint>
-  <link name="surge_stbd_lo_thruster">
+  <link name="surge_stbd_hi_thruster">
     <inertial>
       <origin rpy="0 0 0" xyz="-0.00000254 0.00006604 0.0074422"/>
       <mass value="0.3520"/>
@@ -69,9 +184,9 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.1127" radius="0.0483"/>
+        <mesh filename="package://riptide_description/meshes/blue_robotics_t200.stl"/>
       </geometry>
-      <material name="Red"/>
+      <material name="housing"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -80,10 +195,10 @@
       </geometry>
     </collision>
   </link>
-  <joint name="surge_stbd_lo_thruster_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="-0.2128 -0.1823 -0.0762"/>
-    <parent link="frame_link"/>
-    <child link="surge_stbd_lo_thruster"/>
+  <joint name="surge_stbd_hi_thruster_joint" type="fixed">
+    <origin rpy="0 1.57079633 0" xyz="-0.2238 -0.1824 0.1384"/>
+    <parent link="chassis_link"/>
+    <child link="surge_stbd_hi_thruster"/>
   </joint>
   <link name="surge_port_lo_thruster">
     <inertial>
@@ -94,9 +209,9 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.1127" radius="0.0483"/>
+        <mesh filename="package://riptide_description/meshes/blue_robotics_t200.stl"/>
       </geometry>
-      <material name="Red"/>
+      <material name="housing"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -106,9 +221,34 @@
     </collision>
   </link>
   <joint name="surge_port_lo_thruster_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="-0.2128 0.1823 -0.0762"/>
-    <parent link="frame_link"/>
+    <origin rpy="0 -1.57079633 3.14159266" xyz="-0.2238 0.1824 -0.0838"/>
+    <parent link="chassis_link"/>
     <child link="surge_port_lo_thruster"/>
+  </joint>
+  <link name="surge_stbd_lo_thruster">
+    <inertial>
+      <origin rpy="0 0 0" xyz="-0.00000254 0.00006604 0.0074422"/>
+      <mass value="0.3520"/>
+      <inertia ixx="0.00028913" ixy="0.00000000" ixz="0.00000000" iyy="0.00029762" iyz="0.00000000" izz="0.00032951"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://riptide_description/meshes/blue_robotics_t200.stl"/>
+      </geometry>
+      <material name="housing"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.1127" radius="0.0483"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="surge_stbd_lo_thruster_joint" type="fixed">
+    <origin rpy="0 1.57079633 0" xyz="-0.2238 -0.1824 -0.0838"/>
+    <parent link="chassis_link"/>
+    <child link="surge_stbd_lo_thruster"/>
   </joint>
   <link name="sway_fwd_thruster">
     <inertial>
@@ -119,9 +259,9 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.1127" radius="0.0483"/>
+        <mesh filename="package://riptide_description/meshes/blue_robotics_t200.stl"/>
       </geometry>
-      <material name="Red"/>
+      <material name="housing"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -131,8 +271,8 @@
     </collision>
   </link>
   <joint name="sway_fwd_thruster_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="0.3776 0.0110 -0.0838"/>
-    <parent link="frame_link"/>
+    <origin rpy="0 1.57079633 1.57079633" xyz="0.3776 0.0000 -0.0838"/>
+    <parent link="chassis_link"/>
     <child link="sway_fwd_thruster"/>
   </joint>
   <link name="sway_aft_thruster">
@@ -144,9 +284,9 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.1127" radius="0.0483"/>
+        <mesh filename="package://riptide_description/meshes/blue_robotics_t200.stl"/>
       </geometry>
-      <material name="Red"/>
+      <material name="housing"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -156,34 +296,9 @@
     </collision>
   </link>
   <joint name="sway_aft_thruster_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="-0.3744 0.0110 -0.0838"/>
-    <parent link="frame_link"/>
+    <origin rpy="0 -1.57079633 -1.57079633" xyz="-0.3744 0.0000 -0.0838"/>
+    <parent link="chassis_link"/>
     <child link="sway_aft_thruster"/>
-  </joint>
-  <link name="heave_stbd_fwd_thruster">
-    <inertial>
-      <origin rpy="0 0 0" xyz="-0.00000254 0.00006604 0.0074422"/>
-      <mass value="0.3520"/>
-      <inertia ixx="0.00028913" ixy="0.00000000" ixz="0.00000000" iyy="0.00029762" iyz="0.00000000" izz="0.00032951"/>
-    </inertial>
-    <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <cylinder length="0.1127" radius="0.0483"/>
-      </geometry>
-      <material name="Red"/>
-    </visual>
-    <collision>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <cylinder length="0.1127" radius="0.0483"/>
-      </geometry>
-    </collision>
-  </link>
-  <joint name="heave_stbd_fwd_thruster_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="0.2824 -0.1823 0.007"/>
-    <parent link="frame_link"/>
-    <child link="heave_stbd_fwd_thruster"/>
   </joint>
   <link name="heave_port_fwd_thruster">
     <inertial>
@@ -194,9 +309,9 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.1127" radius="0.0483"/>
+        <mesh filename="package://riptide_description/meshes/blue_robotics_t200.stl"/>
       </geometry>
-      <material name="Red"/>
+      <material name="housing"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -206,11 +321,11 @@
     </collision>
   </link>
   <joint name="heave_port_fwd_thruster_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="0.2824 0.1823 0.007"/>
-    <parent link="frame_link"/>
+    <origin rpy="0 0 3.14159266" xyz="0.2824 0.1824 -0.0033"/>
+    <parent link="chassis_link"/>
     <child link="heave_port_fwd_thruster"/>
   </joint>
-  <link name="heave_stbd_aft_thruster">
+  <link name="heave_stbd_fwd_thruster">
     <inertial>
       <origin rpy="0 0 0" xyz="-0.00000254 0.00006604 0.0074422"/>
       <mass value="0.3520"/>
@@ -219,9 +334,9 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.1127" radius="0.0483"/>
+        <mesh filename="package://riptide_description/meshes/blue_robotics_t200.stl"/>
       </geometry>
-      <material name="Red"/>
+      <material name="housing"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -230,10 +345,10 @@
       </geometry>
     </collision>
   </link>
-  <joint name="heave_stbd_aft_thruster_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="-0.2724 -0.1823 0.0077"/>
-    <parent link="frame_link"/>
-    <child link="heave_stbd_aft_thruster"/>
+  <joint name="heave_stbd_fwd_thruster_joint" type="fixed">
+    <origin rpy="0 0 0" xyz="0.2824 -0.1824 -0.0033"/>
+    <parent link="chassis_link"/>
+    <child link="heave_stbd_fwd_thruster"/>
   </joint>
   <link name="heave_port_aft_thruster">
     <inertial>
@@ -244,9 +359,9 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.1127" radius="0.0483"/>
+        <mesh filename="package://riptide_description/meshes/blue_robotics_t200.stl"/>
       </geometry>
-      <material name="Red"/>
+      <material name="housing"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -256,42 +371,43 @@
     </collision>
   </link>
   <joint name="heave_port_aft_thruster_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="-0.2724 0.1823 0.0077"/>
-    <parent link="frame_link"/>
+    <origin rpy="0 0 3.14159266" xyz="-0.2724 0.1824 -0.0033"/>
+    <parent link="chassis_link"/>
     <child link="heave_port_aft_thruster"/>
   </joint>
-  <link name="base_link">
+  <link name="heave_stbd_aft_thruster">
     <inertial>
-      <origin rpy="0 0 0" xyz="0.00043180 0.03202940 -0.13947140"/>
-      <mass value="48.84278656"/>
-      <inertia ixx="0.55649783" ixy="0.00000000" ixz="0.00000000" iyy="1.89075467" iyz="0.00000000" izz="1.9057706"/>
+      <origin rpy="0 0 0" xyz="-0.00000254 0.00006604 0.0074422"/>
+      <mass value="0.3520"/>
+      <inertia ixx="0.00028913" ixy="0.00000000" ixz="0.00000000" iyy="0.00029762" iyz="0.00000000" izz="0.00032951"/>
     </inertial>
     <visual>
-      <origin rpy="0 1.57079633 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="1.0" radius="0.4"/>
+        <mesh filename="package://riptide_description/meshes/blue_robotics_t200.stl"/>
       </geometry>
-      <material name="Grey"/>
+      <material name="housing"/>
     </visual>
     <collision>
-      <origin rpy="0 1.57079633 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <cylinder length="0.1127" radius="0.0483"/>
       </geometry>
     </collision>
   </link>
-  <joint name="base_frame" type="fixed">
-    <origin rpy="0 0 0" xyz="0 0 0"/>
-    <parent link="base_link"/>
-    <child link="frame_link"/>
+  <joint name="heave_stbd_aft_thruster_joint" type="fixed">
+    <origin rpy="0 0 0" xyz="-0.2724 -0.1824 -0.0033"/>
+    <parent link="chassis_link"/>
+    <child link="heave_stbd_aft_thruster"/>
   </joint>
-  <link name="frame_link">
-    <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <box size="1.0 0.4 0.3"/>
-      </geometry>
-      <material name="Black"/>
-    </visual>
-  </link>
+  <material name="chassis">
+    <color rgba="0 0 0 1.0"/>
+  </material>
+  <material name="housing">
+    <color rgba="0.2 0.2 0.2 1.0"/>
+  </material>
+  <material name="thruster">
+    <color rgba="0.365 0 0 1.0"/>
+  </material>
 </robot>
+

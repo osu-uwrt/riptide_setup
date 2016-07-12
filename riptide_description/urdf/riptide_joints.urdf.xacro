@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <joint name="base_housing" type="fixed">
+    <origin xyz="${base_housing}" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="housing_link"/>
+  </joint>
+
+  <joint name="housing_chassis" type="fixed">
+    <origin xyz="${housing_chassis}" rpy="0 0 0"/>
+    <parent link="housing_link"/>
+    <child link="chassis_link"/>
+  </joint>
+
+  <joint name="chassis_acoustics" type="fixed">
+    <origin xyz="${chassis_acoustics}" rpy="0 0 0"/>
+    <parent link="chassis_link"/>
+    <child link="acoustics_link"/>
+  </joint>
+
+  <joint name="chassis_pneumatics" type="fixed">
+    <origin xyz="${chassis_pneumatics}" rpy="0 0 0"/>
+    <parent link="chassis_link"/>
+    <child link="pneumatics_link"/>
+  </joint>
+
+  <joint name="chassis_port_battery" type="fixed">
+    <origin xyz="${chassis_port_battery}" rpy="0 0 0"/>
+    <parent link="chassis_link"/>
+    <child link="port_battery_link"/>
+  </joint>
+
+  <joint name="chassis_stbd_battery" type="fixed">
+    <origin xyz="${chassis_stbd_battery}" rpy="0 0 0"/>
+    <parent link="chassis_link"/>
+    <child link="stbd_battery_link"/>
+  </joint>
+
+</robot>

@@ -32,7 +32,7 @@
         <geometry>
           <mesh filename="package://riptide_description/meshes/blue_robotics_t200.stl"/>
         </geometry>
-        <material name="thruster"/>
+        <material name="housing"/>
       </visual>
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0"/>

@@ -1,0 +1,133 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <link name="base_link">
+  </link>
+
+  <link name="housing_link">
+    <inertial>
+      <origin xyz="${housing_com}" rpy="0 0 0" />
+      <mass value="${housing_mass}" />
+      <xacro:insert_block name="housing_inertia"/>
+    </inertial>
+
+    <visual>
+      <geometry>
+        <mesh filename="${housing_mesh}" />
+      </geometry>
+      <material name="housing" />
+    </visual>
+
+    <collision>
+      <geometry>
+        <mesh filename="${housing_mesh}" />
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="chassis_link">
+    <inertial>
+      <origin xyz="${chassis_com}" rpy="0 0 0" />
+      <mass value="${chassis_mass}" />
+      <xacro:insert_block name="chassis_inertia"/>
+    </inertial>
+
+    <visual>
+      <geometry>
+        <mesh filename="${chassis_mesh}" />
+      </geometry>
+      <material name="chassis" />
+    </visual>
+
+    <collision>
+      <geometry>
+        <mesh filename="${chassis_mesh}" />
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="acoustics_link">
+    <inertial>
+      <origin xyz="${acoustics_com}" rpy="0 0 0" />
+      <mass value="${acoustics_mass}" />
+      <xacro:insert_block name="acoustics_inertia"/>
+    </inertial>
+
+    <visual>
+      <geometry>
+        <mesh filename="${acoustics_mesh}" />
+      </geometry>
+      <material name="housing" />
+    </visual>
+
+    <collision>
+      <geometry>
+        <mesh filename="${acoustics_mesh}" />
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="pneumatics_link">
+    <inertial>
+      <origin xyz="${pneumatics_com}" rpy="0 0 0" />
+      <mass value="${pneumatics_mass}" />
+      <xacro:insert_block name="pneumatics_inertia"/>
+    </inertial>
+
+    <visual>
+      <geometry>
+        <mesh filename="${pneumatics_mesh}" />
+      </geometry>
+      <material name="housing" />
+    </visual>
+
+    <collision>
+      <geometry>
+        <mesh filename="${pneumatics_mesh}" />
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="port_battery_link">
+    <inertial>
+      <origin xyz="${port_battery_com}" rpy="0 0 0" />
+      <mass value="${port_battery_mass}" />
+      <xacro:insert_block name="port_battery_inertia"/>
+    </inertial>
+
+    <visual>
+      <geometry>
+        <mesh filename="${port_battery_mesh}" />
+      </geometry>
+      <material name="housing" />
+    </visual>
+
+    <collision>
+      <geometry>
+        <mesh filename="${port_battery_mesh}" />
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="stbd_battery_link">
+    <inertial>
+      <origin xyz="${stbd_battery_com}" rpy="0 0 0" />
+      <mass value="${stbd_battery_mass}" />
+      <xacro:insert_block name="stbd_battery_inertia"/>
+    </inertial>
+
+    <visual>
+      <geometry>
+        <mesh filename="${stbd_battery_mesh}" />
+      </geometry>
+        <material name="housing"/>
+    </visual>
+
+    <collision>
+      <geometry>
+        <mesh filename="${stbd_battery_mesh}" />
+      </geometry>
+    </collision>
+  </link>
+
+</robot>
