@@ -9,10 +9,10 @@
 
 <robot name="riptide" xmlns:xacro="http://ros.org/wiki/xacro">
 
-  <xacro:include filename="riptide_properties.urdf.xacro" />
+  <xacro:include filename="riptide_dimensions.urdf.xacro" />
   <xacro:include filename="riptide_links.urdf.xacro" />
   <xacro:include filename="riptide_joints.urdf.xacro" />
-  <xacro:include filename="t200_thrusters.urdf.xacro" />
+  <xacro:include filename="t200_thruster.urdf.xacro" />
 
   <material name="chassis">
     <color rgba="0 0 0 1.0"/>
