@@ -1,6 +1,10 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 
+  <!--               -->
+  <!-- Housing Links -->
+  <!--               -->
+
   <link name="base_link">
   </link>
 
@@ -57,7 +61,7 @@
       <geometry>
         <mesh filename="${acoustics_mesh}" />
       </geometry>
-      <material name="housing" />
+      <material name="acoustics" />
     </visual>
 
     <collision>
@@ -78,7 +82,7 @@
       <geometry>
         <mesh filename="${pneumatics_mesh}" />
       </geometry>
-      <material name="housing" />
+      <material name="pneumatics" />
     </visual>
 
     <collision>
@@ -99,7 +103,7 @@
       <geometry>
         <mesh filename="${port_battery_mesh}" />
       </geometry>
-      <material name="housing" />
+      <material name="battery" />
     </visual>
 
     <collision>
@@ -120,7 +124,7 @@
       <geometry>
         <mesh filename="${stbd_battery_mesh}" />
       </geometry>
-        <material name="housing"/>
+        <material name="battery"/>
     </visual>
 
     <collision>
@@ -129,5 +133,43 @@
       </geometry>
     </collision>
   </link>
+
+  <!--                -->
+  <!-- Thruster Links -->
+  <!--                -->
+
+  <xacro:macro name="thruster_link" params="name">
+    <link name="${name}_link">
+      <inertial>
+        <origin xyz="${thruster_com}" rpy="0 0 0" />
+        <mass value="${thruster_mass}" />
+        <xacro:insert_block name="thruster_inertia" />
+      </inertial>
+
+      <visual>
+        <geometry>
+          <mesh filename="${thruster_mesh}" />
+        </geometry>
+          <material name="thruster"/>
+      </visual>
+
+      <collision>
+        <geometry>
+          <mesh filename="${thruster_mesh}" />
+        </geometry>
+      </collision>
+    </link>
+  </xacro:macro>
+
+  <xacro:thruster_link name="surge_port_hi" />
+  <xacro:thruster_link name="surge_stbd_hi" />
+  <xacro:thruster_link name="surge_port_lo" />
+  <xacro:thruster_link name="surge_stbd_lo" />
+  <xacro:thruster_link name="sway_fwd" />
+  <xacro:thruster_link name="sway_aft" />
+  <xacro:thruster_link name="heave_port_fwd" />
+  <xacro:thruster_link name="heave_stbd_fwd" />
+  <xacro:thruster_link name="heave_port_aft" />
+  <xacro:thruster_link name="heave_stbd_aft" />
 
 </robot>

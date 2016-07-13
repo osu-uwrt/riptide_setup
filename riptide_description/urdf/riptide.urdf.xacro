@@ -9,19 +9,29 @@
 
 <robot name="riptide" xmlns:xacro="http://ros.org/wiki/xacro">
 
+  <xacro:property name="M_PI" value="3.14159266"/>
+
   <xacro:include filename="riptide_dimensions.urdf.xacro" />
   <xacro:include filename="riptide_links.urdf.xacro" />
   <xacro:include filename="riptide_joints.urdf.xacro" />
-  <xacro:include filename="t200_thruster.urdf.xacro" />
 
-  <material name="chassis">
-    <color rgba="0 0 0 1.0"/>
-  </material>
   <material name="housing">
-    <color rgba="0.2 0.2 0.2 1.0"/>
+    <color rgba="0.36 0.24 0.24 1.0"/>
+  </material>
+  <material name="chassis">
+    <color rgba="0.06 0.06 0.06 1.0"/>
+  </material>
+  <material name="acoustics">
+    <color rgba="0.12 0.12 0.12 1.0"/>
+  </material>
+  <material name="pneumatics">
+    <color rgba="0.12 0.12 0.12 1.0"/>
+  </material>
+  <material name="battery">
+    <color rgba="0.12 0.12 0.12 1.0"/>
   </material>
   <material name="thruster">
-    <color rgba="0.365 0 0 1.0"/>
+    <color rgba="0.36 0.36 0.36 1.0"/>
   </material>
 
 </robot>
