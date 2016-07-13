@@ -25,7 +25,7 @@
       <geometry>
         <mesh filename="package://riptide_description/meshes/riptide_housing.stl"/>
       </geometry>
-      <material name="housing"/>
+      <material name="Grey"/>
     </visual>
     <collision>
       <geometry>
@@ -43,7 +43,7 @@
       <geometry>
         <mesh filename="package://riptide_description/meshes/riptide_chassis.stl"/>
       </geometry>
-      <material name="chassis"/>
+      <material name="FlatBlack"/>
     </visual>
     <collision>
       <geometry>
@@ -392,10 +392,29 @@
     <parent link="chassis_link"/>
     <child link="heave_stbd_aft_link"/>
   </joint>
-  <material name="housing">
+  <!--                                -->
+  <!--  Gazebo Simulation Properties  -->
+  <!--                                -->
+  <gazebo>
+    <!--  Buoyancy  -->
+    <plugin filename="libBuoyancyPlugin.so" name="BuoyancyPlugin"/>
+  </gazebo>
+  <!--             -->
+  <!-- Gazebo Colors -->
+  <!--             -->
+  <gazebo reference="housing_link">
+    <material>Gazebo/Grey</material>
+  </gazebo>
+  <gazebo reference="chassis_link">
+    <material>Gazebo/FlatBlack</material>
+  </gazebo>
+  <!--             -->
+  <!-- RVIZ Colors -->
+  <!--             -->
+  <material name="Grey">
     <color rgba="0.36 0.24 0.24 1.0"/>
   </material>
-  <material name="chassis">
+  <material name="FlatBlack">
     <color rgba="0.06 0.06 0.06 1.0"/>
   </material>
   <material name="acoustics">

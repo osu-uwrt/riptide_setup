@@ -14,11 +14,16 @@
   <xacro:include filename="riptide_dimensions.urdf.xacro" />
   <xacro:include filename="riptide_links.urdf.xacro" />
   <xacro:include filename="riptide_joints.urdf.xacro" />
+  <xacro:include filename="riptide_sim.gazebo.xacro" />
 
-  <material name="housing">
+  <!--             -->
+  <!-- RVIZ Colors -->
+  <!--             -->
+
+  <material name="Grey">
     <color rgba="0.36 0.24 0.24 1.0"/>
   </material>
-  <material name="chassis">
+  <material name="FlatBlack">
     <color rgba="0.06 0.06 0.06 1.0"/>
   </material>
   <material name="acoustics">

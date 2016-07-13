@@ -19,7 +19,7 @@
       <geometry>
         <mesh filename="${housing_mesh}" />
       </geometry>
-      <material name="housing" />
+      <material name="Grey" />
     </visual>
 
     <collision>
@@ -40,7 +40,7 @@
       <geometry>
         <mesh filename="${chassis_mesh}" />
       </geometry>
-      <material name="chassis" />
+      <material name="FlatBlack" />
     </visual>
 
     <collision>

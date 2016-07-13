@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<robot name="riptide" xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <!--                                -->
+    <!--  Gazebo Simulation Properties  -->
+    <!--                                -->
+
+  <gazebo>
+    <!--  Buoyancy  -->
+    <plugin name="BuoyancyPlugin" filename="libBuoyancyPlugin.so"/>
+  </gazebo>
+
+    <!--             -->
+    <!-- Gazebo Colors -->
+    <!--             -->
+
+    <gazebo reference="housing_link">
+      <material>Gazebo/Grey</material>
+    </gazebo>
+    <gazebo reference="chassis_link">
+      <material>Gazebo/FlatBlack</material>
+    </gazebo>
+
+</robot>
