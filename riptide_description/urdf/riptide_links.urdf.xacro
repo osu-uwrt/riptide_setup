@@ -138,8 +138,8 @@
   <!-- Thruster Links -->
   <!--                -->
 
-  <xacro:macro name="thruster_link" params="name">
-    <link name="${name}_link">
+  <xacro:macro name="thruster_link" params="thruster">
+    <link name="${thruster}_link">
       <inertial>
         <origin xyz="${thruster_com}" rpy="0 0 0" />
         <mass value="${thruster_mass}" />
@@ -161,15 +161,15 @@
     </link>
   </xacro:macro>
 
-  <xacro:thruster_link name="surge_port_hi" />
-  <xacro:thruster_link name="surge_stbd_hi" />
-  <xacro:thruster_link name="surge_port_lo" />
-  <xacro:thruster_link name="surge_stbd_lo" />
-  <xacro:thruster_link name="sway_fwd" />
-  <xacro:thruster_link name="sway_aft" />
-  <xacro:thruster_link name="heave_port_fwd" />
-  <xacro:thruster_link name="heave_stbd_fwd" />
-  <xacro:thruster_link name="heave_port_aft" />
-  <xacro:thruster_link name="heave_stbd_aft" />
+  <xacro:thruster_link thruster="surge_port_hi" />
+  <xacro:thruster_link thruster="surge_stbd_hi" />
+  <xacro:thruster_link thruster="surge_port_lo" />
+  <xacro:thruster_link thruster="surge_stbd_lo" />
+  <xacro:thruster_link thruster="sway_fwd" />
+  <xacro:thruster_link thruster="sway_aft" />
+  <xacro:thruster_link thruster="heave_port_fwd" />
+  <xacro:thruster_link thruster="heave_stbd_fwd" />
+  <xacro:thruster_link thruster="heave_port_aft" />
+  <xacro:thruster_link thruster="heave_stbd_aft" />
 
 </robot>

@@ -320,22 +320,22 @@
     <child link="chassis_link"/>
   </joint>
   <joint name="chassis_acoustics_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="-0.1699 0.0000 0.0584"/>
+    <origin rpy="0 0 0" xyz="0.1699 0.0000 -0.0584"/>
     <parent link="chassis_link"/>
     <child link="acoustics_link"/>
   </joint>
   <joint name="chassis_pneumatics_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="0.1172 0.0000 0.0584"/>
+    <origin rpy="0 0 0" xyz="-0.1172 0.0000 -0.0584"/>
     <parent link="chassis_link"/>
     <child link="pneumatics_link"/>
   </joint>
   <joint name="chassis_port_battery_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="0.1781 -0.1302 0.0140"/>
+    <origin rpy="0 0 0" xyz="-0.1781 0.1302 -0.0140"/>
     <parent link="chassis_link"/>
     <child link="port_battery_link"/>
   </joint>
   <joint name="chassis_stbd_battery_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="0.1781 0.1302 0.0140"/>
+    <origin rpy="0 0 0" xyz="-0.1781 -0.1302 -0.0140"/>
     <parent link="chassis_link"/>
     <child link="stbd_battery_link"/>
   </joint>
@@ -397,7 +397,52 @@
   <!--                                -->
   <gazebo>
     <!--  Buoyancy  -->
-    <plugin filename="libBuoyancyPlugin.so" name="BuoyancyPlugin"/>
+    <plugin filename="libBuoyancyPlugin.so" name="BuoyancyPlugin">
+      <link name="base_link">
+        <center_of_volume>0 0 0</center_of_volume>
+        <volume>0.0253</volume>
+      </link>
+      <!-- <link name="housing_link">
+        <center_of_volume>0 0 0</center_of_volume>
+        <volume>0.0223</volume>
+      </link>
+      <link name="chassis_link">
+        <center_of_volume>0 0 0</center_of_volume>
+        <volume>0.0001</volume>
+      </link>
+      <link name="acoustics_link">
+        <center_of_volume>0 0 0</center_of_volume>
+        <volume>0.0004</volume>
+      </link>
+      <link name="pneumatics_link">
+        <center_of_volume>0 0 0</center_of_volume>
+        <volume>0.0005</volume>
+      </link>
+      <link name="port_battery_link">
+        <center_of_volume>0 0 0</center_of_volume>
+        <volume>0.0009</volume>
+      </link>
+      <link name="stbd_battery_link">
+        <center_of_volume>0 0 0</center_of_volume>
+        <volume>0.0009</volume>
+      </link>
+      <xacro:macro name="thruster_volume" params="thruster">
+        <link name="${thruster}_link">
+          <center_of_volume>0 0 0</center_of_volume>
+          <volume>0.0002</volume>
+        </link>
+      </xacro:macro>
+      <xacro:thruster_volume thruster="surge_port_hi" />
+      <xacro:thruster_volume thruster="surge_stbd_hi" />
+      <xacro:thruster_volume thruster="surge_port_lo" />
+      <xacro:thruster_volume thruster="surge_stbd_lo" />
+      <xacro:thruster_volume thruster="sway_fwd" />
+      <xacro:thruster_volume thruster="sway_aft" />
+      <xacro:thruster_volume thruster="heave_port_fwd" />
+      <xacro:thruster_volume thruster="heave_stbd_fwd" />
+      <xacro:thruster_volume thruster="heave_port_aft" />
+      <xacro:thruster_volume thruster="heave_stbd_aft" /> -->
+    </plugin>
   </gazebo>
   <!--             -->
   <!-- Gazebo Colors -->
