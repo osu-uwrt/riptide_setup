@@ -66,10 +66,10 @@ void ThrustCal::callback(const riptide_msgs::ThrustStamped::ConstPtr& thrust)
 {
   us.header.stamp = thrust->header.stamp;
 
-  us.pwm.surge_port_hi = cal(thrust->force.surge_port_hi, s_p_h_fw, s_p_h_rv);
-  us.pwm.surge_stbd_hi = cal2(thrust->force.surge_stbd_hi, s_s_h_fw, s_s_h_rv);
-  us.pwm.surge_port_lo = cal2(thrust->force.surge_port_lo, s_p_l_fw, s_p_l_rv);
-  us.pwm.surge_stbd_lo = cal(thrust->force.surge_stbd_lo, s_s_l_fw, s_s_l_rv);
+  us.pwm.surge_port_hi = cal2(thrust->force.surge_port_hi, s_p_h_fw, s_p_h_rv);
+  us.pwm.surge_stbd_hi = cal(thrust->force.surge_stbd_hi, s_s_h_fw, s_s_h_rv);
+  us.pwm.surge_port_lo = cal(thrust->force.surge_port_lo, s_p_l_fw, s_p_l_rv);
+  us.pwm.surge_stbd_lo = cal2(thrust->force.surge_stbd_lo, s_s_l_fw, s_s_l_rv);
   us.pwm.sway_fwd = cal(thrust->force.sway_fwd, swa_f_fw, swa_f_rv);
   us.pwm.sway_aft = cal2(thrust->force.sway_aft, swa_a_fw, swa_a_rv);
   us.pwm.heave_port_fwd = cal(thrust->force.heave_port_fwd, h_p_f_fw, h_p_f_rv);
