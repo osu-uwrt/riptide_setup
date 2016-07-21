@@ -1,11 +1,15 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 
-  <!--               -->
-  <!-- Housing Links -->
-  <!--               -->
+  <!--                  -->
+  <!-- Structural Links -->
+  <!--                  -->
 
   <link name="base_link">
+    <inertial>
+      <mass value="8.3901" />
+      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
+    </inertial>
   </link>
 
   <link name="housing_link">
@@ -61,7 +65,7 @@
       <geometry>
         <mesh filename="${acoustics_mesh}" />
       </geometry>
-      <material name="acoustics" />
+      <material name="DarkGrey" />
     </visual>
 
     <collision>
@@ -82,7 +86,7 @@
       <geometry>
         <mesh filename="${pneumatics_mesh}" />
       </geometry>
-      <material name="pneumatics" />
+      <material name="DarkGrey" />
     </visual>
 
     <collision>
@@ -103,7 +107,7 @@
       <geometry>
         <mesh filename="${port_battery_mesh}" />
       </geometry>
-      <material name="battery" />
+      <material name="DarkGrey" />
     </visual>
 
     <collision>
@@ -124,7 +128,7 @@
       <geometry>
         <mesh filename="${stbd_battery_mesh}" />
       </geometry>
-        <material name="battery"/>
+        <material name="DarkGrey"/>
     </visual>
 
     <collision>
@@ -150,7 +154,7 @@
         <geometry>
           <mesh filename="${thruster_mesh}" />
         </geometry>
-          <material name="thruster"/>
+          <material name="RedBright"/>
       </visual>
 
       <collision>
