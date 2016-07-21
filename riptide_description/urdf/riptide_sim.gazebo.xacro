@@ -10,36 +10,36 @@
     <plugin name="BuoyancyPlugin" filename="libBuoyancyPlugin.so">
       <link name="base_link">
         <center_of_volume>0 0 0</center_of_volume>
-        <volume>0.0253</volume>
+        <volume>0</volume>
       </link>
-      <!-- <link name="housing_link">
-        <center_of_volume>0 0 0</center_of_volume>
-        <volume>0.0223</volume>
+      <link name="housing_link">
+        <center_of_volume>${housing_cov}</center_of_volume>
+        <volume>${housing_volume}</volume>
       </link>
       <link name="chassis_link">
-        <center_of_volume>0 0 0</center_of_volume>
-        <volume>0.0001</volume>
+        <center_of_volume>${chassis_cov}</center_of_volume>
+        <volume>${chassis_volume}</volume>
       </link>
       <link name="acoustics_link">
-        <center_of_volume>0 0 0</center_of_volume>
-        <volume>0.0004</volume>
+        <center_of_volume>${acoustics_cov}</center_of_volume>
+        <volume>${acoustics_volume}</volume>
       </link>
       <link name="pneumatics_link">
-        <center_of_volume>0 0 0</center_of_volume>
-        <volume>0.0005</volume>
+        <center_of_volume>${pneumatics_cov}</center_of_volume>
+        <volume>${pneumatics_volume}</volume>
       </link>
       <link name="port_battery_link">
-        <center_of_volume>0 0 0</center_of_volume>
-        <volume>0.0009</volume>
+        <center_of_volume>${port_battery_cov}</center_of_volume>
+        <volume>${port_battery_volume}</volume>
       </link>
       <link name="stbd_battery_link">
-        <center_of_volume>0 0 0</center_of_volume>
-        <volume>0.0009</volume>
+        <center_of_volume>${stbd_battery_cov}</center_of_volume>
+        <volume>${stbd_battery_volume}</volume>
       </link>
       <xacro:macro name="thruster_volume" params="thruster">
         <link name="${thruster}_link">
-          <center_of_volume>0 0 0</center_of_volume>
-          <volume>0.0002</volume>
+          <center_of_volume>${thruster_cov}</center_of_volume>
+          <volume>${thruster_volume}</volume>
         </link>
       </xacro:macro>
       <xacro:thruster_volume thruster="surge_port_hi" />
@@ -51,13 +51,13 @@
       <xacro:thruster_volume thruster="heave_port_fwd" />
       <xacro:thruster_volume thruster="heave_stbd_fwd" />
       <xacro:thruster_volume thruster="heave_port_aft" />
-      <xacro:thruster_volume thruster="heave_stbd_aft" /> -->
+      <xacro:thruster_volume thruster="heave_stbd_aft" />
     </plugin>
   </gazebo>
 
-    <!--             -->
+    <!--               -->
     <!-- Gazebo Colors -->
-    <!--             -->
+    <!--               -->
 
     <gazebo reference="housing_link">
       <material>Gazebo/Grey</material>

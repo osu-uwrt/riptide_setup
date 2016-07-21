@@ -17,9 +17,9 @@
   </link>
   <link name="housing_link">
     <inertial>
-      <origin rpy="0 0 0" xyz="-0.0434 0.0009 -0.0158"/>
-      <mass value="13.87"/>
-      <inertia ixx="0.1187" ixy="0.0000" ixz="0.0000" iyy="0.6524" iyz="0.0000" izz="0.6379"/>
+      <origin rpy="0 0 0" xyz="-0.0434 0.0009 -0.0155"/>
+      <mass value="14.3153"/>
+      <inertia ixx="0.1230" ixy="0.0000" ixz="0.0000" iyy="0.6568" iyz="0.0000" izz="0.6422"/>
     </inertial>
     <visual>
       <geometry>
@@ -35,9 +35,9 @@
   </link>
   <link name="chassis_link">
     <inertial>
-      <origin rpy="0 0 0" xyz="0.0129 0.0000 0.0561"/>
-      <mass value="2.71"/>
-      <inertia ixx="0.2160" ixy="0.0000" ixz="0.0000" iyy="0.1953" iyz="0.0000" izz="0.0952"/>
+      <origin rpy="0 0 0" xyz="-0.0129 0.0000 -0.0561"/>
+      <mass value="2.7134"/>
+      <inertia ixx="0.0572" ixy="0.0000" ixz="0.0000" iyy="0.1657" iyz="0.0000" izz="0.1830"/>
     </inertial>
     <visual>
       <geometry>
@@ -54,8 +54,8 @@
   <link name="acoustics_link">
     <inertial>
       <origin rpy="0 0 0" xyz="0.0027 0.0027 -0.0265"/>
-      <mass value="0.97"/>
-      <inertia ixx="0.0019" ixy="0.0000" ixz="0.0000" iyy="0.0019" iyz="0.0000" izz="0.0030"/>
+      <mass value="0.9657"/>
+      <inertia ixx="0.0026" ixy="0.0000" ixz="0.0000" iyy="0.0026" iyz="0.0000" izz="0.0030"/>
     </inertial>
     <visual>
       <geometry>
@@ -90,7 +90,7 @@
   <link name="port_battery_link">
     <inertial>
       <origin rpy="0 0 0" xyz="0.0936 0.0278 -0.0003"/>
-      <mass value="1.867"/>
+      <mass value="1.8671"/>
       <inertia ixx="0.0034" ixy="0.0000" ixz="0.0000" iyy="0.0253" iyz="0.0000" izz="0.0262"/>
     </inertial>
     <visual>
@@ -107,8 +107,8 @@
   </link>
   <link name="stbd_battery_link">
     <inertial>
-      <origin rpy="0 0 0" xyz="0.0962 -0.0291 -0.0003"/>
-      <mass value="1.867"/>
+      <origin rpy="0 0 0" xyz="0.0936 -0.0278 -0.0003"/>
+      <mass value="1.8671"/>
       <inertia ixx="0.0034" ixy="0.0000" ixz="0.0000" iyy="0.0253" iyz="0.0000" izz="0.0262"/>
     </inertial>
     <visual>
@@ -128,8 +128,8 @@
   <!--                -->
   <link name="surge_port_hi_link">
     <inertial>
-      <origin rpy="0 0 0" xyz="0.0075 -0.0006 0.0000"/>
-      <mass value="0.35"/>
+      <origin rpy="0 0 0" xyz="0.0000 0.0006 0.0075"/>
+      <mass value="0.3518"/>
       <inertia ixx="0.0003" ixy="0.0000" ixz="0.0000" iyy="0.0003" iyz="0.0000" izz="0.0003"/>
     </inertial>
     <visual>
@@ -146,8 +146,8 @@
   </link>
   <link name="surge_stbd_hi_link">
     <inertial>
-      <origin rpy="0 0 0" xyz="0.0075 -0.0006 0.0000"/>
-      <mass value="0.35"/>
+      <origin rpy="0 0 0" xyz="0.0000 0.0006 0.0075"/>
+      <mass value="0.3518"/>
       <inertia ixx="0.0003" ixy="0.0000" ixz="0.0000" iyy="0.0003" iyz="0.0000" izz="0.0003"/>
     </inertial>
     <visual>
@@ -164,8 +164,8 @@
   </link>
   <link name="surge_port_lo_link">
     <inertial>
-      <origin rpy="0 0 0" xyz="0.0075 -0.0006 0.0000"/>
-      <mass value="0.35"/>
+      <origin rpy="0 0 0" xyz="0.0000 0.0006 0.0075"/>
+      <mass value="0.3518"/>
       <inertia ixx="0.0003" ixy="0.0000" ixz="0.0000" iyy="0.0003" iyz="0.0000" izz="0.0003"/>
     </inertial>
     <visual>
@@ -182,8 +182,8 @@
   </link>
   <link name="surge_stbd_lo_link">
     <inertial>
-      <origin rpy="0 0 0" xyz="0.0075 -0.0006 0.0000"/>
-      <mass value="0.35"/>
+      <origin rpy="0 0 0" xyz="0.0000 0.0006 0.0075"/>
+      <mass value="0.3518"/>
       <inertia ixx="0.0003" ixy="0.0000" ixz="0.0000" iyy="0.0003" iyz="0.0000" izz="0.0003"/>
     </inertial>
     <visual>
@@ -200,8 +200,8 @@
   </link>
   <link name="sway_fwd_link">
     <inertial>
-      <origin rpy="0 0 0" xyz="0.0075 -0.0006 0.0000"/>
-      <mass value="0.35"/>
+      <origin rpy="0 0 0" xyz="0.0000 0.0006 0.0075"/>
+      <mass value="0.3518"/>
       <inertia ixx="0.0003" ixy="0.0000" ixz="0.0000" iyy="0.0003" iyz="0.0000" izz="0.0003"/>
     </inertial>
     <visual>
@@ -218,8 +218,8 @@
   </link>
   <link name="sway_aft_link">
     <inertial>
-      <origin rpy="0 0 0" xyz="0.0075 -0.0006 0.0000"/>
-      <mass value="0.35"/>
+      <origin rpy="0 0 0" xyz="0.0000 0.0006 0.0075"/>
+      <mass value="0.3518"/>
       <inertia ixx="0.0003" ixy="0.0000" ixz="0.0000" iyy="0.0003" iyz="0.0000" izz="0.0003"/>
     </inertial>
     <visual>
@@ -236,8 +236,8 @@
   </link>
   <link name="heave_port_fwd_link">
     <inertial>
-      <origin rpy="0 0 0" xyz="0.0075 -0.0006 0.0000"/>
-      <mass value="0.35"/>
+      <origin rpy="0 0 0" xyz="0.0000 0.0006 0.0075"/>
+      <mass value="0.3518"/>
       <inertia ixx="0.0003" ixy="0.0000" ixz="0.0000" iyy="0.0003" iyz="0.0000" izz="0.0003"/>
     </inertial>
     <visual>
@@ -254,8 +254,8 @@
   </link>
   <link name="heave_stbd_fwd_link">
     <inertial>
-      <origin rpy="0 0 0" xyz="0.0075 -0.0006 0.0000"/>
-      <mass value="0.35"/>
+      <origin rpy="0 0 0" xyz="0.0000 0.0006 0.0075"/>
+      <mass value="0.3518"/>
       <inertia ixx="0.0003" ixy="0.0000" ixz="0.0000" iyy="0.0003" iyz="0.0000" izz="0.0003"/>
     </inertial>
     <visual>
@@ -272,8 +272,8 @@
   </link>
   <link name="heave_port_aft_link">
     <inertial>
-      <origin rpy="0 0 0" xyz="0.0075 -0.0006 0.0000"/>
-      <mass value="0.35"/>
+      <origin rpy="0 0 0" xyz="0.0000 0.0006 0.0075"/>
+      <mass value="0.3518"/>
       <inertia ixx="0.0003" ixy="0.0000" ixz="0.0000" iyy="0.0003" iyz="0.0000" izz="0.0003"/>
     </inertial>
     <visual>
@@ -290,8 +290,8 @@
   </link>
   <link name="heave_stbd_aft_link">
     <inertial>
-      <origin rpy="0 0 0" xyz="0.0075 -0.0006 0.0000"/>
-      <mass value="0.35"/>
+      <origin rpy="0 0 0" xyz="0.0000 0.0006 0.0075"/>
+      <mass value="0.3518"/>
       <inertia ixx="0.0003" ixy="0.0000" ixz="0.0000" iyy="0.0003" iyz="0.0000" izz="0.0003"/>
     </inertial>
     <visual>
@@ -400,53 +400,77 @@
     <plugin filename="libBuoyancyPlugin.so" name="BuoyancyPlugin">
       <link name="base_link">
         <center_of_volume>0 0 0</center_of_volume>
-        <volume>0.0253</volume>
+        <volume>0</volume>
       </link>
-      <!-- <link name="housing_link">
-        <center_of_volume>0 0 0</center_of_volume>
-        <volume>0.0223</volume>
+      <link name="housing_link">
+        <center_of_volume>-0.0480 0.0000 -0.0037</center_of_volume>
+        <volume>0.0262</volume>
       </link>
       <link name="chassis_link">
-        <center_of_volume>0 0 0</center_of_volume>
-        <volume>0.0001</volume>
+        <center_of_volume>-0.0120 0.0000 -0.0566</center_of_volume>
+        <volume>0.001</volume>
       </link>
       <link name="acoustics_link">
-        <center_of_volume>0 0 0</center_of_volume>
-        <volume>0.0004</volume>
+        <center_of_volume>0.0014 0.0014 -0.0277</center_of_volume>
+        <volume>0.001</volume>
       </link>
       <link name="pneumatics_link">
-        <center_of_volume>0 0 0</center_of_volume>
-        <volume>0.0005</volume>
+        <center_of_volume>0.0025 0.0002 -0.0369</center_of_volume>
+        <volume>0.0024</volume>
       </link>
       <link name="port_battery_link">
-        <center_of_volume>0 0 0</center_of_volume>
-        <volume>0.0009</volume>
+        <center_of_volume>0.1257 0.0335 -0.0001</center_of_volume>
+        <volume>0.0013</volume>
       </link>
       <link name="stbd_battery_link">
-        <center_of_volume>0 0 0</center_of_volume>
-        <volume>0.0009</volume>
+        <center_of_volume>0.1257 -0.0335 -0.0001</center_of_volume>
+        <volume>0.0013</volume>
       </link>
-      <xacro:macro name="thruster_volume" params="thruster">
-        <link name="${thruster}_link">
-          <center_of_volume>0 0 0</center_of_volume>
-          <volume>0.0002</volume>
-        </link>
-      </xacro:macro>
-      <xacro:thruster_volume thruster="surge_port_hi" />
-      <xacro:thruster_volume thruster="surge_stbd_hi" />
-      <xacro:thruster_volume thruster="surge_port_lo" />
-      <xacro:thruster_volume thruster="surge_stbd_lo" />
-      <xacro:thruster_volume thruster="sway_fwd" />
-      <xacro:thruster_volume thruster="sway_aft" />
-      <xacro:thruster_volume thruster="heave_port_fwd" />
-      <xacro:thruster_volume thruster="heave_stbd_fwd" />
-      <xacro:thruster_volume thruster="heave_port_aft" />
-      <xacro:thruster_volume thruster="heave_stbd_aft" /> -->
+      <link name="surge_port_hi_link">
+        <center_of_volume>0.0000 0.0006 0.0075</center_of_volume>
+        <volume>0.0002</volume>
+      </link>
+      <link name="surge_stbd_hi_link">
+        <center_of_volume>0.0000 0.0006 0.0075</center_of_volume>
+        <volume>0.0002</volume>
+      </link>
+      <link name="surge_port_lo_link">
+        <center_of_volume>0.0000 0.0006 0.0075</center_of_volume>
+        <volume>0.0002</volume>
+      </link>
+      <link name="surge_stbd_lo_link">
+        <center_of_volume>0.0000 0.0006 0.0075</center_of_volume>
+        <volume>0.0002</volume>
+      </link>
+      <link name="sway_fwd_link">
+        <center_of_volume>0.0000 0.0006 0.0075</center_of_volume>
+        <volume>0.0002</volume>
+      </link>
+      <link name="sway_aft_link">
+        <center_of_volume>0.0000 0.0006 0.0075</center_of_volume>
+        <volume>0.0002</volume>
+      </link>
+      <link name="heave_port_fwd_link">
+        <center_of_volume>0.0000 0.0006 0.0075</center_of_volume>
+        <volume>0.0002</volume>
+      </link>
+      <link name="heave_stbd_fwd_link">
+        <center_of_volume>0.0000 0.0006 0.0075</center_of_volume>
+        <volume>0.0002</volume>
+      </link>
+      <link name="heave_port_aft_link">
+        <center_of_volume>0.0000 0.0006 0.0075</center_of_volume>
+        <volume>0.0002</volume>
+      </link>
+      <link name="heave_stbd_aft_link">
+        <center_of_volume>0.0000 0.0006 0.0075</center_of_volume>
+        <volume>0.0002</volume>
+      </link>
     </plugin>
   </gazebo>
-  <!--             -->
+  <!--               -->
   <!-- Gazebo Colors -->
-  <!--             -->
+  <!--               -->
   <gazebo reference="housing_link">
     <material>Gazebo/Grey</material>
   </gazebo>
