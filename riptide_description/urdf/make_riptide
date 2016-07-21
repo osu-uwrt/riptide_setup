@@ -10,4 +10,9 @@ echo -e "Check complete\n"
 
 echo -e "Running...\n    gz sdf -k riptide.urdf"
 gz sdf -k riptide.urdf || exit
+
+echo -e "\nRunning...\n    gz sdf -p riptide.urdf > riptide.sdf"
+gz sdf -p riptide.urdf > riptide.sdf || exit
+echo -e "File generated"
+
 echo -e "\nRobot ready\n"
