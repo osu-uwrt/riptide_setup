@@ -1,12 +1,14 @@
 <?xml version="1.0"?>
 <robot name="riptide" xmlns:xacro="http://ros.org/wiki/xacro">
 
-    <!--                                -->
-    <!--  Gazebo Simulation Properties  -->
-    <!--                                -->
+    <!--                                 -->
+    <!--  Riptide Simulation Properties  -->
+    <!--                                 -->
 
   <gazebo>
-    <!--  Buoyancy Plugin  -->
+    <!--                                    -->
+    <!-- Gazebo Riptide Buoyancy Properties -->
+    <!--                                    -->
     <plugin name="BuoyancyPlugin" filename="libBuoyancyPlugin.so">
 
       <link name="base_link">
@@ -64,9 +66,9 @@
     </plugin>
   </gazebo>
 
-    <!--                        -->
-    <!-- Gazebo Link Properties -->
-    <!--                        -->
+    <!--                                -->
+    <!-- Gazebo Riptide Link Properties -->
+    <!--                                -->
 
     <gazebo reference="housing_link">
       <material>Gazebo/Grey</material>
@@ -109,9 +111,9 @@
     <xacro:thruster_link_gazebo name="heave_port_aft" />
     <xacro:thruster_link_gazebo name="heave_stbd_aft" />
 
-    <!--                         -->
-    <!-- Gazebo Joint Properties -->
-    <!--                         -->
+    <!--                                 -->
+    <!-- Gazebo Riptide Joint Properties -->
+    <!--                                 -->
 
     <gazebo reference="base_housing_joint">
       <disableFixedJointLumping>true</disableFixedJointLumping>

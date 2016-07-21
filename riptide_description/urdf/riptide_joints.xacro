@@ -1,15 +1,19 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 
-  <!--                   -->
-  <!-- Structural Joints -->
-  <!--                   -->
+  <!--                              -->
+  <!--        Riptide Joints        -->
+  <!--                              -->
 
   <joint name="base_housing_joint" type="fixed">
     <origin xyz="${base_housing}" rpy="0 0 0"/>
     <parent link="base_link"/>
     <child link="housing_link"/>
   </joint>
+
+  <!--                -->
+  <!-- Housing Joints -->
+  <!--                -->
 
   <joint name="housing_chassis_joint" type="fixed">
     <origin xyz="${housing_chassis}" rpy="0 0 0"/>
