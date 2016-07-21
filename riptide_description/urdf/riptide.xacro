@@ -11,10 +11,10 @@
 
   <xacro:property name="M_PI" value="3.14159266"/>
 
-  <xacro:include filename="riptide_dimensions.urdf.xacro" />
-  <xacro:include filename="riptide_links.urdf.xacro" />
-  <xacro:include filename="riptide_joints.urdf.xacro" />
-  <xacro:include filename="riptide_sim.gazebo.xacro" />
+  <xacro:include filename="riptide_joints.xacro" />
+  <xacro:include filename="riptide_links.xacro" />
+  <xacro:include filename="riptide_properties.xacro" />
+  <xacro:include filename="riptide_simulation.xacro" />
 
   <!--             -->
   <!-- RVIZ Colors -->
