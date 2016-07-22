@@ -10,11 +10,11 @@ catkin_package()
 
 include_directories(${catkin_INCLUDE_DIRS} ${CERES_INCLUDE_DIRS})
 
-add_executable(attitude_controller src/attitude.cpp)
+add_executable(attitude_controller src/attitude_controller.cpp)
 target_link_libraries(attitude_controller ${catkin_LIBRARIES})
 add_dependencies(attitude_controller imu_3dm_gx4_gencpp)
 
-add_executable(position_controller src/position.cpp)
+add_executable(position_controller src/position_controller.cpp)
 target_link_libraries(position_controller ${catkin_LIBRARIES})
 add_dependencies(position_controller riptide_msgs_gencpp)
 
