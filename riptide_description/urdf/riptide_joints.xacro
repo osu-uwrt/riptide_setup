@@ -11,6 +11,16 @@
     <child link="housing_link"/>
   </joint>
 
+  <!--               -->
+  <!-- Sensor Joints -->
+  <!--               -->
+
+  <joint name="housing_imu_one_joint" type="fixed">
+    <origin xyz="${housing_imu_one}" rpy="0 0 0" />
+    <parent link="housing_link"/>
+    <child link="imu_one_link"/>
+  </joint>
+
   <!--                -->
   <!-- Housing Joints -->
   <!--                -->

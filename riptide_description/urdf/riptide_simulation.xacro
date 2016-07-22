@@ -6,10 +6,33 @@
     <!--                                 -->
 
   <gazebo>
+
+    <!--                                  -->
+    <!-- Gazebo Riptide Sensor Properties -->
+    <!--                                  -->
+    
+    <plugin name="imu_one" filename="libgazebo_ros_imu.so">
+      <robotNamespace></robotNamespace>
+      <serviceName>/imu</serviceName>
+      <topicName>/state/imu</topicName>
+      <gaussianNoise>0.0</gaussianNoise>
+      <bodyName>imu_one_link</bodyName>
+      <xyzOffset>0 0 0</xyzOffset>
+      <rpyOffset>0 0 0</rpyOffset>
+      <updateRate>100.0</updateRate>
+      <frameName>imu_one_link</frameName>
+    </plugin>
+
     <!--                                    -->
     <!-- Gazebo Riptide Buoyancy Properties -->
     <!--                                    -->
+
     <plugin name="BuoyancyPlugin" filename="libBuoyancyPlugin.so">
+
+      <link name="imu_one_link">
+        <center_of_volume>0 0 0</center_of_volume>
+        <volume>0.0000000001</volume>
+      </link>
 
       <link name="base_link">
         <center_of_volume>0 0 0</center_of_volume>
@@ -114,6 +137,10 @@
     <!--                                 -->
     <!-- Gazebo Riptide Joint Properties -->
     <!--                                 -->
+
+    <gazebo reference="housing_imu_one_joint">
+      <disableFixedJointLumping>true</disableFixedJointLumping>
+    </gazebo>
 
     <gazebo reference="base_housing_joint">
       <disableFixedJointLumping>true</disableFixedJointLumping>
