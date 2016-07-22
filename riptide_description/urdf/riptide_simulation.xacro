@@ -10,7 +10,7 @@
     <!--                                  -->
     <!-- Gazebo Riptide Sensor Properties -->
     <!--                                  -->
-    
+
     <plugin name="imu_one" filename="libgazebo_ros_imu.so">
       <robotNamespace></robotNamespace>
       <serviceName>/imu</serviceName>
@@ -21,6 +21,15 @@
       <rpyOffset>0 0 0</rpyOffset>
       <updateRate>100.0</updateRate>
       <frameName>imu_one_link</frameName>
+    </plugin>
+
+    <!--                                    -->
+    <!-- Gazebo Riptide Thruster Properties -->
+    <!--                                    -->
+
+    <plugin filename="libgazebo_ros_riptide_thrust.so" name="thrust">
+      <robotNamespace></robotNamespace>
+      <topicName>/command/thrust</topicName>
     </plugin>
 
     <!--                                    -->
