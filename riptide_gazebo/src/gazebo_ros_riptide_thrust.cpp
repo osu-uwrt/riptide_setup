@@ -84,6 +84,8 @@ namespace gazebo
   {
     this->lock_.lock();
 
+    math::Vector3 zero(0, 0, 0);
+
     // +z is "forward" thrust
     math::Vector3 sph(0, 0, this->thrust_.force.surge_port_hi);
     math::Vector3 ssh(0, 0, this->thrust_.force.surge_stbd_hi);
@@ -95,17 +97,27 @@ namespace gazebo
     math::Vector3 hsf(0, 0, this->thrust_.force.heave_stbd_fwd);
     math::Vector3 hpa(0, 0, this->thrust_.force.heave_port_aft);
     math::Vector3 hsa(0, 0, this->thrust_.force.heave_stbd_aft);
+    this->surge_port_hi_->SetForce(zero);
+    this->surge_stbd_hi_->SetForce(zero);
+    this->surge_port_lo_->SetForce(zero);
+    this->surge_stbd_lo_->SetForce(zero);
+    this->sway_fwd_->SetForce(zero);
+    this->sway_aft_->SetForce(zero);
+    this->heave_port_fwd_->SetForce(zero);
+    this->heave_stbd_fwd_->SetForce(zero);
+    this->heave_port_aft_->SetForce(zero);
+    this->heave_stbd_aft_->SetForce(zero);
     // TODO: Simplify this giant block
-    this->surge_port_hi_->AddForce(sph);
-    this->surge_stbd_hi_->AddForce(ssh);
-    this->surge_port_lo_->AddForce(spl);
-    this->surge_stbd_lo_->AddForce(ssl);
-    this->sway_fwd_->AddForce(sf);
-    this->sway_aft_->AddForce(sa);
-    this->heave_port_fwd_->AddForce(hpf);
-    this->heave_stbd_fwd_->AddForce(hsf);
-    this->heave_port_aft_->AddForce(hpa);
-    this->heave_stbd_aft_->AddForce(hsa);
+    this->surge_port_hi_->AddLinkForce(sph);
+    this->surge_stbd_hi_->AddLinkForce(ssh);
+    this->surge_port_lo_->AddLinkForce(spl);
+    this->surge_stbd_lo_->AddLinkForce(ssl);
+    this->sway_fwd_->AddLinkForce(sf);
+    this->sway_aft_->AddLinkForce(sa);
+    this->heave_port_fwd_->AddLinkForce(hpf);
+    this->heave_stbd_fwd_->AddLinkForce(hsf);
+    this->heave_port_aft_->AddLinkForce(hpa);
+    this->heave_stbd_aft_->AddLinkForce(hsa);
 
     this->lock_.unlock();
   }
