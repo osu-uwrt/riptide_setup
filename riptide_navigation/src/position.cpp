@@ -30,7 +30,7 @@ ros::Duration dt;
 void depth_cb(const riptide_msgs::Depth::ConstPtr& new_state)
 {
 	// Update current depth
-  state.z = new_state->depth;
+  state.z = (new_state->depth + 0.33) * -1;
 }
 
 void target_cb(const riptide_msgs::OdomWithAccel::ConstPtr& new_target)
@@ -58,7 +58,7 @@ void target_cb(const riptide_msgs::OdomWithAccel::ConstPtr& new_target)
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "attitude_controller");
+  ros::init(argc, argv, "position_controller");
   ros::NodeHandle nh;
   ros::NodeHandle sg("~surge");
   ros::NodeHandle sy("~sway");

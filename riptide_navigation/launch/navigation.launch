@@ -9,12 +9,12 @@
     <param name="yaw/d" value="0" />
   </node>
   <node pkg="riptide_navigation" type="position_controller" name="position_controller">
-      <param name="roll/p" value="1" />
-      <param name="roll/d" value="0" />
-      <param name="pitch/p" value="1" />
-      <param name="pitch/d" value="0" />
-      <param name="yaw/p" value="1" />
-      <param name="yaw/d" value="0" />
+      <param name="surge/p" value="1" />
+      <param name="surge/d" value="0" />
+      <param name="heave/p" value="1" />
+      <param name="heave/d" value="0" />
+      <param name="sway/p" value="1" />
+      <param name="sway/d" value="0" />
     </node>
   <node type="thruster_controller" pkg="riptide_navigation" name="thruster_controller" />
 </launch>
