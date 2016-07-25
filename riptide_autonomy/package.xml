@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>riptide_autonomy</name>
-  <version>0.0.10</version>
+  <version>0.0.11</version>
   <description>High level control for OSU's Riptide AUV.</description>
 
   <maintainer email="cary.42@osu.edu">Conor Cary</maintainer>
