@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(riptide_teleop)
 
-find_package(catkin REQUIRED COMPONENTS tf joy roslaunch)
+find_package(catkin REQUIRED COMPONENTS tf joy roslaunch riptide_msgs)
 
 catkin_package()
 
