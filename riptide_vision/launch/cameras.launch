@@ -1,4 +1,0 @@
-<launch>
-  <include file="$(find riptide_vision)/launch/monocular.launch" />
-  <include file="$(find riptide_vision)/launch/stereo.launch" />
-</launch>

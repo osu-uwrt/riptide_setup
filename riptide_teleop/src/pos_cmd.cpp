@@ -22,7 +22,7 @@ class Accel
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "attitude_commander");
+  ros::init(argc, argv, "position_commander");
   Accel accel;
   accel.loop();
 }
@@ -30,7 +30,7 @@ int main(int argc, char **argv)
 Accel::Accel()
 {
   js = nh.subscribe<sensor_msgs::Joy>("joy", 1, &Accel::joy_callback, this);
-  target_odom = nh.advertise<nav_msgs::Odometry>("target/attitude", 1);
+  target_odom = nh.advertise<nav_msgs::Odometry>("target/position", 1);
   target_accel = nh.advertise<geometry_msgs::Accel>("target/accel", 1);
 
   target.header.frame_id = "";

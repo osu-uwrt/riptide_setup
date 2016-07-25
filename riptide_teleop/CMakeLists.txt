@@ -15,3 +15,7 @@ target_link_libraries(attitude_cmdr ${catkin_LIBRARIES})
 
 add_executable(joy_accel_set src/accel_set.cpp)
 target_link_libraries(joy_accel_set ${catkin_LIBRARIES})
+
+add_executable(commander src/commander.cpp)
+target_link_libraries(commander ${catkin_LIBRARIES})
+# Add riptide msgs dep

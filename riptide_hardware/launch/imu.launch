@@ -1,0 +1,19 @@
+<launch>
+
+  <!-- Launch the imu_3dm_gx4 driver node -->
+  <include file="$(find imu_3dm_gx4)/launch/imu.launch">
+    <arg name="output" value="screen" />
+    <arg name="imu" value="imu" />
+    <arg name="device" value="/dev/ttyACM0" />
+    <arg name="verbose" value="false" />
+    <arg name="baudrate" value="115200" />
+    <arg name="imu_rate" value="100" />
+    <arg name="filter_rate" value="100" />
+    <arg name="enable_filter" value="true" />
+    <arg name="enable_accel_update" value="false" />
+    <arg name="enable_mag_update" value="false" />
+  </include>
+
+  <node pkg="riptide_hardware" type="imu_state" name="imu_state" />
+
+</launch>

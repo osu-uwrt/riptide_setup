@@ -1,57 +1,68 @@
 #include <ros/ros.h>
 #include <control_toolbox/pid.h>
-#include <nav_msgs/Odometry.h>
-#include <geometry_msgs/Accel.h>
 #include <tf/transform_datatypes.h>
-#include "imu_3dm_gx4/FilterOutput.h"
+#include <riptide_msgs/OdomWithAccel.h>
 #include <sensor_msgs/Imu.h>
 
 control_toolbox::Pid roll, pitch, yaw;
-geometry_msgs::Accel cmd;
+
+ros::Subscriber state_sub;
+ros::Subscriber target_sub;
+ros::Publisher command;
+
+geometry_msgs::Accel accel;
+
+struct vector
+{
+		double x;
+		double y;
+		double z;
+};
+
+vector state, state_dot;
+vector target, target_dot;
+vector error, error_dot;
+vector feed_fwd;
 
 ros::Time then;
 ros::Duration dt;
 
-ros::Subscriber filter_sub;
-ros::Subscriber target_sub;
-ros::Subscriber feedfwd_sub;
-ros::Publisher accel_pub;
-
-double state[6] = {};
-double target[6] = {};
-double error[6] = {};
-
-void filter_cb(const imu_3dm_gx4::FilterOutput::ConstPtr& new_state)
+void state_cb(const sensor_msgs::Imu::ConstPtr& new_state)
 {
-  tf::Quaternion quaternion;
-  tf::quaternionMsgToTF(new_state->orientation, quaternion);
-  tf::Matrix3x3 attitude = tf::Matrix3x3(quaternion);
-  attitude.getRPY(state[0], state[1], state[2]);
+  // Current orientation
+  tf::Quaternion orientation;
+  tf::quaternionMsgToTF(new_state->orientation, orientation);
+  tf::Matrix3x3 attitude = tf::Matrix3x3(orientation);
+  attitude.getRPY(state.x, state.y, state.z);
+
+  // Current angular velocity
+  tf::Vector3 velocity;
+  tf::vector3MsgToTF(new_state->angular_velocity, velocity);
+  state_dot.x = velocity.x();
+  state_dot.y = velocity.y();
+  state_dot.z = velocity.z();
 }
 
-void imu_cb(const sensor_msgs::Imu::ConstPtr& new_state)
+void target_cb(const riptide_msgs::OdomWithAccel::ConstPtr& new_target)
 {
-  state[3] = new_state->angular_velocity.x;
-  state[4] = new_state->angular_velocity.y;
-  state[5] = new_state->angular_velocity.z;
-}
+	// Pass linear values through
+  accel.linear = new_target->accel.linear;
 
-void target_cb(const nav_msgs::Odometry::ConstPtr& new_target)
-{
-  tf::Quaternion quaternion;
-  tf::quaternionMsgToTF(new_target->pose.pose.orientation, quaternion);
-  tf::Matrix3x3 attitude = tf::Matrix3x3(quaternion);
-  attitude.getRPY(target[0], target[1], target[2]);
-  target[3] = new_target->twist.twist.angular.x;
-  target[4] = new_target->twist.twist.angular.y;
-  target[5] = new_target->twist.twist.angular.z;
-}
+  // Desired angular displacement
+  tf::Quaternion new_orientation;
+  tf::quaternionMsgToTF(new_target->pose.orientation, new_orientation);
+  tf::Matrix3x3 new_attitude = tf::Matrix3x3(new_orientation);
+  new_attitude.getRPY(target.x, target.y, target.z);
 
-void feedfwd_cb(const sensor_msgs::Imu::ConstPtr& feedfwd)
-{
-  cmd.linear.x = feedfwd->linear_acceleration.x;
-  cmd.linear.y = feedfwd->linear_acceleration.y;
-  cmd.linear.z = feedfwd->linear_acceleration.z;
+  // Desired angular velocity
+  target_dot.x = new_target->twist.angular.x;
+  target_dot.y = new_target->twist.angular.y;
+  target_dot.z = new_target->twist.angular.z;
+
+	// Desired angular acceleration
+  feed_fwd.x = new_target->accel.angular.x;
+  feed_fwd.y = new_target->accel.angular.y;
+  feed_fwd.z = new_target->accel.angular.z;
 }
 
 int main(int argc, char **argv)
@@ -62,14 +73,38 @@ int main(int argc, char **argv)
   ros::NodeHandle p("~pitch");
   ros::NodeHandle y("~yaw");
 
-  filter_sub = nh.subscribe<imu_3dm_gx4::FilterOutput>("state/filter", 1, &filter_cb);
-  target_sub = nh.subscribe<nav_msgs::Odometry>("target/odom", 1, &target_cb);
-  feedfwd_sub = nh.subscribe<sensor_msgs::Imu>("state/imu", 1, &feedfwd_cb);
-  accel_pub = nh.advertise<geometry_msgs::Accel>("command/accel", 1);
-
   roll.init(r);
   pitch.init(p);
   yaw.init(y);
+
+  state_sub = nh.subscribe<sensor_msgs::Imu>("state/imu", 1, &state_cb);
+  target_sub = nh.subscribe<riptide_msgs::OdomWithAccel>("target/attitude", 1, &target_cb);
+  command = nh.advertise<geometry_msgs::Accel>("command/accel", 1);
+
+	// Angular displacement
+	state.x = 0;
+	state.y = 0;
+	state.z = 0;
+
+	// Angular velocity
+	state_dot.x = 0;
+	state_dot.y = 0;
+	state_dot.z = 0;
+
+	// Angular displacement
+	target.x = 0;
+	target.y = 0;
+	target.z = 0;
+
+	// Angular velocity
+	target_dot.x = 0;
+	target_dot.y = 0;
+	target_dot.z = 0;
+
+	// Angular acceleration
+	feed_fwd.x = 0;
+	feed_fwd.y = 0;
+	feed_fwd.z = 0;
 
   then = ros::Time::now();
   ros::Rate rate(50.0);
@@ -78,17 +113,22 @@ int main(int argc, char **argv)
   {
     ros::spinOnce();
 
-    for(int i = 0; i < 6; i ++)
-    {
-      error[i] = target[i] - state[i];
-    }
+    error.x = target.x - state.x;
+    error.y = target.y - state.y;
+    error.z = target.z - state.z;
+
+    error_dot.x = target_dot.x - state_dot.x;
+    error_dot.y = target_dot.y - state_dot.y;
+    error_dot.z = target_dot.z - state_dot.z;
+
     dt = ros::Time::now() - then;
+    then = ros::Time::now();
 
-    cmd.angular.x = roll.computeCommand(error[0], error[3], dt);
-    cmd.angular.y = pitch.computeCommand(error[1], error[4], dt);
-    cmd.angular.z = yaw.computeCommand(error[2], error[5], dt);
+    accel.angular.x = feed_fwd.x + roll.computeCommand(error.x, error_dot.x, dt);
+    accel.angular.y = feed_fwd.y + pitch.computeCommand(error.y, error_dot.y, dt);
+    accel.angular.z = feed_fwd.z + yaw.computeCommand(error.z, error_dot.z, dt);
 
-    accel_pub.publish(cmd);
+    command.publish(accel);
     rate.sleep();
   }
 }

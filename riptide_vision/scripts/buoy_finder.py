@@ -11,7 +11,7 @@ green_lower = (45, 75, 75)
 green_upper = (85, 230, 230)
 
 bridge = CvBridge()
-pub = rospy.Publisher('image_buoy', Image, queue_size=1)
+pub = rospy.Publisher('stereo/left/image_buoy', Image, queue_size=1)
 
 def find_buoy(image, lower, upper):
 
@@ -68,7 +68,7 @@ def callback(image_message_in):
 
 def buoy_finder():
     rospy.init_node('buoy_finder', anonymous=True)
-    rospy.Subscriber('image_color', Image, callback)
+    rospy.Subscriber('stereo/left/image_color', Image, callback)
     rospy.spin()
 
 if __name__ == '__main__':
