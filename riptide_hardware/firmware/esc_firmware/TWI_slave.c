@@ -27,7 +27,7 @@
 #include <avr/interrupt.h>
 #include "TWI_slave.h"
 
-static uint8_t TWI_buf[TWI_BUFFER_SIZE] = {0b101,0b11011100,0b101,0b11011100,0b001};    // Transceiver buffer. Set the size in the header file
+static uint8_t TWI_buf[14] = {0b101,0b11011100,0b101,0b11011100,0b00000000,0,0,0,0,0,0,0,0,0};    // Transceiver buffer. Set the size in the header file
 static uint8_t TWI_msgSize  = TWI_BUFFER_SIZE;            // Number of bytes to be transmitted.
 static uint8_t TWI_state = TWI_NO_STATE;    // State byte. Default set to TWI_NO_STATE.
 
@@ -160,7 +160,6 @@ ISR(TWI_vect)
 //      case TWI_STX_ADR_ACK_M_ARB_LOST: // Arbitration lost in SLA+R/W as Master; own SLA+R has been received; ACK has been returned
          //TWI_bufPtr   = 0;             // Set buffer pointer to first data location
          TWI_statusReg.TxRequest = TRUE;
-        TWI_buf[4] = (TWI_buf[0]^TWI_buf[1])^(TWI_buf[2]^TWI_buf[3]);
          TWSCRB = (1<<TWCMD1) | (1<<TWCMD0);  //send ACK, clear interrupts
          break;
       case TWI_STX_DATA_ACK:           // Data byte in TWDR has been transmitted; ACK has been received

@@ -1,10 +1,10 @@
 #include <ros.h>
-#include <riiptide_msgs/BatStamped.h>
+#include <riptide_msgs/BatStamped.h>
 
 ros::NodeHandle nh;
-riptide_msgs::BatStamped batteries;
+riptide_msgs::BatStamped battery;
 
-ros::Publisher state_pub("state/batteries", &state);
+ros::Publisher state_pub("state/batteries", &battery);
 
 void setup()
 {
@@ -16,12 +16,13 @@ void loop()
 {
   nh.spinOnce();
 
-  battery.port.current = analogRead(A3);
-  battery.port.voltage = analogRead(A2);
-  battery.stbd.current = analogRead(A0);
-  battery.stbd.voltage = analogRead(A1);
+  battery.port.current = (analogRead(A3) - 104) * 0.03755;
+  battery.port.voltage = analogRead(A2) * 0.03015;
+  battery.stbd.current = (analogRead(A0) - 104) * 0.03755;
+  battery.stbd.voltage = analogRead(A1) * 0.03016;
 
   state_pub.publish(&battery);
 
-  delay(10);
+  delay(200);
 }
+

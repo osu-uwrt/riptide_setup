@@ -23,12 +23,12 @@ double MIN_THRUST = -18.0;
 double MAX_THRUST = 18.0;
 
 // Vehicle mass (kg):
-double MASS = 48.8428;
+double MASS = 34.47940950;
 
 // Moments of inertia (kg*m^2)
-double Ixx = 0.55649783;
-double Iyy = 1.89075467;
-double Izz = 1.96057706;
+double Ixx = 0.50862680;
+double Iyy = 1.70892348;
+double Izz = 1.77586420;
 
 // Acceleration commands (m/s^):
 double cmdSurge = 0.0;
@@ -217,7 +217,7 @@ Solver::Solver(char** argv, tf::TransformListener& listener_adr)
 
 	thrust.header.frame_id = "base_link";
 
-	rot_sub = nh.subscribe<imu_3dm_gx4::FilterOutput>("state/orientation", 1, &Solver::orientation, this);
+	rot_sub = nh.subscribe<imu_3dm_gx4::FilterOutput>("state/filter", 1, &Solver::orientation, this);
 	cmd_sub = nh.subscribe<geometry_msgs::Accel>("command/accel", 1, &Solver::callback, this);
 	cmd_pub = nh.advertise<riptide_msgs::ThrustStamped>("command/thrust", 1);
 

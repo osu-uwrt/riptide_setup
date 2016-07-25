@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>riptide_hardware</name>
-  <version>0.0.9</version>
+  <version>0.0.10</version>
   <description>Hardware abstraction layer for OSU's Riptide AUV.</description>
 
   <maintainer email="cary.42@osu.edu">Conor Cary</maintainer>

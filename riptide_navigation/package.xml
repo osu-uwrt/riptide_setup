@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>riptide_navigation</name>
-  <version>0.0.9</version>
+  <version>0.0.10</version>
   <description>Navigation stack for OSU's Riptide AUV.</description>
 
   <maintainer email="cary.42@osu.edu">Conor Cary</maintainer>
@@ -26,7 +26,6 @@
   <run_depend>riptide_msgs</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>geometry_msgs</run_depend>
-
   <export>
   </export>
 </package>

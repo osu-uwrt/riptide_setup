@@ -27,7 +27,7 @@
     <arg name="enable_mag_update" value="false"/>
 
     <!-- Launch the imu_3dm_gx4 driver node -->
-    <node pkg="imu_3dm_gx4" name="$(arg imu)" type="imu_3dm_gx4" output="$(arg output)">
+    <node pkg="imu_3dm_gx4" name="imu" type="imu_3dm_gx4" output="$(arg output)">
         <param name="device" type="string" value="$(arg device)" />
         <param name="verbose" type="bool" value="$(arg verbose)"/>
         <param name="baudrate" type="int" value="$(arg baudrate)" />
