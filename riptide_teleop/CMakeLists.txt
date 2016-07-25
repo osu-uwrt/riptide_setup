@@ -18,4 +18,4 @@ target_link_libraries(joy_accel_set ${catkin_LIBRARIES})
 
 add_executable(commander src/commander.cpp)
 target_link_libraries(commander ${catkin_LIBRARIES})
-# Add riptide msgs dep
+add_dependencies(commander riptide_msgs_gencpp)
