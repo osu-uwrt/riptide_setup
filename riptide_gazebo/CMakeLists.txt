@@ -35,3 +35,8 @@ target_link_libraries(
   ${GAZEBO_LIBRARIES}
   ${Boost_LIBRARIES}
 )
+
+add_dependencies(
+  gazebo_ros_riptide_thrust
+  riptide_msgs_gencpp
+)
