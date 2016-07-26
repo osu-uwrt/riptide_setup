@@ -19,6 +19,8 @@ struct vector
     double z;
 };
 
+double depth;
+
 vector state, state_dot;
 vector target, target_dot;
 vector error, error_dot;
@@ -30,7 +32,7 @@ ros::Duration dt;
 void depth_cb(const riptide_msgs::Depth::ConstPtr& new_state)
 {
 	// Update current depth
-  state.z = (-1 * new_state->depth) - 0.25;
+  state.z = (-1 * new_state->depth) - depth;
 }
 
 void target_cb(const riptide_msgs::OdomWithAccel::ConstPtr& new_target)
@@ -63,6 +65,8 @@ int main(int argc, char **argv)
   ros::NodeHandle sg("~surge");
   ros::NodeHandle sy("~sway");
   ros::NodeHandle hv("~heave");
+
+  nh.param<double>("calibration/depth", depth, 0.25);
 
   surge.init(sg);
   sway.init(sy);
