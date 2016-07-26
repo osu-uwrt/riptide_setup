@@ -30,7 +30,7 @@ ros::Duration dt;
 void depth_cb(const riptide_msgs::Depth::ConstPtr& new_state)
 {
 	// Update current depth
-  state.z = new_state->depth;
+  state.z = (-1 * new_state->depth) - 0.25;
 }
 
 void target_cb(const riptide_msgs::OdomWithAccel::ConstPtr& new_target)
