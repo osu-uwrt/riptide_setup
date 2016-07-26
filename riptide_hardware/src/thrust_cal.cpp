@@ -1,6 +1,7 @@
 #include "ros/ros.h"
 #include "riptide_msgs/ThrustStamped.h"
 #include "riptide_msgs/PwmStamped.h"
+#include "std_msgs/Empty.h"
 
 class ThrustCal
 {
@@ -19,12 +20,15 @@ class ThrustCal
     double h_s_f_fw, h_s_f_rv;
     double h_p_a_fw, h_p_a_rv;
     double h_s_a_fw, h_s_a_rv;
+    ros::Time alive;
+    bool dead;
     int cal(double raw_force, double fwd_scale, double rev_scale);
     int cal2(double raw_force, double fwd_scale, double rev_scale);
 
   public:
     ThrustCal();
     void callback(const riptide_msgs::ThrustStamped::ConstPtr& thrust);
+    void watchdog(const std_msgs::Empty::ConstPtr& treat);
     void loop();
 };
 
@@ -37,6 +41,9 @@ int main(int argc, char **argv)
 
 ThrustCal::ThrustCal() : nh()
 {
+  dead = true;
+  alive = ros::Time::now();
+
   thrust = nh.subscribe<riptide_msgs::ThrustStamped>("command/thrust", 1, &ThrustCal::callback, this);
   pwm = nh.advertise<riptide_msgs::PwmStamped>("command/pwm", 1);
 
@@ -80,27 +87,56 @@ void ThrustCal::callback(const riptide_msgs::ThrustStamped::ConstPtr& thrust)
   pwm.publish(us);
 }
 
+void ThrustCal::watchdog(const std_msgs::Empty::ConstPtr& treat)
+{
+  dead = false;
+  alive = ros::Time::now();
+}
+
 void ThrustCal::loop()
 {
-  ros::spin();
+  ros::Duration safe(0.01);
+  ros::Rate rate(10);
+  while(ros::ok())
+  {
+    ros::Duration bad_dog = ros::Time::now() - alive;
+    if(bad_dog > safe)
+    {
+      dead = true;
+    }
+    ros::spinOnce();
+    rate.sleep();
+  }
 }
 
 int ThrustCal::cal(double raw_force, double fwd_scale, double rev_scale)
 {
-  if(raw_force < 0.0)
-    raw_force /= rev_scale;
-  else
-    raw_force /= fwd_scale;
+  int pwm = 1500;
 
-  return 1500 + int(raw_force * 14);
+  if(!dead)
+  {
+    if(raw_force < 0.0)
+      raw_force /= rev_scale;
+    else
+      raw_force /= fwd_scale;
+    pwm = 1500 + int(raw_force * 14);
+  }
+
+  return pwm;
 }
 
 int ThrustCal::cal2(double raw_force, double fwd_scale, double rev_scale)
 {
-  if(raw_force < 0.0)
-    raw_force /= rev_scale;
-  else
-    raw_force /= fwd_scale;
+  int pwm = 1500;
 
-  return 1500 - int(raw_force * 14);
+  if(!dead)
+  {
+    if(raw_force < 0.0)
+      raw_force /= rev_scale;
+    else
+      raw_force /= fwd_scale;
+    pwm = 1500 - int(raw_force * 14);
+  }
+
+  return pwm;
 }
