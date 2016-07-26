@@ -26,7 +26,6 @@ from riptide_msgs.msg import NavigateAction, NavigateGoal
 ########
 # MAIN #
 ########
-# Entry point for the state machine.
 
 # Define some constants
 DEFAULT_TIMEOUT = rospy.Duration(10);
@@ -59,6 +58,7 @@ def main():
 		
 	# Run the state machine
 	outcome = sm0.execute();
-	
+
+# Entry point for state machine
 if __name__ == '__main__':
 	main();

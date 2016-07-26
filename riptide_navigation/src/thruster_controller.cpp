@@ -224,9 +224,9 @@ Solver::Solver(char** argv, tf::TransformListener& listener_adr)
 	listener->lookupTransform("/base_link", "/surge_port_hi_link", ros::Time(0), tf_surge[0]);
 	listener->waitForTransform("/base_link", "/surge_stbd_hi_link", ros::Time(0), ros::Duration(10.0) );
 	listener->lookupTransform("/base_link", "/surge_stbd_hi_link", ros::Time(0), tf_surge[1]);
-  listener->waitForTransform("/base_link", "/surge_port_lo_link", ros::Time(0), ros::Duration(10.0) );
+  	listener->waitForTransform("/base_link", "/surge_port_lo_link", ros::Time(0), ros::Duration(10.0) );
 	listener->lookupTransform("/base_link", "/surge_port_lo_link", ros::Time(0), tf_surge[2]);
-  listener->waitForTransform("/base_link", "/surge_stbd_lo_link", ros::Time(0), ros::Duration(10.0) );
+  	listener->waitForTransform("/base_link", "/surge_stbd_lo_link", ros::Time(0), ros::Duration(10.0) );
 	listener->lookupTransform("/base_link", "/surge_stbd_lo_link", ros::Time(0), tf_surge[3]);
 	listener->waitForTransform("/base_link", "/sway_fwd_link", ros::Time(0), ros::Duration(10.0) );
 	listener->lookupTransform("/base_link", "/sway_fwd_link", ros::Time(0), tf_sway[0]);
