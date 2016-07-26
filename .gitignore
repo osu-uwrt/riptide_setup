@@ -1,5 +1,12 @@
 *~
 
+*.bak
+
+*.hex
+
 .DS_Store
 
-docs/_build
+docs/build
+
+riptide_description/urdf/riptide.urdf
+riptide_description/urdf/riptide.sdf

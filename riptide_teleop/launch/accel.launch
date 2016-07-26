@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="joy" type="joy_node" name="joystick_driver" />
+  <node pkg="riptide_teleop" type="accel_cmdr" name="accel_cmdr" />
+</launch>

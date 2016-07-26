@@ -1,0 +1,27 @@
+<launch>
+
+  <!-- Thrust -> PWM calibration -->
+  <node type="thrust_cal" pkg="riptide_hardware" name="thruster_calibration" />
+
+  <!-- Transformed IMU data -->
+  <include file="$(find riptide_hardware)/launch/imu.launch" />
+
+  <!-- Monocular camera interface -->
+  <include file="$(find riptide_hardware)/launch/mono_camera.launch" />
+  <!-- Stereo camera interface -->
+  <include file="$(find riptide_hardware)/launch/stereo_camera.launch" />
+
+  <group ns="serial">
+    <!-- Thruster control board -->
+    <include file="$(find riptide_hardware)/launch/ttyS0.launch" />
+    <!-- Power monitor board -->
+    <include file="$(find riptide_hardware)/launch/ttyS1.launch" />
+    <!-- Acoustic system enclosure -->
+    <!-- <include file="$(find riptide_hardware)/launch/ttyS2.launch" /> -->
+    <!-- Pneumatic system enclosure -->
+    <!-- <include file="$(find riptide_hardware)/launch/ttyS3.launch" /> -->
+    <!-- Depth sensor -->
+    <include file="$(find riptide_hardware)/launch/ttyUSB.launch" />
+  </group>
+
+</launch>

@@ -1,0 +1,7 @@
+
+<launch>
+  <!-- Simulator environment -->
+  <include file="$(find riptide_gazebo)/launch/riptide.launch" />
+  <!-- Simulator-tuned controls -->
+  <include file="$(find riptide_navigation)/launch/gazebo.launch" />
+</launch>
