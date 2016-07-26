@@ -1,110 +1,125 @@
-#include "ros/ros.h"
-#include <std_msgs/Float64.h>
+#include <ros/ros.h>
 #include <control_toolbox/pid.h>
-#include <message_filters/subscriber.h>
-#include <message_filters/time_synchronizer.h>
-#include <message_filters/sync_policies/approximate_time.h>
-#include <dynamic_reconfigure/server.h>
-#include <riptide_navigation/pidConfig.h>
-#include <boost/asio.hpp>
-#include "tf/transform_datatypes.h"
-#include "tf/LinearMath/Transform.h"
-#include <tf/transform_listener.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <nav_msgs/Odometry.h>
-#include <geometry_msgs/Vector3.h>
-#include <geometry_msgs/AccelStamped.h>
+#include <tf/transform_datatypes.h>
+#include <riptide_msgs/OdomWithAccel.h>
+#include <riptide_msgs/Depth.h>
 
-double px,ix,dx,imx,dmx,py,iy,dy,imy,dmy,pz,iz,dz,imz,dmz;
-bool first_reconfig= true;
-ros::Publisher la_e;
-tf::StampedTransform transform;
+control_toolbox::Pid surge, sway, heave;
 
-void dyn_callback(riptide_navigation::pidConfig &config, uint32_t level) {
+ros::Subscriber state_sub;
+ros::Subscriber target_sub;
+ros::Publisher attitude_pub;
 
-if (first_reconfig)
-	{
-	first_reconfig=false;
-	return;
-	}
-px=config.px;
-ix=config.ix;
-dx=config.dx;
-imx=config.imx;
-dmx=config.dmx;
-py=config.py;
-iy=config.iy;
-dy=config.dy;
-imy=config.imy;
-dmy=config.dmy;
-pz=config.pz;
-iz=config.iz;
-dz=config.dz;
-imz=config.imz;
-dmz=config.dmz;
-}
+riptide_msgs::OdomWithAccel attitude;
 
-void callback(const nav_msgs::Odometry::ConstPtr& current_data, const geometry_msgs::PoseStamped::ConstPtr& pose_set, const geometry_msgs::TwistStamped::ConstPtr& twist_set)
+struct vector
 {
+    double x;
+    double y;
+    double z;
+};
 
-  geometry_msgs::Vector3 position_des, position_current, orientation_des, orientation_current;
-  geometry_msgs::AccelStamped lin_accel_error;
-  ros::Time time;
-  ros::Duration time_diff;
-  ros::Time last_time;
-    
-  control_toolbox::Pid pidx, pidy, pidz;
+vector state, state_dot;
+vector target, target_dot;
+vector error, error_dot;
+vector feed_fwd;
 
-  pidx.initPid(px,ix,dx,imx,dmx);
-  pidy.initPid(py,iy,dy,imy,dmy);
-  pidz.initPid(pz,iz,dz,imz,dmz);
+ros::Time then;
+ros::Duration dt;
 
-  time = ros::Time::now();
-  time_diff = time-last_time;
-  lin_accel_error.header.stamp = time;
-  
-  lin_accel_error.accel.linear.x=pidx.control_toolbox::Pid::computeCommand((pose_set->pose.position.x-current_data->pose.pose.position.x),(twist_set->twist.linear.x-current_data->twist.twist.linear.x),time_diff);
-  lin_accel_error.accel.linear.y=pidy.control_toolbox::Pid::computeCommand((pose_set->pose.position.y-current_data->pose.pose.position.y),(twist_set->twist.linear.y-current_data->twist.twist.linear.y),time_diff);
-  lin_accel_error.accel.linear.z=pidz.control_toolbox::Pid::computeCommand((pose_set->pose.position.z-current_data->pose.pose.position.z),(twist_set->twist.linear.z-current_data->twist.twist.linear.z),time_diff);
-  
-  last_time = time;
-
-  la_e.publish(lin_accel_error);
-  
+void depth_cb(const riptide_msgs::Depth::ConstPtr& new_state)
+{
+	// Update current depth
+  state.z = new_state->depth;
 }
 
-int main(int argc, char **argv) {
+void target_cb(const riptide_msgs::OdomWithAccel::ConstPtr& new_target)
+{
+  // Pass angular values through
+  attitude.pose.position = new_target->pose.position;
+  attitude.twist.angular = new_target->twist.angular;
+  attitude.accel.angular = new_target->accel.angular;
 
-  ros::init(argc, argv, "position_controller");
+  // Desired linear displacement
+  target.x = new_target->pose.position.x;
+  target.y = new_target->pose.position.y;
+  target.z = new_target->pose.position.z;
+
+  // Desired linear velocity
+	target_dot.x = new_target->twist.linear.x;
+	target_dot.y = new_target->twist.linear.y;
+	target_dot.z = new_target->twist.linear.z;
+
+  // Desired linear acceleration
+	feed_fwd.x = new_target->accel.linear.x;
+	feed_fwd.y = new_target->accel.linear.y;
+	feed_fwd.z = new_target->accel.linear.z;
+}
+
+int main(int argc, char **argv)
+{
+  ros::init(argc, argv, "attitude_controller");
   ros::NodeHandle nh;
-  ros::NodeHandle node_priv("~");
+  ros::NodeHandle sg("~surge");
+  ros::NodeHandle sy("~sway");
+  ros::NodeHandle hv("~heave");
 
-  message_filters::Subscriber<nav_msgs::Odometry> kalmanout_sub(nh, "/odometry/filtered",1);
-  message_filters::Subscriber<geometry_msgs::PoseStamped> poseset_sub(nh, "pose_set_pt",1);
-  message_filters::Subscriber<geometry_msgs::TwistStamped> twistset_sub(nh, "twist_set_pt",1);
- 
-  dynamic_reconfigure::Server<riptide_navigation::pidConfig> server;
-  dynamic_reconfigure::Server<riptide_navigation::pidConfig>::CallbackType f;
-  f = boost::bind(&dyn_callback, _1, _2);
-  server.setCallback(f);
+  surge.init(sg);
+  sway.init(sy);
+  heave.init(hv);
 
-  typedef message_filters::sync_policies::ApproximateTime<nav_msgs::Odometry,geometry_msgs::PoseStamped,geometry_msgs::TwistStamped> MySyncPolicy;
-  message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(100), kalmanout_sub, poseset_sub,twistset_sub);  
-  sync.registerCallback(boost::bind(&callback,_1,_2,_3));
+  state_sub = nh.subscribe<riptide_msgs::Depth>("state/depth", 1, &depth_cb);
+  target_sub = nh.subscribe<riptide_msgs::OdomWithAccel>("target/position", 1, &target_cb);
+  attitude_pub = nh.advertise<riptide_msgs::OdomWithAccel>("target/attitude", 1);
 
-  la_e = nh.advertise<geometry_msgs::AccelStamped>("lin_accel_error",1);
-  tf::TransformListener listener;  
- 
-  ros::Rate rate(20.0);
-  
-  while (nh.ok()){
-  try{
-  listener.lookupTransform("/map","/base_link",ros::Time(0),transform);
-  }
-  catch (tf::TransformException &ex){
-  ROS_ERROR ("%s", ex.what());
-  }
-  ros::spin();
-  rate.sleep();
+	// Linear displacement
+	state.x = 0;
+	state.y = 0;
+	state.z = 0;
+
+	// Linear velocity
+	state_dot.x = 0;
+	state_dot.y = 0;
+	state_dot.z = 0;
+
+	// Linear displacement
+	target.x = 0;
+	target.y = 0;
+	target.z = 0;
+
+	// Linear velocity
+	target_dot.x = 0;
+	target_dot.y = 0;
+	target_dot.z = 0;
+
+	// Linear acceleration
+	feed_fwd.x = 0;
+	feed_fwd.y = 0;
+	feed_fwd.z = 0;
+
+  then = ros::Time::now();
+  ros::Rate rate(25.0);
+
+  while(ros::ok())
+  {
+    ros::spinOnce();
+
+    error.x = target.x - state.x;
+    error.y = target.y - state.y;
+    error.z = target.z - state.z;
+
+    error_dot.x = target_dot.x - state_dot.x;
+    error_dot.y = target_dot.y - state_dot.y;
+    error_dot.z = target_dot.z - state_dot.z;
+
+    dt = ros::Time::now() - then;
+    then = ros::Time::now();
+
+    attitude.accel.linear.x = feed_fwd.x + surge.computeCommand(error.x, error_dot.x, dt);
+    attitude.accel.linear.y = feed_fwd.y + sway.computeCommand(error.y, error_dot.y, dt);
+    attitude.accel.linear.z = feed_fwd.z + heave.computeCommand(error.z, error_dot.z, dt);
+
+    attitude_pub.publish(attitude);
+    rate.sleep();
   }
 }

@@ -41,7 +41,7 @@ sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -cs) main
 wget -nv http://packages.ros.org/ros.key -O - | sudo apt-key add -
 echo -e "...done.\n"
 
-echo -n "Adding Gazebo 6 repository..."
+echo -n "Adding Gazebo 7 repository..."
 sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" > /etc/apt/sources.list.d/gazebo-stable.list'
 wget -nv http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
 echo -e "...done.\n"
@@ -71,9 +71,9 @@ echo -e "...done.\n"
 
 # Install (most of) ROS Desktop Full (sans tutorials):
 
-echo -e "Installing Gazebo 6 packages...\n"
-sudo apt-get -yqq install ros-"$ROS_DISTRO"-gazebo6-ros-pkgs
-sudo apt-get -yqq install ros-"$ROS_DISTRO"-gazebo6-ros-control
+echo -e "Installing Gazebo 7 packages...\n"
+sudo apt-get -yqq install ros-"$ROS_DISTRO"-gazebo7-ros-pkgs
+sudo apt-get -yqq install ros-"$ROS_DISTRO"-gazebo7-ros-control
 echo -e "...done.\n"
 
 echo -e "Installing ROS packages...\n"

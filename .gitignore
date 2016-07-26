@@ -7,3 +7,6 @@
 .DS_Store
 
 docs/build
+
+riptide_description/urdf/riptide.urdf
+riptide_description/urdf/riptide.sdf
