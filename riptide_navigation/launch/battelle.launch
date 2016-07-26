@@ -15,6 +15,7 @@
       <param name="heave/d" value="0" />
       <param name="sway/p" value="1" />
       <param name="sway/d" value="0" />
+      <param name="max_depth" value="12" />
     </node>
   <node type="thruster_controller" pkg="riptide_navigation" name="thruster_controller" />
 </launch>
