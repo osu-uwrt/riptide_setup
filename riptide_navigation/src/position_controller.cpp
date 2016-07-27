@@ -6,7 +6,6 @@
 
 control_toolbox::Pid surge, sway, heave;
 
-ros::NodeHandle nh;
 ros::Subscriber state_sub;
 ros::Subscriber target_sub;
 ros::Publisher attitude_pub;
@@ -15,12 +14,13 @@ riptide_msgs::OdomWithAccel attitude;
 
 struct vector
 {
-    double x;
-    double y;
-    double z;
+  double x;
+  double y;
+  double z;
 };
 
 double depth;
+double max_depth;
 
 vector state, state_dot;
 vector target, target_dot;
@@ -30,13 +30,11 @@ vector feed_fwd;
 ros::Time then;
 ros::Duration dt;
 
-float max_depth;
-
 void depth_cb(const riptide_msgs::Depth::ConstPtr& new_state)
 {
 	// Update current depth
   state.z = (-1 * new_state->depth) - depth;
-  if (state.z < nh.getParam("~max_depth", max_depth))
+  if (state.z < max_depth)
   {
     state.z = max_depth;
   }
@@ -68,11 +66,13 @@ void target_cb(const riptide_msgs::OdomWithAccel::ConstPtr& new_target)
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "attitude_controller");
+  ros::NodeHandle nh;
   ros::NodeHandle sg("~surge");
   ros::NodeHandle sy("~sway");
   ros::NodeHandle hv("~heave");
 
-  nh.param<double>("calibration/depth", depth, 0.25);
+  nh.param<double>("depth/cal", depth, 0.25);
+  nh.param<double>("depth/max", max_depth, 5.0);
 
   surge.init(sg);
   sway.init(sy);
