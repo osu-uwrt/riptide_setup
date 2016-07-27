@@ -6,6 +6,7 @@
 
 control_toolbox::Pid surge, sway, heave;
 
+ros::NodeHandle nh;
 ros::Subscriber state_sub;
 ros::Subscriber target_sub;
 ros::Publisher attitude_pub;
@@ -29,10 +30,16 @@ vector feed_fwd;
 ros::Time then;
 ros::Duration dt;
 
+float max_depth;
+
 void depth_cb(const riptide_msgs::Depth::ConstPtr& new_state)
 {
 	// Update current depth
   state.z = (-1 * new_state->depth) - depth;
+  if (state.z < nh.getParam("~max_depth", max_depth))
+  {
+    state.z = max_depth;
+  }
 }
 
 void target_cb(const riptide_msgs::OdomWithAccel::ConstPtr& new_target)
@@ -61,7 +68,6 @@ void target_cb(const riptide_msgs::OdomWithAccel::ConstPtr& new_target)
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "attitude_controller");
-  ros::NodeHandle nh;
   ros::NodeHandle sg("~surge");
   ros::NodeHandle sy("~sway");
   ros::NodeHandle hv("~heave");
