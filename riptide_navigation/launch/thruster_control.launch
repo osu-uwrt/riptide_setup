@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find riptide_description)/launch/riptide_description.launch"/>
+  <node type="thruster_controller" pkg="riptide_navigation" name="thruster_controller" />
+</launch>

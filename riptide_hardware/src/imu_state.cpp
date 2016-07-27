@@ -18,32 +18,31 @@ tf::Matrix3x3 rotation = tf::Matrix3x3(1, 0, 0, 0,-1, 0, 0, 0,-1);
 
 void callback(const sensor_msgs::Imu::ConstPtr& imu, const imu_3dm_gx4::FilterOutput::ConstPtr& filter)
 {
- state.header = imu->header;
+  state.header = imu->header;
 
- tf::Quaternion quaternion;
- tf::quaternionMsgToTF(filter->orientation, quaternion);
- tf::Matrix3x3 orientation = tf::Matrix3x3(quaternion);
- orientation = orientation * rotation;
- double yaw, pitch, roll;
- orientation.getEulerYPR(yaw, pitch, roll);
- quaternion.setEuler(yaw, pitch, roll);
- tf::quaternionTFToMsg(quaternion, state.orientation);
+  tf::Quaternion quaternion;
+  tf::quaternionMsgToTF(filter->orientation, quaternion);
+  tf::Matrix3x3 orientation = tf::Matrix3x3(quaternion);
+  orientation = rotation * orientation;
+  double yaw, pitch, roll;
+  orientation.getEulerYPR(yaw, pitch, roll);
+  quaternion.setEuler(yaw, pitch, roll);
+  tf::quaternionTFToMsg(quaternion, state.orientation);
+  state.orientation_covariance = filter->orientation_covariance;
 
- // state.orientation = filter->orientation;
- state.orientation_covariance = filter->orientation_covariance;
+  tf::Vector3 angular_velocity;
+  tf::vector3MsgToTF(imu->angular_velocity, angular_velocity);
+  angular_velocity = rotation * angular_velocity;
+  tf::vector3TFToMsg(angular_velocity, state.angular_velocity);
+  state.angular_velocity_covariance = imu->angular_velocity_covariance;
 
- tf::Vector3 angular_velocity;
- tf::vector3MsgToTF(imu->angular_velocity, angular_velocity);
- angular_velocity = rotation * angular_velocity;
- tf::vector3TFToMsg(angular_velocity, state.angular_velocity);
+  tf::Vector3 linear_acceleration;
+  tf::vector3MsgToTF(imu->linear_acceleration, linear_acceleration);
+  linear_acceleration = rotation * linear_acceleration;
+  tf::vector3TFToMsg(linear_acceleration, state.linear_acceleration);
+  state.linear_acceleration_covariance = imu->linear_acceleration_covariance;
 
- // state.angular_velocity = imu->angular_velocity;
- state.angular_velocity_covariance = imu->angular_velocity_covariance;
-
- state.linear_acceleration = imu->linear_acceleration;
- state.linear_acceleration_covariance = imu->linear_acceleration_covariance;
-
- unifier.publish(state);
+  unifier.publish(state);
 
  // tf::quaternionMsgToTF(filter->orientation, qturn);
  // tform.setRotation(qturn);
