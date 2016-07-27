@@ -1,7 +1,6 @@
 <launch>
-
   <!-- Thrust -> PWM calibration -->
-  <node type="thrust_cal" pkg="riptide_hardware" name="thruster_calibration" />
+  <include file="$(find riptide_hardware)/launch/thrust_cal.launch" />
 
   <!-- Transformed IMU data -->
   <include file="$(find riptide_hardware)/launch/imu.launch" />
