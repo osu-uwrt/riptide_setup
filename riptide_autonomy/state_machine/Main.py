@@ -35,7 +35,7 @@ ZERO_POSITION = Vector3(x = 0, y = 0, z = 0);
 def main():
 	rospy.init_node('STATE_MACHINE_NAME');
 	
-	Default_Timeout = rospy.Duration(2.0);
+	Default_Timeout = rospy.Duration(4.0);
 	
 	Goal = NavigateGoal(searchGoal = "TASK_ONE", positionGoal = ZERO_POSITION);
 	
@@ -45,7 +45,7 @@ def main():
 	with sm0:
 		
 		# GO TO B
-		smach.StateMachine.add('GOTO_B', smach_ros.SimpleActionState('NavigateAction', NavigateAction, goal = Goal, result_key='B_Result',  output_keys=['B_Result'], exec_timeout = Default_Timeout), transitions={'succeeded':'GOTO_C', 'preempted':'failed'});
+		smach.StateMachine.add('GOTO_B', smach_ros.SimpleActionState('NavigateAction', NavigateAction, goal = Goal, result_key='B_Result',  output_keys=['B_Result'], exec_timeout = Default_Timeout), transitions={'succeeded':'GOTO_C', 'aborted':'failed'});
 		# GO TO C
 		def GOTO_C_goalCB(userdata, currentGoal):
 			currentGoal.positionGoal = userdata.C_In.realPosition;

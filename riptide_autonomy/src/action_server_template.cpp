@@ -8,7 +8,7 @@
  // The following are required includes. Replace "TestAction" with your action name.
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
-#include <riptide_autonomy/TestAction.h>
+#include <riptide_msgs/TestAction.h>
 
 /**************************
  * LIGHTS, CAMERA, ACTION *
@@ -20,15 +20,15 @@ class TestAction
 		
 		ros::NodeHandle nodeHandle;
 		
-		actionlib::SimpleActionServer<riptide_autonomy::TestAction> actionServer;
+		actionlib::SimpleActionServer<riptide_msgs::TestAction> actionServer;
 		std::string actionName;
 		
 		// If reading data from another node, create a subscriber here
 		ros::Subscriber subscriber;
 		
 		// Declare messages used to publish action result and feedback
-		riptide_autonomy::TestActionFeedback feedbackMsg;
-		riptide_autonomy::TestActionResult resultMsg;
+		riptide_msgs::TestActionFeedback feedbackMsg;
+		riptide_msgs::TestActionResult resultMsg;
 		
 		// Declare any other variables needed during action execution
 		
@@ -40,12 +40,13 @@ class TestAction
 			actionName(name)
 			{
 				actionServer.start();
-				subscriber = nodeHandle.subscribe("TestNode", 1000, subscriberCB);  
+                isTaskCompleted = false;
+				//subscriber = nodeHandle.subscribe("TestNode", 1000, subscriberCB);  
 			}
 		
 		// Define callback functions (execute, analysis, goal, etc.)
 		
-		void executeCB(const riptide_autonomy::TestGoalConstPtr &goal)
+		void executeCB(const riptide_msgs::TestGoalConstPtr &goal)
 		{
 			while (actionServer.isActive())
 			{
@@ -70,14 +71,14 @@ class TestAction
 				}
 			}
 		}
-		
+/* Subscriber callback:		
 		void subscriberCB(data)
 		{
 			isTaskCompleted = true;
 		}
-		
+*/
 	private:
-		bool isTaskCompleted = false;
+		bool isTaskCompleted;
 };
 
 // Entry point for action server, simply creates and starts Action Server node.
@@ -88,7 +89,7 @@ int main(int argc, char** argv)
 	
 	// Class name must match above code.
 	TestAction TestAction(ros::this_node::getName());
-	ros::spin()
+	ros::spin();
 	
 	return 0;
 }
