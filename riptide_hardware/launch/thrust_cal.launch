@@ -1,5 +1,5 @@
 <launch>
   <node type="thrust_cal" pkg="riptide_hardware" name="thruster_calibration">
-    <param name="battery/min_battery_voltage value="17.5" />
+    <param name="battery/min_battery_voltage" value="17.5" />
   </node>
 </launch>
