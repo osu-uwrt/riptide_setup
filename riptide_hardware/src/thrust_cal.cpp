@@ -13,6 +13,7 @@ class ThrustCal
     riptide_msgs::PwmStamped us;
     ros::Time alive;
     bool dead;
+    double min_voltage;
     int clockwise_propeller(double raw_force);
     int counterclockwise_propeller(double raw_force);
 
@@ -35,6 +36,8 @@ ThrustCal::ThrustCal() : nh()
 {
   dead = true;
   alive = ros::Time::now();
+
+  nh.param<double>("~battery/min_voltage", min_voltage, 17.5);
 
   thrust = nh.subscribe<riptide_msgs::ThrustStamped>("command/thrust", 1, &ThrustCal::callback, this);
   pwm = nh.advertise<riptide_msgs::PwmStamped>("command/pwm", 1);
@@ -60,7 +63,7 @@ void ThrustCal::callback(const riptide_msgs::ThrustStamped::ConstPtr& thrust)
 
 void ThrustCal::batteryCallback(const riptide_msgs::Bat::ConstPtr& batStatus)
 {
-  if (batStatus->voltage < nh.getParam("~battery/min_battery_voltage", min_battery_voltage))
+  if (batStatus->voltage < min_voltage)
   {
     dead = true;
   }
@@ -93,10 +96,6 @@ int ThrustCal::counterclockwise_propeller(double raw_force)
 
   if(!dead)
   {
-    if(raw_force < 0.0)
-      raw_force /= rev_scale;
-    else
-      raw_force /= fwd_scale;
     pwm = 1500 + int(raw_force * 14);
   }
 
@@ -109,10 +108,6 @@ int ThrustCal::clockwise_propeller(double raw_force)
 
   if(!dead)
   {
-    if(raw_force < 0.0)
-      raw_force /= rev_scale;
-    else
-      raw_force /= fwd_scale;
     pwm = 1500 - int(raw_force * 14);
   }
 
