@@ -16,8 +16,7 @@ import smach
 import smach_ros
 import actionlib
 
-from geometry_msgs.msg import Vector3
-from riptide_msgs.msg import TestAction, TestGoal
+from riptide_msgs.msg import BuoyAction, BuoyGoal
 
 #####################
 # STATE DEFINITIONS #
@@ -30,15 +29,14 @@ from riptide_msgs.msg import TestAction, TestGoal
 # Entry point for the state machine.
 
 # Define some constants
-ZERO_POSITION = Vector3(x=0, y=0, z=0)
 
 
 def main():
-    rospy.init_node('STATE_MACHINE_NAME')
+    rospy.init_node('Riptide_State_Machine')
 
-    Default_Timeout = rospy.Duration(4.0)
+    Default_Timeout = rospy.Duration(10.0)
 
-    Goal = TestGoal(searchGoal="TASK_ONE", positionGoal=ZERO_POSITION)
+    GreenBuoyGoal = BuoyGoal(color="green")
 
     # Create the state machine
     sm0 = smach.StateMachine(outcomes=['succeeded', 'aborted', 'preempted', 'failed'])
@@ -46,18 +44,7 @@ def main():
     with sm0:
 
         # GO TO B
-        smach.StateMachine.add('GOTO_B', smach_ros.SimpleActionState('TestAction', TestAction, goal=Goal, result_key='B_Result',  output_keys=['B_Result'], exec_timeout=Default_Timeout), transitions={'succeeded': 'GOTO_C', 'aborted': 'failed'})
-        # GO TO C
-        def GOTO_C_goalCB(userdata, currentGoal):
-            currentGoal.positionGoal = userdata.C_In.realPosition
-            currentGoal.positionGoal.x += 2
-            currentGoal.positionGoal.y += 2
-            currentGoal.positionGoal.z += 2
-            currentGoal.searchGoal = "TASK_TWO"
-            Default_Timeout = rospy.Duration(3.0)
-            return currentGoal
-
-        smach.StateMachine.add('GOTO_C', smach_ros.SimpleActionState('TestAction', TestAction, goal_cb=GOTO_C_goalCB, input_keys=['C_In'], exec_timeout=Default_Timeout), transitions={'succeeded': 'succeeded', 'preempted': 'failed'}, remapping={'C_In': 'B_Result'})
+        smach.StateMachine.add('FindGreenBuoy', smach_ros.SimpleActionState('BuoyAction', TestAction, goal=GreenBuoyGoal, result_key='GreenBuoyResult',  output_keys=['GreenBuoyResult'], exec_timeout=Default_Timeout), transitions={'succeeded': 'succeeded', 'aborted': 'failed'})
 
     # Run the state machine
     outcome = sm0.execute()
