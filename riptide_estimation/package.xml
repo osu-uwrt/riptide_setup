@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>riptide_estimation</name>
-  <version>0.0.13</version>
+  <version>0.0.14</version>
   <description>State estimation for OSU's Riptide AUV.</description>
 
   <maintainer email="cary.42@osu.edu">Conor Cary</maintainer>

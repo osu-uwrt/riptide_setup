@@ -14,9 +14,9 @@ geometry_msgs::Accel accel;
 
 struct vector
 {
-		double x;
-		double y;
-		double z;
+	double x;
+	double y;
+	double z;
 };
 
 vector state, state_dot;
