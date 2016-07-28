@@ -1,0 +1,10 @@
+# Goal
+string searchGoal
+geometry_msgs/Vector3 positionGoal
+----
+# Result
+bool foundGoal
+geometry_msgs/Vector3 realPosition
+----
+# Feedback
+geometry_msgs/Vector3 currentPosition
