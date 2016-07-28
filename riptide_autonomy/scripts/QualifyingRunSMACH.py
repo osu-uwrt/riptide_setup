@@ -52,7 +52,7 @@ def main():
     outcome = sm0.execute()
 
 def batteryCB(data):
-  if not (isStarted):
+  if not isStarted:
     isStared = True
     main()
   
