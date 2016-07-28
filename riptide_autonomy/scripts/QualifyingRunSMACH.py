@@ -16,7 +16,8 @@ import smach
 import smach_ros
 import actionlib
 
-from riptide_msgs.msg import BuoyAction, BuoyGoal
+from riptide_msgs.msg import BuoyAction, BuoyGoal, Bat
+#from riptide_msgs.msg import FindGateAction, FindGateGoal
 
 #####################
 # STATE DEFINITIONS #
@@ -32,22 +33,29 @@ from riptide_msgs.msg import BuoyAction, BuoyGoal
 
 
 def main():
-    rospy.init_node('Riptide_State_Machine')
+    rospy.init_node('Qualifying_Run_SMACH')
 
-    Default_Timeout = rospy.Duration(10.0)
-
-    GreenBuoyGoal = BuoyGoal(color="green")
+    FindGateTimeout = rospy.Duration(10.0)
+    #FindGateGoal = FindGateGoal()
 
     # Create the state machine
     sm0 = smach.StateMachine(outcomes=['succeeded', 'aborted', 'preempted', 'failed'])
     # Add states
     with sm0:
 
-        # GO TO B
+        
         smach.StateMachine.add('FindGreenBuoy', smach_ros.SimpleActionState('BuoyAction', BuoyAction, goal=GreenBuoyGoal, result_key='GreenBuoyResult',  output_keys=['GreenBuoyResult'], exec_timeout=Default_Timeout), transitions={'succeeded': 'succeeded', 'preempted': 'failed', 'aborted': 'failed'})
-
+        # Find Gate Action State
+        #smach.StateMachine.add('FindGate', smach_ros.SimpleActionState('FindGateAction', FindGateAction, goal=FindGateGoal, result_key='FindGateResult',  output_keys=['FindGateResult'], exec_timeout=FindGateTimeout), transitions={'succeeded': 'succeeded', 'preempted': 'failed', 'aborted': 'failed'})
+        
     # Run the state machine
     outcome = sm0.execute()
 
-if __name__ == '__main__':
+def batteryCB(data):
+  if (!isStarted):
+    isStared = True
     main()
+  
+if __name__ == '__main__':
+  isStarted = False
+  rospy.Subscriber('state/battery', Bat, batteryCB)
