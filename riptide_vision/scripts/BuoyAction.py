@@ -70,7 +70,7 @@ class BuoyAction:
         
             if self.actionServer.is_preempt_requested():
               self.resultMsg.rammed = false
-              self.actionServer.set_aborted(self.resultMsg)
+              self.actionServer.set_preempted(self.resultMsg)
 
             else:
               # Do checks for task completion and action code here  

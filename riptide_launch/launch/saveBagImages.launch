@@ -1,0 +1,7 @@
+<launch>
+  <node pkg="rosbag" type="play" name="rosbag" args="-d 2 /media/benji/A80A64980A6464F2/Documents\ and\ Settings/Just_Benj/Desktop/2016-07-28-13-45-18.bag.orig.active"/>
+  <node name="extract" pkg="image_view" type="extract_images" respawn="false" output="screen" cwd="ROS_HOME">
+    <remap from="image" to="/stereo/left/image_color"/>
+  </node>
+</launch>
+
