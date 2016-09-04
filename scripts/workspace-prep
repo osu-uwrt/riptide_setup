@@ -12,7 +12,7 @@
 mkdir -p ~/osu-uwrt/riptide_ws/
 
 # Copy the repository to the workspace:
-cp -rf ../riptide ~/osu-uwrt/riptide_ws/src
+cp -rf ../riptide-ros ~/osu-uwrt/riptide_ws/src
 
 # List the contentents of the destination:
 ls -al ~/osu-uwrt/riptide_ws/src

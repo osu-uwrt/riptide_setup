@@ -14,19 +14,11 @@ install:
   - ./scripts/install-ceres
   - source ~/.bashrc
 
-before_script:
-  - ./scripts/install-sphinx
-
 script:
   - ./scripts/workspace-setup
   - source ~/.bashrc
   - cd ~/osu-uwrt/riptide_ws
   - catkin_make
-  - cd $TRAVIS_BUILD_DIR
-  - travis-sphinx build
-
-after_success:
-  - travis-sphinx deploy
 
 notifications:
   email: false
