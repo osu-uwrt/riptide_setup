@@ -8,4 +8,4 @@ The Ohio State University
 
 [Website](http://go.osu.edu/uwrt) | [Competition](http://www.auvsifoundation.org/foundation/competitions/competition-central/robosub) | [License](LICENSE)
 
-[![Build Status](https://travis-ci.org/osu-uwrt/riptide.svg?branch=master)](https://travis-ci.org/osu-uwrt/riptide)
+[![Build Status](https://travis-ci.org/osu-uwrt/riptide-ros.svg?branch=master)](https://travis-ci.org/osu-uwrt/riptide-ros)
