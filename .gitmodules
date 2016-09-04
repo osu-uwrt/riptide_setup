@@ -4,3 +4,9 @@
 [submodule "viso2"]
 	path = viso2
 	url = https://github.com/iConor/viso2.git
+[submodule "underwater-ros"]
+	path = underwater-ros
+	url = https://github.com/osu-uwrt/underwater-ros.git
+[submodule "underwater-gazebo"]
+	path = underwater-gazebo
+	url = https://github.com/osu-uwrt/underwater-gazebo.git
