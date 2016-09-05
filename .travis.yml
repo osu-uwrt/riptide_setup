@@ -7,15 +7,15 @@ branches:
     - master
 
 before_install:
-  - ./scripts/workspace-prep
+  - ./underwater-ros/workspace-prep
 
 install:
-  - ./scripts/install-ros
-  - ./scripts/install-ceres
+  - ./underwater-ros/install-ros
+  - ./underwater-ros/install-ceres
   - source ~/.bashrc
 
 script:
-  - ./scripts/workspace-setup
+  - ./underwater-ros/workspace-setup
   - source ~/.bashrc
   - cd ~/osu-uwrt/riptide_ws
   - catkin_make
