@@ -3,7 +3,7 @@
 	url = https://github.com/KumarRobotics/imu_3dm_gx4.git
 [submodule "viso2"]
 	path = viso2
-	url = https://github.com/iConor/viso2.git
+	url = https://github.com/osu-uwrt/viso2.git
 [submodule "underwater-ros"]
 	path = underwater-ros
 	url = https://github.com/osu-uwrt/underwater-ros.git

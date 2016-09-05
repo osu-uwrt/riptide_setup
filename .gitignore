@@ -2,11 +2,9 @@
 
 *.bak
 
-*.hex
-
 .DS_Store
 
-docs/build
+CMakeLists.txt
 
 riptide_description/urdf/riptide.urdf
 riptide_description/urdf/riptide.sdf
