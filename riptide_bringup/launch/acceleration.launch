@@ -1,4 +1,4 @@
 <launch>
   <include file="$(find riptide_controls)/launch/thruster_control.launch" />
-  <include file="$(find riptide_teleop)/launch/accel.launch" />
+  <include file="$(find underwater_ros)/launch/accel.launch" />
 </launch>
