@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>riptide_launch</name>
+  <name>riptide_bringup</name>
   <version>0.0.15</version>
   <description>Description of OSU's Riptide AUV.</description>
 
