@@ -4,7 +4,7 @@
 
 .DS_Store
 
-CMakeLists.txt
+/CMakeLists.txt
 
 riptide_description/urdf/riptide.urdf
 riptide_description/urdf/riptide.sdf
