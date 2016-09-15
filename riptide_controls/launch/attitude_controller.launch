@@ -1,5 +1,4 @@
 <launch>
-  <include file="$(find riptide_controls)/launch/thruster_control.launch"/>
   <node pkg="riptide_controls" type="attitude_controller" name="attitude_controller">
     <param name="roll/p" value="1" />
     <param name="roll/d" value="0" />

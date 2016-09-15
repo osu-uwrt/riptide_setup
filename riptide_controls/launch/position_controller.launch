@@ -1,5 +1,4 @@
 <launch>
-  <include file="$(find riptide_controls)/launch/attitude_control.launch"/>
   <node pkg="riptide_controls" type="position_controller" name="position_controller">
     <param name="surge/p" value="1" />
     <param name="surge/d" value="0" />
