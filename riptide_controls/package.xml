@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>riptide_navigation</name>
+  <name>riptide_controls</name>
   <version>0.0.15</version>
-  <description>Navigation stack for OSU's Riptide AUV.</description>
+  <description>Control systems for OSU's Riptide AUV.</description>
 
   <maintainer email="cary.42@osu.edu">Conor Cary</maintainer>
 
@@ -29,5 +29,5 @@
 
   <export>
   </export>
-  
+
 </package>

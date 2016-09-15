@@ -1,6 +1,6 @@
 <launch>
-  <include file="$(find riptide_navigation)/launch/attitude_control.launch"/>
-  <node pkg="riptide_navigation" type="position_controller" name="position_controller">
+  <include file="$(find riptide_controls)/launch/attitude_control.launch"/>
+  <node pkg="riptide_controls" type="position_controller" name="position_controller">
     <param name="surge/p" value="1" />
     <param name="surge/d" value="0" />
     <param name="heave/p" value="3" />
