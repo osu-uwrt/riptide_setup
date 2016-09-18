@@ -1,5 +1,0 @@
-rosrun gazebo_ros gazebo
-rosrun gazebo_ros gzserver
-rosrun gazebo_ros gzclient
-rosrun gazebo_ros debug
-roslaunch gazebo_ros empty_world.launch

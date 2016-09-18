@@ -1,4 +1,0 @@
-<launch>
-  <include file="$(find riptide_navigation)/launch/thruster_control.launch" />
-  <include file="$(find riptide_teleop)/launch/accel.launch" />
-</launch>

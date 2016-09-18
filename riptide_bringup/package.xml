@@ -1,24 +1,22 @@
 <?xml version="1.0"?>
 <package>
-  <name>riptide_teleop</name>
+  <name>riptide_bringup</name>
   <version>0.0.15</version>
-  <description>Teleoperation package for OSU's Riptide AUV.</description>
+  <description>Description of OSU's Riptide AUV.</description>
 
   <maintainer email="cary.42@osu.edu">Conor Cary</maintainer>
 
   <license>BSD</license>
 
   <url type="website">http://go.osu.edu/uwrt</url>
-  <url type="repository">http://github.com/uwrt-osu/riptide</url>
+  <url type="repository">http://github.com/osu-uwrt/riptide</url>
 
   <author email="cary.42@osu.edu">Conor Cary</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>joy</build_depend>
   <build_depend>roslaunch</build_depend>
 
-  <run_depend>joy</run_depend>
   <run_depend>roslaunch</run_depend>
 
   <export>

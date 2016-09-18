@@ -1,9 +1,0 @@
-#!/bin/bash
-
-avr-gcc -mmcu=attiny1634 "$1"
-
-avr-objcopy -O ihex a.out "$1".hex
-
-sudo avrdude -c usbtiny -p t1634 -U flash:w:"$1".hex
-
-rm a.out
