@@ -2,11 +2,13 @@ cmake_minimum_required(VERSION 2.8.3)
 project(riptide_controls)
 
 find_package(catkin REQUIRED COMPONENTS
-  tf control_toolbox geometry_msgs nav_msgs sensor_msgs riptide_msgs imu_3dm_gx4
+  roslint tf control_toolbox geometry_msgs nav_msgs sensor_msgs riptide_msgs imu_3dm_gx4
 )
 find_package(Ceres REQUIRED)
 
 catkin_package()
+
+roslint_cpp()
 
 include_directories(${catkin_INCLUDE_DIRS} ${CERES_INCLUDE_DIRS})
 

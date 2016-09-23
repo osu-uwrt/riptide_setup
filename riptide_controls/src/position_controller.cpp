@@ -1,8 +1,36 @@
-#include <ros/ros.h>
-#include <control_toolbox/pid.h>
-#include <tf/transform_datatypes.h>
-#include <mirror_msgs/OdomWithAccel.h>
-#include <riptide_msgs/Depth.h>
+/*********************************************************************************
+ *  Copyright (c) 2015, The Underwater Robotics Team
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions are met:
+ *
+ *  * Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ *
+ *  * Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *********************************************************************************/
+
+#include "ros/ros.h"
+#include "tf/transform_datatypes.h"
+#include "control_toolbox/pid.h"
+
+#include "mirror_msgs/OdomWithAccel.h"
+#include "riptide_msgs/Depth.h"
 
 control_toolbox::Pid surge, sway, heave;
 
@@ -32,7 +60,7 @@ ros::Duration dt;
 
 void depth_cb(const riptide_msgs::Depth::ConstPtr& new_state)
 {
-	// Update current depth
+  // Update current depth
   state.z = (-1 * new_state->depth) - depth;
   if (state.z < max_depth)
   {
@@ -53,17 +81,17 @@ void target_cb(const mirror_msgs::OdomWithAccel::ConstPtr& new_target)
   target.z = new_target->pose.position.z;
 
   // Desired linear velocity
-	target_dot.x = new_target->twist.linear.x;
-	target_dot.y = new_target->twist.linear.y;
-	target_dot.z = new_target->twist.linear.z;
+  target_dot.x = new_target->twist.linear.x;
+  target_dot.y = new_target->twist.linear.y;
+  target_dot.z = new_target->twist.linear.z;
 
   // Desired linear acceleration
-	feed_fwd.x = new_target->accel.linear.x;
-	feed_fwd.y = new_target->accel.linear.y;
-	feed_fwd.z = new_target->accel.linear.z;
+  feed_fwd.x = new_target->accel.linear.x;
+  feed_fwd.y = new_target->accel.linear.y;
+  feed_fwd.z = new_target->accel.linear.z;
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "attitude_controller");
   ros::NodeHandle nh;
@@ -82,35 +110,35 @@ int main(int argc, char **argv)
   target_sub = nh.subscribe<mirror_msgs::OdomWithAccel>("target/position", 1, &target_cb);
   attitude_pub = nh.advertise<mirror_msgs::OdomWithAccel>("target/attitude", 1);
 
-	// Linear displacement
-	state.x = 0;
-	state.y = 0;
-	state.z = 0;
+  // Linear displacement
+  state.x = 0;
+  state.y = 0;
+  state.z = 0;
 
-	// Linear velocity
-	state_dot.x = 0;
-	state_dot.y = 0;
-	state_dot.z = 0;
+  // Linear velocity
+  state_dot.x = 0;
+  state_dot.y = 0;
+  state_dot.z = 0;
 
-	// Linear displacement
-	target.x = 0;
-	target.y = 0;
-	target.z = 0;
+  // Linear displacement
+  target.x = 0;
+  target.y = 0;
+  target.z = 0;
 
-	// Linear velocity
-	target_dot.x = 0;
-	target_dot.y = 0;
-	target_dot.z = 0;
+  // Linear velocity
+  target_dot.x = 0;
+  target_dot.y = 0;
+  target_dot.z = 0;
 
-	// Linear acceleration
-	feed_fwd.x = 0;
-	feed_fwd.y = 0;
-	feed_fwd.z = 0;
+  // Linear acceleration
+  feed_fwd.x = 0;
+  feed_fwd.y = 0;
+  feed_fwd.z = 0;
 
   then = ros::Time::now();
   ros::Rate rate(25.0);
 
-  while(ros::ok())
+  while (ros::ok())
   {
     ros::spinOnce();
 
