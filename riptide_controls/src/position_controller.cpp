@@ -1,7 +1,7 @@
 #include <ros/ros.h>
 #include <control_toolbox/pid.h>
 #include <tf/transform_datatypes.h>
-#include <riptide_msgs/OdomWithAccel.h>
+#include <mirror_msgs/OdomWithAccel.h>
 #include <riptide_msgs/Depth.h>
 
 control_toolbox::Pid surge, sway, heave;
@@ -10,7 +10,7 @@ ros::Subscriber state_sub;
 ros::Subscriber target_sub;
 ros::Publisher attitude_pub;
 
-riptide_msgs::OdomWithAccel attitude;
+mirror_msgs::OdomWithAccel attitude;
 
 struct vector
 {
@@ -40,7 +40,7 @@ void depth_cb(const riptide_msgs::Depth::ConstPtr& new_state)
   }
 }
 
-void target_cb(const riptide_msgs::OdomWithAccel::ConstPtr& new_target)
+void target_cb(const mirror_msgs::OdomWithAccel::ConstPtr& new_target)
 {
   // Pass angular values through
   attitude.pose.position = new_target->pose.position;
@@ -79,8 +79,8 @@ int main(int argc, char **argv)
   heave.init(hv);
 
   state_sub = nh.subscribe<riptide_msgs::Depth>("state/depth", 1, &depth_cb);
-  target_sub = nh.subscribe<riptide_msgs::OdomWithAccel>("target/position", 1, &target_cb);
-  attitude_pub = nh.advertise<riptide_msgs::OdomWithAccel>("target/attitude", 1);
+  target_sub = nh.subscribe<mirror_msgs::OdomWithAccel>("target/position", 1, &target_cb);
+  attitude_pub = nh.advertise<mirror_msgs::OdomWithAccel>("target/attitude", 1);
 
 	// Linear displacement
 	state.x = 0;

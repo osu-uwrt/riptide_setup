@@ -1,7 +1,7 @@
 #include <ros/ros.h>
 #include <control_toolbox/pid.h>
 #include <tf/transform_datatypes.h>
-#include <riptide_msgs/OdomWithAccel.h>
+#include <mirror_msgs/OdomWithAccel.h>
 #include <sensor_msgs/Imu.h>
 
 control_toolbox::Pid roll, pitch, yaw;
@@ -43,7 +43,7 @@ void state_cb(const sensor_msgs::Imu::ConstPtr& new_state)
   state_dot.z = velocity.z();
 }
 
-void target_cb(const riptide_msgs::OdomWithAccel::ConstPtr& new_target)
+void target_cb(const mirror_msgs::OdomWithAccel::ConstPtr& new_target)
 {
 	// Pass linear values through
   accel.linear = new_target->accel.linear;
@@ -78,7 +78,7 @@ int main(int argc, char **argv)
   yaw.init(y);
 
   state_sub = nh.subscribe<sensor_msgs::Imu>("state/imu", 1, &state_cb);
-  target_sub = nh.subscribe<riptide_msgs::OdomWithAccel>("target/attitude", 1, &target_cb);
+  target_sub = nh.subscribe<mirror_msgs::OdomWithAccel>("target/attitude", 1, &target_cb);
   command = nh.advertise<geometry_msgs::Accel>("command/accel", 1);
 
 	// Angular displacement
