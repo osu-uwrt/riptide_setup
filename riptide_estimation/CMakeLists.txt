@@ -5,6 +5,8 @@ find_package(catkin REQUIRED COMPONENTS roscpp tf sensor_msgs geometry_msgs)
 
 catkin_package()
 
+roslint_cpp()
+
 include_directories(${catkin_INCLUDE_DIRS})
 
 add_executable(rpy src/rpy.cpp)
