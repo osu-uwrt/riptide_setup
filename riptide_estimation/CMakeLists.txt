@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(riptide_estimation)
 
-find_package(catkin REQUIRED COMPONENTS roscpp tf sensor_msgs geometry_msgs)
+find_package(catkin REQUIRED COMPONENTS roslint roscpp tf sensor_msgs geometry_msgs)
 
 catkin_package()
 
