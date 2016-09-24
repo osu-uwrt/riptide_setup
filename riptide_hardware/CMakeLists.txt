@@ -7,7 +7,7 @@ catkin_package()
 
 roslint_cpp()
 
-include_directories(${catkin_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS})
 
 add_executable(thrust_cal src/thrust_cal.cpp)
 add_dependencies(thrust_cal riptide_msgs_gencpp)

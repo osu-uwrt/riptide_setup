@@ -6,11 +6,11 @@ find_package(catkin REQUIRED COMPONENTS
 )
 find_package(Ceres REQUIRED)
 
-catkin_package()
+catkin_package(INCLUDE_DIRS include)
 
 roslint_cpp()
 
-include_directories(${catkin_INCLUDE_DIRS} ${CERES_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS} ${CERES_INCLUDE_DIRS})
 
 add_executable(attitude_controller src/attitude_controller.cpp)
 target_link_libraries(attitude_controller ${catkin_LIBRARIES})
