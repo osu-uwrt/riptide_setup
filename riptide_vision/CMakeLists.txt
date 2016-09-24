@@ -5,4 +5,6 @@ find_package(catkin REQUIRED COMPONENTS camera_calibration cv_bridge pointgrey_c
 
 catkin_package()
 
+roslint_py()
+
 include_directories(${catkin_INCLUDE_DIRS})
