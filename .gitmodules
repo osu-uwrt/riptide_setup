@@ -1,3 +1,0 @@
-[submodule "underwater-ros"]
-	path = underwater-ros
-	url = https://github.com/osu-uwrt/underwater-ros.git
