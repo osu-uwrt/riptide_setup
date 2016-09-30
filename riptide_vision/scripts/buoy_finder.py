@@ -1,9 +1,10 @@
-#!/usr/bin/env python
+"""A prototype buoy detector."""
+
 import numpy as np
 import cv2
 import rospy
 from sensor_msgs.msg import Image
-from cv_bridge import CvBridge, CvBridgeError
+from cv_bridge import CvBridge  # , CvBridgeError
 
 red_lower = (-15, 152, 152)
 red_upper = (25, 255, 255)
@@ -12,6 +13,7 @@ green_upper = (85, 230, 230)
 
 bridge = CvBridge()
 pub = rospy.Publisher('stereo/left/image_buoy', Image, queue_size=1)
+
 
 def find_buoy(image, lower, upper):
 
@@ -25,12 +27,13 @@ def find_buoy(image, lower, upper):
     threshold = cv2.inRange(hsv, lower, upper)
 
     # Remove noise:
-    kernel = np.ones((5,5), np.uint8)
+    kernel = np.ones((5, 5), np.uint8)
     opening = cv2.morphologyEx(threshold, cv2.MORPH_OPEN, kernel)
     closing = cv2.morphologyEx(opening, cv2.MORPH_CLOSE, kernel)
 
     # Identify contours
-    contours, hierarchy = cv2.findContours(closing.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours, hierarchy = cv2.findContours(closing.copy(), cv2.RETR_EXTERNAL,
+                                           cv2.CHAIN_APPROX_SIMPLE)
     if len(contours) > 0:
 
         # Determine largest contour
@@ -40,7 +43,8 @@ def find_buoy(image, lower, upper):
         (x, y), radius = cv2.minEnclosingCircle(largest_contour)
         if not radius < 10:
             # Draw its bounding circle
-            cv2.circle(image, (int(x), int(y)), int(radius), (255, 255, 255), 2)
+            cv2.circle(image, (int(x), int(y)),
+                       int(radius), (255, 255, 255), 2)
 
             # Calculate its moments
             M = cv2.moments(largest_contour)
@@ -65,6 +69,7 @@ def callback(image_message_in):
 
     image_message_out = bridge.cv2_to_imgmsg(cv_image, encoding="bgr8")
     pub.publish(image_message_out)
+
 
 def buoy_finder():
     rospy.init_node('buoy_finder', anonymous=True)
