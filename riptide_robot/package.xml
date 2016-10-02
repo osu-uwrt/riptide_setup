@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>riptide</name>
+  <name>riptide_robot</name>
   <version>0.0.15</version>
   <description>Metapackage for OSU's Riptide AUV.</description>
 

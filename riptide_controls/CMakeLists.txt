@@ -2,13 +2,15 @@ cmake_minimum_required(VERSION 2.8.3)
 project(riptide_controls)
 
 find_package(catkin REQUIRED COMPONENTS
-  tf control_toolbox geometry_msgs nav_msgs sensor_msgs riptide_msgs imu_3dm_gx4
+  roslint tf control_toolbox geometry_msgs nav_msgs sensor_msgs riptide_msgs imu_3dm_gx4
 )
 find_package(Ceres REQUIRED)
 
-catkin_package()
+catkin_package(INCLUDE_DIRS include)
 
-include_directories(${catkin_INCLUDE_DIRS} ${CERES_INCLUDE_DIRS})
+roslint_cpp()
+
+include_directories(include ${catkin_INCLUDE_DIRS} ${CERES_INCLUDE_DIRS})
 
 add_executable(attitude_controller src/attitude_controller.cpp)
 target_link_libraries(attitude_controller ${catkin_LIBRARIES})

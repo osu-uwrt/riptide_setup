@@ -1,3 +1,0 @@
-#!/bin/bash
-
-rosrun camera_calibration cameracalibrator.py -p chessboard -s 8x6 -q 0.042 image:=/monocular/image_raw camera:=/monocular

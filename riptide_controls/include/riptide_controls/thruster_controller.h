@@ -24,27 +24,53 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *********************************************************************************/
-#include "riptide_estimation/rpy.h"
 
-void RPY::callback(const sensor_msgs::Imu::ConstPtr &imu)
+#ifndef THRUSTER_CONTROLLER_H
+#define THRUSTER_CONTROLLER_H
+
+#include <math.h>
+#include <vector>
+
+#include "ceres/ceres.h"
+#include "glog/logging.h"
+
+#include "ros/ros.h"
+#include "tf/transform_listener.h"
+#include "geometry_msgs/Vector3.h"
+#include "geometry_msgs/Accel.h"
+#include "sensor_msgs/Imu.h"
+#include "imu_3dm_gx4/FilterOutput.h"
+
+#include "riptide_msgs/ThrustStamped.h"
+
+class Solver
 {
-  tf::Quaternion quaternion;
-  tf::quaternionMsgToTF(imu->orientation, quaternion);
-  tf::Matrix3x3 attitude = tf::Matrix3x3(quaternion);
-  attitude.getRPY(rpy_msg.vector.x, rpy_msg.vector.y, rpy_msg.vector.z);
-  rpy_msg.header.stamp = imu->header.stamp;
-  msg_.publish(rpy_msg);
-}
-RPY::RPY(ros::NodeHandle nh)
-{
-  imu_ = nh.subscribe<sensor_msgs::Imu>("state/imu", 1, &RPY::callback, this);
-  msg_ = nh.advertise<geometry_msgs::Vector3Stamped>("state/rpy", 1);
-  rpy_msg.header.frame_id = "base_link";
-  ros::spin();
-}
-int main(int argc, char **argv)
-{
-  ros::init(argc, argv, "orientation");
+ private:
+  // Comms
   ros::NodeHandle nh;
-  RPY rpy(nh);
-}
+  ros::Subscriber state_sub;
+  ros::Subscriber cmd_sub;
+  ros::Publisher cmd_pub;
+  riptide_msgs::ThrustStamped thrust;
+  // Math
+  ceres::Problem problem;
+  ceres::Solver::Options options;
+  ceres::Solver::Summary summary;
+  // Results
+  double surge_stbd_hi, surge_port_hi, surge_port_lo, surge_stbd_lo;
+  double sway_fwd, sway_aft;
+  double heave_port_aft, heave_stbd_aft, heave_stbd_fwd, heave_port_fwd;
+  // TF
+  tf::TransformListener *listener;
+  tf::StampedTransform tf_surge[4];
+  tf::StampedTransform tf_sway[2];
+  tf::StampedTransform tf_heave[4];
+
+ public:
+  Solver(char **argv, tf::TransformListener *listener_adr);
+  void state(const sensor_msgs::Imu::ConstPtr &msg);
+  void callback(const geometry_msgs::Accel::ConstPtr &a);
+  void loop();
+};
+
+#endif

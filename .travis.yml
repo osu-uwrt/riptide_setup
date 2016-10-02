@@ -6,19 +6,11 @@ branches:
   only:
     - master
 
-before_install:
-  - ./underwater-ros/workspace-prep
-
 install:
-  - ./underwater-ros/install-ros
-  - ./underwater-ros/install-ceres
   - source ~/.bashrc
 
 script:
-  - ./underwater-ros/workspace-setup
   - source ~/.bashrc
-  - cd ~/osu-uwrt/riptide_ws
-  - catkin_make
 
 notifications:
   email: false
