@@ -43,7 +43,7 @@
 
 #include "riptide_msgs/ThrustStamped.h"
 
-class Solver
+class ThrusterController
 {
  private:
   // Comms
@@ -67,7 +67,7 @@ class Solver
   tf::StampedTransform tf_heave[4];
 
  public:
-  Solver(char **argv, tf::TransformListener *listener_adr);
+  ThrusterController(char **argv, tf::TransformListener *listener_adr);
   void state(const sensor_msgs::Imu::ConstPtr &msg);
   void callback(const geometry_msgs::Accel::ConstPtr &a);
   void loop();

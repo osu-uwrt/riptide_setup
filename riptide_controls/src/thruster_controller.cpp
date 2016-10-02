@@ -199,11 +199,11 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "thruster_controller");
   tf::TransformListener tf_listener;
-  Solver solver(argv, &tf_listener);
-  solver.loop();
+  ThrusterController thruster_controller(argv, &tf_listener);
+  thruster_controller.loop();
 }
 
-Solver::Solver(char **argv, tf::TransformListener *listener_adr)
+ThrusterController::ThrusterController(char **argv, tf::TransformListener *listener_adr)
 {
   rotation_matrix.setIdentity();
   ang_v.setZero();
@@ -212,8 +212,8 @@ Solver::Solver(char **argv, tf::TransformListener *listener_adr)
 
   thrust.header.frame_id = "base_link";
 
-  state_sub = nh.subscribe<sensor_msgs::Imu>("state/imu", 1, &Solver::state, this);
-  cmd_sub = nh.subscribe<geometry_msgs::Accel>("command/accel", 1, &Solver::callback, this);
+  state_sub = nh.subscribe<sensor_msgs::Imu>("state/imu", 1, &ThrusterController::state, this);
+  cmd_sub = nh.subscribe<geometry_msgs::Accel>("command/accel", 1, &ThrusterController::callback, this);
   cmd_pub = nh.advertise<riptide_msgs::ThrustStamped>("command/thrust", 1);
 
   listener->waitForTransform("/base_link", "/surge_port_hi_link", ros::Time(0), ros::Duration(10.0));
@@ -318,7 +318,7 @@ Solver::Solver(char **argv, tf::TransformListener *listener_adr)
 #endif
 }
 
-void Solver::state(const sensor_msgs::Imu::ConstPtr &msg)
+void ThrusterController::state(const sensor_msgs::Imu::ConstPtr &msg)
 {
   tf::Quaternion tf;
   quaternionMsgToTF(msg->orientation, tf);
@@ -326,7 +326,7 @@ void Solver::state(const sensor_msgs::Imu::ConstPtr &msg)
   vector3MsgToTF(msg->angular_velocity, ang_v);
 }
 
-void Solver::callback(const geometry_msgs::Accel::ConstPtr &a)
+void ThrusterController::callback(const geometry_msgs::Accel::ConstPtr &a)
 {
   cmdSurge = a->linear.x;
   cmdSway = a->linear.y;
@@ -389,7 +389,7 @@ void Solver::callback(const geometry_msgs::Accel::ConstPtr &a)
   cmd_pub.publish(thrust);
 }
 
-void Solver::loop()
+void ThrusterController::loop()
 {
   ros::spin();
 }
