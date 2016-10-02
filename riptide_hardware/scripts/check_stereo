@@ -1,3 +1,0 @@
-#!/bin/bash
-
-rosrun camera_calibration cameracheck.py --size 8x6 stereo:=/stereo image:=image_rect

@@ -25,64 +25,36 @@
  *
  *********************************************************************************/
 
-#ifndef RIPTIDE_THRUST_HH
-#define RIPTIDE_THRUST_HH
-
-#include <string>
-
-#include "boost/thread.hpp"
-#include "boost/thread/mutex.hpp"
-
-#include "gazebo/physics/physics.hh"
-#include "gazebo/transport/TransportTypes.hh"
-#include "gazebo/common/Plugin.hh"
-#include "gazebo/common/Events.hh"
+#ifndef THRUST_CAL_H
+#define THRUST_CAL_H
 
 #include "ros/ros.h"
+#include "std_msgs/Empty.h"
+
+#include "riptide_msgs/Bat.h"
+#include "riptide_msgs/PwmStamped.h"
 #include "riptide_msgs/ThrustStamped.h"
-#include "ros/subscribe_options.h"
-#include "ros/callback_queue.h"
 
-namespace gazebo
+class ThrustCal
 {
-class RiptideThrust : public ModelPlugin
-{
- public:
-  RiptideThrust();
-  virtual ~RiptideThrust();
-
- protected:
-  void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
-  virtual void UpdateChild();
-
  private:
-  event::ConnectionPtr update_connection_;
-  physics::WorldPtr world_;
-  // Thrusters
-  physics::LinkPtr surge_port_hi_;
-  physics::LinkPtr surge_stbd_hi_;
-  physics::LinkPtr surge_port_lo_;
-  physics::LinkPtr surge_stbd_lo_;
-  physics::LinkPtr sway_fwd_;
-  physics::LinkPtr sway_aft_;
-  physics::LinkPtr heave_port_fwd_;
-  physics::LinkPtr heave_stbd_fwd_;
-  physics::LinkPtr heave_port_aft_;
-  physics::LinkPtr heave_stbd_aft_;
-  // Msg
-  std::string robot_namespace_;
-  std::string topic_name_;
-  riptide_msgs::ThrustStamped thrust_;
-  // ROS
-  ros::NodeHandle* rosnode_;
-  ros::Subscriber sub_;
-  ros::CallbackQueue queue_;
-  // Tep...
-  boost::thread callback_queue_thread_;
-  boost::mutex lock_;
-  // Functions?!
-  void QueueThread();
-  void UpdateObjectForce(const riptide_msgs::ThrustStamped::ConstPtr& _msg);
+  ros::NodeHandle nh;
+  ros::Subscriber kill_it_with_fire;
+  ros::Subscriber thrust, outta_juice;
+  ros::Publisher pwm;
+  riptide_msgs::PwmStamped us;
+  ros::Time alive;
+  bool dead, low;
+  double min_voltage;
+  int counterclockwise(double raw_force);
+  int clockwise(double raw_force);
+
+ public:
+  ThrustCal();
+  void callback(const riptide_msgs::ThrustStamped::ConstPtr& thrust);
+  void killback(const std_msgs::Empty::ConstPtr& thrust);
+  void voltsbacken(const riptide_msgs::Bat::ConstPtr& bat_stat);
+  void loop();
 };
-}
+
 #endif

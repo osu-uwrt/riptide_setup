@@ -17,6 +17,7 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <build_depend>roslint</build_depend>
   <build_depend>control_toolbox</build_depend>
   <build_depend>riptide_msgs</build_depend>
   <build_depend>sensor_msgs</build_depend>
