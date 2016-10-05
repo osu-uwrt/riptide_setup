@@ -24,33 +24,27 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *********************************************************************************/
+#include "riptide_estimation/rpy.h"
 
-#include "ros/ros.h"
-#include "tf/transform_datatypes.h"
-#include "tf/LinearMath/Matrix3x3.h"
-#include "sensor_msgs/Imu.h"
-#include "geometry_msgs/Vector3Stamped.h"
-
-ros::Publisher msg_;
-ros::Subscriber imu_;
-geometry_msgs::Vector3Stamped rpy;
-
-void callback(const sensor_msgs::Imu::ConstPtr &imu)
+void RPY::callback(const sensor_msgs::Imu::ConstPtr &imu)
 {
   tf::Quaternion quaternion;
   tf::quaternionMsgToTF(imu->orientation, quaternion);
   tf::Matrix3x3 attitude = tf::Matrix3x3(quaternion);
-  attitude.getRPY(rpy.vector.x, rpy.vector.y, rpy.vector.z);
-  rpy.header.stamp = imu->header.stamp;
-  msg_.publish(rpy);
+  attitude.getRPY(rpy_msg.vector.x, rpy_msg.vector.y, rpy_msg.vector.z);
+  rpy_msg.header.stamp = imu->header.stamp;
+  msg_.publish(rpy_msg);
 }
-
+RPY::RPY(ros::NodeHandle nh)
+{
+  imu_ = nh.subscribe<sensor_msgs::Imu>("state/imu", 1, &RPY::callback, this);
+  msg_ = nh.advertise<geometry_msgs::Vector3Stamped>("state/rpy", 1);
+  rpy_msg.header.frame_id = "base_link";
+  ros::spin();
+}
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "orientation");
   ros::NodeHandle nh;
-  imu_ = nh.subscribe<sensor_msgs::Imu>("state/imu", 1, callback);
-  msg_ = nh.advertise<geometry_msgs::Vector3Stamped>("state/rpy", 1);
-  rpy.header.frame_id = "base_link";
-  ros::spin();
+  RPY rpy(nh);
 }
