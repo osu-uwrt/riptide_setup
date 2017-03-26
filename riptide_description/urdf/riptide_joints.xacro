@@ -21,6 +21,18 @@
     <child link="imu_one_link"/>
   </joint>
 
+  <joint name="housing_camera_left_joint" type="fixed">
+    <origin xyz="${housing_camera_left}" rpy="0 0 0" />
+    <parent link="housing_link"/>
+    <child link="camera_left"/>
+  </joint>
+
+  <joint name="housing_camera_right_joint" type="fixed">
+    <origin xyz="${housing_camera_right}" rpy="0 0 0" />
+    <parent link="housing_link"/>
+    <child link="camera_right"/>
+  </joint>
+
   <!--                -->
   <!-- Housing Joints -->
   <!--                -->

@@ -10,6 +10,8 @@ catkin_package(INCLUDE_DIRS include)
 
 roslint_cpp()
 
+roslint_python()
+
 include_directories(include ${catkin_INCLUDE_DIRS} ${CERES_INCLUDE_DIRS})
 
 add_executable(attitude_controller src/attitude_controller.cpp)

@@ -7,6 +7,8 @@
   <xacro:property name="housing_depth_sensor" value="0.0000 0.0000 0.1049" />
   <xacro:property name="housing_imu_one" value="0.1322 -0.0056 0.0268" />
   <xacro:property name="housing_imu_two" value="-0.1469 0.0004 -0.0405" />
+  <xacro:property name="housing_camera_left" value="0 0 -0.2" />
+  <xacro:property name="housing_camera_right" value="0 0 0.2" />
   <xacro:property name="base_housing" value="0.0737 0.0005 0.0621" />
   <xacro:property name="housing_chassis" value="-0.0556 0.0000 -0.0749" />
   <xacro:property name="chassis_acoustics" value="0.1699 0.0000 -0.0584" />

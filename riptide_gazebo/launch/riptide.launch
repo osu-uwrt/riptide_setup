@@ -3,5 +3,6 @@
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find riptide_gazebo)/worlds/riptide.world"/>
   </include>
+  <node pkg="riptide_gazebo" type="gazebo_ros_riptide_thrust.cpp" name="gazebo_thrust" />
   <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf" args="-param robot_description -urdf -x 0 -y 0 -z 10 -model riptide" />
 </launch>
