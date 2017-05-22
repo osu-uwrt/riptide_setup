@@ -14,4 +14,3 @@ script:
 
 notifications:
   email: false
-  # slack: osu-uwrt:QiKTeRcKbKhS82FG4s1SGMb6

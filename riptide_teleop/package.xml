@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>riptide_description</name>
-  <version>0.0.16</version>
-  <description>Description of OSU's Riptide AUV.</description>
+  <name>riptide_teleop</name>
+  <version>0.0.2</version>
+  <description>Teleoperation package for OSU's Riptide AUV.</description>
 
   <maintainer email="cary.42@osu.edu">Conor Cary</maintainer>
 
@@ -15,13 +15,14 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>urdf</build_depend>
-  <build_depend>xacro</build_depend>
+  <build_depend>joy</build_depend>
+  <build_depend>riptide_msgs</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>roslint</build_depend>
+  <build_depend>tf</build_depend>
 
-  <run_depend>liburdfdom-tools</run_depend>
+  <run_depend>joy</run_depend>
   <run_depend>roslaunch</run_depend>
-  <run_depend>urdf</run_depend>
-  <run_depend>xacro</run_depend>
 
   <export>
   </export>
