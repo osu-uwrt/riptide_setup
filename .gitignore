@@ -1,7 +1,5 @@
 *~
-
 *.bak
-
 .DS_Store
 
 /CMakeLists.txt
