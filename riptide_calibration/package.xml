@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>riptide_gazebo</name>
-  <version>0.0.16</version>
-  <description>Gazebo simulation package for OSU's Riptide AUV.</description>
+  <name>riptide_hardware</name>
+  <version>0.0.15</version>
+  <description>Hardware abstraction layer for OSU's Riptide AUV.</description>
 
   <maintainer email="cary.42@osu.edu">Conor Cary</maintainer>
 
@@ -12,16 +12,18 @@
   <url type="repository">http://github.com/osu-uwrt/riptide</url>
 
   <author email="cary.42@osu.edu">Conor Cary</author>
+  <author email="fletcher.236@osu.edu">Charles Fletcher</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>gazebo_ros</build_depend>
   <build_depend>riptide_msgs</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>roslint</build_depend>
 
-  <run_depend>gazebo_ros</run_depend>
+  <run_depend>riptide_msgs</run_depend>
   <run_depend>roslaunch</run_depend>
+  <run_depend>rosserial_msgs</run_depend>
+  <run_depend>rosserial_python</run_depend>
 
   <export>
   </export>

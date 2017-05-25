@@ -1,9 +1,18 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(riptide_gazebo)
 
-find_package(catkin REQUIRED COMPONENTS roslint riptide_msgs)
+find_package(Boost REQUIRED
+    COMPONENTS
+    thread
+)
+
+find_package(catkin REQUIRED
+    COMPONENTS
+    roslint
+    riptide_msgs
+)
+
 find_package(gazebo REQUIRED)
-find_package(Boost REQUIRED COMPONENTS thread)
 
 roslint_cpp()
 
