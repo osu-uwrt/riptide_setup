@@ -36,16 +36,37 @@
     <!-- Gazebo Riptide Buoyancy Properties -->
     <!--                                    -->
 
-    <!-- <plugin name="BuoyancyPlugin" filename="libBuoyancyPlugin.so">
-
-    <link name="imu_one_link">
+<plugin name="BuoyancyPlugin" filename="libBuoyancyPlugin.so">
+<robotNamespace></robotNamespace>
+<fluid_density>1</fluid_density>
+<link name="imu_one_link">
     <center_of_volume>0 0 0</center_of_volume>
-    <volume>0.0000000001</volume>
-  </link>
+    <volume>0.000000001</volume>
+</link>
 
-  <link name="base_link">
+<link name="camera_fwd_port_link">
+    <center_of_volume>0 0 0</center_of_volume>
+    <volume>0.000000001</volume>
+</link>
+
+<link name="camera_fwd_stbd_link">
+    <center_of_volume>0 0 0</center_of_volume>
+    <volume>0.000000001</volume>
+</link>
+
+<link name="camera_down_port_link">
+    <center_of_volume>0 0 0</center_of_volume>
+    <volume>0.000000001</volume>
+</link>
+
+<link name="camera_down_stbd_link">
+    <center_of_volume>0 0 0</center_of_volume>
+    <volume>0.000000001</volume>
+</link>
+
+<link name="base_link">
   <center_of_volume>0 0 0</center_of_volume>
-  <volume>0.0000000001</volume>
+  <volume>0.000000001</volume>
 </link>
 
 <link name="housing_link">
@@ -96,7 +117,7 @@
 <xacro:thruster_volume thruster="heave_port_aft" />
 <xacro:thruster_volume thruster="heave_stbd_aft" />
 
-</plugin> -->
+</plugin>
 </gazebo>
 
 <!--                                -->
