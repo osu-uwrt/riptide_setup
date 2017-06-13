@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <robot name="riptide" xmlns:xacro="http://ros.org/wiki/xacro">
 
-    <!--                                 -->
-    <!--  Riptide Simulation Properties  -->
-    <!--                                 -->
+  <!--                                 -->
+  <!--  Riptide Simulation Properties  -->
+  <!--                                 -->
 
   <gazebo>
 
@@ -36,160 +36,241 @@
     <!-- Gazebo Riptide Buoyancy Properties -->
     <!--                                    -->
 
-    <plugin name="BuoyancyPlugin" filename="libBuoyancyPlugin.so">
+    <!-- <plugin name="BuoyancyPlugin" filename="libBuoyancyPlugin.so">
 
-      <link name="imu_one_link">
-        <center_of_volume>0 0 0</center_of_volume>
-        <volume>0.0000000001</volume>
-      </link>
+    <link name="imu_one_link">
+    <center_of_volume>0 0 0</center_of_volume>
+    <volume>0.0000000001</volume>
+  </link>
 
-      <link name="base_link">
-        <center_of_volume>0 0 0</center_of_volume>
-        <volume>0.0000000001</volume>
-      </link>
+  <link name="base_link">
+  <center_of_volume>0 0 0</center_of_volume>
+  <volume>0.0000000001</volume>
+</link>
 
-      <link name="housing_link">
-        <center_of_volume>${housing_cov}</center_of_volume>
-        <volume>${housing_volume}</volume>
-      </link>
+<link name="housing_link">
+<center_of_volume>${housing_cov}</center_of_volume>
+<volume>${housing_volume}</volume>
+</link>
 
-      <link name="chassis_link">
-        <center_of_volume>${chassis_cov}</center_of_volume>
-        <volume>${chassis_volume}</volume>
-      </link>
+<link name="chassis_link">
+<center_of_volume>${chassis_cov}</center_of_volume>
+<volume>${chassis_volume}</volume>
+</link>
 
-      <link name="acoustics_link">
-        <center_of_volume>${acoustics_cov}</center_of_volume>
-        <volume>${acoustics_volume}</volume>
-      </link>
+<link name="acoustics_link">
+<center_of_volume>${acoustics_cov}</center_of_volume>
+<volume>${acoustics_volume}</volume>
+</link>
 
-      <link name="pneumatics_link">
-        <center_of_volume>${pneumatics_cov}</center_of_volume>
-        <volume>${pneumatics_volume}</volume>
-      </link>
+<link name="pneumatics_link">
+<center_of_volume>${pneumatics_cov}</center_of_volume>
+<volume>${pneumatics_volume}</volume>
+</link>
 
-      <link name="port_battery_link">
-        <center_of_volume>${port_battery_cov}</center_of_volume>
-        <volume>${port_battery_volume}</volume>
-      </link>
+<link name="port_battery_link">
+<center_of_volume>${port_battery_cov}</center_of_volume>
+<volume>${port_battery_volume}</volume>
+</link>
 
-      <link name="stbd_battery_link">
-        <center_of_volume>${stbd_battery_cov}</center_of_volume>
-        <volume>${stbd_battery_volume}</volume>
-      </link>
+<link name="stbd_battery_link">
+<center_of_volume>${stbd_battery_cov}</center_of_volume>
+<volume>${stbd_battery_volume}</volume>
+</link>
 
-      <xacro:macro name="thruster_volume" params="thruster">
-        <link name="${thruster}_link">
-          <center_of_volume>${thruster_cov}</center_of_volume>
-          <volume>${thruster_volume}</volume>
-        </link>
-      </xacro:macro>
+<xacro:macro name="thruster_volume" params="thruster">
+<link name="${thruster}_link">
+<center_of_volume>${thruster_cov}</center_of_volume>
+<volume>${thruster_volume}</volume>
+</link>
+</xacro:macro>
 
-      <xacro:thruster_volume thruster="surge_port_hi" />
-      <xacro:thruster_volume thruster="surge_stbd_hi" />
-      <xacro:thruster_volume thruster="surge_port_lo" />
-      <xacro:thruster_volume thruster="surge_stbd_lo" />
-      <xacro:thruster_volume thruster="sway_fwd" />
-      <xacro:thruster_volume thruster="sway_aft" />
-      <xacro:thruster_volume thruster="heave_port_fwd" />
-      <xacro:thruster_volume thruster="heave_stbd_fwd" />
-      <xacro:thruster_volume thruster="heave_port_aft" />
-      <xacro:thruster_volume thruster="heave_stbd_aft" />
-    </plugin>
+<xacro:thruster_volume thruster="surge_port_hi" />
+<xacro:thruster_volume thruster="surge_stbd_hi" />
+<xacro:thruster_volume thruster="surge_port_lo" />
+<xacro:thruster_volume thruster="surge_stbd_lo" />
+<xacro:thruster_volume thruster="sway_fwd" />
+<xacro:thruster_volume thruster="sway_aft" />
+<xacro:thruster_volume thruster="heave_port_fwd" />
+<xacro:thruster_volume thruster="heave_stbd_fwd" />
+<xacro:thruster_volume thruster="heave_port_aft" />
+<xacro:thruster_volume thruster="heave_stbd_aft" />
+
+</plugin> -->
+</gazebo>
+
+<!--                                -->
+<!-- Gazebo Riptide Link Properties -->
+<!--                                -->
+
+<gazebo reference="housing_link">
+  <material>Gazebo/Grey</material>
+</gazebo>
+
+<gazebo reference="chassis_link">
+  <material>Gazebo/FlatBlack</material>
+</gazebo>
+
+<gazebo reference="acoustics_link">
+  <material>Gazebo/DarkGrey</material>
+</gazebo>
+
+<gazebo reference="pneumatics_link">
+  <material>Gazebo/DarkGrey</material>
+</gazebo>
+
+<gazebo reference="port_battery_link">
+  <material>Gazebo/DarkGrey</material>
+</gazebo>
+
+<gazebo reference="stbd_battery_link">
+  <material>Gazebo/DarkGrey</material>
+</gazebo>
+
+<xacro:macro name="thruster_link_gazebo" params="name">
+  <gazebo reference="${name}_link">
+    <material>Gazebo/RedBright</material>
   </gazebo>
+</xacro:macro>
 
-    <!--                                -->
-    <!-- Gazebo Riptide Link Properties -->
-    <!--                                -->
+<xacro:thruster_link_gazebo name="surge_port_hi" />
+<xacro:thruster_link_gazebo name="surge_stbd_hi" />
+<xacro:thruster_link_gazebo name="surge_port_lo" />
+<xacro:thruster_link_gazebo name="surge_stbd_lo" />
+<xacro:thruster_link_gazebo name="sway_fwd" />
+<xacro:thruster_link_gazebo name="sway_aft" />
+<xacro:thruster_link_gazebo name="heave_port_fwd" />
+<xacro:thruster_link_gazebo name="heave_stbd_fwd" />
+<xacro:thruster_link_gazebo name="heave_port_aft" />
+<xacro:thruster_link_gazebo name="heave_stbd_aft" />
 
-    <gazebo reference="housing_link">
-      <material>Gazebo/Grey</material>
-    </gazebo>
+<!--                                 -->
+<!-- Gazebo Riptide Joint Properties -->
+<!--                                 -->
 
-    <gazebo reference="chassis_link">
-      <material>Gazebo/FlatBlack</material>
-    </gazebo>
+<gazebo reference="housing_imu_one_joint">
+  <disableFixedJointLumping>true</disableFixedJointLumping>
+</gazebo>
 
-    <gazebo reference="acoustics_link">
-      <material>Gazebo/DarkGrey</material>
-    </gazebo>
+<gazebo reference="housing_camera_fwd_port_joint">
+  <disableFixedJointLumping>true</disableFixedJointLumping>
+</gazebo>
 
-    <gazebo reference="pneumatics_link">
-      <material>Gazebo/DarkGrey</material>
-    </gazebo>
+<gazebo reference="housing_camera_fwd_stbd_joint">
+  <disableFixedJointLumping>true</disableFixedJointLumping>
+</gazebo>
 
-    <gazebo reference="port_battery_link">
-      <material>Gazebo/DarkGrey</material>
-    </gazebo>
+<gazebo reference="housing_camera_down_port_joint">
+  <disableFixedJointLumping>true</disableFixedJointLumping>
+</gazebo>
 
-    <gazebo reference="stbd_battery_link">
-      <material>Gazebo/DarkGrey</material>
-    </gazebo>
+<gazebo reference="housing_camera_down_stbd_joint">
+  <disableFixedJointLumping>true</disableFixedJointLumping>
+</gazebo>
 
-    <xacro:macro name="thruster_link_gazebo" params="name">
-    <gazebo reference="${name}_link">
-      <material>Gazebo/RedBright</material>
-    </gazebo>
-    </xacro:macro>
+<gazebo reference="base_housing_joint">
+  <disableFixedJointLumping>true</disableFixedJointLumping>
+</gazebo>
 
-    <xacro:thruster_link_gazebo name="surge_port_hi" />
-    <xacro:thruster_link_gazebo name="surge_stbd_hi" />
-    <xacro:thruster_link_gazebo name="surge_port_lo" />
-    <xacro:thruster_link_gazebo name="surge_stbd_lo" />
-    <xacro:thruster_link_gazebo name="sway_fwd" />
-    <xacro:thruster_link_gazebo name="sway_aft" />
-    <xacro:thruster_link_gazebo name="heave_port_fwd" />
-    <xacro:thruster_link_gazebo name="heave_stbd_fwd" />
-    <xacro:thruster_link_gazebo name="heave_port_aft" />
-    <xacro:thruster_link_gazebo name="heave_stbd_aft" />
+<gazebo reference="housing_chassis_joint">
+  <disableFixedJointLumping>true</disableFixedJointLumping>
+</gazebo>
 
-    <!--                                 -->
-    <!-- Gazebo Riptide Joint Properties -->
-    <!--                                 -->
+<gazebo reference="chassis_acoustics_joint">
+  <disableFixedJointLumping>true</disableFixedJointLumping>
+</gazebo>
 
-    <gazebo reference="housing_imu_one_joint">
-      <disableFixedJointLumping>true</disableFixedJointLumping>
-    </gazebo>
+<gazebo reference="chassis_pneumatics_joint">
+  <disableFixedJointLumping>true</disableFixedJointLumping>
+</gazebo>
 
-    <gazebo reference="base_housing_joint">
-      <disableFixedJointLumping>true</disableFixedJointLumping>
-    </gazebo>
+<gazebo reference="chassis_port_battery_joint">
+  <disableFixedJointLumping>true</disableFixedJointLumping>
+</gazebo>
 
-    <gazebo reference="housing_chassis_joint">
-      <disableFixedJointLumping>true</disableFixedJointLumping>
-    </gazebo>
+<gazebo reference="chassis_stbd_battery_joint">
+  <disableFixedJointLumping>true</disableFixedJointLumping>
+</gazebo>
 
-    <gazebo reference="chassis_acoustics_joint">
-      <disableFixedJointLumping>true</disableFixedJointLumping>
-    </gazebo>
+<xacro:macro name="thruster_joint_gazebo" params="name">
+  <gazebo reference="${name}_joint">
+    <disableFixedJointLumping>true</disableFixedJointLumping>
+  </gazebo>
+</xacro:macro>
 
-    <gazebo reference="chassis_pneumatics_joint">
-      <disableFixedJointLumping>true</disableFixedJointLumping>
-    </gazebo>
+<xacro:thruster_joint_gazebo name="surge_port_hi" />
+<xacro:thruster_joint_gazebo name="surge_stbd_hi" />
+<xacro:thruster_joint_gazebo name="surge_port_lo" />
+<xacro:thruster_joint_gazebo name="surge_stbd_lo" />
+<xacro:thruster_joint_gazebo name="sway_fwd" />
+<xacro:thruster_joint_gazebo name="sway_aft" />
+<xacro:thruster_joint_gazebo name="heave_port_fwd" />
+<xacro:thruster_joint_gazebo name="heave_stbd_fwd" />
+<xacro:thruster_joint_gazebo name="heave_port_aft" />
+<xacro:thruster_joint_gazebo name="heave_stbd_aft" />
 
-    <gazebo reference="chassis_port_battery_joint">
-      <disableFixedJointLumping>true</disableFixedJointLumping>
-    </gazebo>
 
-    <gazebo reference="chassis_stbd_battery_joint">
-      <disableFixedJointLumping>true</disableFixedJointLumping>
-    </gazebo>
+<!--                                  -->
+<!-- Gazebo Riptide Camera Properties -->
+<!--                                  -->
 
-    <xacro:macro name="thruster_joint_gazebo" params="name">
-    <gazebo reference="${name}_joint">
-      <disableFixedJointLumping>true</disableFixedJointLumping>
-    </gazebo>
-    </xacro:macro>
+<!-- Camera 1 -->
 
-    <xacro:thruster_joint_gazebo name="surge_port_hi" />
-    <xacro:thruster_joint_gazebo name="surge_stbd_hi" />
-    <xacro:thruster_joint_gazebo name="surge_port_lo" />
-    <xacro:thruster_joint_gazebo name="surge_stbd_lo" />
-    <xacro:thruster_joint_gazebo name="sway_fwd" />
-    <xacro:thruster_joint_gazebo name="sway_aft" />
-    <xacro:thruster_joint_gazebo name="heave_port_fwd" />
-    <xacro:thruster_joint_gazebo name="heave_stbd_fwd" />
-    <xacro:thruster_joint_gazebo name="heave_port_aft" />
-    <xacro:thruster_joint_gazebo name="heave_stbd_aft" />
+<gazebo reference="camera_fwd_port_link">
+  <sensor type="multicamera" name="stereo_camera">
+    <update_rate>30.0</update_rate>
+    <camera name="left">
+      <horizontal_fov>1.3962634</horizontal_fov>
+      <image>
+        <width>800</width>
+        <height>800</height>
+        <format>R8G8B8</format>
+      </image>
+      <clip>
+        <near>0.02</near>
+        <far>300</far>
+      </clip>
+      <noise>
+        <type>gaussian</type>
+        <mean>0.0</mean>
+        <stddev>0.007</stddev>
+      </noise>
+    </camera>
+    <camera name="right">
+      <pose>0 -0.07 0 0 0 0</pose>
+      <horizontal_fov>1.3962634</horizontal_fov>
+      <image>
+        <width>800</width>
+        <height>800</height>
+        <format>R8G8B8</format>
+      </image>
+      <clip>
+        <near>0.02</near>
+        <far>300</far>
+      </clip>
+      <noise>
+        <type>gaussian</type>
+        <mean>0.0</mean>
+        <stddev>0.007</stddev>
+      </noise>
+    </camera>
+    <plugin name="stereo_camera_controller" filename="libgazebo_ros_multicamera.so">
+      <alwaysOn>true</alwaysOn>
+      <updateRate>0.0</updateRate>
+      <cameraName>riptide/stereo_fwd</cameraName>
+      <imageTopicName>image_raw</imageTopicName>
+      <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+      <frameName>camera_fwd_port_link</frameName>
+      <hackBaseline>0.07</hackBaseline>
+      <distortionK1>0.0</distortionK1>
+      <distortionK2>0.0</distortionK2>
+      <distortionK3>0.0</distortionK3>
+      <distortionT1>0.0</distortionT1>
+      <distortionT2>0.0</distortionT2>
+    </plugin>
+  </sensor>
+</gazebo>
+
+
 
 </robot>

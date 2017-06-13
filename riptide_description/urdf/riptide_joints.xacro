@@ -21,6 +21,30 @@
     <child link="imu_one_link"/>
   </joint>
 
+  <joint name="housing_camera_fwd_port_joint" type="fixed">
+    <origin xyz="${housing_camera_fwd_port}" rpy="0 0 0" />
+    <parent link="housing_link"/>
+    <child link="camera_fwd_port_link"/>
+  </joint>
+
+  <joint name="housing_camera_fwd_stbd_joint" type="fixed">
+    <origin xyz="${housing_camera_fwd_stbd}" rpy="0 0 0" />
+    <parent link="housing_link"/>
+    <child link="camera_fwd_stbd_link"/>
+  </joint>
+
+  <joint name="housing_camera_down_port_joint" type="fixed">
+    <origin xyz="${housing_camera_down_port}" rpy="0 0 0" />
+    <parent link="housing_link"/>
+    <child link="camera_down_port_link"/>
+  </joint>
+
+  <joint name="housing_camera_down_stbd_joint" type="fixed">
+    <origin xyz="${housing_camera_down_stbd}" rpy="0 0 0" />
+    <parent link="housing_link"/>
+    <child link="camera_down_stbd_link"/>
+  </joint>
+  
   <!--                -->
   <!-- Housing Joints -->
   <!--                -->
