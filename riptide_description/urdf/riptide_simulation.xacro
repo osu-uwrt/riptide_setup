@@ -91,25 +91,30 @@
   <xacro:thruster_joint_gazebo name="heave_port_aft" />
   <xacro:thruster_joint_gazebo name="heave_stbd_aft" /> -->
 
-    <gazebo reference="housing_imu_one_joint">
-      <disableFixedJointLumping>true</disableFixedJointLumping>
-    </gazebo>
+  <gazebo reference="housing_imu_one_joint">
+    <disableFixedJointLumping>true</disableFixedJointLumping>
+  </gazebo>
 
-    <gazebo reference="housing_camera_fwd_port_joint">
-      <disableFixedJointLumping>true</disableFixedJointLumping>
-    </gazebo>
 
-    <gazebo reference="housing_camera_fwd_stbd_joint">
-      <disableFixedJointLumping>true</disableFixedJointLumping>
-    </gazebo>
+  <gazebo reference="housing_depth_sensor_joint">
+    <disableFixedJointLumping>true</disableFixedJointLumping>
+  </gazebo>
 
-    <gazebo reference="housing_camera_down_port_joint">
-      <disableFixedJointLumping>true</disableFixedJointLumping>
-    </gazebo>
+  <gazebo reference="housing_camera_fwd_port_joint">
+    <disableFixedJointLumping>true</disableFixedJointLumping>
+  </gazebo>
 
-    <gazebo reference="housing_camera_down_stbd_joint">
-      <disableFixedJointLumping>true</disableFixedJointLumping>
-    </gazebo>
+  <gazebo reference="housing_camera_fwd_stbd_joint">
+    <disableFixedJointLumping>true</disableFixedJointLumping>
+  </gazebo>
+
+  <gazebo reference="housing_camera_down_port_joint">
+    <disableFixedJointLumping>true</disableFixedJointLumping>
+  </gazebo>
+
+  <gazebo reference="housing_camera_down_stbd_joint">
+    <disableFixedJointLumping>true</disableFixedJointLumping>
+  </gazebo>
 
   <!--                                 -->
   <!--  Riptide Simulation Properties  -->
@@ -120,7 +125,7 @@
     <!--                                  -->
     <!-- Gazebo Riptide Sensor Properties -->
     <!--                                  -->
-<!--
+
     <plugin name="imu_one" filename="libgazebo_ros_imu.so">
       <robotNamespace></robotNamespace>
       <serviceName>/imu</serviceName>
@@ -131,166 +136,185 @@
       <rpyOffset>0 0 0</rpyOffset>
       <updateRate>100.0</updateRate>
       <frameName>imu_one_link</frameName>
-    </plugin> -->
+    </plugin>
 
     <!--                                    -->
     <!-- Gazebo Riptide Thruster Properties -->
     <!--                                    -->
-<!--
+
     <plugin filename="libgazebo_ros_riptide_thrust.so" name="thrust">
       <robotNamespace></robotNamespace>
       <topicName>/command/thrust</topicName>
-    </plugin> -->
+    </plugin>
+
+
+    <!--                                    -->
+    <!-- Gazebo Riptide Depth Sensor Properties -->
+    <!--                                    -->
+
+    <plugin filename="libgazebo_ros_depth_sensor.so" name="DepthSensor">
+      <robotNamespace></robotNamespace>
+      <topicName>/state/depth</topicName>
+      <seaLevel>20</seaLevel>
+      <fluidDensity>1</fluidDensity>
+      <sensorLink>depth_sensor_link</sensorLink>
+    </plugin>
 
     <!--                                    -->
     <!-- Gazebo Riptide Buoyancy Properties -->
     <!--                                    -->
 
-<plugin name="BuoyancyPlugin" filename="libBuoyancyPlugin.so">
-<robotNamespace></robotNamespace>
-<fluid_density>195</fluid_density>
+    <!--<plugin name="BuoyancyPlugin" filename="libBuoyancyPlugin.so">
+      <robotNamespace></robotNamespace>
 
-<link name="base_link">
-  <center_of_volume>0 0 0</center_of_volume>
-  <volume>0.000000001</volume>
-</link>
+      <fluid_density>160</fluid_density>
 
-<link name="housing_link">
-<center_of_volume>${housing_cov}</center_of_volume>
-<volume>${housing_volume}</volume>
-</link>
+      <link name="base_link">
+        <center_of_volume>0 0 0</center_of_volume>
+        <volume>0.000000001</volume>
+      </link>
 
-<link name="chassis_link">
-<center_of_volume>${chassis_cov}</center_of_volume>
-<volume>${chassis_volume}</volume>
-</link>
+      <link name="housing_link">
+        <center_of_volume>${housing_cov}</center_of_volume>
+        <volume>${housing_volume}</volume>
+      </link>
 
-<link name="acoustics_link">
-<center_of_volume>${acoustics_cov}</center_of_volume>
-<volume>${acoustics_volume}</volume>
-</link>
+      <link name="chassis_link">
+        <center_of_volume>${chassis_cov}</center_of_volume>
+        <volume>${chassis_volume}</volume>
+      </link>
 
-<link name="pneumatics_link">
-<center_of_volume>${pneumatics_cov}</center_of_volume>
-<volume>${pneumatics_volume}</volume>
-</link>
+      <link name="acoustics_link">
+        <center_of_volume>${acoustics_cov}</center_of_volume>
+        <volume>${acoustics_volume}</volume>
+      </link>
 
-<link name="port_battery_link">
-<center_of_volume>${port_battery_cov}</center_of_volume>
-<volume>${port_battery_volume}</volume>
-</link>
+      <link name="pneumatics_link">
+        <center_of_volume>${pneumatics_cov}</center_of_volume>
+        <volume>${pneumatics_volume}</volume>
+      </link>
 
-<link name="stbd_battery_link">
-<center_of_volume>${stbd_battery_cov}</center_of_volume>
-<volume>${stbd_battery_volume}</volume>
-</link>
+      <link name="port_battery_link">
+        <center_of_volume>${port_battery_cov}</center_of_volume>
+        <volume>${port_battery_volume}</volume>
+      </link>
 
-<xacro:macro name="thruster_volume" params="thruster">
-<link name="${thruster}_link">
-<center_of_volume>${thruster_cov}</center_of_volume>
-<volume>${thruster_volume}</volume>
-</link>
-</xacro:macro>
+      <link name="stbd_battery_link">
+        <center_of_volume>${stbd_battery_cov}</center_of_volume>
+        <volume>${stbd_battery_volume}</volume>
+      </link>
 
-<xacro:thruster_volume thruster="surge_port_hi" />
-<xacro:thruster_volume thruster="surge_stbd_hi" />
-<xacro:thruster_volume thruster="surge_port_lo" />
-<xacro:thruster_volume thruster="surge_stbd_lo" />
-<xacro:thruster_volume thruster="sway_fwd" />
-<xacro:thruster_volume thruster="sway_aft" />
-<xacro:thruster_volume thruster="heave_port_fwd" />
-<xacro:thruster_volume thruster="heave_stbd_fwd" />
-<xacro:thruster_volume thruster="heave_port_aft" />
-<xacro:thruster_volume thruster="heave_stbd_aft" />
+      <xacro:macro name="thruster_volume" params="thruster">
+        <link name="${thruster}_link">
+          <center_of_volume>${thruster_cov}</center_of_volume>
+          <volume>${thruster_volume}</volume>
+        </link>
+      </xacro:macro>
 
-<link name="imu_one_link">
-    <center_of_volume>0 0 0</center_of_volume>
-    <volume>0.000000001</volume>
-</link>
+      <xacro:thruster_volume thruster="surge_port_hi" />
+      <xacro:thruster_volume thruster="surge_stbd_hi" />
+      <xacro:thruster_volume thruster="surge_port_lo" />
+      <xacro:thruster_volume thruster="surge_stbd_lo" />
+      <xacro:thruster_volume thruster="sway_fwd" />
+      <xacro:thruster_volume thruster="sway_aft" />
+      <xacro:thruster_volume thruster="heave_port_fwd" />
+      <xacro:thruster_volume thruster="heave_stbd_fwd" />
+      <xacro:thruster_volume thruster="heave_port_aft" />
+      <xacro:thruster_volume thruster="heave_stbd_aft" />
 
-<link name="camera_fwd_port_link">
-    <center_of_volume>0 0 0</center_of_volume>
-    <volume>0.000000001</volume>
-</link>
+      <link name="imu_one_link">
+        <center_of_volume>0 0 0</center_of_volume>
+        <volume>0.000000001</volume>
+      </link>
 
-<link name="camera_fwd_stbd_link">
-    <center_of_volume>0 0 0</center_of_volume>
-    <volume>0.000000001</volume>
-</link>
+      <link name="depth_sensor_link">
+        <center_of_volume>0 0 0</center_of_volume>
+        <volume>0.000000001</volume>
+      </link>
 
-<link name="camera_down_port_link">
-    <center_of_volume>0 0 0</center_of_volume>
-    <volume>0.000000001</volume>
-</link>
+      <link name="camera_fwd_port_link">
+        <center_of_volume>0 0 0</center_of_volume>
+        <volume>0.000000001</volume>
+      </link>
 
-<link name="camera_down_stbd_link">
-    <center_of_volume>0 0 0</center_of_volume>
-    <volume>0.000000001</volume>
-</link> -->
+      <link name="camera_fwd_stbd_link">
+        <center_of_volume>0 0 0</center_of_volume>
+        <volume>0.000000001</volume>
+      </link>
 
-</plugin>
-</gazebo>
+      <link name="camera_down_port_link">
+        <center_of_volume>0 0 0</center_of_volume>
+        <volume>0.000000001</volume>
+      </link>
 
-<!--                                  -->
-<!-- Gazebo Riptide Camera Properties -->
-<!--                                  -->
+      <link name="camera_down_stbd_link">
+        <center_of_volume>0 0 0</center_of_volume>
+        <volume>0.000000001</volume>
+      </link>
 
-<!-- Camera 1 -->
+    </plugin>-->
+  </gazebo>
 
-<gazebo reference="camera_fwd_port_link">
-  <sensor type="multicamera" name="stereo_camera">
-    <update_rate>30.0</update_rate>
-    <camera name="left">
-      <horizontal_fov>1.3962634</horizontal_fov>
-      <image>
-        <width>800</width>
-        <height>800</height>
-        <format>R8G8B8</format>
-      </image>
-      <clip>
-        <near>0.02</near>
-        <far>300</far>
-      </clip>
-      <noise>
-        <type>gaussian</type>
-        <mean>0.0</mean>
-        <stddev>0.007</stddev>
-      </noise>
-    </camera>
-    <camera name="right">
-      <pose>0 -0.07 0 0 0 0</pose>
-      <horizontal_fov>1.3962634</horizontal_fov>
-      <image>
-        <width>800</width>
-        <height>800</height>
-        <format>R8G8B8</format>
-      </image>
-      <clip>
-        <near>0.02</near>
-        <far>300</far>
-      </clip>
-      <noise>
-        <type>gaussian</type>
-        <mean>0.0</mean>
-        <stddev>0.007</stddev>
-      </noise>
-    </camera>
-    <plugin name="stereo_camera_controller" filename="libgazebo_ros_multicamera.so">
-      <alwaysOn>true</alwaysOn>
-      <updateRate>0.0</updateRate>
-      <cameraName>riptide/stereo_fwd</cameraName>
-      <imageTopicName>image_raw</imageTopicName>
-      <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-      <frameName>camera_fwd_port_link</frameName>
-      <hackBaseline>0.07</hackBaseline>
-      <distortionK1>0.0</distortionK1>
-      <distortionK2>0.0</distortionK2>
-      <distortionK3>0.0</distortionK3>
-      <distortionT1>0.0</distortionT1>
-      <distortionT2>0.0</distortionT2>
-    </plugin>
-  </sensor>
-</gazebo>
+  <!--                                  -->
+  <!-- Gazebo Riptide Camera Properties -->
+  <!--                                  -->
+
+  <!-- Stereo Camera -->
+
+  <gazebo reference="camera_fwd_port_link">
+    <sensor type="multicamera" name="stereo_camera">
+      <update_rate>30.0</update_rate>
+      <camera name="left">
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>800</width>
+          <height>800</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <camera name="right">
+        <pose>0 -0.07 0 0 0 0</pose>
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>800</width>
+          <height>800</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="stereo_camera_controller" filename="libgazebo_ros_multicamera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>riptide/stereo_fwd</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>camera_fwd_port_link</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo>
 
 
 </robot>

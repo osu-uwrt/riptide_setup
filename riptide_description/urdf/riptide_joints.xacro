@@ -79,6 +79,12 @@
       <child link="imu_one_link"/>
     </joint>
 
+    <joint name="housing_depth_sensor_joint" type="fixed">
+      <origin xyz="${housing_depth_sensor}" rpy="0 0 0" />
+      <parent link="housing_link"/>
+      <child link="depth_sensor_link"/>
+    </joint>
+
     <joint name="housing_camera_fwd_port_joint" type="fixed">
       <origin xyz="${housing_camera_fwd_port}" rpy="0 0 0" />
       <parent link="housing_link"/>

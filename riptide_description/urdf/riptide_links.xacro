@@ -186,7 +186,20 @@
 
   <link name="imu_one_link">
     <inertial>
-      <mass value="8" />
+      <mass value="0.00001" />
+      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
+    </inertial>
+    <!-- Collision Geometry necessary for Buoyancy Plugin to work! -->
+    <collision>
+      <geometry>
+        <box size="0.0001 0.0001 0.0001" />
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="depth_sensor_link">
+    <inertial>
+      <mass value="0.00001" />
       <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
     </inertial>
     <!-- Collision Geometry necessary for Buoyancy Plugin to work! -->
