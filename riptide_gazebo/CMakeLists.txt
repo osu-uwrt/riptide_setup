@@ -1,9 +1,18 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(riptide_gazebo)
 
-find_package(catkin REQUIRED COMPONENTS roslint riptide_msgs)
+find_package(Boost REQUIRED
+    COMPONENTS
+    thread
+)
+
+find_package(catkin REQUIRED
+    COMPONENTS
+    roslint
+    riptide_msgs
+)
+
 find_package(gazebo REQUIRED)
-find_package(Boost REQUIRED COMPONENTS thread)
 
 roslint_cpp()
 
@@ -23,7 +32,7 @@ link_directories(
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES gazebo_ros_riptide_thrust
+  LIBRARIES gazebo_ros_riptide_thrust gazebo_ros_depth_sensor
 )
 
 add_library(
@@ -33,6 +42,7 @@ add_library(
 
 target_link_libraries(
   gazebo_ros_riptide_thrust
+  gazebo_ros_depth_sensor
   ${catkin_LIBRARIES}
   ${GAZEBO_LIBRARIES}
   ${Boost_LIBRARIES}
@@ -40,5 +50,22 @@ target_link_libraries(
 
 add_dependencies(
   gazebo_ros_riptide_thrust
+  gazebo_ros_depth_sensor
+  riptide_msgs_gencpp
+)
+
+add_library(
+  gazebo_ros_depth_sensor
+  src/gazebo_ros_depth_sensor.cpp
+)
+
+target_link_libraries(
+  gazebo_ros_depth_sensor
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+)
+
+add_dependencies(
+  gazebo_ros_depth_sensor
   riptide_msgs_gencpp
 )

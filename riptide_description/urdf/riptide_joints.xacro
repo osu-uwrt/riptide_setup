@@ -11,28 +11,6 @@
     <child link="housing_link"/>
   </joint>
 
-  <!--               -->
-  <!-- Sensor Joints -->
-  <!--               -->
-
-  <joint name="housing_imu_one_joint" type="fixed">
-    <origin xyz="${housing_imu_one}" rpy="0 0 0" />
-    <parent link="housing_link"/>
-    <child link="imu_one_link"/>
-  </joint>
-
-  <joint name="housing_camera_left_joint" type="fixed">
-    <origin xyz="${housing_camera_left}" rpy="0 0 0" />
-    <parent link="housing_link"/>
-    <child link="camera_left"/>
-  </joint>
-
-  <joint name="housing_camera_right_joint" type="fixed">
-    <origin xyz="${housing_camera_right}" rpy="0 0 0" />
-    <parent link="housing_link"/>
-    <child link="camera_right"/>
-  </joint>
-
   <!--                -->
   <!-- Housing Joints -->
   <!--                -->
@@ -89,5 +67,46 @@
   <xacro:thruster_joint name="heave_stbd_fwd" p="${chassis_heave_stbd_fwd}" o="${align_heave_stbd_fwd}"/>
   <xacro:thruster_joint name="heave_port_aft" p="${chassis_heave_port_aft}" o="${align_heave_port_aft}"/>
   <xacro:thruster_joint name="heave_stbd_aft" p="${chassis_heave_stbd_aft}" o="${align_heave_stbd_aft}"/>
+
+
+    <!--               -->
+    <!-- Sensor Joints -->
+    <!--               -->
+
+    <joint name="housing_imu_one_joint" type="fixed">
+      <origin xyz="${housing_imu_one}" rpy="0 0 0" />
+      <parent link="housing_link"/>
+      <child link="imu_one_link"/>
+    </joint>
+
+    <joint name="housing_depth_sensor_joint" type="fixed">
+      <origin xyz="${housing_depth_sensor}" rpy="0 0 0" />
+      <parent link="housing_link"/>
+      <child link="depth_sensor_link"/>
+    </joint>
+
+    <joint name="housing_camera_fwd_port_joint" type="fixed">
+      <origin xyz="${housing_camera_fwd_port}" rpy="0 0 0" />
+      <parent link="housing_link"/>
+      <child link="camera_fwd_port_link"/>
+    </joint>
+
+    <joint name="housing_camera_fwd_stbd_joint" type="fixed">
+      <origin xyz="${housing_camera_fwd_stbd}" rpy="0 0 0" />
+      <parent link="housing_link"/>
+      <child link="camera_fwd_stbd_link"/>
+    </joint>
+
+    <joint name="housing_camera_down_port_joint" type="fixed">
+      <origin xyz="${housing_camera_down_port}" rpy="0 0 0" />
+      <parent link="housing_link"/>
+      <child link="camera_down_port_link"/>
+    </joint>
+
+    <joint name="housing_camera_down_stbd_joint" type="fixed">
+      <origin xyz="${housing_camera_down_stbd}" rpy="0 0 0" />
+      <parent link="housing_link"/>
+      <child link="camera_down_stbd_link"/>
+    </joint>
 
 </robot>

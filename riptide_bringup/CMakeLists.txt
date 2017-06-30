@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(riptide_bringup)
 
-find_package(catkin REQUIRED COMPONENTS roslaunch roscpp riptide_msgs) 
+find_package(catkin REQUIRED COMPONENTS roslaunch roscpp riptide_msgs)
 
 catkin_package()
 

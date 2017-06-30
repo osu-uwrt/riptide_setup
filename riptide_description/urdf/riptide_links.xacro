@@ -7,17 +7,6 @@
 
   <link name="base_link">
     <inertial>
-      <mass value="8.3901" />
-      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
-    </inertial>
-  </link>
-
-  <!--              -->
-  <!-- Sensor Links -->
-  <!--              -->
-
-  <link name="imu_one_link">
-    <inertial>
       <mass value="0.00001" />
       <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
     </inertial>
@@ -165,7 +154,7 @@
         <mesh filename="${stbd_battery_mesh}" />
       </geometry>
     </collision>
-  </link>
+  </link> -->
 
   <!--                -->
   <!-- Thruster Links -->
@@ -204,5 +193,87 @@
   <xacro:thruster_link thruster="heave_stbd_fwd" />
   <xacro:thruster_link thruster="heave_port_aft" />
   <xacro:thruster_link thruster="heave_stbd_aft" />
+
+  <!--              -->
+  <!-- Sensor Links -->
+  <!--              -->
+
+  <link name="imu_one_link">
+    <inertial>
+      <mass value="0.00001" />
+      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
+    </inertial>
+    <!-- Collision Geometry necessary for Buoyancy Plugin to work! -->
+    <collision>
+      <geometry>
+        <box size="0.0001 0.0001 0.0001" />
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="depth_sensor_link">
+    <inertial>
+      <mass value="0.00001" />
+      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
+    </inertial>
+    <!-- Collision Geometry necessary for Buoyancy Plugin to work! -->
+    <collision>
+      <geometry>
+        <box size="0.0001 0.0001 0.0001" />
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="camera_fwd_port_link">
+    <inertial>
+      <mass value="0.00001" />
+      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
+    </inertial>
+    <!-- Collision Geometry necessary for Buoyancy Plugin to work! -->
+    <collision>
+      <geometry>
+        <box size="0.0001 0.0001 0.0001" />
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="camera_fwd_stbd_link">
+    <inertial>
+      <mass value="0.00001" />
+      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
+    </inertial>
+    <!-- Collision Geometry necessary for Buoyancy Plugin to work! -->
+    <collision>
+      <geometry>
+        <box size="0.0001 0.0001 0.0001" />
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="camera_down_port_link">
+    <inertial>
+      <mass value="0.00001" />
+      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
+    </inertial>
+    <!-- Collision Geometry necessary for Buoyancy Plugin to work! -->
+    <collision>
+      <geometry>
+        <box size="0.0001 0.0001 0.0001" />
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="camera_down_stbd_link">
+    <inertial>
+      <mass value="0.00001" />
+      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
+    </inertial>
+    <!-- Collision Geometry necessary for Buoyancy Plugin to work! -->
+    <collision>
+      <geometry>
+        <box size="0.0001 0.0001 0.0001" />
+      </geometry>
+    </collision>
+  </link>
 
 </robot>

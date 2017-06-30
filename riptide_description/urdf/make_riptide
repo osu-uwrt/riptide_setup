@@ -1,7 +1,7 @@
 #!/bin/bash
 
-echo -e "\nRunning...\n    rosrun xacro xacro riptide.urdf.xacro > riptide.urdf"
-rosrun xacro xacro riptide.xacro > riptide.urdf || exit
+echo -e "\nRunning...\n    rosrun xacro xacro --check-order --inorder riptide.xacro > riptide.urdf"
+rosrun xacro xacro --check-order --inorder riptide.xacro > riptide.urdf || exit
 echo -e "Build complete\n"
 
 echo -e "Running...\n    check_urdf riptide.urdf"
