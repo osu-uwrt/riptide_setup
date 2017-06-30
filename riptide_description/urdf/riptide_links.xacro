@@ -12,20 +12,6 @@
     </inertial>
   </link>
 
-  <link name="camera_left">
-    <inertial>
-      <mass value="0.00001" />
-      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
-    </inertial>
-  </link>
-
-  <link name="camera_right">
-    <inertial>
-      <mass value="0.00001" />
-      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
-    </inertial>
-  </link>
-
   <!--               -->
   <!-- Housing Links -->
   <!--               -->
