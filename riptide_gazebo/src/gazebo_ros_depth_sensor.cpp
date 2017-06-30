@@ -66,7 +66,7 @@ void DepthSensor::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
   this->topic_name_ = _sdf->GetElement("topicName")->Get<std::string>();
   this->rosnode_ = new ros::NodeHandle(this->robot_namespace_);
-  this->depth_pub_ = this->rosnode_->advertise<riptide_msgs::Depth>(this->topic_name_, 1000);
+  this->depth_pub_ = this->rosnode_->advertise<riptide_msgs::Depth>(this->topic_name_, 1);
 
   this->sea_level_ = _sdf->GetElement("seaLevel")->Get<double>();
   this->fluid_density_ = _sdf->GetElement("fluidDensity")->Get<double>();
