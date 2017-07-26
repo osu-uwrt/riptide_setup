@@ -95,10 +95,9 @@ struct surge
                   const T *const heave_stbd_aft, T *residual) const
   {
     residual[0] =
-        (rotation_matrix.getRow(0).x() * (surge_port_hi[0] + surge_stbd_hi[0] + surge_port_lo[0] + surge_stbd_lo[0]) +
-         rotation_matrix.getRow(0).y() * (sway_fwd[0] + sway_aft[0]) +
+        (rotation_matrix.getRow(0).x() * (surge_port_lo[0] + surge_stbd_lo[0]) +
          rotation_matrix.getRow(0).z() *
-             (heave_port_fwd[0] + heave_stbd_fwd[0] + heave_port_aft[0] + heave_stbd_aft[0])) /
+             (heave_port_fwd[0] + heave_stbd_fwd[0] /*+ heave_port_aft[0] + heave_stbd_aft[0]*/)) /
             T(MASS) -
         T(cmdSurge);
     return true;
@@ -114,10 +113,9 @@ struct sway
                   const T *const heave_stbd_aft, T *residual) const
   {
     residual[0] =
-        (rotation_matrix.getRow(1).x() * (surge_port_hi[0] + surge_stbd_hi[0] + surge_port_lo[0] + surge_stbd_lo[0]) +
-         rotation_matrix.getRow(1).y() * (sway_fwd[0] + sway_aft[0]) +
+        (rotation_matrix.getRow(1).x() * (surge_port_lo[0] + surge_stbd_lo[0]) +
          rotation_matrix.getRow(1).z() *
-             (heave_port_fwd[0] + heave_stbd_fwd[0] + heave_stbd_aft[0] + heave_port_aft[0])) /
+             (heave_port_fwd[0] + heave_stbd_fwd[0] /*+ heave_stbd_aft[0] + heave_port_aft[0]*/)) /
             T(MASS) -
         T(cmdSway);
     return true;
@@ -133,10 +131,9 @@ struct heave
                   const T *const heave_stbd_aft, T *residual) const
   {
     residual[0] =
-        (rotation_matrix.getRow(2).x() * (surge_port_hi[0] + surge_stbd_hi[0] + surge_port_lo[0] + surge_stbd_lo[0]) +
-         rotation_matrix.getRow(2).y() * (sway_fwd[0] + sway_aft[0]) +
+        (rotation_matrix.getRow(2).x() * (surge_port_lo[0] + surge_stbd_lo[0]) +
          rotation_matrix.getRow(2).z() *
-             (heave_port_fwd[0] + heave_stbd_fwd[0] + heave_port_aft[0] + heave_stbd_aft[0])) /
+             (heave_port_fwd[0] + heave_stbd_fwd[0] /*+ heave_port_aft[0] + heave_stbd_aft[0]*/)) /
             T(MASS) -
         T(cmdHeave);
     return true;
@@ -152,8 +149,7 @@ struct roll
                   T *residual) const
   {
     residual[0] = (heave_port_fwd[0] * T(pos_heave_port_fwd.y) + heave_stbd_fwd[0] * T(pos_heave_stbd_fwd.y) +
-                   heave_port_aft[0] * T(pos_heave_port_aft.y) + heave_stbd_aft[0] * T(pos_heave_stbd_aft.y) -
-                   (sway_fwd[0] * T(pos_sway_fwd.z) + sway_aft[0] * T(pos_sway_aft.z)) +
+                   /*heave_port_aft[0] * T(pos_heave_port_aft.y) + heave_stbd_aft[0] * T(pos_heave_stbd_aft.y) +*/
                    T(Iyy) * T(ang_v.y()) * T(ang_v.z()) - T(Izz) * T(ang_v.y()) * T(ang_v.z())) /
                       T(Ixx) -
                   T(cmdRoll);
@@ -168,10 +164,9 @@ struct pitch
                   const T *const surge_stbd_lo, const T *const heave_port_fwd, const T *const heave_stbd_fwd,
                   const T *const heave_port_aft, const T *const heave_stbd_aft, T *residual) const
   {
-    residual[0] = (surge_port_hi[0] * T(pos_surge_port_hi.z) + surge_stbd_hi[0] * T(pos_surge_stbd_hi.z) +
-                   surge_port_lo[0] * T(pos_surge_port_lo.z) + surge_stbd_lo[0] * T(pos_surge_stbd_lo.z) +
+    residual[0] = (surge_port_lo[0] * T(pos_surge_port_lo.z) + surge_stbd_lo[0] * T(pos_surge_stbd_lo.z) +
                    heave_port_fwd[0] * T(-pos_heave_port_fwd.x) + heave_stbd_fwd[0] * T(-pos_heave_stbd_fwd.x) +
-                   heave_port_aft[0] * T(-pos_heave_port_aft.x) + heave_stbd_aft[0] * T(-pos_heave_stbd_aft.x) +
+                   /*heave_port_aft[0] * T(-pos_heave_port_aft.x) + heave_stbd_aft[0] * T(-pos_heave_stbd_aft.x) +*/
                    T(Izz) * T(ang_v.x()) * T(ang_v.z()) - T(Ixx) * T(ang_v.x()) * T(ang_v.z())) /
                       T(Iyy) -
                   T(cmdPitch);
@@ -185,9 +180,7 @@ struct yaw
   bool operator()(const T *const surge_port_hi, const T *const surge_stbd_hi, const T *const surge_port_lo,
                   const T *const surge_stbd_lo, const T *const sway_fwd, const T *const sway_aft, T *residual) const
   {
-    residual[0] = (surge_port_hi[0] * T(-pos_surge_port_hi.y) + surge_stbd_hi[0] * T(-pos_surge_stbd_hi.y) +
-                   surge_port_lo[0] * T(-pos_surge_port_lo.y) + surge_stbd_lo[0] * T(-pos_surge_stbd_lo.y) +
-                   sway_fwd[0] * T(pos_sway_fwd.x) + sway_aft[0] * T(pos_sway_aft.x) +
+    residual[0] = (surge_port_lo[0] * T(-pos_surge_port_lo.y) + surge_stbd_lo[0] * T(-pos_surge_stbd_lo.y) +
                    T(Ixx) * T(ang_v.x()) * T(ang_v.y()) - T(Iyy) * T(ang_v.x()) * T(ang_v.y())) /
                       T(Izz) -
                   T(cmdYaw);
