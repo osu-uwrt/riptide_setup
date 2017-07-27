@@ -24,14 +24,15 @@ int main(int argc, char **argv) {
   ros::NodeHandle nh;
 
   ros::Publisher accel_pub = nh.advertise<geometry_msgs::Accel>("command/accel", 1000);
+
   ros::Subscriber kill_sub = nh.subscribe<std_msgs::Empty>("state/kill", 100, heartbeatCB);
 
   geometry_msgs::Accel accel;
 
-  submergeDuration.fromSec(5.0);
-  goStraightDuration.fromSec(10.0);
+  submergeDuration.fromSec(4.0);
+  goStraightDuration.fromSec(35.0);
   delayStartDuration.fromSec(10.0);
-  deadTimeThreshold.fromSec(2.0);
+  deadTimeThreshold.fromSec(1.5);
 
   ros::Rate loop_rate(100);
 
@@ -52,19 +53,19 @@ int main(int argc, char **argv) {
         accel.angular.y = 0;
         accel.angular.z = 0;
       } else if (currentTime - missionStartTime - delayStartDuration < submergeDuration) {
-        accel.linear.x =0.2;
+        accel.linear.x = 0.6;
         accel.linear.y = 0;
         accel.linear.z = -0.5;
         accel.angular.x = 0;
         accel.angular.y = 0;
         accel.angular.z = 0;
       } else if (currentTime - missionStartTime - submergeDuration - delayStartDuration < goStraightDuration) {
-        accel.linear.x = 0.5;
+        accel.linear.x = 1.0;
         accel.linear.y = 0;
         accel.linear.z = -0.1;
         accel.angular.x = 0;
         accel.angular.y = 0;
-        accel.angular.z = 0;
+        accel.angular.z = 0.3;
       } else {
         accel.linear.x = 0;
         accel.linear.y = 0;

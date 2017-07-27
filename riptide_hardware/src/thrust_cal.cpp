@@ -36,12 +36,7 @@ int main(int argc, char** argv)
 
 ThrustCal::ThrustCal() : nh()
 {
-  alive = ros::Time::now();
-  dead = false;
-  low = false;
-
   thrust = nh.subscribe<riptide_msgs::ThrustStamped>("command/thrust", 1, &ThrustCal::callback, this);
-  kill_it_with_fire = nh.subscribe<std_msgs::Empty>("state/kill", 1, &ThrustCal::killback, this);
   pwm = nh.advertise<riptide_msgs::PwmStamped>("command/pwm", 1);
 }
 
@@ -63,26 +58,11 @@ void ThrustCal::callback(const riptide_msgs::ThrustStamped::ConstPtr& thrust)
   pwm.publish(us);
 }
 
-void ThrustCal::killback(const std_msgs::Empty::ConstPtr& thrust)
-{
-  if (!low)
-  {
-    dead = false;
-  }
-  alive = ros::Time::now();
-}
-
 void ThrustCal::loop()
 {
-  ros::Duration safe(0.05);
   ros::Rate rate(50);
   while (!ros::isShuttingDown())
   {
-    ros::Duration timeout = ros::Time::now() - alive;
-    if (timeout > safe)
-    {
-      dead = true;
-    }
     ros::spinOnce();
     rate.sleep();
   }
@@ -91,21 +71,14 @@ void ThrustCal::loop()
 int ThrustCal::counterclockwise(double raw_force)
 {
   int pwm = 1500;
-  if (!dead)
-  {
-    pwm = 1500 + static_cast<int>(raw_force * 14);
-  }
+  pwm = 1500 + static_cast<int>(raw_force * 25);
   return pwm;
 }
 
 int ThrustCal::clockwise(double raw_force)
 {
   int pwm = 1500;
-
-  if (!dead)
-  {
-    pwm = 1500 - static_cast<int>(raw_force * 14);
-  }
+  pwm = 1500 - static_cast<int>(raw_force * 25);
 
   return pwm;
 }

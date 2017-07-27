@@ -76,7 +76,7 @@ for(i=0; i<10; i++){
         thruster_pub.publish(thrust); 
         
         //Wait
-        sleep(2);
+        sleep(1);
 
         //Turn off
         thrust_val[i] = 0;
