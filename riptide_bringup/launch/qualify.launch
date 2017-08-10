@@ -1,6 +1,11 @@
 <launch>
-  <include file="$(find riptide_hardware)/launch/ttyACM0.launch" /> <!--Establish serial link with thruster control board-->
+  <include file="$(find riptide_hardware)/launch/ttyACM1.launch" /> <!--Establish serial link with thruster control board-->
   <include file="$(find riptide_hardware)/launch/thrust_cal.launch"/> <!-- Thrust to PWM -->
   <include file="$(find riptide_controllers)/launch/thruster_controller.launch"/> <!-- Accel to Thrust -->
   <include file="$(find riptide_behaviors)/launch/go_straight.launch" /> <!-- Mission controller -->
+  <include file="$(find imu_3dm_gx4)/launch/imu.launch">
+    <arg name="enable_filter" value="true" />
+  </include>
+  <include file="$(find riptide_hardware)/launch/cameras.launch" />
+  <node pkg="rosbag" type="record" args="-O /home/ros/osu-uwrt/log/robosub /forward/image_raw /downward/image_raw /imu/imu /imu/magnetic_field /command/accel /command/thrust" name="record" />
 </launch>

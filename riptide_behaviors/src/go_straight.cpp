@@ -29,8 +29,8 @@ int main(int argc, char **argv) {
 
   geometry_msgs::Accel accel;
 
-  submergeDuration.fromSec(4.0);
-  goStraightDuration.fromSec(35.0);
+  submergeDuration.fromSec(1.0);
+  goStraightDuration.fromSec(6000.0);
   delayStartDuration.fromSec(10.0);
   deadTimeThreshold.fromSec(1.5);
 
@@ -55,17 +55,17 @@ int main(int argc, char **argv) {
       } else if (currentTime - missionStartTime - delayStartDuration < submergeDuration) {
         accel.linear.x = 0.6;
         accel.linear.y = 0;
-        accel.linear.z = -0.5;
+        accel.linear.z = -0.1;
         accel.angular.x = 0;
         accel.angular.y = 0;
         accel.angular.z = 0;
       } else if (currentTime - missionStartTime - submergeDuration - delayStartDuration < goStraightDuration) {
-        accel.linear.x = 1.0;
+        accel.linear.x = 1.2;
         accel.linear.y = 0;
-        accel.linear.z = -0.1;
+        accel.linear.z = 0.35;
         accel.angular.x = 0;
         accel.angular.y = 0;
-        accel.angular.z = 0.3;
+        accel.angular.z = 0.15;
       } else {
         accel.linear.x = 0;
         accel.linear.y = 0;
