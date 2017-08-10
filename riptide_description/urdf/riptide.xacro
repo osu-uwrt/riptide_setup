@@ -11,15 +11,15 @@
 
   <xacro:property name="M_PI" value="3.14159266"/>
 
-  <xacro:include filename="riptide_joints.xacro" />
-  <xacro:include filename="riptide_links.xacro" />
   <xacro:include filename="riptide_properties.xacro" />
+  <xacro:include filename="riptide_links.xacro" />
   <xacro:include filename="riptide_simulation.xacro" />
+  <xacro:include filename="riptide_joints.xacro" />
 
   <!--             -->
   <!-- RVIZ Colors -->
   <!--             -->
-  
+
   <material name="RedBright">
     <color rgba="0.87 0.26 0.07 1.0"/>
   </material>

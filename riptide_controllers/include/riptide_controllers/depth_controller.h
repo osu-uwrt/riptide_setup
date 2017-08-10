@@ -25,52 +25,54 @@
  *
  *********************************************************************************/
 
-#ifndef THRUSTER_CONTROLLER_H
-#define THRUSTER_CONTROLLER_H
-
-#include <math.h>
-#include <vector>
-
-#include "ceres/ceres.h"
-#include "glog/logging.h"
+#ifndef DEPTH_CONTROLLER_H
+#define DEPTH_CONTROLLER_H
 
 #include "ros/ros.h"
-#include "tf/transform_listener.h"
-#include "geometry_msgs/Vector3.h"
 #include "geometry_msgs/Accel.h"
-#include "sensor_msgs/Imu.h"
-#include "imu_3dm_gx4/FilterOutput.h"
+#include "riptide_msgs/Depth.h"
+#include "dynamic_reconfigure/server.h"
+#include "riptide_controllers/DepthControllerConfig.h"
 
-#include "riptide_msgs/ThrustStamped.h"
-
-class ThrusterController
+class DepthController
 {
  private:
   // Comms
   ros::NodeHandle nh;
-  ros::Subscriber state_sub;
+  ros::Subscriber depth_sub;
   ros::Subscriber cmd_sub;
   ros::Publisher cmd_pub;
-  riptide_msgs::ThrustStamped thrust;
-  // Math
-  ceres::Problem problem;
-  ceres::Solver::Options options;
-  ceres::Solver::Summary summary;
-  // Results
-  double surge_stbd_hi, surge_port_hi, surge_port_lo, surge_stbd_lo;
-  double sway_fwd, sway_aft;
-  double heave_port_aft, heave_stbd_aft, heave_stbd_fwd, heave_port_fwd;
-  // TF
-  tf::TransformListener *listener;
-  tf::StampedTransform tf_surge[4];
-  tf::StampedTransform tf_sway[2];
-  tf::StampedTransform tf_heave[4];
+  geometry_msgs::Accel accel;
+  dynamic_reconfigure::Server<riptide_controllers::DepthControllerConfig> config_server;
+  dynamic_reconfigure::Server<riptide_controllers::DepthControllerConfig>::CallbackType cb;
+
+  //PID
+  float depth_error;
+  float current_depth;
+  float cmd_depth;
+  float error_sum;
+  float d_error;
+  float last_error;
+  float dt;
+  float kP;
+  float kI;
+  float kD;
+
+  bool pid_initialized;
+  bool clear_enabled;
+
+  ros::Time sample_start;
+  ros::Duration sample_duration;
+
+  void UpdateError();
 
  public:
-  ThrusterController(char **argv, tf::TransformListener *listener_adr);
-  void state(const sensor_msgs::Imu::ConstPtr &msg);
-  void callback(const geometry_msgs::Accel::ConstPtr &a);
-  void loop();
+   DepthController();
+   void CommandCB(const riptide_msgs::Depth::ConstPtr &depth);
+   void DepthCB(const riptide_msgs::Depth::ConstPtr &cmd);
+   void ConfigureCB(riptide_controllers::DepthControllerConfig &config, int level);
+   void Loop();
+
 };
 
 #endif
