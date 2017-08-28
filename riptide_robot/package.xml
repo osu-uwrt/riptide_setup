@@ -4,14 +4,15 @@
   <version>0.0.16</version>
   <description>Metapackage for OSU's Riptide AUV.</description>
 
-  <maintainer email="cary.42@osu.edu">Conor Cary</maintainer>
+  <maintainer email="justice.251@osu.edu">Benji Justice</maintainer>
 
   <license>BSD</license>
 
   <url type="website">http://go.osu.edu/uwrt</url>
-  <url type="repository">http://github.com/osu-uwrt/riptide</url>
+  <url type="repository">http://github.com/osu-uwrt/riptide-ros</url>
 
   <author email="cary.42@osu.edu">Conor Cary</author>
+  <author email="justice.251@osu.edu">Benji Justice</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 
