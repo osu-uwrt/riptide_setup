@@ -164,7 +164,7 @@
     <!-- Gazebo Riptide Buoyancy Properties -->
     <!--                                    -->
 
-    <plugin name="BuoyancyPlugin" filename="libBuoyancyPlugin.so">
+    <!--<plugin name="BuoyancyPlugin" filename="libBuoyancyPlugin.so">
       <robotNamespace></robotNamespace>
 
       <fluid_density>108</fluid_density>
@@ -252,7 +252,7 @@
         <volume>0.000000001</volume>
       </link>
 
-    </plugin>
+    </plugin>-->
   </gazebo>
 
   <!--                                  -->

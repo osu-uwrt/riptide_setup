@@ -10,6 +10,12 @@
       <mass value="0.00001" />
       <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
     </inertial>
+    <!-- <buoyancy>
+    <compensation>10000</compensation>
+      <origin xyz= "0 0 0"/>
+      <limit radius=".25"/>
+      <damping xyz="60 100 100" rpy="20 50 50"/>
+    </buoyancy> -->
   </link>
 
   <!--               -->
