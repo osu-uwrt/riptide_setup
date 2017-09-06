@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="riptide_behaviors" type="go_straight" name="go_straight" />
+</launch>

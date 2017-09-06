@@ -1,5 +1,5 @@
 ## Riptide  
-*2015-2016 AUV*
+*2017-2018 AUV*
 
 **The Underwater Robotics Team**  
 The Ohio State University

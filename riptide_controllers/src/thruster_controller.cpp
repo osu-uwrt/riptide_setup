@@ -367,8 +367,6 @@ void ThrusterController::callback(const geometry_msgs::Accel::ConstPtr &a)
 //             << ", heave_port_fwd = " << heave_port_fwd << std::endl;
 // #endif
 
-std::cout<< v_imu.x << " " << v_imu.y << " " << v_imu.z;
-
   // Solve all my problems
   ceres::Solve(options, &problem, &summary);
 
