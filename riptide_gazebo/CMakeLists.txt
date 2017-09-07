@@ -32,7 +32,7 @@ link_directories(
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES gazebo_ros_riptide_thrust
+  LIBRARIES gazebo_ros_riptide_thrust gazebo_ros_depth_sensor
 )
 
 add_library(
@@ -42,6 +42,7 @@ add_library(
 
 target_link_libraries(
   gazebo_ros_riptide_thrust
+  gazebo_ros_depth_sensor
   ${catkin_LIBRARIES}
   ${GAZEBO_LIBRARIES}
   ${Boost_LIBRARIES}
@@ -49,5 +50,22 @@ target_link_libraries(
 
 add_dependencies(
   gazebo_ros_riptide_thrust
+  gazebo_ros_depth_sensor
+  riptide_msgs_gencpp
+)
+
+add_library(
+  gazebo_ros_depth_sensor
+  src/gazebo_ros_depth_sensor.cpp
+)
+
+target_link_libraries(
+  gazebo_ros_depth_sensor
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+)
+
+add_dependencies(
+  gazebo_ros_depth_sensor
   riptide_msgs_gencpp
 )

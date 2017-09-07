@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find riptide_controllers)/launch/thruster_controller.launch" />
+  <node pkg="riptide_controllers" type="depth_controller" name="depth_controller" output="screen" />
+</launch>
