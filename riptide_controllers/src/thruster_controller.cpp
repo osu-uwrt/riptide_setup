@@ -185,7 +185,7 @@ ThrusterController::ThrusterController(char **argv, tf::TransformListener *liste
 
   thrust.header.frame_id = "base_link";
 
-  state_sub = nh.subscribe<sensor_msgs::Imu>("state/imu", 1, &ThrusterController::state, this);
+  state_sub = nh.subscribe<riptide_msgs::Imu>("state/imu", 1, &ThrusterController::state, this);
   cmd_sub = nh.subscribe<geometry_msgs::Accel>("command/accel", 1, &ThrusterController::callback, this);
   cmd_pub = nh.advertise<riptide_msgs::ThrustStamped>("command/thrust", 1);
 
@@ -291,11 +291,11 @@ ThrusterController::ThrusterController(char **argv, tf::TransformListener *liste
 #endif
 }
 
-void ThrusterController::state(const sensor_msgs::Imu::ConstPtr &msg)
+void ThrusterController::state(const riptide_msgs::Imu::ConstPtr &msg)
 {
-  tf::Quaternion tf;
-  quaternionMsgToTF(msg->orientation, tf);
-  rotation_matrix.setRotation(tf.normalized());
+  tf::Vector3 tf;
+  vector3MsgToTF(msg->euler_rpy, tf);
+  rotation_matrix.setRPY(tf.x(), tf.y(), tf.z());
   vector3MsgToTF(msg->angular_velocity, ang_v);
 }
 
