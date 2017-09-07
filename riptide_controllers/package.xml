@@ -1,20 +1,20 @@
 <?xml version="1.0"?>
 <package>
   <name>riptide_controllers</name>
-  <version>0.0.15</version>
+  <version>0.0.17</version>
   <description>Controllers for OSU's Riptide AUV.</description>
 
-  <maintainer email="cary.42@osu.edu">Conor Cary</maintainer>
+  <maintainer email="justice.251@osu.edu">Benji Justice</maintainer>
 
   <license>BSD</license>
 
   <url type="website">http://go.osu.edu/uwrt</url>
   <url type="repository">http://github.com/osu-uwrt/riptide</url>
 
+  <author email="justice.251@osu.edu">Benji Justice</author>
   <author email="cary.42@osu.edu">Conor Cary</author>
   <author email="mahaffey.60@osu.edu">Sara Mahaffey</author>
-  <author email="justice.251@osu.edu">Benji Justice</author>
-
+  
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>libceres-dev</build_depend>
