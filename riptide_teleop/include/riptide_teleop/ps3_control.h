@@ -1,5 +1,5 @@
-#ifndef ACCEL_CMD_H
-#define ACCEL_CMD_H
+#ifndef PS3_CONTROL_H
+#define PS3_CONTROL_H
 
 #include "ros/ros.h"
 #include "sensor_msgs/Joy.h"
