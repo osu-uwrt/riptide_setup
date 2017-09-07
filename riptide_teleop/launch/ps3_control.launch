@@ -1,0 +1,7 @@
+<launch>
+  <!-- ROS joystick driver. Publishes /joy messages -->
+  <node pkg="joy" type="joy_node" name="joystick_driver" />
+
+  <!-- ROS node subscribes to /joy and publishes corresponding command/accel -->
+  <node pkg="riptide_teleop" type="ps3_control" name="ps3_control" />
+</launch>
