@@ -1,4 +1,4 @@
 <launch>
   <include file="$(find riptide_description)/launch/riptide_description.launch"/>
-  <node pkg="riptide_controls" type="thruster_controller" name="thruster_controller" />
+  <node pkg="riptide_controllers" type="thruster_controller" name="thruster_controller" output="screen" />
 </launch>

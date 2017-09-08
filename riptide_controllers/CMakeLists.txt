@@ -10,7 +10,13 @@ find_package(catkin REQUIRED
     roslint
     sensor_msgs
     tf
+    dynamic_reconfigure
 )
+
+generate_dynamic_reconfigure_options(
+  cfg/DepthController.cfg
+)
+
 find_package(Ceres REQUIRED)
 
 catkin_package(INCLUDE_DIRS include)
@@ -22,3 +28,11 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${CERES_INCLUDE_DIRS})
 add_executable(thruster_controller src/thruster_controller.cpp)
 target_link_libraries(thruster_controller ${catkin_LIBRARIES} ${CERES_LIBRARIES})
 add_dependencies(thruster_controller riptide_msgs_gencpp imu_3dm_gx4_gencpp)
+
+add_executable(depth_controller src/depth_controller.cpp)
+target_link_libraries(depth_controller ${catkin_LIBRARIES})
+add_dependencies(depth_controller riptide_msgs_gencpp ${PROJECT_NAME}_gencfg)
+
+add_executable(pwm_controller src/pwm_controller.cpp)
+target_link_libraries(pwm_controller ${catkin_LIBRARIES})
+add_dependencies(pwm_controller riptide_msgs_gencpp ${PROJECT_NAME}_gencfg)
