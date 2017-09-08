@@ -6,6 +6,7 @@ find_package(catkin REQUIRED
     roslint
     roscpp
     riptide_msgs
+    pointgrey_camera_driver
 )
 
 catkin_package()
