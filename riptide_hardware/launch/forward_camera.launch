@@ -8,7 +8,7 @@
           args="load pointgrey_camera_driver/PointGreyCameraNodelet camera_nodelet_manager" >
 
       <param name="frame_id" value="camera_down" />
-      <param name="serial" value="$(arg downward_serial_number)" />
+      <param name="serial" value="$(arg forward_serial_number)" />
     </node>
 
   </group>
