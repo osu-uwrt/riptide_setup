@@ -1,6 +1,6 @@
 #include "riptide_controllers/thruster_controller.h"
 
-#define debug
+#undef debug
 #undef report
 #undef progress
 
@@ -8,18 +8,18 @@ tf::Matrix3x3 rotation_matrix;
 tf::Vector3 ang_v;
 
 // Thrust limits (N):
-double MIN_THRUST = -5.0;
-double MAX_THRUST = 5.0;
+double MIN_THRUST = -18.0;
+double MAX_THRUST = 18.0;
 
 // Vehicle mass (kg):
 double MASS = 34.47940950;
 
-// Moments of inertia (kg*m^3)
-double Ixx = 1.335;
-double Iyy = 1.501;
-double Izz = 0.6189;
+// Moments of inertia (kg*m^2)
+double Ixx = 0.50862680;
+double Iyy = 1.70892348;
+double Izz = 1.77586420;
 
-// Acceleration commands (m/s^2):
+// Acceleration commands (m/s^):
 double cmdSurge = 0.0;
 double cmdSway = 0.0;
 double cmdHeave = 0.0;
@@ -33,8 +33,6 @@ struct vector
   double y;
   double z;
 };
-
-vector v_imu;
 
 void get_transform(vector *v, tf::StampedTransform *tform)
 {
@@ -70,9 +68,10 @@ struct surge
                   const T *const heave_stbd_aft, T *residual) const
   {
     residual[0] =
-        (rotation_matrix.getRow(0).x() * (surge_port_lo[0] + surge_stbd_lo[0]) +
+        (rotation_matrix.getRow(0).x() * (surge_port_hi[0] + surge_stbd_hi[0] + surge_port_lo[0] + surge_stbd_lo[0]) +
+         rotation_matrix.getRow(0).y() * (sway_fwd[0] + sway_aft[0]) +
          rotation_matrix.getRow(0).z() *
-             (heave_port_fwd[0] + heave_stbd_fwd[0])) /
+             (heave_port_fwd[0] + heave_stbd_fwd[0] + heave_port_aft[0] + heave_stbd_aft[0])) /
             T(MASS) -
         T(cmdSurge);
     return true;
@@ -88,9 +87,10 @@ struct sway
                   const T *const heave_stbd_aft, T *residual) const
   {
     residual[0] =
-        (rotation_matrix.getRow(1).x() * (surge_port_lo[0] + surge_stbd_lo[0]) +
+        (rotation_matrix.getRow(1).x() * (surge_port_hi[0] + surge_stbd_hi[0] + surge_port_lo[0] + surge_stbd_lo[0]) +
+         rotation_matrix.getRow(1).y() * (sway_fwd[0] + sway_aft[0]) +
          rotation_matrix.getRow(1).z() *
-             (heave_port_fwd[0] + heave_stbd_fwd[0])) /
+             (heave_port_fwd[0] + heave_stbd_fwd[0] + heave_stbd_aft[0] + heave_port_aft[0])) /
             T(MASS) -
         T(cmdSway);
     return true;
@@ -106,9 +106,10 @@ struct heave
                   const T *const heave_stbd_aft, T *residual) const
   {
     residual[0] =
-        (rotation_matrix.getRow(2).x() * (surge_port_lo[0] + surge_stbd_lo[0]) +
+        (rotation_matrix.getRow(2).x() * (surge_port_hi[0] + surge_stbd_hi[0] + surge_port_lo[0] + surge_stbd_lo[0]) +
+         rotation_matrix.getRow(2).y() * (sway_fwd[0] + sway_aft[0]) +
          rotation_matrix.getRow(2).z() *
-             (heave_port_fwd[0] + heave_stbd_fwd[0])) /
+             (heave_port_fwd[0] + heave_stbd_fwd[0] + heave_port_aft[0] + heave_stbd_aft[0])) /
             T(MASS) -
         T(cmdHeave);
     return true;
@@ -124,6 +125,8 @@ struct roll
                   T *residual) const
   {
     residual[0] = (heave_port_fwd[0] * T(pos_heave_port_fwd.y) + heave_stbd_fwd[0] * T(pos_heave_stbd_fwd.y) +
+                   heave_port_aft[0] * T(pos_heave_port_aft.y) + heave_stbd_aft[0] * T(pos_heave_stbd_aft.y) -
+                   (sway_fwd[0] * T(pos_sway_fwd.z) + sway_aft[0] * T(pos_sway_aft.z)) +
                    T(Iyy) * T(ang_v.y()) * T(ang_v.z()) - T(Izz) * T(ang_v.y()) * T(ang_v.z())) /
                       T(Ixx) -
                   T(cmdRoll);
@@ -138,9 +141,10 @@ struct pitch
                   const T *const surge_stbd_lo, const T *const heave_port_fwd, const T *const heave_stbd_fwd,
                   const T *const heave_port_aft, const T *const heave_stbd_aft, T *residual) const
   {
-    residual[0] = (
+    residual[0] = (surge_port_hi[0] * T(pos_surge_port_hi.z) + surge_stbd_hi[0] * T(pos_surge_stbd_hi.z) +
                    surge_port_lo[0] * T(pos_surge_port_lo.z) + surge_stbd_lo[0] * T(pos_surge_stbd_lo.z) +
                    heave_port_fwd[0] * T(-pos_heave_port_fwd.x) + heave_stbd_fwd[0] * T(-pos_heave_stbd_fwd.x) +
+                   heave_port_aft[0] * T(-pos_heave_port_aft.x) + heave_stbd_aft[0] * T(-pos_heave_stbd_aft.x) +
                    T(Izz) * T(ang_v.x()) * T(ang_v.z()) - T(Ixx) * T(ang_v.x()) * T(ang_v.z())) /
                       T(Iyy) -
                   T(cmdPitch);
@@ -154,8 +158,9 @@ struct yaw
   bool operator()(const T *const surge_port_hi, const T *const surge_stbd_hi, const T *const surge_port_lo,
                   const T *const surge_stbd_lo, const T *const sway_fwd, const T *const sway_aft, T *residual) const
   {
-    residual[0] = (
+    residual[0] = (surge_port_hi[0] * T(-pos_surge_port_hi.y) + surge_stbd_hi[0] * T(-pos_surge_stbd_hi.y) +
                    surge_port_lo[0] * T(-pos_surge_port_lo.y) + surge_stbd_lo[0] * T(-pos_surge_stbd_lo.y) +
+                   sway_fwd[0] * T(pos_sway_fwd.x) + sway_aft[0] * T(pos_sway_aft.x) +
                    T(Ixx) * T(ang_v.x()) * T(ang_v.y()) - T(Iyy) * T(ang_v.x()) * T(ang_v.y())) /
                       T(Izz) -
                   T(cmdYaw);
@@ -167,8 +172,8 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "thruster_controller");
   tf::TransformListener tf_listener;
-  ThrusterController thruster_controller(argv, &tf_listener);
-  thruster_controller.loop();
+  ThrusterController ThrusterController(argv, &tf_listener);
+  ThrusterController.loop();
 }
 
 ThrusterController::ThrusterController(char **argv, tf::TransformListener *listener_adr)
@@ -204,13 +209,6 @@ ThrusterController::ThrusterController(char **argv, tf::TransformListener *liste
   listener->lookupTransform("/base_link", "/heave_port_aft_link", ros::Time(0), tf_heave[2]);
   listener->waitForTransform("/base_link", "/heave_stbd_aft_link", ros::Time(0), ros::Duration(10.0));
   listener->lookupTransform("/base_link", "/heave_stbd_aft_link", ros::Time(0), tf_heave[3]);
-
-  tf::StampedTransform tf_imu;
-
-  listener->waitForTransform("/base_link", "/imu_one_link", ros::Time(0), ros::Duration(10.0));
-  listener->lookupTransform("/base_link", "/imu_one_link", ros::Time(0), tf_imu);
-
-  get_transform(&v_imu, &tf_imu);
 
   get_transform(&pos_surge_port_hi, &tf_surge[0]);
   get_transform(&pos_surge_stbd_hi, &tf_surge[1]);
@@ -324,21 +322,13 @@ void ThrusterController::callback(const geometry_msgs::Accel::ConstPtr &a)
   heave_stbd_fwd = 0.0;
   heave_port_fwd = 0.0;
 
-  #ifdef debug
-   std::cout << "surge_port_lo transform: " << pos_surge_port_lo.x << ", " << pos_surge_port_lo.y << ", " << pos_surge_port_lo.z << ", " << std::endl;
-   std::cout << "surge_stbd_lo transform: " << pos_surge_stbd_lo.x << ", " << pos_surge_stbd_lo.y << ", " << pos_surge_stbd_lo.z << ", " << std::endl;
-   std::cout << "heave_port_fwd transform: " << pos_heave_port_fwd.x << ", " << pos_heave_port_fwd.y << ", " << pos_heave_port_fwd.z << ", " << std::endl;
-   std::cout << "heave_stbd_fwd transform: " <<  pos_heave_stbd_fwd.x << ", " << pos_heave_stbd_fwd.y << ", " << pos_heave_stbd_fwd.z << ", " << std::endl << std::endl;
-  #endif
-
-//
-// #ifdef debug
-//   std::cout << "Initial surge_stbd_hi = " << surge_stbd_hi << ", surge_port_hi = " << surge_port_hi
-//             << ", surge_port_lo = " << surge_port_lo << ", surge_stbd_lo = " << surge_stbd_lo
-//             << ", sway_fwd = " << sway_fwd << ", sway_aft = " << sway_aft << ", heave_port_aft = " << heave_port_aft
-//             << ", heave_stbd_aft = " << heave_stbd_aft << ", heave_stbd_fwd = " << heave_stbd_fwd
-//             << ", heave_port_fwd = " << heave_port_fwd << std::endl;
-// #endif
+#ifdef debug
+  std::cout << "Initial surge_stbd_hi = " << surge_stbd_hi << ", surge_port_hi = " << surge_port_hi
+            << ", surge_port_lo = " << surge_port_lo << ", surge_stbd_lo = " << surge_stbd_lo
+            << ", sway_fwd = " << sway_fwd << ", sway_aft = " << sway_aft << ", heave_port_aft = " << heave_port_aft
+            << ", heave_stbd_aft = " << heave_stbd_aft << ", heave_stbd_fwd = " << heave_stbd_fwd
+            << ", heave_port_fwd = " << heave_port_fwd << std::endl;
+#endif
 
   // Solve all my problems
   ceres::Solve(options, &problem, &summary);
@@ -346,14 +336,14 @@ void ThrusterController::callback(const geometry_msgs::Accel::ConstPtr &a)
 #ifdef report
   std::cout << summary.FullReport() << std::endl;
 #endif
-//
-// #ifdef debug
-//   std::cout << "Final surge_stbd_hi = " << surge_stbd_hi << ", surge_port_hi = " << surge_port_hi
-//             << ", surge_port_lo = " << surge_port_lo << ", surge_stbd_lo = " << surge_stbd_lo
-//             << ", sway_fwd = " << sway_fwd << ", sway_aft = " << sway_aft << ", heave_port_aft = " << heave_port_aft
-//             << ", heave_stbd_aft = " << heave_stbd_aft << ", heave_stbd_fwd = " << heave_stbd_fwd
-//             << ", heave_port_fwd = " << heave_port_fwd << std::endl;
-// #endif
+
+#ifdef debug
+  std::cout << "Final surge_stbd_hi = " << surge_stbd_hi << ", surge_port_hi = " << surge_port_hi
+            << ", surge_port_lo = " << surge_port_lo << ", surge_stbd_lo = " << surge_stbd_lo
+            << ", sway_fwd = " << sway_fwd << ", sway_aft = " << sway_aft << ", heave_port_aft = " << heave_port_aft
+            << ", heave_stbd_aft = " << heave_stbd_aft << ", heave_stbd_fwd = " << heave_stbd_fwd
+            << ", heave_port_fwd = " << heave_port_fwd << std::endl;
+#endif
 
   // Create stamped thrust message
   thrust.header.stamp = ros::Time::now();
