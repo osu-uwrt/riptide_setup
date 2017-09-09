@@ -1,12 +1,6 @@
 <launch>
-  <!-- SENSORS -->
-  <include file="$(find imu_3dm_gx4)/launch/imu.launch"> <!-- Launch the IMU -->
-    <arg name="enable_filter" value="true" />
-  </include>
-  <include file="$(find riptide_hardware)/launch/cameras.launch" />
-
   <!-- CONTROL STACK -->
-  <include file="$(find riptide_hardware)/launch/ttyACM1.launch" /> <!--Establish serial link with thruster control board-->
+  <include file="$(find riptide_hardware)/launch/ttyACM0.launch" /> <!--Establish serial link with thruster control board-->
   <include file="$(find riptide_controllers)/launch/pwm_controller.launch"/> <!-- Thrust to PWM node -->
   <include file="$(find riptide_controllers)/launch/thruster_controller.launch"/> <!-- Accel to Thrust node -->
 </launch>
