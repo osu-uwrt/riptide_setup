@@ -1,0 +1,10 @@
+<launch>
+  <arg name="OUTPUT_PATH" value="/home/benji/osu-uwrt/log/pool-test-" />
+  <arg name="RECORD_CAMERAS" value="true" />
+  <group if="$(arg RECORD_CAMERAS)">
+    <node pkg="rosbag" type="record" args="-o $(arg OUTPUT_PATH) /forward/image_raw/compressed /downward/image_raw/compressed /imu/imu /imu/magnetic_field /command/accel /command/thrust" name="record" />
+  </group>
+  <group unless="$(arg RECORD_CAMERAS)">
+    <node pkg="rosbag" type="record" args="-o $(arg OUTPUT_PATH) /imu/imu /imu/magnetic_field /command/accel /command/thrust" name="record" />
+  </group>
+</launch>
