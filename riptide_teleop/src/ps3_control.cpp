@@ -17,7 +17,7 @@ void Accel::joy_callback(const sensor_msgs::Joy::ConstPtr& joy)
 {
   accel.linear.x = 0.75 * joy->axes[1]; // Left joystick vertical
   accel.linear.y = 0.75 * joy->axes[0];  // Left joystick horizontal
-  accel.linear.z = 0.25 * (joy->buttons[11] - joy->buttons[10]); // R1 L1
+  accel.linear.z = 0.5 * (joy->buttons[11] - joy->buttons[10]); // R1 L1
 
   accel.angular.x =  1.5 * 3.14159 * joy->axes[2] * -1;// Right joystick horizontal
   accel.angular.y = 1.2 * 3.14159 * joy->axes[3]; // Right joystick vertical
