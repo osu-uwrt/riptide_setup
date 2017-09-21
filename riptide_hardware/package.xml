@@ -23,6 +23,7 @@
   <run_depend>roslaunch</run_depend>
   <run_depend>rosserial_msgs</run_depend>
   <run_depend>rosserial_python</run_depend>
+  <run_depend>pointgrey_camera_driver</run_depend>
 
   <export>
   </export>
