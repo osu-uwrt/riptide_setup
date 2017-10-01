@@ -8,6 +8,9 @@ find_package(catkin REQUIRED
     riptide_msgs
 )
 
-catkin_package()
+catkin_package(INCLUDE_DIRS include)
 
 roslint_cpp()
+
+add_executable(imu_processor src/imu_processor.cpp)
+target_link_libraries(imu_processor ${catkin_LIBRARIES})

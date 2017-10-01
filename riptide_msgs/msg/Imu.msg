@@ -1,0 +1,8 @@
+Header header
+geometry_msgs/Vector3 euler_rpy
+geometry_msgs/Vector3 linear_acceleration
+geometry_msgs/Vector3 angular_velocity
+
+float64 euler_rpy_status
+float64 angular_velocity_status
+float64 linear_acceleration_status

@@ -1,0 +1,7 @@
+<launch>
+    <arg name="location" default="columbus" />
+    <node pkg="riptide_hardware" name="imu_processor" type="imu_processor" output="screen" </node>
+    <include file="$(find imu_3dm_gx4)/src/launch/imu.launch" >
+      <arg name="location" value="$(arg location)" />
+    </include>
+</launch>
