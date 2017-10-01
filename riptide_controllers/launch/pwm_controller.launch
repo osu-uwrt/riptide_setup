@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="riptide_controllers" type="pwm_controller" name="pwm_controller" output="screen" />
+</launch>
