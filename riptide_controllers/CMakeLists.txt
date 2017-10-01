@@ -10,12 +10,7 @@ find_package(catkin REQUIRED
     roslint
     sensor_msgs
     tf
-    dynamic_reconfigure
     control_toolbox
-)
-
-generate_dynamic_reconfigure_options(
-  cfg/DepthController.cfg
 )
 
 find_package(Ceres REQUIRED)
