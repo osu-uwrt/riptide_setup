@@ -11,6 +11,7 @@ find_package(catkin REQUIRED
     sensor_msgs
     tf
     dynamic_reconfigure
+    control_toolbox
 )
 
 generate_dynamic_reconfigure_options(
