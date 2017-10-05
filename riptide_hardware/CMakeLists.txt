@@ -6,10 +6,14 @@ find_package(catkin REQUIRED
     roslint
     roscpp
     riptide_msgs
+    geometry_msgs
+    imu_3dm_gx4
     pointgrey_camera_driver
 )
 
 catkin_package(INCLUDE_DIRS include)
+
+include_directories(include ${catkin_INCLUDE_DIRS})
 
 roslint_cpp()
 
