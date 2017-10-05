@@ -9,6 +9,7 @@ find_package(catkin REQUIRED
     roscpp
     roslint
     sensor_msgs
+    riptide_msgs
     tf
     control_toolbox
 )
@@ -32,3 +33,7 @@ add_dependencies(depth_controller riptide_msgs_gencpp ${PROJECT_NAME}_gencfg)
 add_executable(pwm_controller src/pwm_controller.cpp)
 target_link_libraries(pwm_controller ${catkin_LIBRARIES})
 add_dependencies(pwm_controller riptide_msgs_gencpp ${PROJECT_NAME}_gencfg)
+
+add_executable(command_combinator src/command_combinator.cpp)
+target_link_libraries(command_combinator ${catkin_LIBRARIES})
+add_dependencies(command_combinator ${PROJECT_NAME}_gencfg)
