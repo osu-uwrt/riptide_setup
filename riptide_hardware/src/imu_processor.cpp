@@ -30,12 +30,12 @@
  int main(int argc, char** argv)
  {
    ros::init(argc, argv, "imu_processor");
-   IMUProcessor imu;
+   IMUProcessor imu(argv);
    imu.loop();
  }
 
 //Constructor
- IMUProcessor::IMUProcessor() : nh()
+ IMUProcessor::IMUProcessor(char **argv) : nh()
  {
    imu_filter_sub = nh.subscribe<imu_3dm_gx4::FilterOutput>("imu/filter", 1, &IMUProcessor::callback, this);
    imu_state_pub = nh.advertise<riptide_msgs::Imu>("state/imu", 1);
@@ -44,7 +44,7 @@
 //ROS loop function
  void IMUProcessor::loop()
  {
-   ros::Rate rate(50);
+   //ros::Rate rate(50);
    while (!ros::isShuttingDown())
    {
      ros::spinOnce();
@@ -53,7 +53,7 @@
  }
 
 //Callback
- void IMUProcessor::callback(const sensor_msgs::Imu::ConstPtr& imu_msg, const imu_3dm_gx4::FilterOutput::ConstPtr& filter_msg)
+ void IMUProcessor::callback(const imu_3dm_gx4::FilterOutput::ConstPtr& filter_msg)
  {
 
  }

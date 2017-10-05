@@ -29,11 +29,12 @@
 #define IMU_PROCESSOR_H
 
 #include "ros/ros.h"
-#include "message_filters/subscriber.h"
-#include "message_filters/synchronizer.h"
-#include "message_filters/sync_policies/approximate_time.h"
-#include "tf/transform_broadcaster.h"
+//#include "message_filters/subscriber.h"
+//#include "message_filters/synchronizer.h"
+//#include "message_filters/sync_policies/approximate_time.h"
+//#include "tf/transform_broadcaster.h"
 #include "riptide_msgs/Imu.h"
+#include "std_msgs/Header.h"
 #include "imu_3dm_gx4/FilterOutput.h"
 
 class IMUProcessor
@@ -41,14 +42,13 @@ class IMUProcessor
 private:
   ros::NodeHandle nh;
 
-  //FIX - must be message_filters!!!!!!!!!
   ros::Subscriber imu_filter_sub;
   ros::Publisher imu_state_pub;
 
-  riptide_msgs::Imu current_state;
-  riptide_msgs::Imu prev_state;
+  //0= current state, 1 = one state ago, 2 = two states ago
+  riptide_msgs::Imu state[3];
 public:
-  IMUProcessor(char **argv);
+  IMUProcessor(char **argv, const riptide_msgs::Imu::ConstPtr& old_filt_output);
   void callback(const imu_3dm_gx4::FilterOutput::ConstPtr& old_filt_output);
 
 };
