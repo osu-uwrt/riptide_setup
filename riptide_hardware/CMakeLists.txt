@@ -20,3 +20,7 @@ roslint_cpp()
 add_executable(imu_processor src/imu_processor.cpp)
 target_link_libraries(imu_processor ${catkin_LIBRARIES})
 add_dependencies(imu_processor riptide_msgs_gencpp ${PROJECT_NAME}_gencfg)
+
+add_executable(depth_processor src/imu_processor.cpp)
+target_link_libraries(depth_processor ${catkin_LIBRARIES})
+add_dependencies(depth_processor riptide_msgs_gencpp ${PROJECT_NAME}_gencfg)
