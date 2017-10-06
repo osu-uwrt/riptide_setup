@@ -1,44 +1,48 @@
 #ifndef DEPTH_CONTROLLER_H
 #define DEPTH_CONTROLLER_H
+#define MAX_ROLL 20
+#define MAX_PITCH 20
 
 #include "ros/ros.h"
 #include "control_toolbox/pid.h"
 #include "geometry_msgs/Accel.h"
-#include "riptide_msgs/Depth.h"
+#include "geometry_msgs/Vector3.h"
+#include "riptide_msgs/Imu.h"
 
-class DepthController
+class OrientationController
 {
   private:
     // Comms
     ros::NodeHandle nh;
-    ros::Subscriber depth_sub;
+    ros::Subscriber imu_sub;
     ros::Subscriber cmd_sub;
     ros::Publisher cmd_pub;
 
-    control_toolbox::Pid depth_controller_pid;
-    geometry_msgs::Accel accel;
+    control_toolbox::Pid roll_controller_pid;
+    control_toolbox::Pid pitch_controller_pid;
+    control_toolbox::Pid yaw_controller_pid;
+
+    geometry_msgs::Vector3 angular_accel_cmd;
 
     //PID
-    double depth_error;
-    double current_depth;
-    double cmd_depth;
-    double error_sum;
-    double d_error;
-    double last_error;
-    double dt;
+    double roll_error, pitch_error, yaw_error;
+    double roll_error_dot, pitch_error_dot, yaw_error_dot;
+    double roll_cmd, pitch_cmd, yaw_cmd;
+
+    geometry_msgs::Vector3 current_orientation, last_error;
 
     bool pid_initialized;
-    bool clear_enabled;
 
     ros::Time sample_start;
     ros::Duration sample_duration;
+    double dt;
 
     void UpdateError();
 
   public:
-    DepthController();
-    void CommandCB(const riptide_msgs::Depth::ConstPtr &depth);
-    void DepthCB(const riptide_msgs::Depth::ConstPtr &cmd);
+    OrientationController();
+    void CommandCB(const geometry_msgs::Vector3::ConstPtr &cmd);
+    void ImuCB(const riptide_msgs::Imu::ConstPtr &imu);
  };
 
  #endif
