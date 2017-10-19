@@ -3,7 +3,7 @@
 
 #include "ros/ros.h"
 #include "control_toolbox/pid.h"
-#include "geometry_msgs/Accel.h"
+#include "std_msgs/Float64.h"
 #include "riptide_msgs/Depth.h"
 
 class DepthController
@@ -16,19 +16,17 @@ class DepthController
     ros::Publisher cmd_pub;
 
     control_toolbox::Pid depth_controller_pid;
-    geometry_msgs::Accel accel;
+    std_msgs::Float64 accel;
 
     //PID
     double depth_error;
     double current_depth;
     double cmd_depth;
-    double error_sum;
     double d_error;
     double last_error;
     double dt;
 
     bool pid_initialized;
-    bool clear_enabled;
 
     ros::Time sample_start;
     ros::Duration sample_duration;
