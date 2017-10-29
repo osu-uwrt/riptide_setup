@@ -43,100 +43,120 @@
    imu_state_pub = nh.advertise<riptide_msgs::Imu>("state/imu", 1);
 
    zero_ang_vel_thresh = 1;
+   cycles = 0;
  }
 
  //Callback
   void IMUProcessor::callback(const imu_3dm_gx4::FilterOutput::ConstPtr& filter_msg)
   {
-    //Put message data into state[0]
-    state[0].header = filter_msg->header;
-    state[0].header.frame_id = "base_link";
-    state[0].raw_euler_rpy = filter_msg->euler_rpy;
-    state[0].euler_rpy = filter_msg->euler_rpy;
-    state[0].euler_rpy_status = filter_msg->euler_rpy_status;
-    state[0].linear_acceleration = filter_msg->linear_acceleration;
-    state[0].linear_acceleration_status = filter_msg->linear_acceleration_status;
-    state[0].angular_velocity = filter_msg->angular_velocity;
-    state[0].angular_velocity_status = filter_msg->angular_velocity_status;
+    //Put message data into state0
+    state0.header = filter_msg->header;
+    state0.header.frame_id = "base_link";
+    state0.raw_euler_rpy = filter_msg->euler_rpy;
+    state0.euler_rpy = filter_msg->euler_rpy;
+    state0.euler_rpy_status = filter_msg->euler_rpy_status;
+    state0.linear_acceleration = filter_msg->linear_acceleration;
+    state0.linear_acceleration_status = filter_msg->linear_acceleration_status;
+    state0.angular_velocity = filter_msg->angular_velocity;
+    state0.angular_velocity_status = filter_msg->angular_velocity_status;
 
     //Convert angular values from radians to degrees
-    state[0].raw_euler_rpy.x *= (180/PI);
-    state[0].raw_euler_rpy.y *= (180/PI);
-    state[0].raw_euler_rpy.z *= (180/PI);
-    state[0].euler_rpy.x *= (180/PI);
-    state[0].euler_rpy.y *= (180/PI);
-    state[0].euler_rpy.z *= (180/PI);
-    state[0].angular_velocity.x *= (180/PI);
-    state[0].angular_velocity.y *= (180/PI);
-    state[0].angular_velocity.z *= (180/PI);
+    state0.raw_euler_rpy.x *= (180.0/PI);
+    state0.raw_euler_rpy.y *= (180.0/PI);
+    state0.raw_euler_rpy.z *= (180.0/PI);
+    state0.euler_rpy.x *= (180.0/PI);
+    state0.euler_rpy.y *= (180.0/PI);
+    state0.euler_rpy.z *= (180.0/PI);
+    state0.angular_velocity.x *= (180.0/PI);
+    state0.angular_velocity.y *= (180.0/PI);
+    state0.angular_velocity.z *= (180.0/PI);
 
     //Adjust direction/sign of Euler Angles to be consistent with AUV's axes
-    if(state[0].euler_rpy.x > -180 && state[0].euler_rpy.x < 0) {
-      state[0].euler_rpy.x += 180;
-      state[0].raw_euler_rpy.x += 180;
+    if(state0.euler_rpy.x > -180 && state0.euler_rpy.x < 0) {
+      state0.euler_rpy.x += 180;
+      state0.raw_euler_rpy.x += 180;
     }
-    else if(state[0].euler_rpy.x > 0 && state[0].euler_rpy.x < 180) {
-      state[0].euler_rpy.x -= 180;
-      state[0].raw_euler_rpy.x -= 180;
+    else if(state0.euler_rpy.x > 0 && state0.euler_rpy.x < 180) {
+      state0.euler_rpy.x -= 180;
+      state0.raw_euler_rpy.x -= 180;
     }
-    else if(state[0].euler_rpy.x == 0) {
-      state[0].euler_rpy.x = 180;
-      state[0].raw_euler_rpy.x = 180;
+    else if(state0.euler_rpy.x == 0) {
+      state0.euler_rpy.x = 180;
+      state0.raw_euler_rpy.x = 180;
     }
-    else if(state[0].euler_rpy.x == 180 || state[0].euler_rpy.x == -180) {
-      state[0].euler_rpy.x = 0;
-      state[0].raw_euler_rpy.x = 0;
+    else if(state0.euler_rpy.x == 180 || state0.euler_rpy.x == -180) {
+      state0.euler_rpy.x = 0;
+      state0.raw_euler_rpy.x = 0;
     }
-    state[0].euler_rpy.z *= -1; //Negate yaw angle
-    state[0].raw_euler_rpy.z *= -1;
+    state0.euler_rpy.z *= -1; //Negate yaw angle
+    state0.raw_euler_rpy.z *= -1;
 
     //Set new delta time (convert nano seconds to seconds)
-    if(state[1].dt == 0) { //If dt[0] not set yet, set to time in current header stamp
-      state[0].dt = (double)state[0].header.stamp.sec + state[0].header.stamp.nsec/(1.0e9);
+    if(state1.dt == 0) { //If dt[0] not set yet, set to time in current header stamp
+      state0.dt = (double)state0.header.stamp.sec + state0.header.stamp.nsec/(1.0e9);
     }
     else { //dt has already been set, so find actual dt
-      state[0].dt = (double)state[0].header.stamp.sec + state[0].header.stamp.nsec/(1.0e9) - state[1].dt;
+      state0.dt = (double)state0.header.stamp.sec + state0.header.stamp.nsec/(1.0e9) -
+                    (double)state1.header.stamp.sec - state1.header.stamp.nsec/(1.0e9);
     }
 
     //Process Drift
     //Check if angular velocity about any axis is approximately 0
-    if(abs(state[0].angular_velocity.x) <= zero_ang_vel_thresh) {
-      state[0].local_drift.x = state[0].euler_rpy.x - state[1].euler_rpy.x;
+    if(abs(state0.angular_velocity.x) <= zero_ang_vel_thresh) {
+      state0.local_drift.x = state0.euler_rpy.x - state1.euler_rpy.x;
     }
     else {
-      state[0].local_drift.x = 0;
+      state0.local_drift.x = 0;
     }
-    state[0].cumulative_drift.x = abs(state[1].cumulative_drift.x) + abs(state[0].local_drift.x);
-    state[0].local_drift_rate.x = state[0].local_drift.x / state[0].dt;
+    state0.cumulative_drift.x += (double)abs(state0.local_drift.x);
+    state0.local_drift_rate.x = state0.local_drift.x / state0.dt;
 
-    if(abs(state[0].angular_velocity.y) <= zero_ang_vel_thresh) {
-      state[0].local_drift.y = state[0].euler_rpy.y - state[1].euler_rpy.y;
+    if(abs(state0.angular_velocity.y) <= zero_ang_vel_thresh) {
+      state0.local_drift.y = state0.euler_rpy.y - state1.euler_rpy.y;
     }
     else {
-      state[0].local_drift.y = 0;
+      state0.local_drift.y = 0;
     }
-    state[0].cumulative_drift.y += abs(state[1].cumulative_drift.y) + abs(state[0].local_drift.y);
-    state[0].local_drift_rate.y = state[0].local_drift.y / state[0].dt;
+    state0.cumulative_drift.y += (double)abs(state0.local_drift.y);
+    state0.local_drift_rate.y = state0.local_drift.y / state0.dt;
 
-    if(abs(state[0].angular_velocity.z) <= zero_ang_vel_thresh) {
-      state[0].local_drift.z = state[0].euler_rpy.z - state[1].euler_rpy.z;
-    }
+    if(abs(state0.angular_velocity.z) <= zero_ang_vel_thresh) {
+      state0.local_drift.z = state0.euler_rpy.z - state1.euler_rpy.z;    }
     else {
-      state[0].local_drift.z = 0;
+      state0.local_drift.z = 0;
     }
-    state[0].cumulative_drift.z += abs(state[1].cumulative_drift.z) + abs(state[0].local_drift.z);
-    state[0].local_drift_rate.z = state[0].local_drift.z / state[0].dt;
+    state0.cumulative_drift.z += (double)abs(state0.local_drift.z);
+    state0.local_drift_rate.z = state0.local_drift.z / state0.dt;
 
     //Process linear acceleration (Remove centrifugal and tangential components)
 
-    //Process angular acceleration (Use 3-pt backwards rule to approximate angular acceleration)
 
-    //Publish message for current state, adjust states and dt arrays
-    //imu_state_pub.publish(state[0]);
-    state[2] = state[1];
-    state[1] = state[0];
-    imu_state_pub.publish(state[1]);
-    //dt = dt; //Will set dt[0] upon receiving new message
+    //Process angular acceleration (Use 3-pt backwards rule to approximate angular acceleration)
+    if(cycles >= 2) { //Need 3 data points (state2 must have values)
+      //ROS_INFO("Cycles: %i", cycles);
+      float a, b; //Coefficients for backwards-diff rule
+
+      float c = state1.dt, d = state2.dt;
+      //ROS_INFO("state1.dt: %f", c);
+      //ROS_INFO("state2.dt: %f", d);
+
+      a = -1.0/c - 1/(2*d-c);
+      b = c/(4*d*d-2*c*d);
+
+      //Estimated angular acceleration to error order (dt)^2
+      state0.angular_acceleration.x = a*state1.angular_velocity.x + b*state2.angular_velocity.x - (a+b)*state0.angular_velocity.x;
+      state0.angular_acceleration.y = a*state1.angular_velocity.y + b*state2.angular_velocity.y - (a+b)*state0.angular_velocity.y;
+      state0.angular_acceleration.z = a*state1.angular_velocity.z + b*state2.angular_velocity.z - (a+b)*state0.angular_velocity.z;
+    }
+
+    //Publish message for current state, adjust states
+    state2 = state1;
+    state1 = state0;
+    imu_state_pub.publish(state0);
+
+    if(cycles < 2) {
+      cycles += 1;
+    }
   }
 
 //ROS loop function

@@ -6,4 +6,5 @@
       <arg name="location" value="$(arg location)" />
       <arg name="device" value="$(arg device)" />
     </include>
+    <node pkg="riptide_hardware" name="imu_drift_logger" type="imu_drift_logger" output="screen" />
 </launch>

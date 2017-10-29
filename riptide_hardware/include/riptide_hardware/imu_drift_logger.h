@@ -25,36 +25,32 @@
  *
  *********************************************************************************/
 
-#ifndef IMU_PROCESSOR_H
-#define IMU_PROCESSOR_H
+#ifndef IMU_DRIFT_LOGGER_H
+#define IMU_DRIFT_LOGGER_H
 
 #include "ros/ros.h"
-//#include "message_filters/subscriber.h"
-//#include "message_filters/synchronizer.h"
-//#include "message_filters/sync_policies/approximate_time.h"
-//#include "tf/transform_broadcaster.h"
 #include "riptide_msgs/Imu.h"
 #include "std_msgs/Header.h"
-#include "imu_3dm_gx4/FilterOutput.h"
 #include "math.h"
+#include "stdio.h"
+#include "string"
+#include "fstream"
+#include <boost/lexical_cast.hpp>
 
-class IMUProcessor
+class IMUDriftLogger
 {
 private:
   ros::NodeHandle nh;
-  ros::Subscriber imu_filter_sub;
-  ros::Publisher imu_state_pub;
-  int cycles;
+  ros::Subscriber imu_state_sub;
 
-  //0 = current state, 1 = one state ago, 2 = two states ago
-  riptide_msgs::Imu state0;
-  riptide_msgs::Imu state1;
-  riptide_msgs::Imu state2;
-  float zero_ang_vel_thresh;
+  FILE *fid;
+  const char *file_name_c;
+  float dt, angular_vel[3], angular_accel[3], drift[3], drift_rate[3];
 public:
-  IMUProcessor(char **argv);
-  void callback(const imu_3dm_gx4::FilterOutput::ConstPtr& filter_msg);
+  IMUDriftLogger(char **argv);
+  void callback(const riptide_msgs::Imu::ConstPtr& imu_msg);
   void loop();
+  char* convert(const std::string& str);
 };
 
 #endif
