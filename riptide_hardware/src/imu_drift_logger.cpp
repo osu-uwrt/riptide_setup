@@ -48,17 +48,34 @@ char* IMUDriftLogger::convert(const std::string& str) {
    imu_state_sub = nh.subscribe<riptide_msgs::Imu>("state/imu", 1, &IMUDriftLogger::callback, this);
 
    //Create a new file for logging IMU drift data
-   srand(time(NULL));
-   int num = rand() % 10000; //File number
+   bool found_new_file_name = false;
+   int num = 1; //Begin file counting here
    std::string file_suffix = boost::lexical_cast<std::string>(num); //Convert int to string
-   std::string file_prefix = "//home//tsender//osu-uwrt//imu_drift_logger_"; //File path included
+   std::string file_prefix = "//home//tsender//osu-uwrt//imu_drift_logger_"; //File path included in prefix
    std::string file_type = ".csv";
 
-   char *file_name = strcat(convert(file_prefix),convert(file_suffix)); //Create new file name
-   file_name = strcat(file_name,convert(file_type));
-   ROS_INFO("Drift Logger File Name:");
-   ROS_INFO("\t%s", file_name);
+   //Create file name
+   char *file_name = strcat(convert(file_prefix),convert(file_suffix)); //Combine prefix and suffix
+   file_name = strcat(file_name,convert(file_type)); //Append file type
    file_name_c = file_name; //Convert to const char*
+
+   //If unable to open for reading, then the file does not exist --> new file_name
+   while(!found_new_file_name) {
+     ROS_INFO("Drift Logger File Name:");
+     ROS_INFO("\t%s", file_name);
+     fid = fopen(file_name_c,"r");
+      if(fid) {
+        //Increase num, and create new file name
+        num++;
+        file_suffix = boost::lexical_cast<std::string>(num);
+        file_name = strcat(convert(file_prefix),convert(file_suffix));
+        file_name = strcat(file_name,convert(file_type));
+        file_name_c = file_name;
+      }
+      else {
+        found_new_file_name = true;
+      }
+   }
  }
 
  void IMUDriftLogger::callback(const riptide_msgs::Imu::ConstPtr& imu_msg) {
@@ -78,7 +95,7 @@ char* IMUDriftLogger::convert(const std::string& str) {
    drift_rate[2] = imu_msg->local_drift_rate.z;
 
    //Open file and print values
-   fid = fopen(file_name_c,"w");
+   fid = fopen(file_name_c,"a"); //Open file for "appending"
    if(!fid) {
      ROS_INFO("Drift Logger: file not opened");
    }
