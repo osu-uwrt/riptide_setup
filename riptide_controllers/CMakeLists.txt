@@ -38,6 +38,10 @@ add_executable(orientation_controller src/orientation_controller.cpp)
 target_link_libraries(orientation_controller ${catkin_LIBRARIES})
 add_dependencies(orientation_controller riptide_msgs_gencpp ${PROJECT_NAME}_gencfg)
 
+add_executable(twist_controller src/twist_controller.cpp)
+target_link_libraries(twist_controller ${catkin_LIBRARIES})
+add_dependencies(twist_controller riptide_msgs_gencpp ${PROJECT_NAME}_gencfg)
+
 add_executable(command_combinator src/command_combinator.cpp)
 target_link_libraries(command_combinator ${catkin_LIBRARIES})
 add_dependencies(command_combinator ${PROJECT_NAME}_gencfg)

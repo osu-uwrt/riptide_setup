@@ -8,4 +8,5 @@
 
   <include file="$(find riptide_controllers)/launch/depth_controller.launch" /> <!-- Command/Depth to Z Accel -->
   <include file="$(find riptide_controllers)/launch/orientation_controller.launch" /> <!-- Command/Orientation to angular accels -->
+  <include file="$(find riptide_controllers)/launch/twist_controller.launch" /> <!-- Command/Twist to angular accels -->
 </launch>

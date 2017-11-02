@@ -1,7 +1,8 @@
 #ifndef DEPTH_CONTROLLER_H
 #define DEPTH_CONTROLLER_H
-#define MAX_ROLL 20
-#define MAX_PITCH 20
+#define MAX_ROLL_TWIST 1
+#define MAX_PITCH_TWIST 1
+#define MAX_YAW_TWIST 1
 
 #include "ros/ros.h"
 #include "control_toolbox/pid.h"
@@ -9,7 +10,7 @@
 #include "geometry_msgs/Vector3.h"
 #include "riptide_msgs/Imu.h"
 
-class OrientationController
+class TwistController
 {
   private:
     // Comms
@@ -18,18 +19,18 @@ class OrientationController
     ros::Subscriber cmd_sub;
     ros::Publisher cmd_pub;
 
-    control_toolbox::Pid roll_controller_pid;
-    control_toolbox::Pid pitch_controller_pid;
-    control_toolbox::Pid yaw_controller_pid;
+    control_toolbox::Pid roll_twist_controller_pid;
+    control_toolbox::Pid pitch_twist_controller_pid;
+    control_toolbox::Pid yaw_twist_controller_pid;
 
-    geometry_msgs::Vector3 twist_cmd;
+    geometry_msgs::Vector3 angular_accel_cmd;
 
     //PID
-    double roll_error, pitch_error, yaw_error;
-    double roll_error_dot, pitch_error_dot, yaw_error_dot;
-    double roll_cmd, pitch_cmd, yaw_cmd;
+    double roll_twist_error, pitch_twist_error, yaw_twist_error;
+    double roll_twist_error_dot, pitch_twist_error_dot, yaw_twist_error_dot;
+    double roll_twist_cmd, pitch_twist_cmd, yaw_twist_cmd;
 
-    geometry_msgs::Vector3 current_orientation, last_error;
+    geometry_msgs::Vector3 current_twist, last_error;
 
     bool pid_initialized;
 
@@ -40,7 +41,7 @@ class OrientationController
     void UpdateError();
 
   public:
-    OrientationController();
+    TwistController();
     void CommandCB(const geometry_msgs::Vector3::ConstPtr &cmd);
     void ImuCB(const riptide_msgs::Imu::ConstPtr &imu);
  };

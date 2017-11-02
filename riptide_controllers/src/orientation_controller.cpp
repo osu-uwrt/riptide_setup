@@ -5,7 +5,7 @@
 #undef progress
 
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "depth_controller");
+  ros::init(argc, argv, "orientation_controller");
   OrientationController oc;
   ros::spin();
 }
@@ -35,11 +35,11 @@ void OrientationController::UpdateError() {
   yaw_error_dot = (yaw_error - last_error.z) / dt;
   last_error.z = yaw_error;
 
-  angular_accel_cmd.x = roll_controller_pid.computeCommand(roll_error, roll_error_dot, sample_duration);
-  angular_accel_cmd.y = pitch_controller_pid.computeCommand(pitch_error, pitch_error_dot, sample_duration);
-  angular_accel_cmd.z = yaw_controller_pid.computeCommand(yaw_error, yaw_error_dot, sample_duration);
+  twist_cmd.x = roll_controller_pid.computeCommand(roll_error, roll_error_dot, sample_duration);
+  twist_cmd.y = pitch_controller_pid.computeCommand(pitch_error, pitch_error_dot, sample_duration);
+  twist_cmd.z = yaw_controller_pid.computeCommand(yaw_error, yaw_error_dot, sample_duration);
 
-  cmd_pub.publish(angular_accel_cmd);
+  cmd_pub.publish(twist_cmd);
   sample_start = ros::Time::now();
 }
 
@@ -62,7 +62,7 @@ OrientationController::OrientationController() {
     yaw_controller_pid.init(ycpid, false);
     pitch_controller_pid.init(pcpid, false);
 
-    cmd_pub = nh.advertise<geometry_msgs::Vector3>("command/accel/angular", 1);
+    cmd_pub = nh.advertise<geometry_msgs::Vector3>("command/twist", 1);
     sample_start = ros::Time::now();
 }
 
