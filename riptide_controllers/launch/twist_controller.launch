@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="riptide_controllers" type="twist_controller" name="twist_controller" output="screen" />
+</launch>
