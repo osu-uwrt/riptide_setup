@@ -1,0 +1,12 @@
+<launch>
+  <!-- CONTROL STACK / launch from bottom to top-->
+  <include file="$(find riptide_hardware)/launch/ttyACM0.launch" /> <!--Establish serial link with thruster control board-->
+  <include file="$(find riptide_controllers)/launch/pwm_controller.launch"/> <!-- Thrust to PWM node -->
+  <include file="$(find riptide_controllers)/launch/thruster_controller.launch"/> <!-- Accel to Thrust node -->
+
+  <include file="$(find riptide_controllers)/launch/command_combinator.launch" /> <!-- Command aggregate node -->
+
+  <include file="$(find riptide_controllers)/launch/depth_controller.launch" /> <!-- Command/Depth to Z Accel -->
+
+  <include file="$(find riptide_teleop)/launch/ps3_control.launch" /> <!-- Read ps3 controller state and publish corresponding commands -->
+</launch>
