@@ -9,21 +9,29 @@ int main(int argc, char** argv)
 
 Accel::Accel()
 {
-  js = nh.subscribe<sensor_msgs::Joy>("joy", 1, &Accel::joy_callback, this);
-  accels = nh.advertise<geometry_msgs::Accel>("command/accel", 1);
+  joy_sub = nh.subscribe<sensor_msgs::Joy>("joy", 1, &Accel::joy_callback, this);
+  angular_pub = nh.advertise<geometry_msgs::Vector3>("command/accel/angular", 1);
+  linear_x_pub = nh.advertise<std_msgs::Float64>("command/linear/x", 1);
+  linear_y_pub = nh.advertise<std_msgs::Float64>("command/linear/y", 1);
+  depth_pub = nh.advertise<std_msgs::Float64>("command/depth", 1);
+  current_depth_cmd = 0;
 }
 
 void Accel::joy_callback(const sensor_msgs::Joy::ConstPtr& joy)
 {
-  accel.linear.x = 0.75 * joy->axes[1]; // Left joystick vertical
-  accel.linear.y = 0.75 * joy->axes[0];  // Left joystick horizontal
-  accel.linear.z = 0.5 * (joy->buttons[11] - joy->buttons[10]); // R1 L1
+  linear_x_accel.data = 0.75 * joy->axes[1]; // Left joystick vertical
+  linear_y_accel.data = 0.75 * joy->axes[0];  // Left joystick horizontal
 
-  accel.angular.x =  1.5 * 3.14159 * joy->axes[2] * -1;// Right joystick horizontal
-  accel.angular.y = 1.2 * 3.14159 * joy->axes[3]; // Right joystick vertical
-  accel.angular.z = 1.2 * 3.14159 * (joy->buttons[8] - joy->buttons[9]); // R2 L2
+  current_depth_cmd = current_depth_cmd + 0.1 * (joy->buttons[11] - joy->buttons[10]); // R1 L1
+  if (current_depth_cmd < 0)
+    current_depth_cmd = 0;
+  depth_cmd.data = current_depth_cmd;
 
-  accels.publish(accel);
+  angular_accel.x = 1.5 * 3.14159 * joy->axes[2] * -1;// Right joystick horizontal
+  angular_accel.y = 1.2 * 3.14159 * joy->axes[3]; // Right joystick vertical
+  angular_accel.z = 1.2 * 3.14159 * (joy->buttons[8] - joy->buttons[9]); // R2 L2
+
+  publish_commands();
 }
 
 // ADD TIMEOUT FOR ZEROS
@@ -33,18 +41,25 @@ void Accel::loop()
   while (ros::ok())
   {
     ros::spinOnce();
-    if (accel.linear.x == 0 && accel.linear.y == 0 && accel.linear.z == 0 && accel.angular.x == 0 && accel.angular.y == 0 && accel.angular.z == 0)
+    if (current_depth_cmd == 0 && linear_x_accel.data == 0 && linear_y_accel.data == 0 && angular_accel.x == 0 && angular_accel.y == 0 && angular_accel.z == 0)
     {
-      accel.linear.x = 0;
-      accel.linear.y = 0;
-      accel.linear.z = 0;
+      linear_x_accel.data = 0;
+      linear_y_accel.data = 0;
+      depth_cmd.data = 0;
+      angular_accel.x = 0;
+      angular_accel.y = 0;
+      angular_accel.z = 0;
 
-      accel.angular.x =  0;
-      accel.angular.y = 0;
-      accel.angular.z = 0;
-
-      accels.publish(accel);
+      publish_commands();
     }
     rate.sleep();
   }
+}
+
+void Accel::publish_commands()
+{
+    angular_pub.publish(angular_accel);
+    linear_x_pub.publish(linear_x_accel);
+    linear_y_pub.publish(linear_y_accel);
+    depth_pub.publish(depth_cmd);
 }
