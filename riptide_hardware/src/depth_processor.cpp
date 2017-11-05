@@ -3,7 +3,7 @@
 int main(int argc, char** argv)
 {
  ros::init(argc, argv, "depth_processor");
- DepthProcessor depth_processor();
+ DepthProcessor depth_processor;
  ros::spin();
 }
 

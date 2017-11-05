@@ -28,10 +28,24 @@
     state[0].angular_velocity_status = filter_msg->angular_velocity_status;
 
     //Set new delta time (nano seconds)
-    if(dt[1] != 0) {
+    /*if(dt[1] != 0) {
       dt[0] = state[0].header.stamp.nsec - dt[1];
-    }
+    }*/
 
+    //Process Euler Angles
+    if(state[0].euler_rpy.x > -180 && state[0].euler_rpy.x < 0) {
+      state[0].euler_rpy.x += 180;
+    }
+    else if(state[0].euler_rpy.x > 0 && state[0].euler_rpy.x < 180) {
+      state[0].euler_rpy.x -= 180;
+    }
+    else if(state[0].euler_rpy.x == 0) {
+      state[0].euler_rpy.x = 180;
+    }
+    else if(state[0].euler_rpy.x == 180 || state[0].euler_rpy.x == -180) {
+      state[0].euler_rpy.x = 0;
+    }
+    state[0].euler_rpy.z *= -1;
     //Process linear acceleration (Remove centrifugal and tangential components)
 
     //Process angular acceleration (Use 3-pt backwards rule to approximate angular acceleration)
