@@ -12,7 +12,19 @@ double MIN_THRUST = -8.0;
 double MAX_THRUST = 8.0;
 
 // Vehicle mass (kg):
+// TODO: Get this value from model
 double MASS = 34.47940950;
+
+// Vehcile volume (m^3)
+// TODO: Get this value from model
+double VOLUME = 0.0334;
+
+// Gravity (m/s^2)
+double GRAVITY = 9.81;
+
+// Water density (kg/m^3)
+double WATER_DENSITY = 1000.0;
+double BUOYANCY = VOLUME * WATER_DENSITY * GRAVITY;
 
 // Moments of inertia (kg*m^2)
 double Ixx = 0.50862680;
@@ -106,12 +118,12 @@ struct heave
                   const T *const heave_stbd_aft, T *residual) const
   {
     residual[0] =
-        (rotation_matrix.getRow(2).x() * (surge_port_hi[0] + surge_stbd_hi[0] + surge_port_lo[0] + surge_stbd_lo[0]) +
+        (rotation_matrix.getRow(2).x() * (/*surge_port_hi[0] + surge_stbd_hi[0]*/ + surge_port_lo[0] + surge_stbd_lo[0]) +
          rotation_matrix.getRow(2).y() * (sway_fwd[0] + sway_aft[0]) +
-         rotation_matrix.getRow(2).z() *
-             (heave_port_fwd[0] + heave_stbd_fwd[0] + heave_port_aft[0] + heave_stbd_aft[0])) /
-            T(MASS) -
-        T(cmdHeave);
+         rotation_matrix.getRow(2).z() * (heave_port_fwd[0] + heave_stbd_fwd[0] + heave_port_aft[0] + heave_stbd_aft[0]) +
+         T(BUOYANCY)) /
+         T(MASS) -
+         T(cmdHeave);
     return true;
   }
 };
