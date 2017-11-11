@@ -45,7 +45,8 @@ private:
 
   FILE *fid;
   const char *file_name_c;
-  float dt, angular_vel[3], angular_accel[3], drift[3], drift_rate[3];
+  float dt, euler_rpy[3], gyro_bias[3];
+  float angular_vel[3], angular_accel[3], drift[3], drift_rate[3];
 public:
   IMUDriftLogger(char **argv);
   void callback(const riptide_msgs::Imu::ConstPtr& imu_msg);

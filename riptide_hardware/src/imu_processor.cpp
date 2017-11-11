@@ -54,7 +54,12 @@
     state0.header.frame_id = "base_link";
     state0.raw_euler_rpy = filter_msg->euler_rpy;
     state0.euler_rpy = filter_msg->euler_rpy;
+    state0.gyro_bias = filter_msg->gyro_bias;
     state0.euler_rpy_status = filter_msg->euler_rpy_status;
+    state0.heading = filter_msg->heading;
+    state0.heading_uncertainty = filter_msg->heading_uncertainty;
+    state0.heading_update_source = filter_msg->heading_update_source;
+    state0.heading_flags = filter_msg->heading_flags;
     state0.linear_acceleration = filter_msg->linear_acceleration;
     state0.linear_acceleration_status = filter_msg->linear_acceleration_status;
     state0.angular_velocity = filter_msg->angular_velocity;
@@ -67,9 +72,17 @@
     state0.euler_rpy.x *= (180.0/PI);
     state0.euler_rpy.y *= (180.0/PI);
     state0.euler_rpy.z *= (180.0/PI);
+    state0.gyro_bias.x *= (180.0/PI);
+    state0.gyro_bias.y *= (180.0/PI);
+    state0.gyro_bias.z *= (180.0/PI);
+    state0.heading *= (180/PI);
+    state0.heading_uncertainty *= (180/PI);
     state0.angular_velocity.x *= (180.0/PI);
     state0.angular_velocity.y *= (180.0/PI);
     state0.angular_velocity.z *= (180.0/PI);
+
+    //Set euler_rpy.z equal to heading
+    state0.euler_rpy.z = state0.heading;
 
     //Adjust direction/sign of Euler Angles to be consistent with AUV's axes
     if(state0.euler_rpy.x > -180 && state0.euler_rpy.x < 0) {
@@ -88,12 +101,12 @@
       state0.euler_rpy.x = 0;
       state0.raw_euler_rpy.x = 0;
     }
-    state0.euler_rpy.z *= -1; //Negate yaw angle
-    state0.raw_euler_rpy.z *= -1;
+    state0.euler_rpy.z *= -1; //Negate Euler yaw angle
+    state0.raw_euler_rpy.z *= -1; //Negate raw Euler yaw angle
 
     //Set new delta time (convert nano seconds to seconds)
-    if(state1.dt == 0) { //If dt[0] not set yet, set to time in current header stamp
-      state0.dt = (double)state0.header.stamp.sec + state0.header.stamp.nsec/(1.0e9);
+    if(state1.dt == 0) { //If dt[0] not set yet, set to 0.01s, which is roughly what it would be
+      state0.dt = 0.01;
     }
     else { //dt has already been set, so find actual dt
       state0.dt = (double)state0.header.stamp.sec + state0.header.stamp.nsec/(1.0e9) -
@@ -136,7 +149,7 @@
       //ROS_INFO("Cycles: %i", cycles);
       float a, b; //Coefficients for backwards-diff rule
 
-      float c = state1.dt, d = state2.dt;
+      float c = state0.dt, d = state1.dt;
       //ROS_INFO("state1.dt: %f", c);
       //ROS_INFO("state2.dt: %f", d);
 

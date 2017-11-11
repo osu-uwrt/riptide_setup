@@ -64,7 +64,7 @@ char* IMUDriftLogger::convert(const std::string& str) {
      ROS_INFO("Drift Logger File Name:");
      ROS_INFO("\t%s", file_name);
      fid = fopen(file_name_c,"r");
-      if(fid) {
+      if(fid) { //File already exists
         //Increase num, and create new file name
         num++;
         file_suffix = boost::lexical_cast<std::string>(num);
@@ -72,7 +72,7 @@ char* IMUDriftLogger::convert(const std::string& str) {
         file_name = strcat(file_name,convert(file_type));
         file_name_c = file_name;
       }
-      else {
+      else { //File does not exist
         found_new_file_name = true;
       }
    }
@@ -80,7 +80,8 @@ char* IMUDriftLogger::convert(const std::string& str) {
 
  void IMUDriftLogger::callback(const riptide_msgs::Imu::ConstPtr& imu_msg) {
    //Store appropriate values from message
-   dt = imu_msg->dt;
+   /*dt = imu_msg->dt;
+   euler_rpy[0] imu_msg->
    angular_vel[0] = imu_msg->angular_velocity.x;
    angular_vel[1] = imu_msg->angular_velocity.y;
    angular_vel[2] = imu_msg->angular_velocity.z;
@@ -92,17 +93,32 @@ char* IMUDriftLogger::convert(const std::string& str) {
    drift[2] = imu_msg->local_drift.z;
    drift_rate[0] = imu_msg->local_drift_rate.x;
    drift_rate[1] = imu_msg->local_drift_rate.y;
-   drift_rate[2] = imu_msg->local_drift_rate.z;
+   drift_rate[2] = imu_msg->local_drift_rate.z;*/
 
    //Open file and print values
    fid = fopen(file_name_c,"a"); //Open file for "appending"
    if(!fid) {
      ROS_INFO("Drift Logger: file not opened");
    }
-   fprintf(fid,"%f,%f,%f,%f,", dt,angular_vel[0],angular_vel[1],angular_vel[2]);
-   fprintf(fid,"%f,%f,%f,", angular_accel[0],angular_accel[1],angular_accel[2]);
-   fprintf(fid,"%f,%f,%f,", drift[0],drift[1],drift[2]);
-   fprintf(fid,"%f,%f,%f\n", drift_rate[0],drift_rate[1],drift_rate[2]);
+   fprintf(fid,"%f,", imu_msg->dt);
+   fprintf(fid,"%f,", imu_msg->euler_rpy.x);
+   fprintf(fid,"%f,", imu_msg->euler_rpy.y);
+   fprintf(fid,"%f,", imu_msg->euler_rpy.z);
+   fprintf(fid,"%f,", imu_msg->gyro_bias.x);
+   fprintf(fid,"%f,", imu_msg->gyro_bias.y);
+   fprintf(fid,"%f,", imu_msg->gyro_bias.z);
+   fprintf(fid,"%f,", imu_msg->angular_velocity.x);
+   fprintf(fid,"%f,", imu_msg->angular_velocity.y);
+   fprintf(fid,"%f,", imu_msg->angular_velocity.z);
+   fprintf(fid,"%f,", imu_msg->angular_acceleration.x);
+   fprintf(fid,"%f,", imu_msg->angular_acceleration.y);
+   fprintf(fid,"%f,", imu_msg->angular_acceleration.z);
+   fprintf(fid,"%f,", imu_msg->local_drift.x);
+   fprintf(fid,"%f,", imu_msg->local_drift.y);
+   fprintf(fid,"%f,", imu_msg->local_drift.z);
+   fprintf(fid,"%f,", imu_msg->local_drift_rate.x);
+   fprintf(fid,"%f,", imu_msg->local_drift_rate.y);
+   fprintf(fid,"%f\n", imu_msg->local_drift_rate.z);
    fclose(fid);
  }
 
