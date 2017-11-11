@@ -1,0 +1,10 @@
+<launch>
+    <arg name="location" default="columbus" />
+    <arg name="device" default="/dev/imu_front" />
+    <node pkg="riptide_hardware" name="imu_processor" type="imu_processor" output="screen" />
+    <include file="$(find imu_3dm_gx4)/launch/imu.launch" >
+      <arg name="location" value="$(arg location)" />
+      <arg name="device" value="$(arg device)" />
+    </include>
+    <!--<node pkg="riptide_hardware" name="imu_drift_logger" type="imu_drift_logger" output="screen" />-->
+</launch>
