@@ -25,6 +25,5 @@ float64 angular_velocity_status #0 = invalid, 1 = valid
 float64 linear_acceleration_status #0 = invalid, 1 = valid
 
 float64 dt #Time since last message
-geometry_msgs/Vector3 cumulative_drift #Cumulative (absolute value of) drift since running the IMU
 geometry_msgs/Vector3 local_drift #Amount of drift upon immediately noticing "zero" angular velocity
 geometry_msgs/Vector3 local_drift_rate #Drift rate upon immediately noticing "zero" angular velocity
