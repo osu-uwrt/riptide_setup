@@ -46,14 +46,15 @@ private:
   ros::Publisher imu_state_pub;
   int cycles;
 
-  //0 = current state, 1 = one state ago, 2 = two states ago
-  riptide_msgs::Imu state0;
-  riptide_msgs::Imu state1;
-  riptide_msgs::Imu state2;
+  //0 = current state, 1 = one state ago, 2 = two states ago, etc.
+  //Only velocities and accelerations will be smoothed
+  riptide_msgs::Imu raw_state[7];
+  riptide_msgs::Imu smoothed_state[7];
   float zero_ang_vel_thresh;
 public:
   IMUProcessor(char **argv);
   void callback(const imu_3dm_gx4::FilterOutput::ConstPtr& filter_msg);
+  void smoothData();
   void loop();
 };
 
