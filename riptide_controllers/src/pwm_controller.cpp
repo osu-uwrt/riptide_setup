@@ -58,7 +58,7 @@ void ThrustCal::voltsbacken(const riptide_msgs::Bat::ConstPtr& bat_stat)
 
 void ThrustCal::loop()
 {
-  ros::Duration safe(0.05);
+  ros::Duration safe(2);
   ros::Rate rate(50);
   while (!ros::isShuttingDown())
   {
