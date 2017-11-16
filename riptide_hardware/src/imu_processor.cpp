@@ -116,19 +116,19 @@
     smoothData();
 
     //Process Euler Angles
-    if(state[0].euler_rpy.x > -180 && state[0].euler_rpy.x < 0) {
-      state[0].euler_rpy.x += 180;
+    if(raw_state[0].euler_rpy.x > -180 && raw_state[0].euler_rpy.x < 0) {
+      raw_state[0].euler_rpy.x += 180;
     }
-    else if(state[0].euler_rpy.x > 0 && state[0].euler_rpy.x < 180) {
-      state[0].euler_rpy.x -= 180;
+    else if(raw_state[0].euler_rpy.x > 0 && raw_state[0].euler_rpy.x < 180) {
+      raw_state[0].euler_rpy.x -= 180;
     }
-    else if(state[0].euler_rpy.x == 0) {
-      state[0].euler_rpy.x = 180;
+    else if(raw_state[0].euler_rpy.x == 0) {
+      raw_state[0].euler_rpy.x = 180;
     }
-    else if(state[0].euler_rpy.x == 180 || state[0].euler_rpy.x == -180) {
-      state[0].euler_rpy.x = 0;
+    else if(raw_state[0].euler_rpy.x == 180 || raw_state[0].euler_rpy.x == -180) {
+      raw_state[0].euler_rpy.x = 0;
     }
-    state[0].euler_rpy.z *= -1;
+    raw_state[0].euler_rpy.z *= -1;
     //Process linear acceleration (Remove centrifugal and tangential components)
 
 
@@ -148,6 +148,7 @@
       state[0].angular_acceleration.x = a*state[1].angular_velocity.x + b*state[2].angular_velocity.x - (a+b)*state[0].angular_velocity.x;
       state[0].angular_acceleration.y = a*state[1].angular_velocity.y + b*state[2].angular_velocity.y - (a+b)*state[0].angular_velocity.y;
       state[0].angular_acceleration.z = a*state[1].angular_velocity.z + b*state[2].angular_velocity.z - (a+b)*state[0].angular_velocity.z;
+
     }*/
 
     //Must have completed 14 cycles because there need to be 7 smoothed data points
