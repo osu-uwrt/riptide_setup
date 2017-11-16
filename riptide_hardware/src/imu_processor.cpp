@@ -115,20 +115,6 @@
     //Smooth Velocity and Acceleration data
     smoothData();
 
-    //Process Euler Angles
-    if(state[0].euler_rpy.x > -180 && state[0].euler_rpy.x < 0) {
-      state[0].euler_rpy.x += 180;
-    }
-    else if(state[0].euler_rpy.x > 0 && state[0].euler_rpy.x < 180) {
-      state[0].euler_rpy.x -= 180;
-    }
-    else if(state[0].euler_rpy.x == 0) {
-      state[0].euler_rpy.x = 180;
-    }
-    else if(state[0].euler_rpy.x == 180 || state[0].euler_rpy.x == -180) {
-      state[0].euler_rpy.x = 0;
-    }
-    state[0].euler_rpy.z *= -1;
     //Process linear acceleration (Remove centrifugal and tangential components)
 
 
