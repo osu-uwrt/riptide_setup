@@ -12,7 +12,19 @@ double MIN_THRUST = -8.0;
 double MAX_THRUST = 8.0;
 
 // Vehicle mass (kg):
+// TODO: Get this value from model
 double MASS = 34.47940950;
+
+// Vehcile volume (m^3)
+// TODO: Get this value from model
+double VOLUME = 0.0334;
+
+// Gravity (m/s^2)
+double GRAVITY = 9.81;
+
+// Water density (kg/m^3)
+double WATER_DENSITY = 1000.0;
+double BUOYANCY = VOLUME * WATER_DENSITY * GRAVITY;
 
 // Moments of inertia (kg*m^2)
 double Ixx = 0.50862680;
@@ -106,12 +118,12 @@ struct heave
                   const T *const heave_stbd_aft, T *residual) const
   {
     residual[0] =
-        (rotation_matrix.getRow(2).x() * (surge_port_hi[0] + surge_stbd_hi[0] + surge_port_lo[0] + surge_stbd_lo[0]) +
+        (rotation_matrix.getRow(2).x() * (/*surge_port_hi[0] + surge_stbd_hi[0]*/ + surge_port_lo[0] + surge_stbd_lo[0]) +
          rotation_matrix.getRow(2).y() * (sway_fwd[0] + sway_aft[0]) +
-         rotation_matrix.getRow(2).z() *
-             (heave_port_fwd[0] + heave_stbd_fwd[0] + heave_port_aft[0] + heave_stbd_aft[0])) /
-            T(MASS) -
-        T(cmdHeave);
+         rotation_matrix.getRow(2).z() * (heave_port_fwd[0] + heave_stbd_fwd[0] + heave_port_aft[0] + heave_stbd_aft[0]) +
+         T(BUOYANCY)) /
+         T(MASS) -
+         T(cmdHeave);
     return true;
   }
 };
@@ -185,7 +197,7 @@ ThrusterController::ThrusterController(char **argv, tf::TransformListener *liste
 
   thrust.header.frame_id = "base_link";
 
-  state_sub = nh.subscribe<sensor_msgs::Imu>("state/imu", 1, &ThrusterController::state, this);
+  state_sub = nh.subscribe<riptide_msgs::Imu>("state/imu", 1, &ThrusterController::state, this);
   cmd_sub = nh.subscribe<geometry_msgs::Accel>("command/accel", 1, &ThrusterController::callback, this);
   cmd_pub = nh.advertise<riptide_msgs::ThrustStamped>("command/thrust", 1);
 
@@ -291,11 +303,11 @@ ThrusterController::ThrusterController(char **argv, tf::TransformListener *liste
 #endif
 }
 
-void ThrusterController::state(const sensor_msgs::Imu::ConstPtr &msg)
+void ThrusterController::state(const riptide_msgs::Imu::ConstPtr &msg)
 {
-  tf::Quaternion tf;
-  quaternionMsgToTF(msg->orientation, tf);
-  rotation_matrix.setRotation(tf.normalized());
+  tf::Vector3 tf;
+  vector3MsgToTF(msg->euler_rpy, tf);
+  rotation_matrix.setRPY(tf.x(), tf.y(), tf.z());
   vector3MsgToTF(msg->angular_velocity, ang_v);
 }
 

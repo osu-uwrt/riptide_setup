@@ -13,7 +13,7 @@ Accel::Accel()
   angular_pub = nh.advertise<geometry_msgs::Vector3>("command/accel/angular", 1);
   linear_x_pub = nh.advertise<std_msgs::Float64>("command/linear/x", 1);
   linear_y_pub = nh.advertise<std_msgs::Float64>("command/linear/y", 1);
-  depth_pub = nh.advertise<std_msgs::Float64>("command/depth", 1);
+  depth_pub = nh.advertise<riptide_msgs::Depth>("command/depth", 1);
   current_depth_cmd = 0;
 }
 
@@ -25,7 +25,7 @@ void Accel::joy_callback(const sensor_msgs::Joy::ConstPtr& joy)
   current_depth_cmd = current_depth_cmd + 0.1 * (joy->buttons[11] - joy->buttons[10]); // R1 L1
   if (current_depth_cmd < 0)
     current_depth_cmd = 0;
-  depth_cmd.data = current_depth_cmd;
+  depth_cmd.depth = current_depth_cmd;
 
   angular_accel.x = 1.5 * 3.14159 * joy->axes[2] * -1;// Right joystick horizontal
   angular_accel.y = 1.2 * 3.14159 * joy->axes[3]; // Right joystick vertical
@@ -45,7 +45,7 @@ void Accel::loop()
     {
       linear_x_accel.data = 0;
       linear_y_accel.data = 0;
-      depth_cmd.data = 0;
+      depth_cmd.depth = 0;
       angular_accel.x = 0;
       angular_accel.y = 0;
       angular_accel.z = 0;

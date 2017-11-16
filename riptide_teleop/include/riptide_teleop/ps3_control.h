@@ -5,6 +5,7 @@
 #include "sensor_msgs/Joy.h"
 #include "geometry_msgs/Accel.h"
 #include "std_msgs/Float64.h"
+#include "riptide_msgs/Depth.h"
 
 class Accel
 {
@@ -19,7 +20,7 @@ class Accel
   geometry_msgs::Vector3 angular_accel;
   std_msgs::Float64 linear_x_accel;
   std_msgs::Float64 linear_y_accel;
-  std_msgs::Float64 depth_cmd;
+  riptide_msgs::Depth depth_cmd;
   float current_depth_cmd;
 
   void publish_commands();

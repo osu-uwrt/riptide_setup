@@ -11,7 +11,7 @@
 #include "tf/transform_listener.h"
 #include "geometry_msgs/Vector3.h"
 #include "geometry_msgs/Accel.h"
-#include "sensor_msgs/Imu.h"
+#include "riptide_msgs/Imu.h"
 #include "imu_3dm_gx4/FilterOutput.h"
 
 #include "riptide_msgs/ThrustStamped.h"
@@ -41,7 +41,7 @@ class ThrusterController
 
  public:
   ThrusterController(char **argv, tf::TransformListener *listener_adr);
-  void state(const sensor_msgs::Imu::ConstPtr &msg);
+  void state(const riptide_msgs::Imu::ConstPtr &msg);
   void callback(const geometry_msgs::Accel::ConstPtr &a);
   void loop();
 };
