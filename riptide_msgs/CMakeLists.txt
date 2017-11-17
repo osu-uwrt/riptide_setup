@@ -21,6 +21,7 @@ add_message_files(
     Bat.msg
     BatStamped.msg
     Imu.msg
+    ImuVerbose.msg
 )
 
 generate_messages(DEPENDENCIES std_msgs geometry_msgs)

@@ -30,6 +30,7 @@
 
 #include "ros/ros.h"
 #include "riptide_msgs/Imu.h"
+#include "riptide_msgs/ImuVerbose.h"
 #include "std_msgs/Header.h"
 #include "math.h"
 #include "stdio.h"
@@ -49,7 +50,7 @@ private:
   float angular_vel[3], angular_accel[3], drift[3], drift_rate[3];
 public:
   IMUDriftLogger(char **argv);
-  void callback(const riptide_msgs::Imu::ConstPtr& imu_msg);
+  void callback(const riptide_msgs::ImuVerbose::ConstPtr& imu_msg);
   void loop();
   char* convert(const std::string& str);
 };
