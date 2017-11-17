@@ -62,18 +62,6 @@
     }
 
     //Populate shorthand matrices for data smoothing
-    for(int i = 0; i<size; i++) {
-      av[0][i] = state[i].raw_angular_velocity.x;
-      la[0][i] = state[i].raw_linear_acceleration.x;
-    }
-    for(int i = 0; i<size; i++) {
-      av[1][i] = state[i].angular_velocity.y;
-      la[1][i] = state[i].linear_acceleration.y;
-    }
-    for(int i = 0; i<size; i++) {
-      av[2][i] = state[i].angular_velocity.z;
-      la[2][i] = state[i].linear_acceleration.z;
-    }
     av[0][0] = state[0].raw_angular_velocity.x;
     av[1][0] = state[0].raw_angular_velocity.y;
     av[2][0] = state[0].raw_angular_velocity.z;
