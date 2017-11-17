@@ -40,107 +40,79 @@
  IMUProcessor::IMUProcessor(char **argv) : nh()
  {
    imu_filter_sub = nh.subscribe<imu_3dm_gx4::FilterOutput>("imu/filter", 1, &IMUProcessor::callback, this);
+   imu_verbose_state_pub = nh.advertise<riptide_msgs::ImuVerbose>("state/imu_verbose", 1);
    imu_state_pub = nh.advertise<riptide_msgs::Imu>("state/imu", 1);
 
    zero_ang_vel_thresh = 1;
    cycles = 1;
-
+   c = 3; //Index of center element in state array
+   size = 7; //Size of state array
  }
 
  //Callback
   void IMUProcessor::callback(const imu_3dm_gx4::FilterOutput::ConstPtr& filter_msg)
   {
-    //Put message data into raw_state[0]
-    raw_state[0].header = filter_msg->header;
-    raw_state[0].header.frame_id = "base_link";
-    raw_state[0].raw_euler_rpy = filter_msg->euler_rpy;
-    raw_state[0].euler_rpy = filter_msg->euler_rpy;
-    raw_state[0].gyro_bias = filter_msg->gyro_bias;
-    raw_state[0].euler_rpy_status = filter_msg->euler_rpy_status;
-    raw_state[0].heading = filter_msg->heading;
-    raw_state[0].heading_uncertainty = filter_msg->heading_uncertainty;
-    raw_state[0].heading_update_source = filter_msg->heading_update_source;
-    raw_state[0].heading_flags = filter_msg->heading_flags;
-    raw_state[0].linear_acceleration = filter_msg->linear_acceleration;
-    raw_state[0].linear_acceleration_status = filter_msg->linear_acceleration_status;
-    raw_state[0].angular_velocity = filter_msg->angular_velocity;
-    raw_state[0].angular_velocity_status = filter_msg->angular_velocity_status;
+    //Put message data into state[0]
+    state[0].header = filter_msg->header;
+    state[0].header.frame_id = "base_link";
+    state[0].raw_euler_rpy = filter_msg->euler_rpy;
+    state[0].euler_rpy = filter_msg->euler_rpy;
+    state[0].gyro_bias = filter_msg->gyro_bias;
+    state[0].euler_rpy_status = filter_msg->euler_rpy_status;
+
+    state[0].heading = filter_msg->heading;
+    state[0].heading_uncertainty = filter_msg->heading_uncertainty;
+    state[0].heading_update_source = filter_msg->heading_update_source;
+    state[0].heading_flags = filter_msg->heading_flags;
+
+    state[0].raw_linear_acceleration = filter_msg->linear_acceleration;
+    state[0].linear_acceleration = filter_msg->linear_acceleration;
+    state[0].linear_acceleration_status = filter_msg->linear_acceleration_status;
+
+    state[0].raw_angular_velocity = filter_msg->angular_velocity;
+    state[0].angular_velocity = filter_msg->angular_velocity;
+    state[0].angular_velocity_status = filter_msg->angular_velocity_status;
 
     //Convert angular values from radians to degrees
-    raw_state[0].raw_euler_rpy.x *= (180.0/PI);
-    raw_state[0].raw_euler_rpy.y *= (180.0/PI);
-    raw_state[0].raw_euler_rpy.z *= (180.0/PI);
-    raw_state[0].euler_rpy.x *= (180.0/PI);
-    raw_state[0].euler_rpy.y *= (180.0/PI);
-    raw_state[0].euler_rpy.z *= (180.0/PI);
-    raw_state[0].gyro_bias.x *= (180.0/PI);
-    raw_state[0].gyro_bias.y *= (180.0/PI);
-    raw_state[0].gyro_bias.z *= (180.0/PI);
-    raw_state[0].heading *= (180/PI);
-    raw_state[0].heading_uncertainty *= (180/PI);
-    raw_state[0].angular_velocity.x *= (180.0/PI);
-    raw_state[0].angular_velocity.y *= (180.0/PI);
-    raw_state[0].angular_velocity.z *= (180.0/PI);
+    cvtRad2Deg();
 
-    //Set euler_rpy.z equal to heading
-    raw_state[0].euler_rpy.z = raw_state[0].heading;
-
-    //Adjust direction/sign of Euler Angles to be consistent with AUV's axes
-    if(raw_state[0].euler_rpy.x > -180 && raw_state[0].euler_rpy.x < 0) {
-      raw_state[0].euler_rpy.x += 180;
-      raw_state[0].raw_euler_rpy.x += 180;
-    }
-    else if(raw_state[0].euler_rpy.x > 0 && raw_state[0].euler_rpy.x < 180) {
-      raw_state[0].euler_rpy.x -= 180;
-      raw_state[0].raw_euler_rpy.x -= 180;
-    }
-    else if(raw_state[0].euler_rpy.x == 0) {
-      raw_state[0].euler_rpy.x = 180;
-      raw_state[0].raw_euler_rpy.x = 180;
-    }
-    else if(raw_state[0].euler_rpy.x == 180 || raw_state[0].euler_rpy.x == -180) {
-      raw_state[0].euler_rpy.x = 0;
-      raw_state[0].raw_euler_rpy.x = 0;
-    }
-    raw_state[0].euler_rpy.z *= -1; //Negate Euler yaw angle
-    raw_state[0].raw_euler_rpy.z *= -1; //Negate raw Euler yaw angle
+    //Process Euler Angles (adjust heading and signs)
+    processEulerAngles();
 
     //Set new delta time (convert nano seconds to seconds)
-    if(raw_state[1].dt == 0) { //If dt[0] not set yet, set to 0.01s, which is roughly what it would be
-      raw_state[0].dt = 0.01;
+    if(state[1].dt == 0) { //If dt[0] not set yet, set to 0.01s, which is roughly what it would be
+      state[0].dt = 0.01;
     }
     else { //dt has already been set, so find actual dt
-      raw_state[0].dt = (double)raw_state[0].header.stamp.sec + raw_state[0].header.stamp.nsec/(1.0e9) -
-                    (double)raw_state[1].header.stamp.sec - raw_state[1].header.stamp.nsec/(1.0e9);
+      state[0].dt = (double)state[0].header.stamp.sec + state[0].header.stamp.nsec/(1.0e9) -
+                    (double)state[1].header.stamp.sec - state[1].header.stamp.nsec/(1.0e9);
     }
 
-    //Process Drift
-    //Check if angular velocity about any axis is approximately 0
-    if(abs(raw_state[0].angular_velocity.x) <= zero_ang_vel_thresh) {
-      raw_state[0].local_drift.x = raw_state[0].euler_rpy.x - raw_state[1].euler_rpy.x;
+    //Populate shorthand matrices for data smoothing
+    for(int i = 0; i<size; i++) {
+      av[0][i] = state[i].raw_angular_velocity.x;
+      la[0][i] = state[i].raw_linear_acceleration.x;
     }
-    else {
-      raw_state[0].local_drift.x = 0;
+    for(int i = 0; i<size; i++) {
+      av[1][i] = state[i].angular_velocity.y;
+      la[1][i] = state[i].linear_acceleration.y;
     }
-    raw_state[0].local_drift_rate.x = raw_state[0].local_drift.x / raw_state[0].dt;
+    for(int i = 0; i<size; i++) {
+      av[2][i] = state[i].angular_velocity.z;
+      la[2][i] = state[i].linear_acceleration.z;
+    }
+    av[0][0] = state[0].raw_angular_velocity.x;
+    av[1][0] = state[0].raw_angular_velocity.y;
+    av[2][0] = state[0].raw_angular_velocity.z;
+    la[0][0] = state[0].raw_linear_acceleration.x;
+    la[1][0] = state[0].raw_linear_acceleration.y;
+    la[2][0] = state[0].raw_linear_acceleration.z;
 
-    if(abs(raw_state[0].angular_velocity.y) <= zero_ang_vel_thresh) {
-      raw_state[0].local_drift.y = raw_state[0].euler_rpy.y - raw_state[1].euler_rpy.y;
+    //Further process data
+    if(cycles >= size) {
+      smoothData();
+      processDrift();
     }
-    else {
-      raw_state[0].local_drift.y = 0;
-    }
-    raw_state[0].local_drift_rate.y = raw_state[0].local_drift.y / raw_state[0].dt;
-
-    if(abs(raw_state[0].angular_velocity.z) <= zero_ang_vel_thresh) {
-      raw_state[0].local_drift.z = raw_state[0].euler_rpy.z - raw_state[1].euler_rpy.z;    }
-    else {
-      raw_state[0].local_drift.z = 0;
-    }
-    raw_state[0].local_drift_rate.z = raw_state[0].local_drift.z / raw_state[0].dt;
-
-    //Smooth Velocity and Acceleration data
-    smoothData();
 
     //Process linear acceleration (Remove centrifugal and tangential components)
 
@@ -169,65 +141,143 @@
       cycles += 1;
     }
 
-    //Publish message for current state and adjust previous states
+    //Publish messages
+    populateIMUState();
+    imu_verbose_state_pub.publish(state[c]);
+    imu_state_pub.publish(imu_state);
 
-
+    //Adjust previous states and shorthand matrices
     for(int i=6; i>0; i--) {
-      raw_state[i] = raw_state[i-1];
-      smoothed_state[i] = smoothed_state[i-1];
-    }
-    imu_state_pub.publish(raw_state[0]);
+      state[i] = state[i-1];
 
+      for(int j=0; j<3; j++) {
+        av[j][i] = av[j][i-1];
+        la[j][i] = la[j][i-1];
+      }
+    }
   }
 
-//Data smoothing function - use Gaussian 7-point smooth
-//NOTE: smoothed values are actually centered about state 4
+//Convert all data fields from radians to degrees
+void IMUProcessor::cvtRad2Deg() {
+  state[0].raw_euler_rpy.x *= (180.0/PI);
+  state[0].raw_euler_rpy.y *= (180.0/PI);
+  state[0].raw_euler_rpy.z *= (180.0/PI);
+  state[0].euler_rpy.x *= (180.0/PI);
+  state[0].euler_rpy.y *= (180.0/PI);
+  state[0].euler_rpy.z *= (180.0/PI);
+
+  state[0].gyro_bias.x *= (180.0/PI);
+  state[0].gyro_bias.y *= (180.0/PI);
+  state[0].gyro_bias.z *= (180.0/PI);
+
+  state[0].heading *= (180/PI);
+  state[0].heading_uncertainty *= (180/PI);
+
+  state[0].raw_angular_velocity.x *= (180.0/PI);
+  state[0].raw_angular_velocity.y *= (180.0/PI);
+  state[0].raw_angular_velocity.z *= (180.0/PI);
+  state[0].angular_velocity.x *= (180.0/PI);
+  state[0].angular_velocity.y *= (180.0/PI);
+  state[0].angular_velocity.z *= (180.0/PI);
+}
+
+//Adjust Euler angles to be consistent with the AUV's axes
+void IMUProcessor::processEulerAngles() {
+  //Set YAW equal to heading
+  state[0].euler_rpy.z = state[0].heading;
+
+  //Adjust ROLL
+  if(state[0].euler_rpy.x > -180 && state[0].euler_rpy.x < 0) {
+    state[0].euler_rpy.x += 180;
+  }
+  else if(state[0].euler_rpy.x > 0 && state[0].euler_rpy.x < 180) {
+    state[0].euler_rpy.x -= 180;
+  }
+  else if(state[0].euler_rpy.x == 0) {
+    state[0].euler_rpy.x = 180;
+  }
+  else if(state[0].euler_rpy.x == 180 || state[0].euler_rpy.x == -180) {
+    state[0].euler_rpy.x = 0;
+  }
+
+  //Adjust YAW (negate the value)
+  state[0].euler_rpy.z *= -1;
+}
+
+//NOTE: This information is no longer needed, but remains here since it might
+//be helpful if something goes wrong
+//Check if raw angular velocity about any axis is approximately 0, and compute drift
+void IMUProcessor::processDrift() {
+  //X drift
+  if(abs(state[c].angular_velocity.x) <= zero_ang_vel_thresh) {
+    state[c].local_drift.x = state[c].euler_rpy.x - state[c+1].euler_rpy.x;
+  }
+  else {
+    state[c].local_drift.x = 0;
+  }
+  state[c].local_drift_rate.x = state[c].local_drift.x / state[c].dt;
+
+  //Y drift
+  if(abs(state[c].angular_velocity.y) <= zero_ang_vel_thresh) {
+    state[c].local_drift.y = state[c].euler_rpy.y - state[c+1].euler_rpy.y;
+  }
+  else {
+    state[c].local_drift.y = 0;
+  }
+  state[c].local_drift_rate.y = state[c].local_drift.y / state[c].dt;
+
+  //Z drift
+  if(abs(state[c].angular_velocity.z) <= zero_ang_vel_thresh) {
+    state[c].local_drift.z = state[c].euler_rpy.z - state[c+1].euler_rpy.z;    }
+  else {
+    state[c].local_drift.z = 0;
+  }
+  state[c].local_drift_rate.z = state[c].local_drift.z / state[c].dt;
+}
+
+//Smooth Angular Velocity and Linear Acceleration with a Gaussian 7-point smooth
+//NOTE: Smoothed values are actually centered about the middle state within
+//the state array, state 4 (index 3)
 void IMUProcessor::smoothData()
 {
-  int size = 7;
   int coef[size] = {1, 3, 6, 7, 6, 3, 1};
+  int sumCoef = 27;
 
   //Can not begin smoothing data unless there are 7 data points
-  smoothed_state[0] = raw_state[0];
-  if(cycles >= size) {
-    //Obtain desired values and put in shorter variable names:
-    //"av" = "Angular Velocity"
-    //"la" = "Linear Acceleration"
-    //row 0 = x-axis, row 1 = y-axis, row 2 = z-axis
-    //col 0 = state 0, col 1 = state 1, etc.
-    float av[3][size], la[3][size];
-    for(int i = 0; i<size; i++) {
-      av[0][i] = raw_state[i].angular_velocity.x;
-      la[0][i] = raw_state[i].linear_acceleration.x;
-    }
-    for(int i = 0; i<size; i++) {
-      av[1][i] = raw_state[i].angular_velocity.y;
-      la[1][i] = raw_state[i].linear_acceleration.y;
-    }
-    for(int i = 0; i<size; i++) {
-      av[2][i] = raw_state[i].angular_velocity.z;
-      la[2][i] = raw_state[i].linear_acceleration.z;
-    }
+  state[0] = state[0];
 
-    //Set desired smoothed values to 0
-    smoothed_state[3].angular_velocity.x = 0;
-    smoothed_state[3].angular_velocity.y = 0;
-    smoothed_state[3].angular_velocity.z = 0;
-    smoothed_state[3].linear_acceleration.x = 0;
-    smoothed_state[3].linear_acceleration.y = 0;
-    smoothed_state[3].linear_acceleration.z = 0;
+  //Set all desired values to smooth to 0
+  state[c].angular_velocity.x = 0;
+  state[c].angular_velocity.y = 0;
+  state[c].angular_velocity.z = 0;
+  state[c].linear_acceleration.x = 0;
+  state[c].linear_acceleration.y = 0;
+  state[c].linear_acceleration.z = 0;
 
-    //Smooth Data
-    for(int i = 0; i<size; i++) {
-      smoothed_state[3].angular_velocity.x += coef[i]*av[0][i]/size;
-      smoothed_state[3].angular_velocity.y += coef[i]*av[1][i]/size;
-      smoothed_state[3].angular_velocity.z += coef[i]*av[2][i]/size;
+  //Smooth Data
+  //Reminder for using shorthand matrices:
+  //"av" = "Angular Velocity"
+  //"la" = "Linear Acceleration"
+  //row 0 = x-axis, row 1 = y-axis, row 2 = z-axis
+  //col 0 = state 0, col 1 = state 1, etc.
+  for(int i = 0; i<size; i++) {
+    state[c].angular_velocity.x += coef[i]*av[0][i]/sumCoef;
+    state[c].angular_velocity.y += coef[i]*av[1][i]/sumCoef;
+    state[c].angular_velocity.z += coef[i]*av[2][i]/sumCoef;
 
-      smoothed_state[3].linear_acceleration.x += coef[i]*la[0][i]/size;
-      smoothed_state[3].linear_acceleration.y += coef[i]*la[1][i]/size;
-      smoothed_state[3].linear_acceleration.z += coef[i]*la[2][i]/size;
-    }
+    state[c].linear_acceleration.x += coef[i]*la[0][i]/sumCoef;
+    state[c].linear_acceleration.y += coef[i]*la[1][i]/sumCoef;
+    state[c].linear_acceleration.z += coef[i]*la[2][i]/sumCoef;
   }
+}
+
+//Populate imu_state message
+void IMUProcessor::populateIMUState() {
+  imu_state.header = state[c].header;
+  imu_state.euler_rpy = state[c].euler_rpy;
+  imu_state.linear_acceleration = state[c].linear_acceleration;
+  imu_state.angular_velocity = state[c].angular_velocity;
+  imu_state.angular_acceleration = state[c].angular_acceleration;
 }
 
 //ROS loop function
