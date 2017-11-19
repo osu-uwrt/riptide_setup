@@ -25,16 +25,16 @@ void ThrustCal::callback(const riptide_msgs::ThrustStamped::ConstPtr& thrust)
 {
   us.header.stamp = thrust->header.stamp;
 
-  us.pwm.surge_port_hi = clockwise(thrust->force.surge_port_hi);
-  us.pwm.surge_stbd_hi = counterclockwise(thrust->force.surge_stbd_hi);
-  us.pwm.surge_port_lo = counterclockwise(thrust->force.surge_port_lo);
-  us.pwm.surge_stbd_lo = clockwise(thrust->force.surge_stbd_lo);
-  us.pwm.sway_fwd = counterclockwise(thrust->force.sway_fwd);
-  us.pwm.sway_aft = clockwise(thrust->force.sway_aft);
-  us.pwm.heave_port_fwd = counterclockwise(thrust->force.heave_port_fwd);
-  us.pwm.heave_stbd_fwd = clockwise(thrust->force.heave_stbd_fwd);
-  us.pwm.heave_port_aft = clockwise(thrust->force.heave_port_aft);
-  us.pwm.heave_stbd_aft = counterclockwise(thrust->force.heave_stbd_aft);
+  us.pwm.surge_port_hi = clockwise(thrust->force.surge_port_hi);        // Reverse PWM (<1500) = Positive thrust!
+  us.pwm.surge_stbd_hi = counterclockwise(thrust->force.surge_stbd_hi); // Reverse PWM (<1500) = Negative thrust!
+  us.pwm.surge_port_lo = counterclockwise(thrust->force.surge_port_lo);// Reverse PWM (<1500) = Negative thrust!
+  us.pwm.surge_stbd_lo = clockwise(thrust->force.surge_stbd_lo);        // Reverse PWM (<1500) = Positive thrust!
+  us.pwm.sway_fwd = counterclockwise(thrust->force.sway_fwd);// Reverse PWM (<1500) = Negative thrust!
+  us.pwm.sway_aft = clockwise(thrust->force.sway_aft);                  // Reverse PWM (<1500) = Positive thrust!
+  us.pwm.heave_port_fwd = counterclockwise(thrust->force.heave_port_fwd);// Reverse PWM (<1500) = Negative thrust!
+  us.pwm.heave_stbd_fwd = clockwise(thrust->force.heave_stbd_fwd);        // Reverse PWM (<1500) = Positive thrust!
+  us.pwm.heave_port_aft = clockwise(thrust->force.heave_port_aft);        // Reverse PWM (<1500) = Positive thrust!
+  us.pwm.heave_stbd_aft = counterclockwise(thrust->force.heave_stbd_aft);// Reverse PWM (<1500) = Negative thrust!
 
   pwm.publish(us);
 }
