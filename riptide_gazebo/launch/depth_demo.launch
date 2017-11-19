@@ -1,0 +1,6 @@
+<launch>
+  <include file="$(find riptide_gazebo)/launch/underwater.launch" />
+  <include file="$(find riptide_controllers)/launch/thruster_controller.launch"/>
+  <include file="$(find riptide_controllers)/launch/command_combinator.launch"/>
+  <include file="$(find riptide_controllers)/launch/depth_controller.launch"/>
+</launch>

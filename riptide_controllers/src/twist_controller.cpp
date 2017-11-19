@@ -44,6 +44,7 @@ TwistController::TwistController() {
     ros::NodeHandle ptcpid("pitch_twist_controller");
     ros::NodeHandle ytcpid("yaw_twist_controller");
 
+    pid_initialized = false;
 
     cmd_sub = nh.subscribe<geometry_msgs::Vector3>("command/twist", 1000, &TwistController::CommandCB, this);
     imu_sub = nh.subscribe<riptide_msgs::Imu>("state/imu", 1000, &TwistController::ImuCB, this);
@@ -51,7 +52,6 @@ TwistController::TwistController() {
     rtcpid.setParam("p", 0.0);
     ptcpid.setParam("p", 0.0);
     ytcpid.setParam("p", 0.0);
-
 
     roll_twist_controller_pid.init(rtcpid, false);
     pitch_twist_controller_pid.init(ptcpid, false);
@@ -64,13 +64,9 @@ TwistController::TwistController() {
 // Subscribe to state/imu
 void TwistController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu) {
   current_twist = imu->angular_velocity;
-  if (!pid_initialized) {
-    roll_twist_cmd = current_twist.x;
-    pitch_twist_cmd = current_twist.y;
-    yaw_twist_cmd = current_twist.z;
+  if (pid_initialized) {
+    TwistController::UpdateError();
   }
-
-  TwistController::UpdateError();
 }
 
 // Subscribe to command/orientation
@@ -91,13 +87,13 @@ void TwistController::CommandCB(const geometry_msgs::Vector3::ConstPtr &cmd) {
     pitch_twist_cmd = MAX_PITCH_TWIST;
   else if (pitch_twist_cmd < -MAX_PITCH_TWIST)
     pitch_twist_cmd = -MAX_PITCH_TWIST;
-  
+
   // constrain yaw
   if (yaw_twist_cmd > MAX_YAW_TWIST)
     yaw_twist_cmd = MAX_YAW_TWIST;
   else if (yaw_twist_cmd < -MAX_YAW_TWIST)
     yaw_twist_cmd = -MAX_YAW_TWIST;
-    
+
   if (!pid_initialized)
     pid_initialized = true;
 

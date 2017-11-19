@@ -49,6 +49,8 @@ OrientationController::OrientationController() {
     ros::NodeHandle ycpid("yaw_controller");
     ros::NodeHandle pcpid("pitch_controller");
 
+    pid_initialized = false;
+
 
     cmd_sub = nh.subscribe<geometry_msgs::Vector3>("command/orientation", 1000, &OrientationController::CommandCB, this);
     imu_sub = nh.subscribe<riptide_msgs::Imu>("state/imu", 1000, &OrientationController::ImuCB, this);
@@ -69,13 +71,10 @@ OrientationController::OrientationController() {
 // Subscribe to state/imu
 void OrientationController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu) {
   current_orientation = imu->euler_rpy;
-  if (!pid_initialized) {
-    roll_cmd = current_orientation.x;
-    pitch_cmd = current_orientation.y;
-    yaw_cmd = current_orientation.z;
+  ROS_INFO("%d", pid_initialized);
+  if (pid_initialized) {
+    OrientationController::UpdateError();
   }
-
-  OrientationController::UpdateError();
 }
 
 // Subscribe to command/orientation

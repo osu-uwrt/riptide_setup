@@ -15,7 +15,7 @@ void DepthController::UpdateError() {
   sample_duration = ros::Time::now() - sample_start;
   dt = sample_duration.toSec();
 
-  depth_error = cmd_depth - current_depth;
+  depth_error = current_depth - cmd_depth;
   d_error = (depth_error - last_error) / dt;
   last_error = depth_error;
 
@@ -31,8 +31,8 @@ void DepthController::UpdateError() {
   double WATER_DENSITY = 1000.0;
   double BUOYANCY = VOLUME * WATER_DENSITY * GRAVITY;
 
-  if (current_depth > 0.15)
-    accel.data -=  BUOYANCY / MASS;
+  // if (current_depth > 0.15)
+  //   accel.data -=  BUOYANCY / MASS;
   cmd_pub.publish(accel);
   sample_start = ros::Time::now();
 }
