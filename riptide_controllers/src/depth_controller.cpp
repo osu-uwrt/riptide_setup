@@ -32,7 +32,7 @@ void DepthController::UpdateError() {
   double BUOYANCY = VOLUME * WATER_DENSITY * GRAVITY;
 
   if (current_depth > 0.15)
-    accel.data +=  BUOYANCY / MASS;
+    accel.data -=  BUOYANCY / MASS;
   cmd_pub.publish(accel);
   sample_start = ros::Time::now();
 }

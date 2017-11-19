@@ -1,6 +1,6 @@
 #ifndef DEPTH_PROCESSOR_H
 #define DEPTH_PROCESSOR_H
-#define DEPTH_OFFSET 0
+#define DEPTH_OFFSET 0.1
 #define DEPTH_SLOPE 1
 
 
