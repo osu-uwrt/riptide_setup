@@ -18,14 +18,14 @@ double MASS = 34.47940950;
 // Vehcile volume (m^3)
 // TODO: Get this value from model
 double VOLUME = 0.0334;
-
+/*
 // Gravity (m/s^2)
 double GRAVITY = 9.81;
 
 // Water density (kg/m^3)
 double WATER_DENSITY = 1000.0;
-double BUOYANCY = VOLUME * WATER_DENSITY * GRAVITY;
-
+double BUOYANCY = VOLUME * WATER_DENSITY * GRAVITY * 0;
+*/
 // Moments of inertia (kg*m^2)
 double Ixx = 0.50862680;
 double Iyy = 1.70892348;
@@ -120,8 +120,7 @@ struct heave
     residual[0] =
         (rotation_matrix.getRow(2).x() * (/*surge_port_hi[0] + surge_stbd_hi[0]*/ + surge_port_lo[0] + surge_stbd_lo[0]) +
          rotation_matrix.getRow(2).y() * (sway_fwd[0] + sway_aft[0]) +
-         rotation_matrix.getRow(2).z() * (heave_port_fwd[0] + heave_stbd_fwd[0] + heave_port_aft[0] + heave_stbd_aft[0]) +
-         T(BUOYANCY)) /
+         rotation_matrix.getRow(2).z() * (heave_port_fwd[0] + heave_stbd_fwd[0] + heave_port_aft[0] + heave_stbd_aft[0])) /
          T(MASS) -
          T(cmdHeave);
     return true;

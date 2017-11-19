@@ -94,6 +94,7 @@
       state[0].angular_acceleration.x = a*state[1].angular_velocity.x + b*state[2].angular_velocity.x - (a+b)*state[0].angular_velocity.x;
       state[0].angular_acceleration.y = a*state[1].angular_velocity.y + b*state[2].angular_velocity.y - (a+b)*state[0].angular_velocity.y;
       state[0].angular_acceleration.z = a*state[1].angular_velocity.z + b*state[2].angular_velocity.z - (a+b)*state[0].angular_velocity.z;
+
     }*/
 
     //Must have completed 14 cycles because there need to be 7 smoothed data points

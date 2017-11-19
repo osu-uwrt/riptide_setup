@@ -1,6 +1,6 @@
 <launch>
     <arg name="location" default="columbus" />
-    <arg name="device" default="/dev/imu_front" />
+    <arg name="device" default="/dev/ttyACM1" />
     <node pkg="riptide_hardware" name="imu_processor" type="imu_processor" output="screen" />
     <include file="$(find imu_3dm_gx4)/launch/imu.launch" >
       <arg name="location" value="$(arg location)" />
