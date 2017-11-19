@@ -22,8 +22,10 @@ target_link_libraries(imu_processor ${catkin_LIBRARIES})
 
 add_executable(imu_drift_logger src/imu_drift_logger.cpp)
 target_link_libraries(imu_drift_logger ${catkin_LIBRARIES})
+add_dependencies(imu_drift_logger ${catkin_EXPORTED_TARGETS})
 
 add_dependencies(imu_processor riptide_msgs_gencpp ${PROJECT_NAME}_gencfg)
+add_dependencies(imu_processor ${catkin_EXPORTED_TARGETS})
 
 add_executable(depth_processor src/depth_processor.cpp)
 target_link_libraries(depth_processor ${catkin_LIBRARIES})
