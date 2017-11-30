@@ -23,7 +23,7 @@ void DepthController::UpdateError() {
 
 
   // Gravity (m/s^2)
-  double GRAVITY = 9.81;
+  double GRAVITY = 9.8;
 
   double VOLUME = 0.0334;
   double MASS = 34.47940950;
@@ -31,8 +31,8 @@ void DepthController::UpdateError() {
   double WATER_DENSITY = 1000.0;
   double BUOYANCY = VOLUME * WATER_DENSITY * GRAVITY;
 
-  // if (current_depth > 0.15)
-  //   accel.data -=  BUOYANCY / MASS;
+  if (current_depth > 0.25)
+     accel.data -=  BUOYANCY / MASS;
   cmd_pub.publish(accel);
   sample_start = ros::Time::now();
 }

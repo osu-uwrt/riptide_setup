@@ -15,6 +15,7 @@
   <!--               -->
   <!-- Housing Links -->
   <!--               -->
+  <!-- TODO: Calculate actual buoyancy compensations -->
 
   <link name="housing_link">
     <inertial>
@@ -37,7 +38,7 @@
     </collision>
 
     <buoyancy>
-      <compensation>2</compensation>
+      <compensation>1.4</compensation>
       <origin xyz= "${housing_com}"/>
       <limit radius=".25"/>
       <damping xyz="60 100 100" rpy="20 50 50"/>
@@ -85,12 +86,12 @@
       </geometry>
     </collision>
 
-    <buoyancy>
+    <!-- <buoyancy>
       <compensation>0</compensation>
       <origin xyz= "${acoustics_com}"/>
       <limit radius=".25"/>
-      <damping xyz="60 100 100" rpy="20 50 50"/>
-    </buoyancy>
+      <damping xyz="0 0 0" rpy="0 0 0"/>
+    </buoyancy> -->
   </link>
 
   <link name="pneumatics_link">
@@ -114,10 +115,10 @@
     </collision>
 
     <buoyancy>
-      <compensation>2</compensation>
+      <compensation>1.4</compensation>
       <origin xyz= "${pneumatics_com}"/>
       <limit radius=".25"/>
-      <damping xyz="60 100 100" rpy="20 50 50"/>
+      <damping xyz="0 0 0" rpy="0 0 0"/>
     </buoyancy>
   </link>
 
@@ -142,10 +143,10 @@
     </collision>
 
     <buoyancy>
-      <compensation>1.5</compensation>
+      <compensation>1.4</compensation>
       <origin xyz= "${port_battery_com}"/>
       <limit radius=".25"/>
-      <damping xyz="60 100 100" rpy="20 50 50"/>
+      <damping xyz="0 0 0" rpy="0 0 0"/>
     </buoyancy>
   </link>
 
@@ -170,10 +171,10 @@
     </collision>
 
     <buoyancy>
-      <compensation>1.5</compensation>
+      <compensation>1.4</compensation>
       <origin xyz= "${stbd_battery_com}"/>
       <limit radius=".25"/>
-      <damping xyz="60 100 100" rpy="20 50 50"/>
+      <damping xyz="0 0 0" rpy="0 0 0"/>
     </buoyancy>
   </link>
 

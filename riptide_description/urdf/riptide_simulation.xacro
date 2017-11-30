@@ -125,7 +125,7 @@
     <!--                                  -->
     <!-- Gazebo Riptide Sensor Properties -->
     <!--                                  -->
-
+<!--
     <plugin name="imu_one" filename="libgazebo_ros_imu.so">
       <robotNamespace></robotNamespace>
       <serviceName>/imu</serviceName>
@@ -136,7 +136,7 @@
       <rpyOffset>0 0 0</rpyOffset>
       <updateRate>100.0</updateRate>
       <frameName>imu_one_link</frameName>
-    </plugin>
+    </plugin>-->
 
     <!--                                    -->
     <!-- Gazebo Riptide Thruster Properties -->
@@ -147,7 +147,6 @@
       <topicName>/command/thrust</topicName>
     </plugin>
 
-
     <!--                                    -->
     <!-- Gazebo Riptide Depth Sensor Properties -->
     <!--                                    -->
@@ -155,8 +154,8 @@
     <plugin filename="libgazebo_ros_depth_sensor.so" name="DepthSensor">
       <robotNamespace></robotNamespace>
       <topicName>/state/depth</topicName>
-      <seaLevel>20</seaLevel>
-      <fluidDensity>1</fluidDensity>
+      <seaLevel>0</seaLevel>
+      <fluidDensity>0.998</fluidDensity>
       <sensorLink>depth_sensor_link</sensorLink>
     </plugin>
 
