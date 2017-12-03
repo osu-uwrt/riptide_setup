@@ -1,0 +1,11 @@
+# Define the goal
+std_msgs/String gate_type
+std_msgs/String casino_color
+
+---
+# Define the feedback
+
+---
+# Define the result
+float64 depth
+geometry_msgs/Vector3 euler_rpy

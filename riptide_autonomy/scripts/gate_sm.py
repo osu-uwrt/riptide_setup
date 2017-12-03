@@ -44,38 +44,49 @@ def main():
     gate_sm.userdata.entered_qualify_gate = 0
     gate_sm.userdata.exited_qualify_gate = 0
     gate_sm.userdata.entered_casino_gate = 0
+    gate_sm.userdata.depth = 0
+    gate_sm.userdata.euler_rpy = [0,0,0]
 
     #Remap userdata to each action state
     with gate_sm:
         smach.StateMachine.add('FIND_GATE',
-                                SimpleActionState('find_gate_server',
+                                SimpleActionState('FindServer',
                                                     FindGateAction,
-                                                    goal=FindGateGoal),
-                                remapping={},
-                                transitions={'succeeded':'GATE_ALIGNMENT')
+                                                    goal_slots=['gate_type',
+                                                                'casino_color']),
+                                transitions={'succeeded':'GATE_ALIGNMENT'},
+                                remapping={'gate_type':'gate_type_in',
+                                            'casino_color':'casino_color_in'})
         smach.StateMachine.add('GATE_ALIGNMENT',
-                                SimpleActionState('gate_alignment_server',
+                                SimpleActionState('AlignmentServer',
                                                     GateAlignmentAction,
-                                                    goal=GateAlignmentGoal),
-                                remapping={},
-                                transitions={'succeeded':'PASS_THRU_GATE')
+                                                    goal_slots=['gate_type',
+                                                                'casino_color'],
+                                                    result_slots=['depth', 'euler_rpy']),
+                                transitions={'succeeded':'PASS_THRU_GATE'},
+                                remapping={'gate_type':'gate_type_in',
+                                            'casino_color':'casino_color_in',
+                                            'depth':'depth', 'euler_rpy':'euler_rpy'})
         smach.StateMachine.add('PASS_THRU_GATE',
-                                SimpleActionState('pass_thru_gate_server',
+                                SimpleActionState('PassThruGateServer',
                                                     PassThruGateAction,
-                                                    goal=PassThruGateGoal),
-                                remapping={},
-                                transitions={'succeeded':'SET_FINAL_GATE_OUTCOME')
+                                                    goal_slots=['gate_type', 'casino_color',
+                                                                'depth','euler_rpy']),
+                                transitions={'succeeded':'SET_FINAL_GATE_OUTCOME'},
+                                remapping={'gate_type':'gate_type_in',
+                                            'casino_color':'casino_color_in',
+                                            'depth':'depth', 'euler_rpy':'euler_rpy'})
         smach.StateMachine.add('SET_FINAL_GATE_OUTCOME', SetFinalGateOutcome(),
+                                transitions={'entered_qualify_gate':'entered_qualify_gate',
+                                            'entered_casino_gate':'entered_casino_gate',
+                                            'exited_qualify_gate':'exited_qualify_gate'}
                                 remapping={'entered_qualify_gate_in':'entered_qualify_gate',
                                             'entered_casino_gate_in':'entered_casino_gate',
                                             'exited_qualify_gate_in':'exited_qualify_gate',
                                             'gate_type_in':'gate_type',
                                             'entered_qualify_gate_out':'entered_qualify_gate',
                                             'entered_casino_gate_out':'entered_casino_gate',
-                                            'exited_casino_gate_out':'exited_qualify_gate'},
-                                transitions={'entered_qualify_gate':'entered_qualify_gate',
-                                            'entered_casino_gate':'entered_casino_gate',
-                                            'exited_qualify_gate':'exited_qualify_gate'})
+                                            'exited_casino_gate_out':'exited_qualify_gate'})
 
     outcome = gate_sm.execute()
 

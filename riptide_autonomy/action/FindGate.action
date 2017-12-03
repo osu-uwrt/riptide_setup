@@ -1,0 +1,9 @@
+# Define the goal
+std_msgs/String gate_type
+std_msgs/String casino_color
+
+---
+# Define the feedback
+
+---
+# Define the result

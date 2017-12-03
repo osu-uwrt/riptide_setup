@@ -12,14 +12,14 @@ def main():
 
     with qualify_sm:
         smach.StateMachine.add('GATE_SM', gate_sm,
+                                transitions={'entered_qualify_gate':'MARKER_SM',
+                                            'exited_qualify_gate':'qualify_completed'},
                                 remapping={'prev_completion_in':'prev_completion',
                                             'gate_type_in':'gate_type',
-                                            'prev_completion_out':'prev_completion'},
-                                transitions={'entered_qualify_gate':'MARKER_SM',
-                                            'exited_qualify_gate':'qualify_completed'})
+                                            'prev_completion_out':'prev_completion'})
         smach.StateMachine.add('MARKER_SM', marker_sm,
-                                remapping={'prev_completion_out':'prev_completion'},
-                                transitions={'circled_the_marker':'GATE_SM'})
+                                transitions={'circled_the_marker':'GATE_SM'},
+                                remapping={'prev_completion_out':'prev_completion'})
 
 if __name__ == "__main__"
     main()

@@ -19,7 +19,7 @@ def child_term_cb(outcome_map):
     return False
 
 def main():
-    rospy.init_node('state_machine')
+    #rospy.init_node('state_machine')
 
     main_container = Concurrence(outcomes = ['mission_completed', 'mission_failed','emergency'],
                      default_outcome = 'emergency',
