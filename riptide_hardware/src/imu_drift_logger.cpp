@@ -24,16 +24,18 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *********************************************************************************/
+//YOU MUST CHANGE THE "file_prefix" BEFORE USING
 
- #include "riptide_hardware/imu_drift_logger.h"
 
- int main(int argc, char** argv)
- {
-   ros::init(argc, argv, "imu_drift_logger");
-   IMUDriftLogger imu_drift_logger(argv);
-   imu_drift_logger.loop();
-   ROS_INFO("IMU drift logger looping");
- }
+#include "riptide_hardware/imu_drift_logger.h"
+
+int main(int argc, char** argv)
+{
+  ros::init(argc, argv, "imu_drift_logger");
+  IMUDriftLogger imu_drift_logger(argv);
+  imu_drift_logger.loop();
+  ROS_INFO("IMU drift logger looping");
+}
 
 //Converts std::string to char*
 char* IMUDriftLogger::convert(const std::string& str) {
@@ -45,7 +47,7 @@ char* IMUDriftLogger::convert(const std::string& str) {
 //Constructor
  IMUDriftLogger::IMUDriftLogger(char **argv) : nh()
  {
-   imu_state_sub = nh.subscribe<riptide_msgs::Imu>("state/imu", 1, &IMUDriftLogger::callback, this);
+   imu_state_sub = nh.subscribe<riptide_msgs::ImuVerbose>("state/imu/verbose", 1, &IMUDriftLogger::callback, this);
 
    //Create a new file for logging IMU drift data
    bool found_new_file_name = false;
@@ -78,7 +80,7 @@ char* IMUDriftLogger::convert(const std::string& str) {
    }
  }
 
- void IMUDriftLogger::callback(const riptide_msgs::Imu::ConstPtr& imu_msg) {
+ void IMUDriftLogger::callback(const riptide_msgs::ImuVerbose::ConstPtr& imu_msg) {
    //Store appropriate values from message
    /*dt = imu_msg->dt;
    euler_rpy[0] imu_msg->
