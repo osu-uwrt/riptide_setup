@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="riptide_hardware" type="depth_processor" name="depth_processor" />
+</launch>

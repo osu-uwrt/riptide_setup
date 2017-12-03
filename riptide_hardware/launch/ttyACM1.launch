@@ -2,5 +2,7 @@
   <node pkg="rosserial_python" type="serial_node.py" name="ttyACM1">
     <param name="port" value="/dev/ttyACM1"/>
     <param name="baud" value="57600"/>
+    <remap from="state/depth" to="arduino/depth"/>
   </node>
+  <node pkg="riptide_hardware" type="depth_processor" name="depth_processor"/>
 </launch>
