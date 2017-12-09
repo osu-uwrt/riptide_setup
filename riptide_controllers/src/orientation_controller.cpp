@@ -28,9 +28,9 @@ void OrientationController::UpdateError() {
   // Always take shortest path to setpoint
   yaw_error = yaw_cmd - current_orientation.z;
   if (yaw_error > 180)
-      yaw_error -= 180;
+      yaw_error -= 360;
   else if (yaw_error < -180)
-      yaw_error += 180;
+      yaw_error += 360;
 
   yaw_error_dot = (yaw_error - last_error.z) / dt;
   last_error.z = yaw_error;
