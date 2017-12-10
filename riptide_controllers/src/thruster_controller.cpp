@@ -304,10 +304,10 @@ ThrusterController::ThrusterController(char **argv, tf::TransformListener *liste
 
 void ThrusterController::state(const riptide_msgs::Imu::ConstPtr &msg)
 {
-  tf::Vector3 tf;
-  vector3MsgToTF(msg->euler_rpy, tf);
-  rotation_matrix.setRPY(tf.x(), tf.y(), tf.z());
-  vector3MsgToTF(msg->angular_velocity, ang_v);
+  //tf::Vector3 tf;
+  //vector3MsgToTF(msg->euler_rpy, tf);
+  //rotation_matrix.setRPY(tf.x(), tf.y(), tf.z());
+  //vector3MsgToTF(msg->angular_velocity, ang_v);
 }
 
 void ThrusterController::callback(const geometry_msgs::Accel::ConstPtr &a)
