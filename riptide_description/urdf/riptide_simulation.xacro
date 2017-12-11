@@ -126,12 +126,12 @@
     <!-- Gazebo Riptide Sensor Properties -->
     <!--                                  -->
 
-    <plugin name="imu_one" filename="libgazebo_ros_imu.so">
+    <plugin name="imu_one" filename="libgazebo_ros_riptide_imu.so">
       <robotNamespace></robotNamespace>
       <serviceName>/imu</serviceName>
       <topicName>/state/imu</topicName>
       <gaussianNoise>0.0</gaussianNoise>
-      <bodyName>imu_one_link</bodyName>
+      <sensorLink>imu_one_link</sensorLink>
       <xyzOffset>0 0 0</xyzOffset>
       <rpyOffset>0 0 0</rpyOffset>
       <updateRate>100.0</updateRate>
@@ -147,7 +147,6 @@
       <topicName>/command/thrust</topicName>
     </plugin>
 
-
     <!--                                    -->
     <!-- Gazebo Riptide Depth Sensor Properties -->
     <!--                                    -->
@@ -155,104 +154,11 @@
     <plugin filename="libgazebo_ros_depth_sensor.so" name="DepthSensor">
       <robotNamespace></robotNamespace>
       <topicName>/state/depth</topicName>
-      <seaLevel>20</seaLevel>
-      <fluidDensity>1</fluidDensity>
+      <seaLevel>0</seaLevel>
+      <fluidDensity>0.998</fluidDensity>
       <sensorLink>depth_sensor_link</sensorLink>
     </plugin>
 
-    <!--                                    -->
-    <!-- Gazebo Riptide Buoyancy Properties -->
-    <!--                                    -->
-
-    <!--<plugin name="BuoyancyPlugin" filename="libBuoyancyPlugin.so">
-      <robotNamespace></robotNamespace>
-
-      <fluid_density>108</fluid_density>
-
-      <link name="base_link">
-        <center_of_volume>0 0 0</center_of_volume>
-        <volume>0.000000001</volume>
-      </link>
-
-      <link name="housing_link">
-        <center_of_volume>${housing_cov}</center_of_volume>
-        <volume>${housing_volume}</volume>
-      </link>
-
-      <link name="chassis_link">
-        <center_of_volume>${chassis_cov}</center_of_volume>
-        <volume>${chassis_volume}</volume>
-      </link>
-
-      <link name="acoustics_link">
-        <center_of_volume>${acoustics_cov}</center_of_volume>
-        <volume>${acoustics_volume}</volume>
-      </link>
-
-      <link name="pneumatics_link">
-        <center_of_volume>${pneumatics_cov}</center_of_volume>
-        <volume>${pneumatics_volume}</volume>
-      </link>
-
-      <link name="port_battery_link">
-        <center_of_volume>${port_battery_cov}</center_of_volume>
-        <volume>${port_battery_volume}</volume>
-      </link>
-
-      <link name="stbd_battery_link">
-        <center_of_volume>${stbd_battery_cov}</center_of_volume>
-        <volume>${stbd_battery_volume}</volume>
-      </link>
-
-      <xacro:macro name="thruster_volume" params="thruster">
-        <link name="${thruster}_link">
-          <center_of_volume>${thruster_cov}</center_of_volume>
-          <volume>${thruster_volume}</volume>
-        </link>
-      </xacro:macro>
-
-      <xacro:thruster_volume thruster="surge_port_hi" />
-      <xacro:thruster_volume thruster="surge_stbd_hi" />
-      <xacro:thruster_volume thruster="surge_port_lo" />
-      <xacro:thruster_volume thruster="surge_stbd_lo" />
-      <xacro:thruster_volume thruster="sway_fwd" />
-      <xacro:thruster_volume thruster="sway_aft" />
-      <xacro:thruster_volume thruster="heave_port_fwd" />
-      <xacro:thruster_volume thruster="heave_stbd_fwd" />
-      <xacro:thruster_volume thruster="heave_port_aft" />
-      <xacro:thruster_volume thruster="heave_stbd_aft" />
-
-      <link name="imu_one_link">
-        <center_of_volume>0 0 0</center_of_volume>
-        <volume>0.000000001</volume>
-      </link>
-
-      <link name="depth_sensor_link">
-        <center_of_volume>0 0 0</center_of_volume>
-        <volume>0.000000001</volume>
-      </link>
-
-      <link name="camera_fwd_port_link">
-        <center_of_volume>0 0 0</center_of_volume>
-        <volume>0.000000001</volume>
-      </link>
-
-      <link name="camera_fwd_stbd_link">
-        <center_of_volume>0 0 0</center_of_volume>
-        <volume>0.000000001</volume>
-      </link>
-
-      <link name="camera_down_port_link">
-        <center_of_volume>0 0 0</center_of_volume>
-        <volume>0.000000001</volume>
-      </link>
-
-      <link name="camera_down_stbd_link">
-        <center_of_volume>0 0 0</center_of_volume>
-        <volume>0.000000001</volume>
-      </link>
-
-    </plugin>-->
   </gazebo>
 
   <!--                                  -->

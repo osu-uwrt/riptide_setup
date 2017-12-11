@@ -19,5 +19,9 @@ void DepthProcessor::DepthCB(const riptide_msgs::Depth::ConstPtr& depth)
 {
     riptide_msgs::Depth corrected;
     corrected.depth = (DEPTH_SLOPE * depth->depth) + DEPTH_OFFSET;
+    // Eliminate the spikes
+    if (corrected.depth > 10 || corrected.depth < -10)
+      corrected = lastDepth;
     state_depth_pub.publish(corrected);
+    lastDepth = corrected;
 }
