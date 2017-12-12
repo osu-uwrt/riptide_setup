@@ -20,4 +20,4 @@ include_directories(${catkin_INCLUDE_DIRS})
 
 add_executable(go_straight src/go_straight.cpp)
 target_link_libraries(go_straight ${catkin_LIBRARIES})
-add_dependencies(go_straight riptide_msgs_gencpp ${PROJECT_NAME}_gencfg)
+add_dependencies(go_straight riptide_msgs_gencpp)
