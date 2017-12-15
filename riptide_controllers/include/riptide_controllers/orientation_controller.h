@@ -22,7 +22,7 @@ class OrientationController
     control_toolbox::Pid pitch_controller_pid;
     control_toolbox::Pid yaw_controller_pid;
 
-    geometry_msgs::Vector3 twist_cmd;
+    geometry_msgs::Vector3 accel_cmd;
 
     //PID
     double roll_error, pitch_error, yaw_error;

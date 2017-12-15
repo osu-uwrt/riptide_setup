@@ -16,5 +16,7 @@ roslint_cpp()
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 
+
 add_executable(ps3_control src/ps3_control.cpp)
 target_link_libraries(ps3_control ${catkin_LIBRARIES})
+add_dependencies(ps3_control ${catkin_EXPORTED_TARGETS})

@@ -28,18 +28,18 @@ void OrientationController::UpdateError() {
   // Always take shortest path to setpoint
   yaw_error = yaw_cmd - current_orientation.z;
   if (yaw_error > 180)
-      yaw_error -= 180;
+      yaw_error -= 360;
   else if (yaw_error < -180)
-      yaw_error += 180;
+      yaw_error += 360;
 
   yaw_error_dot = (yaw_error - last_error.z) / dt;
   last_error.z = yaw_error;
 
-  twist_cmd.x = roll_controller_pid.computeCommand(roll_error, roll_error_dot, sample_duration);
-  twist_cmd.y = pitch_controller_pid.computeCommand(pitch_error, pitch_error_dot, sample_duration);
-  twist_cmd.z = yaw_controller_pid.computeCommand(yaw_error, yaw_error_dot, sample_duration);
+  accel_cmd.x = roll_controller_pid.computeCommand(roll_error, roll_error_dot, sample_duration);
+  accel_cmd.y = pitch_controller_pid.computeCommand(pitch_error, pitch_error_dot, sample_duration);
+  accel_cmd.z = yaw_controller_pid.computeCommand(yaw_error, yaw_error_dot, sample_duration);
 
-  cmd_pub.publish(twist_cmd);
+  cmd_pub.publish(accel_cmd);
   sample_start = ros::Time::now();
 }
 
@@ -48,6 +48,8 @@ OrientationController::OrientationController() {
     ros::NodeHandle rcpid("roll_controller");
     ros::NodeHandle ycpid("yaw_controller");
     ros::NodeHandle pcpid("pitch_controller");
+
+    pid_initialized = false;
 
 
     cmd_sub = nh.subscribe<geometry_msgs::Vector3>("command/orientation", 1000, &OrientationController::CommandCB, this);
@@ -62,20 +64,16 @@ OrientationController::OrientationController() {
     yaw_controller_pid.init(ycpid, false);
     pitch_controller_pid.init(pcpid, false);
 
-    cmd_pub = nh.advertise<geometry_msgs::Vector3>("command/twist", 1);
+    cmd_pub = nh.advertise<geometry_msgs::Vector3>("command/accel/angular", 1);
     sample_start = ros::Time::now();
 }
 
 // Subscribe to state/imu
 void OrientationController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu) {
   current_orientation = imu->euler_rpy;
-  if (!pid_initialized) {
-    roll_cmd = current_orientation.x;
-    pitch_cmd = current_orientation.y;
-    yaw_cmd = current_orientation.z;
+  if (pid_initialized) {
+    OrientationController::UpdateError();
   }
-
-  OrientationController::UpdateError();
 }
 
 // Subscribe to command/orientation
