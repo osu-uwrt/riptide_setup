@@ -13,7 +13,7 @@
  IMUProcessor::IMUProcessor(char **argv) : nh()
  {
    imu_filter_sub = nh.subscribe<imu_3dm_gx4::FilterOutput>("imu/filter", 1, &IMUProcessor::callback, this);
-   imu_verbose_state_pub = nh.advertise<riptide_msgs::ImuVerbose>("state/imu_verbose", 1);
+   imu_verbose_state_pub = nh.advertise<riptide_msgs::ImuVerbose>("state/imu/verbose", 1);
    imu_state_pub = nh.advertise<riptide_msgs::Imu>("state/imu", 1);
 
    zero_ang_vel_thresh = 1;
