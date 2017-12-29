@@ -19,8 +19,10 @@ class ThrustCal
   ros::Time alive;
   bool dead, low;
   double min_voltage;
-  int counterclockwise(double raw_force);
-  int clockwise(double raw_force);
+  int counterclockwise(double raw_force, int thruster);
+  int clockwise(double raw_force, int thruster);
+  float ccw_coeffs[4][2]; //counterclockwise thrust slopes
+  float cw_coeffs[4][2]; //clockwise thrust slopes
 
  public:
   ThrustCal();
