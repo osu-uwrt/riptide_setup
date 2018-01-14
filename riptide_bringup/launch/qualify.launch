@@ -1,6 +1,6 @@
 <launch>
   <arg name="location" default="columbus" />
-  <include file="$(find riptide_hardware)/launch/ttyACM1.launch" /> <!--Establish serial link with thruster control board-->
+  <include file="$(find riptide_hardware)/launch/arduino.launch" /> <!--Establish serial link with thruster control board-->
   <include file="$(find riptide_hardware)/launch/thrust_cal.launch"/> <!-- Thrust to PWM -->
   <include file="$(find riptide_controllers)/launch/thruster_controller.launch"/> <!-- Accel to Thrust -->
   <include file="$(find riptide_behaviors)/launch/go_straight.launch" /> <!-- Mission controller -->
