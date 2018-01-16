@@ -99,19 +99,13 @@ void ThrustCal::loop()
 int ThrustCal::counterclockwise(double raw_force, int thruster)
 {
   int pwm = 1500;
-  ROS_INFO("Force: %f", raw_force);
   if(raw_force<0){
-    ROS_INFO("Raw force -");
     pwm = 1500 + static_cast<int>(raw_force*ccw_coeffs[thruster][0]);
   }else if(raw_force>0){
-    ROS_INFO("Raw force +");
-    ROS_INFO("CCW_Coeff: %f", ccw_coeffs[thruster][1]);
     pwm = (int) (1500 + (raw_force*ccw_coeffs[thruster][1]));
   }else{
-    ROS_INFO("Raw force 0");
     pwm = 1500;
   }
-  ROS_INFO("PWM: %d", pwm);
   return pwm;
 }
 
