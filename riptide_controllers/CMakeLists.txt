@@ -34,9 +34,9 @@ add_executable(pwm_controller src/pwm_controller.cpp)
 target_link_libraries(pwm_controller ${catkin_LIBRARIES})
 add_dependencies(pwm_controller riptide_msgs_gencpp)
 
-add_executable(orientation_controller src/orientation_controller.cpp)
-target_link_libraries(orientation_controller ${catkin_LIBRARIES})
-add_dependencies(orientation_controller riptide_msgs_gencpp)
+add_executable(attitude_controller src/attitude_controller.cpp)
+target_link_libraries(attitude_controller ${catkin_LIBRARIES})
+add_dependencies(attitude_controller riptide_msgs_gencpp)
 
 add_executable(command_combinator src/command_combinator.cpp)
 target_link_libraries(command_combinator ${catkin_LIBRARIES})
