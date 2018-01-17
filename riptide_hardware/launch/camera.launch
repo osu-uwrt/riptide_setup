@@ -1,14 +1,15 @@
 <launch>
-  <arg name="forward_serial_number" value="14490542" />
+  <arg name="serial_number" value="14490542" />
+  <arg name="camera_name" value="forward" />
 
-  <group ns="forward">
+  <group ns="${camera_name}">
 
     <node pkg="nodelet" type="nodelet" name="camera_nodelet_manager" args="manager" />
     <node pkg="nodelet" type="nodelet" name="camera_nodelet"
           args="load pointgrey_camera_driver/PointGreyCameraNodelet camera_nodelet_manager" >
 
-      <param name="frame_id" value="camera_down" />
-      <param name="serial" value="$(arg forward_serial_number)" />
+      <param name="frame_id" value="${camera_name}" />
+      <param name="serial" value="$(arg serial_number)" />
     </node>
 
   </group>
