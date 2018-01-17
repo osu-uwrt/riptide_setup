@@ -11,13 +11,9 @@ ThrustCal::ThrustCal() : nh()
 {
   alive = ros::Time::now();
   dead = false;
-  low = false;
-
-  nh.param<double>("battery/min_voltage", min_voltage, 17.5);
 
   thrust = nh.subscribe<riptide_msgs::ThrustStamped>("command/thrust", 1, &ThrustCal::callback, this);
   kill_it_with_fire = nh.subscribe<std_msgs::Empty>("state/kill", 1, &ThrustCal::killback, this);
-  outta_juice = nh.subscribe<riptide_msgs::Bat>("state/batteries", 1, &ThrustCal::voltsbacken, this);
   pwm = nh.advertise<riptide_msgs::PwmStamped>("command/pwm", 1);
 
   //Initialization of the two trust/pwm slope arrays
@@ -64,19 +60,8 @@ void ThrustCal::callback(const riptide_msgs::ThrustStamped::ConstPtr& thrust)
 
 void ThrustCal::killback(const std_msgs::Empty::ConstPtr& thrust)
 {
-  if (!low)
-  {
-    dead = false;
-  }
+  dead = false;
   alive = ros::Time::now();
-}
-
-void ThrustCal::voltsbacken(const riptide_msgs::Bat::ConstPtr& bat_stat)
-{
-  if (bat_stat->voltage < min_voltage)
-  {
-    low = true;
-  }
 }
 
 void ThrustCal::loop()
@@ -94,7 +79,6 @@ void ThrustCal::loop()
     rate.sleep();
   }
 }
-
 
 int ThrustCal::counterclockwise(double raw_force, int thruster)
 {
@@ -119,7 +103,6 @@ int ThrustCal::clockwise(double raw_force, int thruster)
   }else{
     pwm = 1500;
   }
-
 
   return pwm;
 }

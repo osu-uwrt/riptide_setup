@@ -10,5 +10,4 @@
 
   <include file="$(find riptide_hardware)/launch/imu.launch" />
   <include file="$(find riptide_controllers)/launch/orientation_controller.launch" />
-  <!--<include file="$(find riptide_controllers)/launch/twist_controller.launch" />-->
 </launch>
