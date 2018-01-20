@@ -7,7 +7,7 @@ import main_container
 
 def main():
     qualify_sm = smach.StateMachine(outcomes=['qualify_completed', 'qualify_failed'])
-    qualify_sm.userdata.prev_completion = "nothing"
+    qualify_sm.userdata.prev_completion = "nothing" #Initialize to "nothing"
     qualify_sm.userdata.gate_type = "qualify"
 
     with qualify_sm:
