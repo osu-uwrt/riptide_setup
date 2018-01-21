@@ -13,7 +13,7 @@
  IMUProcessor::IMUProcessor(char **argv) : nh()
  {
    imu_filter_sub = nh.subscribe<imu_3dm_gx4::FilterOutput>("imu/filter", 1, &IMUProcessor::callback, this);
-   imu_verbose_state_pub = nh.advertise<riptide_msgs::ImuVerbose>("state/imu_verbose", 1);
+   imu_verbose_state_pub = nh.advertise<riptide_msgs::ImuVerbose>("state/imu/verbose", 1);
    imu_state_pub = nh.advertise<riptide_msgs::Imu>("state/imu", 1);
 
    zero_ang_vel_thresh = 1;
@@ -72,30 +72,13 @@
     //Further process data
     if(cycles >= size) {
       smoothData();
-      processDrift();
     }
 
     //Process linear acceleration (Remove centrifugal and tangential components)
 
 
     //Process angular acceleration (Use 3-pt backwards rule to approximate angular acceleration)
-    /*if(cycles >= 7) { //Need 3 data points (state[2] must have values)
-      //ROS_INFO("Cycles: %i", cycles);
-      float a, b; //Coefficients for backwards-diff rule
 
-      float c = state[0].dt, d = state[1].dt;
-      //ROS_INFO("state[1].dt: %f", c);
-      //ROS_INFO("state[2].dt: %f", d);
-
-      a = -1.0/c - 1/(2*d-c);
-      b = c/(4*d*d-2*c*d);
-
-      //Estimated angular acceleration to error order (dt)^2
-      state[0].angular_acceleration.x = a*state[1].angular_velocity.x + b*state[2].angular_velocity.x - (a+b)*state[0].angular_velocity.x;
-      state[0].angular_acceleration.y = a*state[1].angular_velocity.y + b*state[2].angular_velocity.y - (a+b)*state[0].angular_velocity.y;
-      state[0].angular_acceleration.z = a*state[1].angular_velocity.z + b*state[2].angular_velocity.z - (a+b)*state[0].angular_velocity.z;
-
-    }*/
 
     //Must have completed 14 cycles because there need to be 7 smoothed data points
     //before processing  velocities, accelerations, etc.
@@ -145,7 +128,7 @@ void IMUProcessor::cvtRad2Deg() {
 
 //Adjust Euler angles to be consistent with the AUV's axes
 void IMUProcessor::processEulerAngles() {
-  //Set YAW equal to heading
+  //Set YAW equal to updated heading
   state[0].euler_rpy.z = state[0].heading;
 
   //Adjust ROLL
@@ -162,7 +145,10 @@ void IMUProcessor::processEulerAngles() {
     state[0].euler_rpy.x = 0;
   }
 
-  //Adjust YAW (negate the value)
+  //Adjust pitch (negate the value - positive y-axis points left)
+  state[0].euler_rpy.y *= -1;
+
+  //Adjust YAW (negate the value - positive z-axis points up)
   state[0].euler_rpy.z *= -1;
 }
 
@@ -199,14 +185,11 @@ void IMUProcessor::processDrift() {
 
 //Smooth Angular Velocity and Linear Acceleration with a Gaussian 7-point smooth
 //NOTE: Smoothed values are actually centered about the middle state within
-//the state array, state 4 (index 3)
+//the state array, state 4 (c = center = index 3)
 void IMUProcessor::smoothData()
 {
   int coef[size] = {1, 3, 6, 7, 6, 3, 1};
   int sumCoef = 27;
-
-  //Can not begin smoothing data unless there are 7 data points
-  state[0] = state[0];
 
   //Set all desired values to smooth to 0
   state[c].angular_velocity.x = 0;
