@@ -1,5 +1,5 @@
 # Define the goal
-std_msgs/String gate_type
+std_msgs/String object
 std_msgs/String casino_color
 
 ---

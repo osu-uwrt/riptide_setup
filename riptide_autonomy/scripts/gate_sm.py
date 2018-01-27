@@ -3,82 +3,77 @@
 import rospy
 import smach
 import smach_ros
-import qualify_sm
 
-class SetFinalGateOutcome(smach.State):
-    def __init__(self):
-        smach.State.__init__(self,
-                            outcomes=['entered_qualify_gate',
-                                    'entered_casino_gate',
-                                    'exited_qualify_gate'],
-                            input_keys=['gate_type_in',
-                                        'prev_completion_in'],
+gate_sm = smach.StateMachine(outcomes=['entered_qualify_gate','entered_casino_gate','exited_qualify_gate'],
+                            input_keys=['prev_completion_in',
+                                        'mission_type_in'],
                             output_keys=['prev_completion_out'])
 
-    #Set final outcome accordingly and return corresponding outcome
-    def execute(self, userdata):
-        if self.userdata.gate_type_in = "qualify"
-            if self.userdata.prev_completion_in == "nothing"
-                self.userdata_prev_completion_out = "entered_qualify_gate"
-                return 'entered_qualify_gate'
+#Remap userdata to each action state via goal_slots
+#Remap userdata from an action state to the state machine's userdata via result_slots
+with gate_sm:
+    #Define goal callbacks
+    def FindGoalCB(userdata, goal):
+        find_goal = FindGoal()
 
-            elif self.userdata.prev_completion_in == "circled_the_marker"
-                self.userdata.prev_completion_out = "exited_qualify_gate"
-                return 'exited_qualify_gate'
+        if userdata.mission_type_in == "qualify"
+            if userdata.prev_completion_in == "nothing" || userdata.prev_completion_in == "circled_the_marker"
+                find_goal.object = "qualify_gate"
+        if userdata.mission_type_in == "competition"
+            find_goal.object = "casino_gate"
 
-        elif self.userdata.gate_type_in = "casino"
-            if self.userdata.prev_completion_in == "nothing"
-                self.userdata.prev_completion_out = "entered_casino_gate"
-                return 'entered_casino_gate'
+    #NOTE: The GateGoalCB may not be necessary, since "object" could instead be
+    #set within FindGoalCB. However, should the AlignmentGoal ever change,
+    #a goal callback WILL be neccessary.
+    def GateGoalCB(userdata, goal):
+        alignment_goal = AlignmentGoal()
 
-def main():
-    gate_sm = smach.StateMachine(outcomes=['entered_qualify_gate','entered_casino_gate','exited_qualify_gate'],
-                                input_keys=['prev_completion_in',
-                                            'gate_type_in',
-                                            'casino_color_in'],
-                                output_keys=['prev_completion_out'])
-    gate_sm.userdata.depth = 0
-    gate_sm.userdata.euler_rpy = [0,0,0]
+        if userdata.mission_type_in == "qualify"
+            if userdata.prev_completion_in == "nothing" || userdata.prev_completion_in == "circled_the_marker"
+                alignment_goal.object = "qualify_gate"
+        if userdata.mission_type_in == "competition"
+            alignment_goal.object = "casino_gate"
 
-    #Remap userdata to each action state via goal_slots
-    #Remap userdata from an action state to the state machine's userdata via result_slots
-    with gate_sm:
-        smach.StateMachine.add('FIND_GATE',
-                                SimpleActionState('FindServer',
-                                                    FindGateAction,
-                                                    goal_slots=['gate_type',
-                                                                'casino_color']),
-                                transitions={'succeeded':'GATE_ALIGNMENT'},
-                                remapping={'gate_type':'gate_type_in',
-                                            'casino_color':'casino_color_in'})
-        smach.StateMachine.add('GATE_ALIGNMENT',
-                                SimpleActionState('AlignmentServer',
-                                                    GateAlignmentAction,
-                                                    goal_slots=['gate_type',
-                                                                'casino_color'],
-                                                    result_slots=['depth', 'euler_rpy']),
-                                transitions={'succeeded':'PASS_THRU_GATE'},
-                                remapping={'gate_type':'gate_type_in',
-                                            'casino_color':'casino_color_in',
-                                            'depth':'depth', 'euler_rpy':'euler_rpy'})
-        smach.StateMachine.add('PASS_THRU_GATE',
-                                SimpleActionState('PassThruGateServer',
-                                                    PassThruGateAction,
-                                                    goal_slots=['gate_type', 'casino_color',
-                                                                'depth','euler_rpy']),
-                                transitions={'succeeded':'SET_FINAL_GATE_OUTCOME'},
-                                remapping={'gate_type':'gate_type_in',
-                                            'casino_color':'casino_color_in',
-                                            'depth':'depth', 'euler_rpy':'euler_rpy'})
-        smach.StateMachine.add('SET_FINAL_GATE_OUTCOME', SetFinalGateOutcome(),
-                                transitions={'entered_qualify_gate':'entered_qualify_gate',
-                                            'entered_casino_gate':'entered_casino_gate',
-                                            'exited_qualify_gate':'exited_qualify_gate'}
-                                remapping={'gate_type_in':'gate_type_in',
-                                            'prev_completion_in':'prev_completion_in',
-                                            'prev_completion_out':'prev_completion_out'})
+        alignment_goal.casino_color = "none"
 
-    outcome = gate_sm.execute()
+    #Define result callbacks
+    def GateResultCB(userdata, status, result):
+        if status == GoalStatus.SECCEEDED:
+            if self.userdata.mission_type_in == "qualify":
+                if self.userdata.prev_completion_in == "nothing":
+                    self.userdata_prev_completion_out = "entered_qualify_gate"
+                    return 'entered_qualify_gate'
 
-if __name__ == "__main__"
-    main()
+                elif self.userdata.prev_completion_in == "circled_the_marker":
+                    self.userdata.prev_completion_out = "exited_qualify_gate"
+                    return 'exited_qualify_gate'
+
+            elif self.userdata.mission_type_in == "competition":
+                if self.userdata.prev_completion_in == "nothing":
+                    self.userdata.prev_completion_out = "entered_casino_gate"
+                    return 'entered_casino_gate'
+
+    #Add states
+    smach.StateMachine.add('FIND_OBJECT',
+                            SimpleActionState('FindServer',
+                                                FindAction,
+                                                goal_cb = FindGoalCB,
+                                                input_keys = ['mission_type_in',
+                                                              'prev_completion_in']),
+                            transitions={'succeeded':'CONQUER_GATE'},
+                            remapping={'mission_type_in':'mission_type_in',
+                                       'prev_completion_in':'prev_completion_in'})
+    smach.StateMachine.add('CONQUER_GATE',
+                            SimpleActionState('AlignmentServer',
+                                                AlignmentAction,
+                                                goal_cb = GateGoalCB,
+                                                result_cb = GateResultCB,
+                                                output_keys = ['prev_completion_out']),
+                            transitions={'entered_qualify_gate':'entered_qualify_gate',
+                                        'entered_casino_gate':'entered_casino_gate',
+                                        'exited_qualify_gate':'exited_qualify_gate'},
+                            remapping={'mission_type_in':'mission_type_in',
+                                        'prev_completion_in':'prev_completion_in',
+                                        'prev_completion_out':'prev_completion_out'})
+
+outcome = gate_sm.execute()

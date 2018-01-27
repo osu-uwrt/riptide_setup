@@ -5,21 +5,17 @@ import smach
 import smach_ros
 import main_container
 
-def main():
-    qualify_sm = smach.StateMachine(outcomes=['qualify_completed', 'qualify_failed'])
-    qualify_sm.userdata.prev_completion = "nothing" #Initialize to "nothing"
-    qualify_sm.userdata.gate_type = "qualify"
+qualify_sm = smach.StateMachine(outcomes=['qualify_completed', 'qualify_failed'])
+qualify_sm.userdata.mission_type = "qualify" #The mission is to qualify
+qualify_sm.userdata.prev_completion = "nothing" #Initialize to "nothing"
 
-    with qualify_sm:
-        smach.StateMachine.add('GATE_SM', gate_sm,
-                                transitions={'entered_qualify_gate':'MARKER_SM',
-                                            'exited_qualify_gate':'qualify_completed'},
-                                remapping={'prev_completion_in':'prev_completion',
-                                            'gate_type_in':'gate_type',
-                                            'prev_completion_out':'prev_completion'})
-        smach.StateMachine.add('MARKER_SM', marker_sm,
-                                transitions={'circled_the_marker':'GATE_SM'},
-                                remapping={'prev_completion_out':'prev_completion'})
-
-if __name__ == "__main__"
-    main()
+with qualify_sm:
+    smach.StateMachine.add('GATE_SM', gate_sm,
+                            transitions={'entered_qualify_gate':'MARKER_SM',
+                                        'exited_qualify_gate':'qualify_completed'},
+                            remapping={'prev_completion_in':'prev_completion',
+                                        'prev_completion_out':'prev_completion',
+                                        'mission_type_in':'mission_type'})
+    smach.StateMachine.add('MARKER_SM', marker_sm,
+                            transitions={'circled_the_marker':'GATE_SM'},
+                            remapping={'prev_completion_out':'prev_completion'})

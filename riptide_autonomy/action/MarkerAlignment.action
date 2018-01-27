@@ -1,9 +1,0 @@
-# Define the goal
-
----
-# Define the feedback
-
----
-# Define the result
-float64 depth
-geometry_msgs/Vector3 euler_rpy
