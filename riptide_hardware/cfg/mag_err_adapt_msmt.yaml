@@ -1,7 +1,7 @@
 #Magnetometer Magnitude Error Adaptive Measurement Settings
 #These settings change the Kalman Filter
 #Please only change the LPF bandwidth value
-LPF_bandwidth: 25 #Keep less than 30 Hz
+LPF_bandwidth: 100 #Keep less than 30 Hz
 low_limit: -0.1 #Gauss
 high_limit: 0.1 #Gauss
 low_limit_uncertainty: 0.1 #Gauss, 1-sigma uncertainty
