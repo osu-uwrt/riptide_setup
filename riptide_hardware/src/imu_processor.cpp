@@ -28,6 +28,15 @@
     //Put message data into state[0]
     state[0].header = filter_msg->header;
     state[0].header.frame_id = "base_link";
+
+    state[0].mag_field_N = filter_msg->mag_field_N;
+    state[0].mag_field_E = filter_msg->mag_field_E;
+    state[0].mag_field_D = filter_msg->mag_field_D;
+    state[0].mag_field_magnitude = filter_msg->mag_field_magnitude;
+    state[0].mag_inclination = filter_msg->mag_inclination;
+    state[0].mag_declination = filter_msg->mag_declination;
+    state[0].mag_status = filter_msg->mag_status;
+
     state[0].raw_euler_rpy = filter_msg->euler_rpy;
     state[0].euler_rpy = filter_msg->euler_rpy;
     state[0].gyro_bias = filter_msg->gyro_bias;
@@ -72,7 +81,6 @@
     //Further process data
     if(cycles >= size) {
       smoothData();
-      processDrift();
     }
 
     //Process linear acceleration (Remove centrifugal and tangential components)
@@ -121,6 +129,9 @@
 
 //Convert all data fields from radians to degrees
 void IMUProcessor::cvtRad2Deg() {
+  state[0].mag_inclination *= (180.0/PI);
+  state[0].mag_declination *= (180.0/PI);
+
   state[0].raw_euler_rpy.x *= (180.0/PI);
   state[0].raw_euler_rpy.y *= (180.0/PI);
   state[0].raw_euler_rpy.z *= (180.0/PI);
@@ -164,37 +175,6 @@ void IMUProcessor::processEulerAngles() {
 
   //Adjust YAW (negate the value)
   state[0].euler_rpy.z *= -1;
-}
-
-//NOTE: This information is no longer needed, but remains here since it might
-//be helpful if something goes wrong
-//Check if raw angular velocity about any axis is approximately 0, and compute drift
-void IMUProcessor::processDrift() {
-  //X drift
-  if(abs(state[c].angular_velocity.x) <= zero_ang_vel_thresh) {
-    state[c].local_drift.x = state[c].euler_rpy.x - state[c+1].euler_rpy.x;
-  }
-  else {
-    state[c].local_drift.x = 0;
-  }
-  state[c].local_drift_rate.x = state[c].local_drift.x / state[c].dt;
-
-  //Y drift
-  if(abs(state[c].angular_velocity.y) <= zero_ang_vel_thresh) {
-    state[c].local_drift.y = state[c].euler_rpy.y - state[c+1].euler_rpy.y;
-  }
-  else {
-    state[c].local_drift.y = 0;
-  }
-  state[c].local_drift_rate.y = state[c].local_drift.y / state[c].dt;
-
-  //Z drift
-  if(abs(state[c].angular_velocity.z) <= zero_ang_vel_thresh) {
-    state[c].local_drift.z = state[c].euler_rpy.z - state[c+1].euler_rpy.z;    }
-  else {
-    state[c].local_drift.z = 0;
-  }
-  state[c].local_drift_rate.z = state[c].local_drift.z / state[c].dt;
 }
 
 //Smooth Angular Velocity and Linear Acceleration with a Gaussian 7-point smooth

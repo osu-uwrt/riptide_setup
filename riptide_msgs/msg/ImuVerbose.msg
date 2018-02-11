@@ -9,6 +9,15 @@
 #NOTE: any data field with the prefix "raw_" means it is direct output from the Estimation Kalman Filter
 
 std_msgs/Header header
+
+float64 mag_field_N # Gauss
+float64 mag_field_E # Gauss
+float64 mag_field_D # Gauss
+float64 mag_field_magnitude # Gauss
+float64 mag_inclination # Degrees
+float64 mag_declination # Degrees
+uint16 mag_status # 0 = invalid, 1 = valid
+
 geometry_msgs/Vector3 raw_euler_rpy
 geometry_msgs/Vector3 euler_rpy #The Euler Angles that we WANT to use
 geometry_msgs/Vector3 gyro_bias
@@ -29,5 +38,3 @@ float64 angular_velocity_status #0 = invalid, 1 = valid
 float64 linear_acceleration_status #0 = invalid, 1 = valid
 
 float64 dt #Time since last message [s]
-geometry_msgs/Vector3 local_drift #Amount of drift upon being "stationary" about any axis [deg]
-geometry_msgs/Vector3 local_drift_rate #Drift rate upon being "stationary" about any axis [deg/s]

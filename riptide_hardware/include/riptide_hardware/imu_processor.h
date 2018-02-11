@@ -38,7 +38,6 @@ public:
   void callback(const imu_3dm_gx4::FilterOutput::ConstPtr& filter_msg);
   void cvtRad2Deg();
   void processEulerAngles();
-  void processDrift();
   void smoothData();
   void populateIMUState();
   void loop();
