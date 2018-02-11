@@ -7,5 +7,6 @@
       <arg name="enable_mag_err_adapt_msmt" value="$(arg enable_mag_err_adapt_msmt)" />
       <arg name="location" value="$(arg location)" />
       <arg name="device" value="$(arg device)" />
+      <arg name="enable_mag_err_adapt_msmt" value="$(arg enable_mag_err_adapt_msmt)" />
     </include>
 </launch>

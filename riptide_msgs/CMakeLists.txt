@@ -13,13 +13,8 @@ add_message_files(
     Depth.msg
     Thrust.msg
     ThrustStamped.msg
-    OdomWithAccel.msg
     Pwm.msg
     PwmStamped.msg
-    Esc.msg
-    Thrusters.msg
-    Bat.msg
-    BatStamped.msg
     Imu.msg
     ImuVerbose.msg
 )

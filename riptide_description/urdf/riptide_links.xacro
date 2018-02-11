@@ -10,17 +10,12 @@
       <mass value="0.00001" />
       <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
     </inertial>
-    <!-- <buoyancy>
-    <compensation>10000</compensation>
-      <origin xyz= "0 0 0"/>
-      <limit radius=".25"/>
-      <damping xyz="60 100 100" rpy="20 50 50"/>
-    </buoyancy> -->
   </link>
 
   <!--               -->
   <!-- Housing Links -->
   <!--               -->
+  <!-- TODO: Calculate actual buoyancy compensations -->
 
   <link name="housing_link">
     <inertial>
@@ -41,6 +36,13 @@
         <mesh filename="${housing_mesh}" />
       </geometry>
     </collision>
+
+    <buoyancy>
+      <compensation>1.4</compensation>
+      <origin xyz= "${housing_com}"/>
+      <limit radius=".25"/>
+      <damping xyz="60 100 100" rpy="20 50 50"/>
+    </buoyancy>
   </link>
 
   <link name="chassis_link">
@@ -83,6 +85,13 @@
         <mesh filename="${acoustics_mesh}" />
       </geometry>
     </collision>
+
+    <!-- <buoyancy>
+      <compensation>0</compensation>
+      <origin xyz= "${acoustics_com}"/>
+      <limit radius=".25"/>
+      <damping xyz="0 0 0" rpy="0 0 0"/>
+    </buoyancy> -->
   </link>
 
   <link name="pneumatics_link">
@@ -104,6 +113,13 @@
         <mesh filename="${pneumatics_mesh}" />
       </geometry>
     </collision>
+
+    <buoyancy>
+      <compensation>1.4</compensation>
+      <origin xyz= "${pneumatics_com}"/>
+      <limit radius=".25"/>
+      <damping xyz="0 0 0" rpy="0 0 0"/>
+    </buoyancy>
   </link>
 
   <link name="port_battery_link">
@@ -125,6 +141,13 @@
         <mesh filename="${port_battery_mesh}" />
       </geometry>
     </collision>
+
+    <buoyancy>
+      <compensation>1.4</compensation>
+      <origin xyz= "${port_battery_com}"/>
+      <limit radius=".25"/>
+      <damping xyz="0 0 0" rpy="0 0 0"/>
+    </buoyancy>
   </link>
 
   <link name="stbd_battery_link">
@@ -146,7 +169,14 @@
         <mesh filename="${stbd_battery_mesh}" />
       </geometry>
     </collision>
-  </link> -->
+
+    <buoyancy>
+      <compensation>1.4</compensation>
+      <origin xyz= "${stbd_battery_com}"/>
+      <limit radius=".25"/>
+      <damping xyz="0 0 0" rpy="0 0 0"/>
+    </buoyancy>
+  </link>
 
   <!--                -->
   <!-- Thruster Links -->

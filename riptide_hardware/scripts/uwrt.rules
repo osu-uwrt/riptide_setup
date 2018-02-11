@@ -1,3 +1,0 @@
-#IMU Rules - set "imu_front" and "imu_rear"
-SUBSYSTEMS=="usb", ATTRS{manufacturer}=="Lord Microstrain",ATTRS{product}=="Lord Inertial Sensor", ATTRS{serial}=="0000__6234.50972", MODE="0777", SYMLINK+="imu_front"
-SUBSYSTEMS=="usb", ATTRS{manufacturer}=="Lord Microstrain",ATTRS{product}=="Lord Inertial Sensor", ATTRS{serial}=="0000__6234.41818", MODE="0777", SYMLINK+="imu_rear"

@@ -1,3 +1,0 @@
-<launch>
-  <node pkg="riptide_controllers" type="orientation_controller" name="orientation_controller" output="screen" />
-</launch>
