@@ -50,7 +50,7 @@ AttitudeController::AttitudeController() {
 
     pid_initialized = false;
 
-    cmd_sub = nh.subscribe<geometry_msgs::Vector3>("command/orientation", 1000, &AttitudeController::CommandCB, this);
+    cmd_sub = nh.subscribe<geometry_msgs::Vector3>("command/attitude", 1000, &AttitudeController::CommandCB, this);
     imu_sub = nh.subscribe<riptide_msgs::Imu>("state/imu", 1000, &AttitudeController::ImuCB, this);
 
     roll_controller_pid.init(rcpid, false);
