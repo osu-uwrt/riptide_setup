@@ -20,9 +20,9 @@ roslint_cpp()
 add_executable(imu_processor src/imu_processor.cpp)
 target_link_libraries(imu_processor ${catkin_LIBRARIES})
 
-add_executable(imu_drift_logger src/imu_drift_logger.cpp)
-target_link_libraries(imu_drift_logger ${catkin_LIBRARIES})
-add_dependencies(imu_drift_logger ${catkin_EXPORTED_TARGETS})
+add_executable(imu_logger src/imu_logger.cpp)
+target_link_libraries(imu_logger ${catkin_LIBRARIES})
+add_dependencies(imu_logger ${catkin_EXPORTED_TARGETS})
 
 add_dependencies(imu_processor riptide_msgs_gencpp)
 add_dependencies(imu_processor ${catkin_EXPORTED_TARGETS})

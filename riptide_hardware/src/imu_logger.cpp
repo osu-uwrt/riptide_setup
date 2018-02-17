@@ -27,33 +27,35 @@
 //YOU MUST CHANGE THE "file_prefix" BEFORE USING
 
 
-#include "riptide_hardware/imu_drift_logger.h"
+#include "riptide_hardware/imu_logger.h"
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "imu_drift_logger");
-  IMUDriftLogger imu_drift_logger(argv);
-  imu_drift_logger.loop();
-  ROS_INFO("IMU drift logger looping");
+  ros::init(argc, argv, "imu_logger");
+  IMULogger imu_logger(argv);
+  imu_logger.loop();
+  ROS_INFO("IMU logger looping");
 }
 
 //Converts std::string to char*
-char* IMUDriftLogger::convert(const std::string& str) {
+char* IMULogger::convert(const std::string& str) {
    char* result = new char[str.length()+1];
    strcpy(result,str.c_str());
    return result;
  }
 
 //Constructor
- IMUDriftLogger::IMUDriftLogger(char **argv) : nh()
+ IMULogger::IMULogger(char **argv) : nh()
  {
-   imu_state_sub = nh.subscribe<riptide_msgs::ImuVerbose>("state/imu/verbose", 1, &IMUDriftLogger::callback, this);
+   mag_sub = nh.subscribe<imu_3dm_gx4::MagFieldCF>("imu/magnetic_field", 1, &IMULogger::magLogger, this);
+   initialized = false;
+   tStart = 0, tNow = 0;
 
-   //Create a new file for logging IMU drift data
+   //Create a new file for logging IMU data
    bool found_new_file_name = false;
    int num = 1; //Begin file counting here
    std::string file_suffix = boost::lexical_cast<std::string>(num); //Convert int to string
-   std::string file_prefix = "//home//tsender//osu-uwrt//imu_drift_logger_"; //File path included in prefix
+   std::string file_prefix = "//home//tsender//osu-uwrt//imu_mag_components"; //File path included in prefix
    std::string file_type = ".csv";
 
    //Create file name
@@ -63,7 +65,7 @@ char* IMUDriftLogger::convert(const std::string& str) {
 
    //If unable to open for reading, then the file does not exist --> new file_name
    while(!found_new_file_name) {
-     ROS_INFO("Drift Logger File Name:");
+     ROS_INFO("IMU Logger File Name:");
      ROS_INFO("\t%s", file_name);
      fid = fopen(file_name_c,"r");
       if(fid) { //File already exists
@@ -80,52 +82,31 @@ char* IMUDriftLogger::convert(const std::string& str) {
    }
  }
 
- void IMUDriftLogger::callback(const riptide_msgs::ImuVerbose::ConstPtr& imu_msg) {
-   //Store appropriate values from message
-   /*dt = imu_msg->dt;
-   euler_rpy[0] imu_msg->
-   angular_vel[0] = imu_msg->angular_velocity.x;
-   angular_vel[1] = imu_msg->angular_velocity.y;
-   angular_vel[2] = imu_msg->angular_velocity.z;
-   angular_accel[0] = imu_msg->angular_acceleration.x;
-   angular_accel[1] = imu_msg->angular_acceleration.y;
-   angular_accel[2] = imu_msg->angular_acceleration.z;
-   drift[0] = imu_msg->local_drift.x;
-   drift[1] = imu_msg->local_drift.y;
-   drift[2] = imu_msg->local_drift.z;
-   drift_rate[0] = imu_msg->local_drift_rate.x;
-   drift_rate[1] = imu_msg->local_drift_rate.y;
-   drift_rate[2] = imu_msg->local_drift_rate.z;*/
+//Log magnetometer vector components
+ void IMULogger::magLogger(const imu_3dm_gx4::MagFieldCF::ConstPtr& mag) {
 
    //Open file and print values
    fid = fopen(file_name_c,"a"); //Open file for "appending"
    if(!fid) {
-     ROS_INFO("Drift Logger: file not opened");
+     ROS_INFO("IMU Logger: file not opened");
    }
-   fprintf(fid,"%f,", imu_msg->dt);
-   fprintf(fid,"%f,", imu_msg->euler_rpy.x);
-   fprintf(fid,"%f,", imu_msg->euler_rpy.y);
-   fprintf(fid,"%f,", imu_msg->euler_rpy.z);
-   fprintf(fid,"%f,", imu_msg->gyro_bias.x);
-   fprintf(fid,"%f,", imu_msg->gyro_bias.y);
-   fprintf(fid,"%f,", imu_msg->gyro_bias.z);
-   fprintf(fid,"%f,", imu_msg->angular_velocity.x);
-   fprintf(fid,"%f,", imu_msg->angular_velocity.y);
-   fprintf(fid,"%f,", imu_msg->angular_velocity.z);
-   fprintf(fid,"%f,", imu_msg->angular_acceleration.x);
-   fprintf(fid,"%f,", imu_msg->angular_acceleration.y);
-   fprintf(fid,"%f,", imu_msg->angular_acceleration.z);
-   fprintf(fid,"%f,", imu_msg->local_drift.x);
-   fprintf(fid,"%f,", imu_msg->local_drift.y);
-   fprintf(fid,"%f,", imu_msg->local_drift.z);
-   fprintf(fid,"%f,", imu_msg->local_drift_rate.x);
-   fprintf(fid,"%f,", imu_msg->local_drift_rate.y);
-   fprintf(fid,"%f\n", imu_msg->local_drift_rate.z);
+
+   if(!initialized) {
+     tStart = ros::Time::now().toSec();
+     fprintf(fid,"%f,", 0.0);
+     initialized = true;
+   } else {
+     tNow = ros::Time::now().toSec();
+     fprintf(fid,"%f,", tNow - tStart);
+   }
+   fprintf(fid,"%f,", mag->mag_field_components.x);
+   fprintf(fid,"%f,", mag->mag_field_components.y);
+   fprintf(fid,"%f\n", mag->mag_field_components.z);
    fclose(fid);
  }
 
  //ROS loop function
-  void IMUDriftLogger::loop()
+  void IMULogger::loop()
   {
     ros::Rate rate(1000);
     while (!ros::isShuttingDown())
