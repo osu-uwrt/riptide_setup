@@ -3,12 +3,15 @@
     <arg name="device" default="/dev/imu_front" />
     <arg name="mag_LPF_bandwidth" default="1" />
     <arg name="enable_mag_err_adapt_msmt" default="false" />
-    <node pkg="riptide_hardware" name="imu_processor" type="imu_processor" output="screen" />
+    <node pkg="riptide_hardware" name="imu_processor" type="imu_processor" output="screen" >
+      <rosparam file="$(find riptide_hardware)/cfg/$(arg location).yaml" command="load"/>
+    </node>
+
     <include file="$(find imu_3dm_gx4)/launch/imu.launch" >
       <arg name="location" value="$(arg location)" />
       <arg name="device" value="$(arg device)" />
       <arg name="mag_LPF_bandwidth" value="$(arg mag_LPF_bandwidth)" />
       <arg name="enable_mag_err_adapt_msmt" value="$(arg enable_mag_err_adapt_msmt)" />
     </include>
-    <node pkg="riptide_hardware" name="imu_logger" type="imu_logger" output="screen" />
+    <!--<node pkg="riptide_hardware" name="imu_logger" type="imu_logger" output="screen" />-->
 </launch>

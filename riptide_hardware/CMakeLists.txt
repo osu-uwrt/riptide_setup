@@ -9,6 +9,7 @@ find_package(catkin REQUIRED
     geometry_msgs
     imu_3dm_gx4
     pointgrey_camera_driver
+    message_filters
 )
 
 catkin_package(INCLUDE_DIRS include)
@@ -16,6 +17,10 @@ catkin_package(INCLUDE_DIRS include)
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 roslint_cpp()
+
+# include boost
+find_package(Boost REQUIRED)
+include_directories(${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIR})
 
 add_executable(imu_processor src/imu_processor.cpp)
 target_link_libraries(imu_processor ${catkin_LIBRARIES})
