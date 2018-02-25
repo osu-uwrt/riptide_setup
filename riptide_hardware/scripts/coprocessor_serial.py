@@ -64,7 +64,7 @@ def main():
                                 #End byte recieved
                                 depthRead = False
                                 dataRead = False
-                            else(depthRead == True):
+                            else:
                                 depthData = depthData + data
 
                         if(swRead):
