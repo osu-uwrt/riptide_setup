@@ -53,37 +53,36 @@ def main():
                 data = ser.read();
                 if data is not "":
 
-                    #This checks the depth data
+                    #First two conditions check for start bytes
                     if (data == "%"):
                         depthRead = True
                     elif(data == "$"):
                         swRead = True
                     else:
-                        depthRead = False
-                        swRead = False
+                        if(depthRead):
+                            if(data == "#"):
+                                depthRead = True
+                            elif(data == "@"):
+                                #End byte recieved
+                                depthRead = False
+                                dataRead = False
+                            else(depthRead == True):
+                                depthData = depthData + data
 
-                    if(depthRead):
-                        if(data == "@"):
-                            #End byte recieved
-                            depthRead = False
-                            dataRead = False
-                        else(depthRead == True):
-                            depthData = depthData + data
-
-
-
-                    if(swRead):
-                        swRead = True
-                        if(data == "@"):
-                            #End byte recieved
-                            swRead = False
-                            dataRead = False
-                        else:
-                            try:
-                                switchData.append(data)
-                            except "n":
-                                print "Error - switch not detected"
-                                sys.exit()
+                        if(swRead):
+                            swRead = True
+                            if(data == "$"):
+                                swRead = True
+                            elif(data == "@"):
+                                #End byte recieved
+                                swRead = False
+                                dataRead = False
+                            else:
+                                try:
+                                    switchData.append(data)
+                                except "n":
+                                    print "Error - switch not detected"
+                                    sys.exit()
 
 
         depthList = depthData.split("!")
