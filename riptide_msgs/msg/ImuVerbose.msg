@@ -9,14 +9,16 @@
 #NOTE: any data field with the prefix "raw_" means it is direct output from the Estimation Kalman Filter
 
 std_msgs/Header header
+
 geometry_msgs/Vector3 raw_euler_rpy
 geometry_msgs/Vector3 euler_rpy #The Euler Angles that we WANT to use
 geometry_msgs/Vector3 gyro_bias
 
-float64 heading #The correct heading (yaw), as updated by the internal magnetometer
-float64 heading_uncertainty #1-sigma heading uncertainty
+float64 heading #OUR Calculated heading
+float64 heading_update #The correct heading (yaw), as updated by the internal magnetometer
+float64 heading_update_uncertainty #1-sigma heading uncertainty
 float64 heading_update_source #0 = none, 1 = internal magnetometer, 4 = external heading update
-float64 heading_flags #0 = no update received within 2 sec, 1 = update received within 2 sec
+float64 heading_update_flags #0 = no update received within 2 sec, 1 = update received within 2 sec
 
 geometry_msgs/Vector3 raw_linear_acceleration #This is actually ABSOLUTE acceleration, all values in [m/s^2]
 geometry_msgs/Vector3 linear_acceleration #Corrected LINEAR acceleration, all values in [m/s^2]
@@ -29,5 +31,3 @@ float64 angular_velocity_status #0 = invalid, 1 = valid
 float64 linear_acceleration_status #0 = invalid, 1 = valid
 
 float64 dt #Time since last message [s]
-geometry_msgs/Vector3 local_drift #Amount of drift upon being "stationary" about any axis [deg]
-geometry_msgs/Vector3 local_drift_rate #Drift rate upon being "stationary" about any axis [deg/s]
