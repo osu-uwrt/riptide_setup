@@ -42,28 +42,53 @@ def main():
 
     while not rospy.is_shutdown():
 
-        #Publishing depth sensor data
+        switchData = []
         depthData =""
         if ser is not None:
             while dataRead:
                 data = ser.read();
                 if data is not "":
                     if (data == "%"):
-                        #Start byte recieved
-                        dataRead = True
-                    elif(data == "@"):
-                        #End byte recieved
-                        dataRead = False
-                    else:
-                        depthData = depthData + data
+                        depthRead = True
+                        while depthRead:
+                            if (data == "%"):
+                                depthRead = true
+                            elif(data == "@"):
+                                #End byte recieved
+                                depthRead = False
+                            else:
+                                depthData = depthData + data
+
+
+                    if (data == "$"):
+                        swRead = True
+                        while swRead:
+                            if(data == "$"):
+                                swRead = True
+                            elif(data == "@"):
+                                swRead = False
+                            else:
+                                try:
+                                    switchData.append(data)
+                                except "n":
+                                    print "ERROR - switch not detected"
+                                    sys.exit()
 
         depthList = depthData.split("!")
         msg.pressure = depthList[0]
         msg.temp = depthList[1]
         msg.depth = depthList[2]
         msg.altitude = depthList[3]
-        pub = rospy.Publisher('/state/depth', std_msgs.msg.String, queue_size=10)
-        pub.publish(msg);
+        depthPub = rospy.Publisher('/state/depth', std_msgs.msg.String, queue_size=10)
+        depthPub.publish(msg);
 
+        msg.kill = switchData[0]
+        msg.sw1 = switchData[1]
+        msg.sw2 = switchData[2]
+        msg.sw3 = switchData[3]
+        msg.sw4 = switchData[4]
+        msg.sw5 = switchData[5]
+        swPub = rospy.Publisher('/state/switches', std_msgs.msg.String, queue_size=10)
+        swPub.publish(msg);
 
 if __name__ == "__main__": main()
