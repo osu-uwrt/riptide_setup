@@ -74,7 +74,7 @@ def main():
 
                     if(swRead):
                         swRead = True
-                        if(data == "@" && swRead == True):
+                        if(data == "@"):
                             #End byte recieved
                             swRead = False
                             dataRead = False
@@ -84,7 +84,7 @@ def main():
                             except "n":
                                 print "Error - switch not detected"
                                 sys.exit()
-                                
+
 
         depthList = depthData.split("!")
         msg.pressure = depthList[0]
