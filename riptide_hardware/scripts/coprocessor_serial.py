@@ -60,9 +60,7 @@ def main():
                         swRead = True
                     else:
                         if(depthRead):
-                            if(data == "#"):
-                                depthRead = True
-                            elif(data == "@"):
+                            if(data == "@"):
                                 #End byte recieved
                                 depthRead = False
                                 dataRead = False
@@ -70,10 +68,7 @@ def main():
                                 depthData = depthData + data
 
                         if(swRead):
-                            swRead = True
-                            if(data == "$"):
-                                swRead = True
-                            elif(data == "@"):
+                            if(data == "@"):
                                 #End byte recieved
                                 swRead = False
                                 dataRead = False
