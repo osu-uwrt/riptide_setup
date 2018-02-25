@@ -7,5 +7,3 @@ std_msgs/String casino_color
 
 ---
 # Define the result
-float64 depth
-geometry_msgs/Vector3 euler_rpy

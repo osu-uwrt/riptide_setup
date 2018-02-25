@@ -14,18 +14,18 @@ import qualify_sm
 def child_term_cb(outcome_map):
     if outcome_map['SAFETY_SM'] == 'emergency':
         return True
-    elif outcome_map['MISSION_SM'] == 'succeeded_MS' || outcome_map['MISSION_SM'] == 'failed_MS':
+    elif outcome_map['QUALIFY_SM'] == 'qualify_completed' || outcome_map['QUALIFY_SM'] == 'qualify_failed':
         return True
     return False
 
-main_container = Concurrence(outcomes = ['mission_completed', 'mission_failed','emergency'],
+qualify_container = Concurrence(outcomes = ['mission_completed', 'mission_failed','emergency'],
                  default_outcome = 'emergency',
-                 outcome_map = {'mission_completed':{'QUALIFY_SM':'qualify_completed'},
-                                'mission_failed':{'QUALIFY_SM':'qualify_failed'},
+                 outcome_map = {'qualify_completed':{'QUALIFY_SM':'qualify_completed'},
+                                'qualify_failed':{'QUALIFY_SM':'qualify_failed'},
                                 'emergency':{'SAFETY_SM':'emergency'}})
 
 with main_container:
     Concurrence.add('SAFETY_SM', safety_sm)
     Concurrence.add('QUALIFY_SM', qualify_sm)
 
-outcome = main_container.execute()
+outcome = qualify_container.execute()

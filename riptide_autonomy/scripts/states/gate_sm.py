@@ -6,7 +6,8 @@ import smach_ros
 
 gate_sm = smach.StateMachine(outcomes=['entered_qualify_gate','entered_casino_gate','exited_qualify_gate'],
                             input_keys=['prev_completion_in',
-                                        'mission_type_in'],
+                                        'mission_type_in',
+                                        'casino_color_in'],
                             output_keys=['prev_completion_out'])
 
 #Remap userdata to each action state via goal_slots
@@ -34,11 +35,14 @@ with gate_sm:
         if userdata.mission_type_in == "competition"
             alignment_goal.object = "casino_gate"
 
-        alignment_goal.casino_color = "none"
+        #Color defined in the client state
+        alignment_goal.casino_color = userdata.casino_color_in
+
+
 
     #Define result callbacks
     def GateResultCB(userdata, status, result):
-        if status == GoalStatus.SECCEEDED:
+        if status == GoalStatus.SUCCEEDED:
             if self.userdata.mission_type_in == "qualify":
                 if self.userdata.prev_completion_in == "nothing":
                     self.userdata_prev_completion_out = "entered_qualify_gate"
@@ -73,6 +77,7 @@ with gate_sm:
                                         'entered_casino_gate':'entered_casino_gate',
                                         'exited_qualify_gate':'exited_qualify_gate'},
                             remapping={'mission_type_in':'mission_type_in',
+                                        'casino_color_in':'casino_color',
                                         'prev_completion_in':'prev_completion_in',
                                         'prev_completion_out':'prev_completion_out'})
 
