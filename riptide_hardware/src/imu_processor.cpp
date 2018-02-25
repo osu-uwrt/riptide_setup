@@ -54,6 +54,11 @@ void IMUProcessor::magCallback(const imu_3dm_gx4::MagFieldCF::ConstPtr& mag_msg)
     heading = heading + 360; //Add 360 deg.
   }
   state[0].heading = heading;
+  //Set YAW equal to calculated heading
+  //Multiply by -1 (positive z-axis points up)
+  state[0].euler_rpy.z = -state[0].heading;
+  //Adjust YAW (negate the value - positive z-axis points up)
+  //state[0].euler_rpy.z *= -1;
 }
 
  //Callback
@@ -64,7 +69,8 @@ void IMUProcessor::magCallback(const imu_3dm_gx4::MagFieldCF::ConstPtr& mag_msg)
     state[0].header.frame_id = "base_link";
 
     state[0].raw_euler_rpy = filter_msg->euler_rpy;
-    state[0].euler_rpy = filter_msg->euler_rpy;
+    state[0].euler_rpy.x = filter_msg->euler_rpy.x;
+    state[0].euler_rpy.y = filter_msg->euler_rpy.y;
     state[0].gyro_bias = filter_msg->gyro_bias;
     state[0].euler_rpy_status = filter_msg->euler_rpy_status;
 
@@ -84,11 +90,11 @@ void IMUProcessor::magCallback(const imu_3dm_gx4::MagFieldCF::ConstPtr& mag_msg)
     lastRoll = state[0].euler_rpy.x;
     lastPitch = state[0].euler_rpy.y;
 
-    //Process Euler Angles (adjust heading and signs)
-    processEulerAngles();
-
     //Convert angular values from radians to degrees
     cvtRad2Deg();
+
+    //Process Euler Angles (adjust heading and signs)
+    processEulerAngles();
 
     //Set new delta time (convert nano seconds to seconds)
     if(state[1].dt == 0) { //If dt[0] not set yet, set to 0.01s, which is roughly what it would be
@@ -146,7 +152,7 @@ void IMUProcessor::cvtRad2Deg() {
   state[0].raw_euler_rpy.z *= (180.0/PI);
   state[0].euler_rpy.x *= (180.0/PI);
   state[0].euler_rpy.y *= (180.0/PI);
-  state[0].euler_rpy.z *= (180.0/PI);
+  //state[0].euler_rpy.z *= (180.0/PI);
 
   state[0].gyro_bias.x *= (180.0/PI);
   state[0].gyro_bias.y *= (180.0/PI);
@@ -165,9 +171,6 @@ void IMUProcessor::cvtRad2Deg() {
 
 //Adjust Euler angles to be consistent with the AUV's axes
 void IMUProcessor::processEulerAngles() {
-  //Set YAW equal to calculated heading
-  state[0].euler_rpy.z = state[0].heading;
-
   //Adjust ROLL
   if(state[0].euler_rpy.x > -180 && state[0].euler_rpy.x < 0) {
     state[0].euler_rpy.x += 180;
@@ -184,9 +187,6 @@ void IMUProcessor::processEulerAngles() {
 
   //Adjust pitch (negate the value - positive y-axis points left)
   state[0].euler_rpy.y *= -1;
-
-  //Adjust YAW (negate the value - positive z-axis points up)
-  state[0].euler_rpy.z *= -1;
 }
 
 //Smooth Angular Velocity and Linear Acceleration with a Gaussian 7-point smooth
