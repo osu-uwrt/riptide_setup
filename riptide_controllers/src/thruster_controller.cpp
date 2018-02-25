@@ -17,7 +17,8 @@ double MASS = 34.47940950;
 
 // Vehcile volume (m^3)
 // TODO: Get this value from model
-double VOLUME = 0.0334;
+// Updated on 2/21/18
+double VOLUME = 0.0340;
 
 // Gravity (m/s^2)
 double GRAVITY = 9.81;
@@ -27,9 +28,9 @@ double WATER_DENSITY = 1000.0;
 double BUOYANCY = VOLUME * WATER_DENSITY * GRAVITY - GRAVITY * MASS;
 
 // Moments of inertia (kg*m^2)
-double Ixx = 0.50862680;
-double Iyy = 1.70892348;
-double Izz = 1.77586420;
+double Ixx = 0.52607145;
+double Iyy = -1.50451601;
+double Izz = -1.62450600;
 
 // Acceleration commands (m/s^):
 double cmdSurge = 0.0;
