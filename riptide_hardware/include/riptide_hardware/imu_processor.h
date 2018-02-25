@@ -2,21 +2,18 @@
 #define IMU_PROCESSOR_H
 
 #include "ros/ros.h"
-//#include "message_filters/subscriber.h"
-//#include "message_filters/synchronizer.h"
-//#include "message_filters/sync_policies/approximate_time.h"
-//#include "tf/transform_broadcaster.h"
 #include "riptide_msgs/Imu.h"
 #include "riptide_msgs/ImuVerbose.h"
 #include "std_msgs/Header.h"
 #include "imu_3dm_gx4/FilterOutput.h"
+#include "imu_3dm_gx4/MagFieldCF.h"
 #include "math.h"
 
 class IMUProcessor
 {
 private:
   ros::NodeHandle nh;
-  ros::Subscriber imu_filter_sub;
+  ros::Subscriber imu_filter_sub, imu_mag_sub;
   ros::Publisher imu_verbose_state_pub;
   ros::Publisher imu_state_pub;
   int cycles;
@@ -33,12 +30,15 @@ private:
   //Only velocities and accelerations will be smoothed
   riptide_msgs::ImuVerbose state[7]; //Used for calculations, debugging, etc.
   riptide_msgs::Imu imu_state; //Used for the controllers
+  float magBX, magBY, magBZ, magWX, magWY, lastRoll, lastPitch, heading;
+  double latitude, longitude, altitude, declination;
 public:
   IMUProcessor(char **argv);
-  void callback(const imu_3dm_gx4::FilterOutput::ConstPtr& filter_msg);
+  //void callback(const imu_3dm_gx4::FilterOutput::ConstPtr& filter_msg);
+  void magCallback(const imu_3dm_gx4::MagFieldCF::ConstPtr& mag_msg);
+  void filterCallback(const imu_3dm_gx4::FilterOutput::ConstPtr& filter_msg);
   void cvtRad2Deg();
   void processEulerAngles();
-  void processDrift();
   void smoothData();
   void populateIMUState();
   void loop();
