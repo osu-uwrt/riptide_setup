@@ -5,6 +5,7 @@ import rospy
 from std_msgs.msg import String
 from riptide_msgs.msg import Depth
 from riptide_msgs.msg import PwmStamped
+from riptide_msgs.msg import SwitchState
 
 COM_PORT = '/dev/ttyACM0'
 ser = serial.Serial(COM_PORT, baudrate=9600, timeout=None)
@@ -28,7 +29,6 @@ def pwm_callback(pwm_message):
 
     #The pwm values and start and end bytes are added to a String and written
     final_pwm = pwmStart + ssh + sph + spl + ssl + swf + swa + hpa + hsa + hsf + hpf + pwmEnd
-    print(final_pwm)
     final_pwm = bytes(final_pwm)
     ser.write(final_pwm)
 
@@ -58,7 +58,6 @@ def main():
                         depthData = depthData + data
 
         depthList = depthData.split("!")
-        Depth msg
         msg.pressure = depthList[0]
         msg.temp = depthList[1]
         msg.depth = depthList[2]
