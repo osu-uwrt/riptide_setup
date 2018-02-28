@@ -1,6 +1,8 @@
 #include "riptide_hardware/imu_processor.h"
 
  #define PI 3.141592653
+ //using namespace imu_3dm_gx4;
+ //using namespace message_filters;
 
  int main(int argc, char** argv)
  {
@@ -12,9 +14,16 @@
 //Constructor
  IMUProcessor::IMUProcessor(char **argv) : nh()
  {
-   imu_filter_sub = nh.subscribe<imu_3dm_gx4::FilterOutput>("imu/filter", 1, &IMUProcessor::callback, this);
-   imu_verbose_state_pub = nh.advertise<riptide_msgs::ImuVerbose>("state/imu/verbose", 1);
+
+   imu_filter_sub = nh.subscribe<imu_3dm_gx4::FilterOutput>("imu/filter", 1, &IMUProcessor::filterCallback, this);
+   imu_mag_sub = nh.subscribe<imu_3dm_gx4::MagFieldCF>("imu/magnetic_field", 1, &IMUProcessor::magCallback, this);
+   imu_verbose_state_pub = nh.advertise<riptide_msgs::ImuVerbose>("state/imu_verbose", 1);
    imu_state_pub = nh.advertise<riptide_msgs::Imu>("state/imu", 1);
+
+   nh.param<double>("latitude", latitude, 39.9984); //Default is Columbus latitude
+   nh.param<double>("longitude", longitude, -83.0179); //Default is Columbus longitude
+   nh.param<double>("altitude", altitude, 224.0); //Default is Columbus altitude
+   nh.param<double>("declination", declination, -6.838); //Default is Columbus declination
 
    zero_ang_vel_thresh = 1;
    cycles = 1;
@@ -22,21 +31,53 @@
    size = 7; //Size of state array
  }
 
+//Read magnetometer data and compute heading
+void IMUProcessor::magCallback(const imu_3dm_gx4::MagFieldCF::ConstPtr& mag_msg) {
+  //Read in body frame mag components
+  magBX = mag_msg->mag_field_components.x;
+  magBY = mag_msg->mag_field_components.y;
+  magBZ = mag_msg->mag_field_components.z;
+
+  //Calculate x and y mag components in world frame
+  magWY = magBZ*sin(lastRoll) - magBY*cos(lastRoll);
+  magWX = magBX*cos(lastPitch) + magBY*sin(lastPitch)*sin(lastRoll)+ magBZ*sin(lastPitch)*cos(lastRoll);
+
+  //Calculate heading with arctan (use atan2)
+  heading = atan2(magWY, magWX) * 180/PI;
+
+  //Account for declination
+  heading += declination; //Add declination value
+  if(heading > 180.0) { //Keep heading in the range [-180, 180] deg.
+    heading = heading - 360; //Subtarct 360 deg.
+  }
+  else if(heading < -180.0) {
+    heading = heading + 360; //Add 360 deg.
+  }
+  state[0].heading = heading;
+  //Set YAW equal to calculated heading
+  //Multiply by -1 (positive z-axis points up)
+  state[0].euler_rpy.z = -state[0].heading;
+  //Adjust YAW (negate the value - positive z-axis points up)
+  //state[0].euler_rpy.z *= -1;
+}
+
  //Callback
-  void IMUProcessor::callback(const imu_3dm_gx4::FilterOutput::ConstPtr& filter_msg)
+  void IMUProcessor::filterCallback(const imu_3dm_gx4::FilterOutput::ConstPtr& filter_msg)
   {
     //Put message data into state[0]
     state[0].header = filter_msg->header;
     state[0].header.frame_id = "base_link";
+
     state[0].raw_euler_rpy = filter_msg->euler_rpy;
-    state[0].euler_rpy = filter_msg->euler_rpy;
+    state[0].euler_rpy.x = filter_msg->euler_rpy.x;
+    state[0].euler_rpy.y = filter_msg->euler_rpy.y;
     state[0].gyro_bias = filter_msg->gyro_bias;
     state[0].euler_rpy_status = filter_msg->euler_rpy_status;
 
-    state[0].heading = filter_msg->heading;
-    state[0].heading_uncertainty = filter_msg->heading_uncertainty;
+    state[0].heading_update = filter_msg->heading_update;
+    state[0].heading_update_uncertainty = filter_msg->heading_update_uncertainty;
     state[0].heading_update_source = filter_msg->heading_update_source;
-    state[0].heading_flags = filter_msg->heading_flags;
+    state[0].heading_update_flags = filter_msg->heading_update_flags;
 
     state[0].raw_linear_acceleration = filter_msg->linear_acceleration;
     state[0].linear_acceleration = filter_msg->linear_acceleration;
@@ -45,6 +86,9 @@
     state[0].raw_angular_velocity = filter_msg->angular_velocity;
     state[0].angular_velocity = filter_msg->angular_velocity;
     state[0].angular_velocity_status = filter_msg->angular_velocity_status;
+
+    lastRoll = state[0].euler_rpy.x;
+    lastPitch = state[0].euler_rpy.y;
 
     //Convert angular values from radians to degrees
     cvtRad2Deg();
@@ -57,8 +101,7 @@
       state[0].dt = 0.01;
     }
     else { //dt has already been set, so find actual dt
-      state[0].dt = (double)state[0].header.stamp.sec + state[0].header.stamp.nsec/(1.0e9) -
-                    (double)state[1].header.stamp.sec - state[1].header.stamp.nsec/(1.0e9);
+      state[0].dt = (double)state[0].header.stamp.toSec() - (double)state[1].header.stamp.toSec();
     }
 
     //Populate shorthand matrices for data smoothing
@@ -109,14 +152,14 @@ void IMUProcessor::cvtRad2Deg() {
   state[0].raw_euler_rpy.z *= (180.0/PI);
   state[0].euler_rpy.x *= (180.0/PI);
   state[0].euler_rpy.y *= (180.0/PI);
-  state[0].euler_rpy.z *= (180.0/PI);
+  //state[0].euler_rpy.z *= (180.0/PI);
 
   state[0].gyro_bias.x *= (180.0/PI);
   state[0].gyro_bias.y *= (180.0/PI);
   state[0].gyro_bias.z *= (180.0/PI);
 
-  state[0].heading *= (180/PI);
-  state[0].heading_uncertainty *= (180/PI);
+  state[0].heading_update *= (180/PI);
+  state[0].heading_update_uncertainty *= (180/PI);
 
   state[0].raw_angular_velocity.x *= (180.0/PI);
   state[0].raw_angular_velocity.y *= (180.0/PI);
@@ -128,9 +171,6 @@ void IMUProcessor::cvtRad2Deg() {
 
 //Adjust Euler angles to be consistent with the AUV's axes
 void IMUProcessor::processEulerAngles() {
-  //Set YAW equal to updated heading
-  state[0].euler_rpy.z = state[0].heading;
-
   //Adjust ROLL
   if(state[0].euler_rpy.x > -180 && state[0].euler_rpy.x < 0) {
     state[0].euler_rpy.x += 180;
@@ -147,47 +187,12 @@ void IMUProcessor::processEulerAngles() {
 
   //Adjust pitch (negate the value - positive y-axis points left)
   state[0].euler_rpy.y *= -1;
-
-  //Adjust YAW (negate the value - positive z-axis points up)
-  state[0].euler_rpy.z *= -1;
-}
-
-//NOTE: This information is no longer needed, but remains here since it might
-//be helpful if something goes wrong
-//Check if raw angular velocity about any axis is approximately 0, and compute drift
-void IMUProcessor::processDrift() {
-  //X drift
-  if(abs(state[c].angular_velocity.x) <= zero_ang_vel_thresh) {
-    state[c].local_drift.x = state[c].euler_rpy.x - state[c+1].euler_rpy.x;
-  }
-  else {
-    state[c].local_drift.x = 0;
-  }
-  state[c].local_drift_rate.x = state[c].local_drift.x / state[c].dt;
-
-  //Y drift
-  if(abs(state[c].angular_velocity.y) <= zero_ang_vel_thresh) {
-    state[c].local_drift.y = state[c].euler_rpy.y - state[c+1].euler_rpy.y;
-  }
-  else {
-    state[c].local_drift.y = 0;
-  }
-  state[c].local_drift_rate.y = state[c].local_drift.y / state[c].dt;
-
-  //Z drift
-  if(abs(state[c].angular_velocity.z) <= zero_ang_vel_thresh) {
-    state[c].local_drift.z = state[c].euler_rpy.z - state[c+1].euler_rpy.z;    }
-  else {
-    state[c].local_drift.z = 0;
-  }
-  state[c].local_drift_rate.z = state[c].local_drift.z / state[c].dt;
 }
 
 //Smooth Angular Velocity and Linear Acceleration with a Gaussian 7-point smooth
 //NOTE: Smoothed values are actually centered about the middle state within
 //the state array, state 4 (c = center = index 3)
-void IMUProcessor::smoothData()
-{
+void IMUProcessor::smoothData() {
   int coef[size] = {1, 3, 6, 7, 6, 3, 1};
   int sumCoef = 27;
 

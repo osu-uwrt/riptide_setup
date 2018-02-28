@@ -25,12 +25,11 @@
  *
  *********************************************************************************/
 
-#ifndef IMU_DRIFT_LOGGER_H
-#define IMU_DRIFT_LOGGER_H
+#ifndef IMU_LOGGER_H
+#define IMU_LOGGER_H
 
 #include "ros/ros.h"
-#include "riptide_msgs/Imu.h"
-#include "riptide_msgs/ImuVerbose.h"
+#include "imu_3dm_gx4/MagFieldCF.h"
 #include "std_msgs/Header.h"
 #include "math.h"
 #include "stdio.h"
@@ -38,19 +37,19 @@
 #include "fstream"
 #include <boost/lexical_cast.hpp>
 
-class IMUDriftLogger
+class IMULogger
 {
 private:
   ros::NodeHandle nh;
-  ros::Subscriber imu_state_sub;
+  ros::Subscriber mag_sub;
 
   FILE *fid;
   const char *file_name_c;
-  float dt, euler_rpy[3], gyro_bias[3];
-  float angular_vel[3], angular_accel[3], drift[3], drift_rate[3];
+  double tStart, tNow; //MUST use type-DOUBLE for storing ros::Time
+  bool initialized;
 public:
-  IMUDriftLogger(char **argv);
-  void callback(const riptide_msgs::ImuVerbose::ConstPtr& imu_msg);
+  IMULogger(char **argv);
+  void magLogger(const imu_3dm_gx4::MagFieldCF::ConstPtr& mag);
   void loop();
   char* convert(const std::string& str);
 };
