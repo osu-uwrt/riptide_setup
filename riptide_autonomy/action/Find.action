@@ -1,5 +1,5 @@
 # Define the goal
-std_msgs/String object
+uint8 task
 
 ---
 # Define the feedback

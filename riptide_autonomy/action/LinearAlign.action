@@ -1,6 +1,5 @@
 # Define the goal
-std_msgs/String object
-std_msgs/String casino_color
+uint8 task
 
 ---
 # Define the feedback
