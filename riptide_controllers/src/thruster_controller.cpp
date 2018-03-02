@@ -17,19 +17,20 @@ double MASS = 34.47940950;
 
 // Vehcile volume (m^3)
 // TODO: Get this value from model
-double VOLUME = 0.0334;
-/*
+// Updated on 2/21/18
+double VOLUME = 0.0340;
+
 // Gravity (m/s^2)
 double GRAVITY = 9.81;
 
 // Water density (kg/m^3)
 double WATER_DENSITY = 1000.0;
-double BUOYANCY = VOLUME * WATER_DENSITY * GRAVITY * 0;
-*/
+double BUOYANCY = VOLUME * WATER_DENSITY * GRAVITY - GRAVITY * MASS;
+
 // Moments of inertia (kg*m^2)
-double Ixx = 0.50862680;
-double Iyy = 1.70892348;
-double Izz = 1.77586420;
+double Ixx = 0.52607145;
+double Iyy = -1.50451601;
+double Izz = -1.62450600;
 
 // Acceleration commands (m/s^):
 double cmdSurge = 0.0;
@@ -38,6 +39,10 @@ double cmdHeave = 0.0;
 double cmdRoll = 0.0;
 double cmdPitch = 0.0;
 double cmdYaw = 0.0;
+
+//BUOYANCY Boolean  <-
+double bouyant = 0.0;
+
 
 struct vector
 {
@@ -117,12 +122,13 @@ struct heave
                   const T *const heave_port_fwd, const T *const heave_stbd_fwd, const T *const heave_port_aft,
                   const T *const heave_stbd_aft, T *residual) const
   {
-    residual[0] =
-        (rotation_matrix.getRow(2).x() * (/*surge_port_hi[0] + surge_stbd_hi[0]*/ + surge_port_lo[0] + surge_stbd_lo[0]) +
-         rotation_matrix.getRow(2).y() * (sway_fwd[0] + sway_aft[0]) +
-         rotation_matrix.getRow(2).z() * (heave_port_fwd[0] + heave_stbd_fwd[0] + heave_port_aft[0] + heave_stbd_aft[0])) /
-         T(MASS) -
-         T(cmdHeave);
+    
+      residual[0] =
+          (rotation_matrix.getRow(2).x() * (/*surge_port_hi[0] + surge_stbd_hi[0]*/ + surge_port_lo[0] + surge_stbd_lo[0]) +
+           rotation_matrix.getRow(2).y() * (sway_fwd[0] + sway_aft[0]) +
+           rotation_matrix.getRow(2).z() * (heave_port_fwd[0] + heave_stbd_fwd[0] + heave_port_aft[0] + heave_stbd_aft[0])) /
+           T(MASS) -
+           T(cmdHeave);
     return true;
   }
 };
@@ -197,6 +203,7 @@ ThrusterController::ThrusterController(char **argv, tf::TransformListener *liste
   thrust.header.frame_id = "base_link";
 
   state_sub = nh.subscribe<riptide_msgs::Imu>("state/imu", 1, &ThrusterController::state, this);
+  depth_sub = nh.subscribe<riptide_msgs::Depth>("state/depth", 1, &ThrusterController::depth, this); //<-
   cmd_sub = nh.subscribe<geometry_msgs::Accel>("command/accel", 1, &ThrusterController::callback, this);
   cmd_pub = nh.advertise<riptide_msgs::ThrustStamped>("command/thrust", 1);
 
@@ -310,12 +317,20 @@ void ThrusterController::state(const riptide_msgs::Imu::ConstPtr &msg)
   vector3MsgToTF(msg->angular_velocity, ang_v);
 }
 
+void ThrusterController::depth(const riptide_msgs::Depth::ConstPtr &msg)
+{
+  if(msg->depth > 1){
+    bouyant = 1.0;
+  } else {
+    bouyant = 0.0;
+  }
+}
+
 void ThrusterController::callback(const geometry_msgs::Accel::ConstPtr &a)
 {
   cmdSurge = a->linear.x;
   cmdSway = a->linear.y;
-  cmdHeave = a->linear.z;
-
+  cmdHeave = a->linear.z + (bouyant * BUOYANCY)/MASS;
   cmdRoll = a->angular.x;
   cmdPitch = a->angular.y;
   cmdYaw = a->angular.z;
