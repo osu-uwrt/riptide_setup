@@ -8,12 +8,11 @@ from riptide_vision import RiptideVision
 
 class ImageProcessor:
     def __init__(self):
-        self.image_pub = rospy.Publisher("/state/vision/gate", CompressedImage)
+        self.image_pub = rospy.Publisher("/forward/processed/compressed", CompressedImage, queue_size=1)
         self.fwd_sub = rospy.Subscriber("/forward/image_raw", Image, self.image_callback, queue_size=1)
         self.bridge = CvBridge()
-        self.vision = RiptideVision()
 
-    def image_callback(data):
+    def image_callback(self, data):
         good = False
         try:
             cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
@@ -22,10 +21,13 @@ class ImageProcessor:
             print(e)
 
         if good:
-            response = self.vision.detect_gate(cv_image)
-            hud_img = self.vision.detect_gate_vis(cv_image, response)
-            msg = self.bridge.cv2_to_imgmsg(hud_img)
-            self.image_pub
+            response = RiptideVision().detect_gate(cv_image)
+            hud_img = RiptideVision().detect_gate_vis(cv_image, response)
+            msg = CompressedImage()
+            msg.header.stamp = rospy.Time.now()
+            msg.format = ".jpeg"
+            msg.data = RiptideVision().compressed_img_msg_data(".jpeg", hud_img)
+            self.image_pub.publish(msg)
 def main():
     rospy.init_node('qualification_vision')
     ip = ImageProcessor()

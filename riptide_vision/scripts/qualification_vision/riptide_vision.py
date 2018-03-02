@@ -6,63 +6,62 @@ import math
 Helper functions
 """
 
+# img: an OpenCV BGR image
+# Returns an image with values of 0 or 255
+def hsv_select_hue(img, thresh=(0, 255)):
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+    h_channel = hsv[:, :, 0]
+
+    binary_output = np.zeros_like(h_channel)
+    binary_output[(h_channel > thresh[0]) & (h_channel <= thresh[1])] = 255
+    return binary_output
+
+
+# img: an OpenCV BGR image
+# h thresholds: values from 0 to 179
+# l and s thresholds: values from 0 to 255
+# Returns an image with values of 0 or 255
+def hls_select_multiple(img, h_lower, h_upper, l_lower, l_upper, s_lower, s_upper):  # NOQA
+    hls = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
+    thresh_min = np.array([h_lower, l_lower, s_lower], np.uint8)
+    thresh_max = np.array([h_upper, l_upper, s_upper], np.uint8)
+    return cv2.inRange(hls, thresh_min, thresh_max)
+
+
+# img: an OpenCV image
+# size: a tuple, (width, height)
+def resize_img(img, size):
+    return cv2.resize(img, size)
+
+
+# img: an OpenCV BGR image
+# Returns an image with its brightness adjusted
+def histogram_equalization(img):
+    # Y component determines brightness of the color
+    yuv = cv2.cvtColor(img, cv2.COLOR_BGR2YUV)
+    yuv[:, :, 0] = cv2.equalizeHist(yuv[:, :, 0])
+    return cv2.cvtColor(yuv, cv2.COLOR_YUV2BGR)
+
+
+# img: an OpenCV image
+# angle: float representing degrees
+# center: a tuple
+# Returns a rotated image
+def rotate_img(img, angle, center=None):
+    (rows, cols) = img.shape[:2]
+
+    if center is None:
+        center = (cols / 2, rows / 2)
+
+    # Perform the rotation
+    M = cv2.getRotationMatrix2D(center, angle, 1.0)
+    rotated = cv2.warpAffine(img, M, (cols, rows))
+    return rotated
+
 class RiptideVision:
-    # img: an OpenCV BGR image
-    # Returns an image with values of 0 or 255
-    def hsv_select_hue(img, thresh=(0, 255)):
-        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-
-        h_channel = hsv[:, :, 0]
-
-        binary_output = np.zeros_like(h_channel)
-        binary_output[(h_channel > thresh[0]) & (h_channel <= thresh[1])] = 255
-        return binary_output
-
-
-    # img: an OpenCV BGR image
-    # h thresholds: values from 0 to 179
-    # l and s thresholds: values from 0 to 255
-    # Returns an image with values of 0 or 255
-    def hls_select_multiple(img, h_lower, h_upper, l_lower, l_upper, s_lower, s_upper):  # NOQA
-        hls = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
-        thresh_min = np.array([h_lower, l_lower, s_lower], np.uint8)
-        thresh_max = np.array([h_upper, l_upper, s_upper], np.uint8)
-        return cv2.inRange(hls, thresh_min, thresh_max)
-
-
-    # img: an OpenCV image
-    # size: a tuple, (width, height)
-    def resize_img(img, size):
-        return cv2.resize(img, size)
-
-
-    # img: an OpenCV BGR image
-    # Returns an image with its brightness adjusted
-    def histogram_equalization(img):
-        # Y component determines brightness of the color
-        yuv = cv2.cvtColor(img, cv2.COLOR_BGR2YUV)
-        yuv[:, :, 0] = cv2.equalizeHist(yuv[:, :, 0])
-        return cv2.cvtColor(yuv, cv2.COLOR_YUV2BGR)
-
-
-    # img: an OpenCV image
-    # angle: float representing degrees
-    # center: a tuple
-    # Returns a rotated image
-    def rotate_img(img, angle, center=None):
-        (rows, cols) = img.shape[:2]
-
-        if center is None:
-            center = (cols / 2, rows / 2)
-
-        # Perform the rotation
-        M = cv2.getRotationMatrix2D(center, angle, 1.0)
-        rotated = cv2.warpAffine(img, M, (cols, rows))
-        return rotated
-
-
     # Function that returns a packet of information
-    def detect_gate(img):
+    def detect_gate(sefl, img):
         left_pole_visible = False
         right_pole_visible = False
         displacement_x = None
@@ -261,14 +260,16 @@ class RiptideVision:
 
     # This function draws on an image with information from the detect_gate packet,
     # this can be improved but it is not a priority
-    def detect_gate_vis(img, packet):
+    def detect_gate_vis(self, img, packet):
         if len(packet) != 0:
             cv2.line(img, (packet[5], packet[6]), (packet[7], packet[8]), (0, 0, 255), 5)  # NOQA
         return img
 
+    def compressed_img_msg_data(self, type, image):
+        return np.array(cv2.imencode(type, image)[1]).tostring()
 
     # Attempts to detect a vertical pole, returns a list with information
-    def detect_pole(img):
+    def detect_pole(self, img):
         roll_correction = None
         beam_thickness = None
 
