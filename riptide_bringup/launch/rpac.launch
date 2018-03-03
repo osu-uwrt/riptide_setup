@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find riptide_bringup)/launch/controls.launch" />
+  <include file="$(find riptide_hardware)/launch/cameras.launch" />
+</launch>

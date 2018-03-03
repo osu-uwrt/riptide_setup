@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # qualification_vision.py
 # Subscribes to camera output, publishes what it sees.
 
