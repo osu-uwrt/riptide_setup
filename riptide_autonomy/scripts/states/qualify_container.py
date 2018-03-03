@@ -1,31 +1,42 @@
 #!/usr/bin/env python
 
 import smach
+from smach import StateMachine
+from smach import State
 import smach_ros
-from smach import Concurrence
-import safety_sm
-import qualify_sm
+import qualify_concurrence
+from riptide_msgs import Constants
+from std_msgs import uint8
+import subprocess
 
-#NOTE: When qualification is complete, replace all instances of the word "qualify"
-#with the word "competition", while maintianing the case convention (caps or lowercase)
+class EmergencyExit(State):
+    def __init__(self):
+        State.__init__(self, outcomes=['emergency'],
+                        input_keys=[],
+                        output_keys=[])
 
-#Child Termination Callback
-#Preempt all other states (do NOT keep running), depending on the scenario (return True)
-def child_term_cb(outcome_map):
-    if outcome_map['SAFETY_SM'] == 'emergency':
-        return True
-    elif outcome_map['QUALIFY_SM'] == 'qualify_completed' || outcome_map['QUALIFY_SM'] == 'qualify_failed':
-        return True
-    return False
+    def execute(self, userdata):
+        error_pub = rospy.Publisher('state/emergency', uint8, queue_size=1)
+        rospy.init_node('exit_error')
+        rate = rospy.rate(100)
 
-qualify_container = Concurrence(outcomes = ['mission_completed', 'mission_failed','emergency'],
-                 default_outcome = 'emergency',
-                 outcome_map = {'qualify_completed':{'QUALIFY_SM':'qualify_completed'},
-                                'qualify_failed':{'QUALIFY_SM':'qualify_failed'},
-                                'emergency':{'SAFETY_SM':'emergency'}})
+        while not rospy.is_shutdown():
 
-with main_container:
-    Concurrence.add('SAFETY_SM', safety_sm)
-    Concurrence.add('QUALIFY_SM', qualify_sm)
+        #subprocess.call(["shutdown", "-h", "now")
 
-outcome = qualify_container.execute()
+qualify_container = StateMachine(outcomes = ['emergency', 'qualify_completed','qualify_failed'],
+                 input_keys=[],
+                 output_keys=[])
+
+with qualify_container:
+    StateMachine.add('QUALIFY_CONCURRENCE', qualify_concurrence,
+                    input_keys=[],
+                    output_keys=[],
+                    transitions={'emergency':'EMERGENCY_EXIT',
+                                'qualify_completed':'IDLE',
+                                'qualify_failed':'IDLE'})
+    StateMachine.add('EMERGENCY_EXIT', EmergencyExit(),
+                    input_keys=[])
+
+qualify_container.execute()
+rospy.spin()
