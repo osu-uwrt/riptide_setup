@@ -16,7 +16,7 @@ then
 
 	# addudev rule
 	DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" # get directory where this script is stored
-	cp $DIR/uwrt.rules /etc/udev/rules.d/
+	cp $DIR/riptide.rules /etc/udev/rules.d/
 
 	#reload udev
 	udevadm control --reload-rules
