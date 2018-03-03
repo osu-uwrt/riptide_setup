@@ -7,7 +7,7 @@ from riptide_msgs.msg import Depth
 from riptide_msgs.msg import PwmStamped
 from riptide_msgs.msg import SwitchState
 
-COM_PORT = '/dev/ttyACM0'
+COM_PORT = '/dev/ttyACM1'
 ser = serial.Serial(COM_PORT, baudrate=9600, timeout=None)
 
 def pwm_callback(pwm_message):
@@ -34,7 +34,7 @@ def pwm_callback(pwm_message):
 
 def main():
     rospy.init_node('coprocessor_serial')
-    dataRead = True;
+    dataRead = True
 
     # Add publishers
     depthPub = rospy.Publisher('/state/depth', Depth, queue_size=10)
@@ -43,53 +43,45 @@ def main():
     #Subscribe to Thruster PWMs
     rospy.Subscriber("/command/pwm", PwmStamped, pwm_callback)
 
+    packet = ""
+    depthRead = False
+    swRead = False
+    depth_msg = Depth()
+    sw_msg = SwitchState()
     rate = rospy.Rate(100)
     while not rospy.is_shutdown():
-
-        switchData = []
-        depthData = ""
         if ser is not None:
-            dataRead = True
-            depthRead = False
-            swRead = False
-
-            if dataRead:
-                data = ser.read();
-                if data is not "":
-
-                    #First two conditions check for start bytes
-                    if (data == "%"):
-                        depthRead = True
-                    elif(data == "$"):
-                        swRead = True
-                    elif(data == '@'):
-                        if(depthRead):
-                            depthRead = False
-                            depthList = depthData.split("!")
-                            msg.pressure = depthList[0]
-                            msg.temp = depthList[1]
-                            msg.depth = depthList[2]
-                            depthPub.publish(msg);
-                        else:
-                            swRead = False
-                            msg.kill = switchData[0]
-                            msg.sw1 = switchData[1]
-                            msg.sw2 = switchData[2]
-                            msg.sw3 = switchData[3]
-                            msg.sw4 = switchData[4]
-                            msg.sw5 = switchData[5]
-                            swPub.publish(msg);
-
-                        dataRead = False
-                    else:
-                        if(depthRead):
-                            depthData = depthData + data
-                        elif(swRead):
-                            try:
-                                switchData.append(data)
-                            except "n":
-                                print "Error - switch not detected"
-                                sys.exit()
+            data = ser.read() 		
+            if data is not None:
+                #First two conditions check for start bytes
+                if (data == "%" and not swRead):
+                    depthRead = True
+		    packet=""
+		elif (data == "$" and not depthRead):
+		    swRead = True
+                    packet=""
+                elif(data == '@'):
+                    if(depthRead):
+                       depthRead = False
+                       depthList = packet.split("!")
+                       depth_msg.pressure = depthList[0]
+                       depth_msg.temp = depthList[1]
+                       depth_msg.depth = depthList[2]
+                       depthPub.publish(depth_msg);
+		    elif(swRead):
+			print packet
+			swRead = False
+			# Populate switch message. Start at 1 to ignore line break
+			sw_msg.kill = True if packet[0] is '1' else False
+			sw_msg.sw1 = True if packet[1] is '1' else False
+			sw_msg.sw2 = True if packet[2] is '1' else False
+			sw_msg.sw3 = True if packet[3] is '1' else False
+			sw_msg.sw4 = True if packet[4] is '1' else False
+			sw_msg.sw5 = True if packet[5] is '1' else False
+			swPub.publish(sw_msg)
+		    packet = ""
+                else:
+                    packet = packet + data
         rate.sleep()
 
 if __name__ == "__main__": main()
