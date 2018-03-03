@@ -164,9 +164,9 @@ void IMUProcessor::cvtRad2Deg() {
   state[0].raw_angular_velocity.x *= (180.0/PI);
   state[0].raw_angular_velocity.y *= (180.0/PI);
   state[0].raw_angular_velocity.z *= (180.0/PI);
-  state[0].angular_velocity.x *= (180.0/PI);
-  state[0].angular_velocity.y *= (180.0/PI);
-  state[0].angular_velocity.z *= (180.0/PI);
+  // state[0].angular_velocity.x *= (180.0/PI);
+  // state[0].angular_velocity.y *= (180.0/PI);
+  // state[0].angular_velocity.z *= (180.0/PI);
 }
 
 //Adjust Euler angles to be consistent with the AUV's axes
