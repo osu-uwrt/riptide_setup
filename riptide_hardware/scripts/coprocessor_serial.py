@@ -84,7 +84,7 @@ def main():
         msg.pressure = depthList[0]
         msg.temp = depthList[1]
         msg.depth = depthList[2]
-        msg.altitude = depthList[3]
+        
         depthPub = rospy.Publisher('/state/depth', std_msgs.msg.String, queue_size=10)
         depthPub.publish(msg);
 
