@@ -36,20 +36,24 @@ def main():
     rospy.init_node('coprocessor_serial')
     dataRead = True;
 
+    # Add publishers
+    depthPub = rospy.Publisher('/state/depth', Depth, queue_size=10)
+    swPub = rospy.Publisher('/state/switches', SwitchState, queue_size=10)
+
     #Subscribe to Thruster PWMs
     rospy.Subscriber("/command/pwm", PwmStamped, pwm_callback)
-    rospy.spin()
 
+    rate = rospy.Rate(100)
     while not rospy.is_shutdown():
 
         switchData = []
-        depthData =""
+        depthData = ""
         if ser is not None:
             dataRead = True
             depthRead = False
             swRead = False
 
-            while dataRead:
+            if dataRead:
                 data = ser.read();
                 if data is not "":
 
@@ -58,43 +62,34 @@ def main():
                         depthRead = True
                     elif(data == "$"):
                         swRead = True
+                    elif(data == '@'):
+                        if(depthRead):
+                            depthRead = False
+                            depthList = depthData.split("!")
+                            msg.pressure = depthList[0]
+                            msg.temp = depthList[1]
+                            msg.depth = depthList[2]
+                            depthPub.publish(msg);
+                        else:
+                            swRead = False
+                            msg.kill = switchData[0]
+                            msg.sw1 = switchData[1]
+                            msg.sw2 = switchData[2]
+                            msg.sw3 = switchData[3]
+                            msg.sw4 = switchData[4]
+                            msg.sw5 = switchData[5]
+                            swPub.publish(msg);
+
+                        dataRead = False
                     else:
                         if(depthRead):
-                            if(data == "@"):
-                                #End byte recieved
-                                depthRead = False
-                                dataRead = False
-                            else:
-                                depthData = depthData + data
-
-                        if(swRead):
-                            if(data == "@"):
-                                #End byte recieved
-                                swRead = False
-                                dataRead = False
-                            else:
-                                try:
-                                    switchData.append(data)
-                                except "n":
-                                    print "Error - switch not detected"
-                                    sys.exit()
-
-
-        depthList = depthData.split("!")
-        msg.pressure = depthList[0]
-        msg.temp = depthList[1]
-        msg.depth = depthList[2]
-        
-        depthPub = rospy.Publisher('/state/depth', std_msgs.msg.String, queue_size=10)
-        depthPub.publish(msg);
-
-        msg.kill = switchData[0]
-        msg.sw1 = switchData[1]
-        msg.sw2 = switchData[2]
-        msg.sw3 = switchData[3]
-        msg.sw4 = switchData[4]
-        msg.sw5 = switchData[5]
-        swPub = rospy.Publisher('/state/switches', std_msgs.msg.String, queue_size=10)
-        swPub.publish(msg);
+                            depthData = depthData + data
+                        elif(swRead):
+                            try:
+                                switchData.append(data)
+                            except "n":
+                                print "Error - switch not detected"
+                                sys.exit()
+        rate.sleep()
 
 if __name__ == "__main__": main()
