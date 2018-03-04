@@ -8,6 +8,7 @@
 #include "geometry_msgs/Accel.h"
 #include "geometry_msgs/Vector3.h"
 #include "riptide_msgs/Imu.h"
+#include "riptide_msgs/SwitchState.h"
 
 class AttitudeController
 {
@@ -16,6 +17,7 @@ class AttitudeController
     ros::NodeHandle nh;
     ros::Subscriber imu_sub;
     ros::Subscriber cmd_sub;
+    ros::Subscriber kill_sub;
     ros::Publisher cmd_pub;
 
     control_toolbox::Pid roll_controller_pid;
@@ -38,9 +40,11 @@ class AttitudeController
     double dt;
 
     void UpdateError();
+    void ResetController();
 
   public:
     AttitudeController();
+    void SwitchCB(const riptide_msgs::SwitchState::ConstPtr &state);
     void CommandCB(const geometry_msgs::Vector3::ConstPtr &cmd);
     void ImuCB(const riptide_msgs::Imu::ConstPtr &imu);
  };

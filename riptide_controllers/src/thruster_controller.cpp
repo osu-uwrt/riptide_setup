@@ -43,7 +43,6 @@ double cmdYaw = 0.0;
 //BUOYANCY Boolean  <-
 double bouyant = 0.0;
 
-
 struct vector
 {
   double x;
@@ -122,7 +121,7 @@ struct heave
                   const T *const heave_port_fwd, const T *const heave_stbd_fwd, const T *const heave_port_aft,
                   const T *const heave_stbd_aft, T *residual) const
   {
-    
+
       residual[0] =
           (rotation_matrix.getRow(2).x() * (/*surge_port_hi[0] + surge_stbd_hi[0]*/ + surge_port_lo[0] + surge_stbd_lo[0]) +
            rotation_matrix.getRow(2).y() * (sway_fwd[0] + sway_aft[0]) +

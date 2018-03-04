@@ -52,6 +52,7 @@ AttitudeController::AttitudeController() {
 
     cmd_sub = nh.subscribe<geometry_msgs::Vector3>("command/attitude", 1000, &AttitudeController::CommandCB, this);
     imu_sub = nh.subscribe<riptide_msgs::Imu>("state/imu", 1000, &AttitudeController::ImuCB, this);
+    kill_sub = nh.subscribe<riptide_msgs::SwitchState>("state/switches", 10, &AttitudeController::SwitchCB, this);
 
     roll_controller_pid.init(rcpid, false);
     yaw_controller_pid.init(ycpid, false);
@@ -66,6 +67,13 @@ void AttitudeController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu) {
   current_attitude = imu->euler_rpy;
   if (pid_initialized) {
     AttitudeController::UpdateError();
+  }
+}
+
+//Subscribe to state/switches
+void AttitudeController::SwitchCB(const riptide_msgs::SwitchState::ConstPtr &state) {
+  if (!state->kill) {
+    AttitudeController::ResetController();
   }
 }
 
@@ -92,4 +100,33 @@ void AttitudeController::CommandCB(const geometry_msgs::Vector3::ConstPtr &cmd) 
     pid_initialized = true;
 
   AttitudeController::UpdateError();
+}
+
+void AttitudeController::ResetController() {
+  roll_cmd = 0;
+  roll_error = 0;
+  roll_error_dot = 0;
+  roll_controller_pid.reset();
+
+  pitch_cmd = 0;
+  pitch_error = 0;
+  pitch_error_dot = 0;
+  pitch_controller_pid.reset();
+
+  yaw_cmd = 0;
+  yaw_error = 0;
+  yaw_error_dot = 0;
+  yaw_controller_pid.reset();
+
+  current_attitude.x = 0;
+  current_attitude.y = 0;
+  current_attitude.z = 0;
+  last_error.x = 0;
+  last_error.y = 0;
+  last_error.z = 0;
+  sample_start = ros::Time::now();
+  sample_duration = ros::Duration(0);
+  dt = 0;
+
+  pid_initialized = false;
 }

@@ -1,33 +1,37 @@
-#ifndef THRUST_CAL_H
-#define THRUST_CAL_H
+#ifndef PWM_CONTROLLER_H
+#define PWM_CONTROLLER_H
+#define ALIVE_TIMEOUT 0.5
 
 #include "ros/ros.h"
-#include "std_msgs/Empty.h"
 
 #include "riptide_msgs/PwmStamped.h"
 #include "riptide_msgs/ThrustStamped.h"
+#include "riptide_msgs/SwitchState.h"
 
-class ThrustCal
+class PWMController
 {
  private:
   ros::NodeHandle nh;
-  ros::Subscriber kill_it_with_fire;
-  ros::Subscriber thrust;
-  ros::Publisher pwm;
-  riptide_msgs::PwmStamped us;
-  ros::Time alive;
-  bool dead;
-  double min_voltage;
+  ros::Subscriber cmd_sub;
+  ros::Subscriber kill_sub;
+  ros::Publisher pwm_pub;
+  riptide_msgs::PwmStamped pwm;
+  void PublishZeroPWM();
+
   int counterclockwise(double raw_force, int thruster);
   int clockwise(double raw_force, int thruster);
+
   float ccw_coeffs[4][2]; //counterclockwise thrust slopes
   float cw_coeffs[4][2]; //clockwise thrust slopes
+  bool dead;
+  ros::Time last_alive_time;
+  ros::Duration alive_timeout;
 
  public:
-  ThrustCal();
-  void callback(const riptide_msgs::ThrustStamped::ConstPtr& thrust);
-  void killback(const std_msgs::Empty::ConstPtr& thrust);
-  void loop();
+  PWMController();
+  void ThrustCB(const riptide_msgs::ThrustStamped::ConstPtr &thrust);
+  void SwitchCB(const riptide_msgs::SwitchState::ConstPtr &state);
+  void Loop();
 };
 
 #endif
