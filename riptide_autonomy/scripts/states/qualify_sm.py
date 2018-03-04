@@ -1,21 +1,27 @@
 #!/usr/bin/env python
 
 import rospy
-import smach
+from smach import StateMachine
 import smach_ros
 from riptide_msgs import Constants
-import main_container
 
-qualify_sm = smach.StateMachine(outcomes=['qualify_completed', 'qualify_failed'])
-qualify_sm.userdata.riptideConstantOffset = 100
+qualify_sm = StateMachine(outcomes=['qualify_completed', 'qualify_failed'],
+                        input_keys=['thruster_state_in'],
+                        output_keys=[])
+qualify_sm.userdata.riptideConstantsOffset = 100
+qualify_sm.userdata.qualify_switch_engage_time = 0 #Set to 0 initially
 
 with qualify_sm:
-    smach.StateMachine.add('QUALIFY_GATE_SM', qualify_gate_sm,
-                            input_keys=['RCOffset'],
-                            transitions={'entered_qualify_gate':'MARKER_SM',
-                                        'exited_qualify_gate':'qualify_completed'},
-                            remapping={'RCOffset':'riptideConstantOffset'})
-    smach.StateMachine.add('MARKER_SM', marker_sm,
-                            input_keys=['RCOffset'],
-                            transitions={'circled_the_marker':'QUALIFY_GATE_SM'},
-                            remapping={'RCOffset':'riptideConstantOffset'})
+
+    StateMachine.add('QUAL"SWITCH_MONITOR', QualifySwitchMonitor(),
+                    transitions={},
+                    remapping={})
+    StateMachine.add('QUALIFY_GATE_SM', qualify_gate_sm,
+                        transitions={'entered_qualify_gate':'MARKER_SM',
+                                    'exited_qualify_gate':'qualify_completed'},
+                        remapping={'RCOffset':'riptideConstantsOffset'})
+    StateMachine.add('MARKER_SM', marker_sm,
+                        transitions={'circled_the_marker':'QUALIFY_GATE_SM'},
+                        remapping={'RCOffset':'riptideConstantsOffset'})
+
+qualify_sm.execute()

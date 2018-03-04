@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-import smach
 from smach import Concurrence
 import smach_ros
 import safety_sm
 import qualify_sm
+import kill_switch_monitor
 
 #Child Termination Callback
 #Preempt all other states (do NOT keep running), depending on the scenario (return True)
@@ -21,9 +21,17 @@ qualify_concurrence = Concurrence(outcomes = ['mission_completed', 'mission_fail
                  outcome_map = {'qualify_completed':{'QUALIFY_SM':'qualify_completed'},
                                 'qualify_failed':{'QUALIFY_SM':'qualify_failed'},
                                 'emergency':{'SAFETY_SM':'emergency'}})
+qualify_concurrence.userdata.thruster_status_cc = 0
+qualify_concurrence.userdata.kill_switch_engage_time_cc = 0
 
 with qualify_concurrence:
-    Concurrence.add('SAFETY_SM', safety_sm)
-    Concurrence.add('QUALIFY_SM', qualify_sm)
+    Concurrence.add('QUALIFY_SM', qualify_sm,
+                    remapping={'thruster_status_sm':'thruster_status_cc',
+                                'kill_switch_engage_time_sm':'kill_switch_engage_time_cc'})
+    Concurrence.add('SAFETY_SM', safety_sm,
+                    remapping={})
+    Concurrence.add('KILL_SWITCH_MONITOR', kill_switch_sm,
+                    remapping={'thruster_status_sm':'thruster_status_cc',
+                                'kill_switch_engage_time_sm':'kill_switch_engage_time_cc'})
 
-outcome = qualify_concurrence.execute()
+qualify_concurrence.execute()

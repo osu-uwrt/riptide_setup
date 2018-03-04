@@ -1,19 +1,30 @@
-# Colors: 0-10
+# Colors Codes (0-9)
 uint8 COLOR_RED = 0
 uint8 COLOR_BLACK = 1
 
-#Safety Measures
-uint8 KILL_SWITCH_ENGAGED = 11
-uint8 BAT_VOLT_LOW = 12
-uint8 BAT_CUR_SPIKE = 13
-uint8 CVTR_VOLT_LOW = 14
-uint8 CVTR_CUR_SPIKE = 12
+# Safety Measure Codes (10-19)
+uint8 SAFETY_KILL_SWITCH_ENGAGED = 10
+uint8 SAFETY_BAT_VOLT_LOW = 11
+uint8 SAFETY_BAT_CUR_SPIKE = 12
+uint8 SAFETY_CVTR_VOLT_LOW = 13
+uint8 SAFETY_CVTR_CUR_SPIKE = 14
 
-# Qualification Tasks: 100-109
+# Status Codes (20-39)
+uint8 STATUS_ACTIVE = 20
+uint8 STATUS_INACTIVE = 21
+uint8 STATUS_IN_PROGRESS = 22
+uint8 STATUS_SAFE = 23
+uint8 STATUS_EMERGENCY = 24
+uint8 STATUS_IDLE = 25
+
+# Request Codes (40-49)
+uint8 REQUEST_RESET_CONTROLLERS = 40
+
+# Qualification Task Codes (100-109)
 uint8 TASK_QUALIFY_GATE = 100
 uint8 TASK_QUALIFY_MARKER = 101
 
-# Competition Tasks: use 110-130
+# Competition Task Codes (110-129)
 uint8 TASK_CASINO_GATE = 110
 uint8 TASK_PATH_MARKER = 111
 uint8 TASK_DICE = 112

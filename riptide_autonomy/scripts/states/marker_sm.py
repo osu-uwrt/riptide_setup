@@ -7,6 +7,7 @@ import qualify_sm
 
 def main():
     marker_sm = smach.StateMachine(outcomes=['circled_the_marker'],
+                                input_keys=[RCOffset],
                                 output_keys=[])
 
     #Remap userdata to each action state via goal_slots
