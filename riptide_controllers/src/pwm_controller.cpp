@@ -34,51 +34,53 @@ PWMController::PWMController() : nh()
   cw_coeffs[3][0] = -30.1205;
   cw_coeffs[3][1] = -22.6244;
 
-  ros::Duration alive_timeout(ALIVE_TIMEOUT);
+  alive_timeout = ros::Duration(2);
   last_alive_time = ros::Time::now();
-  dead = false;
+  silent = false; // Silent refers to not receiving commands from the control stack
+  dead = true; // Dead refers to the kill switch being pulled
 }
 
 void PWMController::ThrustCB(const riptide_msgs::ThrustStamped::ConstPtr& thrust)
 {
-  pwm.header.stamp = thrust->header.stamp;
+  if (!dead)
+  {
+    pwm.header.stamp = thrust->header.stamp;
 
-  pwm.pwm.surge_port_lo = counterclockwise(thrust->force.surge_port_lo, 0);
-  pwm.pwm.surge_stbd_lo = clockwise(thrust->force.surge_stbd_lo, 0);
+    pwm.pwm.surge_port_lo = counterclockwise(thrust->force.surge_port_lo, 0);
+    pwm.pwm.surge_stbd_lo = clockwise(thrust->force.surge_stbd_lo, 0);
 
-  pwm.pwm.sway_fwd = counterclockwise(thrust->force.sway_fwd, 1);
-  pwm.pwm.sway_aft = clockwise(thrust->force.sway_aft, 1);
+    pwm.pwm.sway_fwd = counterclockwise(thrust->force.sway_fwd, 1);
+    pwm.pwm.sway_aft = clockwise(thrust->force.sway_aft, 1);
 
-  pwm.pwm.heave_stbd_fwd = clockwise(thrust->force.heave_stbd_fwd, 2);
-  pwm.pwm.heave_stbd_aft = counterclockwise(thrust->force.heave_stbd_aft, 2);
+    pwm.pwm.heave_stbd_fwd = clockwise(thrust->force.heave_stbd_fwd, 2);
+    pwm.pwm.heave_stbd_aft = counterclockwise(thrust->force.heave_stbd_aft, 2);
 
-  pwm.pwm.heave_port_aft = clockwise(thrust->force.heave_port_aft, 3);
-  pwm.pwm.heave_port_fwd = counterclockwise(thrust->force.heave_port_fwd, 3);
-  pwm_pub.publish(pwm);
-
+    pwm.pwm.heave_port_aft = clockwise(thrust->force.heave_port_aft, 3);
+    pwm.pwm.heave_port_fwd = counterclockwise(thrust->force.heave_port_fwd, 3);
+    pwm_pub.publish(pwm);
+    last_alive_time = ros::Time::now();
+    silent = false;
+  }
 }
 
 void PWMController::SwitchCB(const riptide_msgs::SwitchState::ConstPtr &state)
 {
-  if (!state->kill)
-  {
-      dead = false;
-  }
+  dead = !state->kill;
 }
 
 void PWMController::Loop()
 {
-  ros::Rate rate(50);
+  ros::Rate rate(10);
   while (!ros::isShuttingDown())
   {
     ros::spinOnce();
     ros::Duration quiet_time = ros::Time::now() - last_alive_time;
-    if (quiet_time > alive_timeout)
+    if (quiet_time >= alive_timeout)
     {
-      dead = true;
+      silent = true;
     }
 
-    if (dead)
+    if (silent || dead)
     {
       PWMController::PublishZeroPWM();
     }

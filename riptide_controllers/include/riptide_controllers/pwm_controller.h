@@ -1,6 +1,5 @@
 #ifndef PWM_CONTROLLER_H
 #define PWM_CONTROLLER_H
-#define ALIVE_TIMEOUT 0.5
 
 #include "ros/ros.h"
 
@@ -24,6 +23,7 @@ class PWMController
   float ccw_coeffs[4][2]; //counterclockwise thrust slopes
   float cw_coeffs[4][2]; //clockwise thrust slopes
   bool dead;
+  bool silent;
   ros::Time last_alive_time;
   ros::Duration alive_timeout;
 
