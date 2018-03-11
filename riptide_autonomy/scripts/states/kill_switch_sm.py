@@ -22,8 +22,13 @@ class KillSwitchMonitor(State):
         userdata.thruster_status = thruster_status
         userdata.kill_switch_engage_time = kill_switch_engage_time
 
+        if userdata.thruster_status == STATUS_ACTIVATED:
+            return 'kill_switch_engaged'
+        elif userdata.thruster_status == STATUS_DEACTIVATED:
+            return 'kill_switch_disengaged'
+
         # Call service to reset controllers if thrusters become inactive
-        if userdata.thruster_status = STATE_INACTIVE
+        if userdata.thruster_status = STATUS_INACTIVE
             rospy.wait_for_service('reset_controllers')
             reset_srv = rospy.service('reset_controllers', ResetControllers)
             reset_result = reset_srv(REQUEST_RESET_CONTROLLERS)
@@ -31,9 +36,9 @@ class KillSwitchMonitor(State):
     def callback(data):
         # Get current thruster status
         if data.kill == True:
-            thruster_status = STATUS_ACTIVE
+            thruster_status = STATUS_ACTIVATED
         else if data.kill == False:
-            thruster_status = STATUS_INACTIVE
+            thruster_status = STATUS_DEACTIVATED
 
         # Get time of switch engagement or disengagement
         if last_thruster_status ~= thruster_status:
