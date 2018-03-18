@@ -6,57 +6,55 @@ import smach_ros
 from riptide_msgs import Constants, SwitchState
 
 class KillSwitchMonitor(State):
-    thruster_status = 0
-    last_thruster_status = 0
+    kill_switch_status = 0
+    last_kill_switch_status = 0
     kill_switch_engage_time = 0
 
     def __init__(self):
-        State.__init__(self, outcome=['kill_switch_engaged','kill_switch_dissengaged'],
+        State.__init__(self, outcome=['kill_switch_engaged','kill_switch_disengaged'],
                         input_keys=[],
-                        output_keys=['thruster_status',
+                        output_keys=['kill_switch_status',
                                     'kill_switch_engage_time'])
         rospy.init_node('kill_switch_monitor')
         copro_sub = rospy.Subscriber("/state/switches", callback)
 
     def execute(self, userdata):
-        userdata.thruster_status = thruster_status
+        userdata.kill_switch_status = kill_switch_status
         userdata.kill_switch_engage_time = kill_switch_engage_time
 
-        if userdata.thruster_status == STATUS_ACTIVATED:
+        if kill_switch_status == SAFETY_KILL_SWITCH_ENGAGED:
             return 'kill_switch_engaged'
-        elif userdata.thruster_status == STATUS_DEACTIVATED:
-            return 'kill_switch_disengaged'
-
-        # Call service to reset controllers if thrusters become inactive
-        if userdata.thruster_status = STATUS_INACTIVE
+        elif kill_switch_status == SAFETY_KILL_SWITCH_DISENGAGED:
+            # Call service to reset controllers if thrusters become inactive
             rospy.wait_for_service('reset_controllers')
             reset_srv = rospy.service('reset_controllers', ResetControllers)
             reset_result = reset_srv(REQUEST_RESET_CONTROLLERS)
 
+            return 'kill_switch_disengaged'
+
     def callback(data):
         # Get current thruster status
         if data.kill == True:
-            thruster_status = STATUS_ACTIVATED
-        else if data.kill == False:
-            thruster_status = STATUS_DEACTIVATED
+            kill_switch_status = SAFETY_KILL_SWITCH_ENGAGED
+        elif data.kill == False:
+            kill_switch_status = SAFETY_KILL_SWITCH_DISENGAGED
 
-        # Get time of switch engagement or disengagement
-        if last_thruster_status ~= thruster_status:
+        #Get time of switch engagement or disengagement
+        if last_kill_switch_status ~= kill_switch_status:
             kill_switch_engage_time = rospy.Time.now().to_sec()
 
-        last_thruster_status = thruster_status
-
+        last_kill_switch_status = kill_switch_status
 
 kill_switch_sm = StateMachine(outcomes=['kill_switch_engaged', 'kill_switch_disengaged'],
                         output_keys=[thruster_status_sm])
-kill_switch_sm.userdata.thruster_status_sm = 0
+kill_switch_sm.userdata.kill_switch_status_sm = 0
 kill_switch_sm.userdata.kill_switch_engage_time_sm = 0
 
 with safety_sm:
     StateMachine.add('KILL_SWITCH_MONITOR', KillSwitchMonitor(),
-                        transitions={'kill_switch_disengaged':'KILL_SWITCH_MONITOR'
+                        transitions={'kill_switch_disengaged':'kill_switch_disengaged'
                                     'kill_switch_engaged':'KILL_SWITCH_MONITOR'},
-                        remapping={'thruster_status':'thruster_status_sm',
+                        remapping={'kill_switch_status':'kill_switch_status_sm',
                                     'kill_switch_engage_time':'kill_switch_engage_time_sm'})
 
-kill_switch_sm.execute()
+outcome = kill_switch_sm.execute()

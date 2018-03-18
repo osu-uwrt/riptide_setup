@@ -15,6 +15,8 @@ def child_term_cb(outcome_map):
         return True
     elif outcome_map['MISSION_SM'] == 'mission_completed' || outcome_map['MISSION_SM'] == 'mission_failed':
         return True
+    elif outcome_map['KILL_SWITCH_SM'] == 'kill_switch_disengaged':
+        return True
     return False
 
 mission_concurrence = Concurrence(outcomes = ['mission_completed', 'mission_failed',
@@ -23,18 +25,18 @@ mission_concurrence = Concurrence(outcomes = ['mission_completed', 'mission_fail
                  output_keys=[]
                  outcome_map = {'misson_completed':{'MISSION_SM':'mission_completed'},
                                 'mission_failed':{'MISSION_SM':'mission_failed'},
-                                'emergency':{'SAFETY_SM':'emergency'}})
-qualify_concurrence.userdata.thruster_status_cc = 0
-qualify_concurrence.userdata.kill_switch_engage_time_cc = 0
+                                'emergency':{'SAFETY_SM':'emergency'},
+                                'kill_switch_disengaged':{'KILL_SWITCH_SM':'kill_switch_disengaged'}})
+mission_concurrence.userdata.thruster_status_cc = 0
+mission_concurrence.userdata.kill_switch_engage_time_cc = 0
 
-with qualify_concurrence:
+with mission_concurrence:
     Concurrence.add('MISSION_SWITCH_MONITOR_SM', mission_switch_monitor_sm,
-                    remapping={'thruster_status_sm':'thruster_status_cc',
-                                'kill_switch_engage_time_sm':'kill_switch_engage_time_cc'})
+                    remapping={})
     Concurrence.add('SAFETY_SM', safety_sm,
                     remapping={})
     Concurrence.add('KILL_SWITCH_SM', kill_switch_sm,
                     remapping={'thruster_status_sm':'thruster_status_cc',
                                 'kill_switch_engage_time_sm':'kill_switch_engage_time_cc'})
 
-qualify_concurrence.execute()
+mission_concurrence.execute()
