@@ -2,19 +2,16 @@
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "thruster_calibration");
-  ThrustCal thrust_cal;
-  thrust_cal.loop();
+  ros::init(argc, argv, "pwm_controller");
+  PWMController pwm_controller;
+  pwm_controller.Loop();
 }
 
-ThrustCal::ThrustCal() : nh()
+PWMController::PWMController() : nh()
 {
-  alive = ros::Time::now();
-  dead = false;
-
-  thrust = nh.subscribe<riptide_msgs::ThrustStamped>("command/thrust", 1, &ThrustCal::callback, this);
-  kill_it_with_fire = nh.subscribe<std_msgs::Empty>("state/kill", 1, &ThrustCal::killback, this);
-  pwm = nh.advertise<riptide_msgs::PwmStamped>("command/pwm", 1);
+  cmd_sub = nh.subscribe<riptide_msgs::ThrustStamped>("command/thrust", 1, &PWMController::ThrustCB, this);
+  kill_sub = nh.subscribe<riptide_msgs::SwitchState>("state/switches", 1, &PWMController::SwitchCB, this);
+  pwm_pub = nh.advertise<riptide_msgs::PwmStamped>("command/pwm", 1);
 
   //Initialization of the two trust/pwm slope arrays
   //The first column is for negative force, second column is positive force
@@ -37,72 +34,98 @@ ThrustCal::ThrustCal() : nh()
   cw_coeffs[3][0] = -30.1205;
   cw_coeffs[3][1] = -22.6244;
 
+  alive_timeout = ros::Duration(2);
+  last_alive_time = ros::Time::now();
+  silent = false; // Silent refers to not receiving commands from the control stack
+  dead = true; // Dead refers to the kill switch being pulled
 }
 
-void ThrustCal::callback(const riptide_msgs::ThrustStamped::ConstPtr& thrust)
+void PWMController::ThrustCB(const riptide_msgs::ThrustStamped::ConstPtr& thrust)
 {
-  us.header.stamp = thrust->header.stamp;
+  if (!dead)
+  {
+    pwm.header.stamp = thrust->header.stamp;
 
-  us.pwm.surge_port_lo = counterclockwise(thrust->force.surge_port_lo, 0);
-  us.pwm.surge_stbd_lo = clockwise(thrust->force.surge_stbd_lo, 0);
+    pwm.pwm.surge_port_lo = counterclockwise(thrust->force.surge_port_lo, 0);
+    pwm.pwm.surge_stbd_lo = clockwise(thrust->force.surge_stbd_lo, 0);
 
-  us.pwm.sway_fwd = counterclockwise(thrust->force.sway_fwd, 1);
-  us.pwm.sway_aft = clockwise(thrust->force.sway_aft, 1);
+    pwm.pwm.sway_fwd = counterclockwise(thrust->force.sway_fwd, 1);
+    pwm.pwm.sway_aft = clockwise(thrust->force.sway_aft, 1);
 
-  us.pwm.heave_stbd_fwd = clockwise(thrust->force.heave_stbd_fwd, 2);
-  us.pwm.heave_stbd_aft = counterclockwise(thrust->force.heave_stbd_aft, 2);
+    pwm.pwm.heave_stbd_fwd = clockwise(thrust->force.heave_stbd_fwd, 2);
+    pwm.pwm.heave_stbd_aft = counterclockwise(thrust->force.heave_stbd_aft, 2);
 
-  us.pwm.heave_port_aft = clockwise(thrust->force.heave_port_aft, 3);
-  us.pwm.heave_port_fwd = counterclockwise(thrust->force.heave_port_fwd, 3);
-  pwm.publish(us);
-
+    pwm.pwm.heave_port_aft = clockwise(thrust->force.heave_port_aft, 3);
+    pwm.pwm.heave_port_fwd = counterclockwise(thrust->force.heave_port_fwd, 3);
+    pwm_pub.publish(pwm);
+    last_alive_time = ros::Time::now();
+    silent = false;
+  }
 }
 
-void ThrustCal::killback(const std_msgs::Empty::ConstPtr& thrust)
+void PWMController::SwitchCB(const riptide_msgs::SwitchState::ConstPtr &state)
 {
-  dead = false;
-  alive = ros::Time::now();
+  dead = !state->kill;
 }
 
-void ThrustCal::loop()
+void PWMController::Loop()
 {
-  ros::Duration safe(0.05);
-  ros::Rate rate(50);
+  ros::Rate rate(10);
   while (!ros::isShuttingDown())
   {
-    ros::Duration timeout = ros::Time::now() - alive;
-    if (timeout > safe)
-    {
-      dead = true;
-    }
     ros::spinOnce();
+    ros::Duration quiet_time = ros::Time::now() - last_alive_time;
+    if (quiet_time >= alive_timeout)
+    {
+      silent = true;
+    }
+
+    if (silent || dead)
+    {
+      PWMController::PublishZeroPWM();
+    }
     rate.sleep();
   }
 }
 
-int ThrustCal::counterclockwise(double raw_force, int thruster)
+int PWMController::counterclockwise(double raw_force, int thruster)
 {
-  int pwm = 1500;
+  int us = 1500;
   if(raw_force<0){
-    pwm = 1500 + static_cast<int>(raw_force*ccw_coeffs[thruster][0]);
+    us = 1500 + static_cast<int>(raw_force*ccw_coeffs[thruster][0]);
   }else if(raw_force>0){
-    pwm = (int) (1500 + (raw_force*ccw_coeffs[thruster][1]));
+    us = (int) (1500 + (raw_force*ccw_coeffs[thruster][1]));
   }else{
-    pwm = 1500;
+    us = 1500;
   }
-  return pwm;
+  return us;
 }
 
-int ThrustCal::clockwise(double raw_force, int thruster)
+int PWMController::clockwise(double raw_force, int thruster)
 {
-  int pwm = 1500;
+  int us = 1500;
   if(raw_force<0){
-    pwm = 1500 + static_cast<int>(raw_force*cw_coeffs[thruster][0]);
+    us = 1500 + static_cast<int>(raw_force*cw_coeffs[thruster][0]);
   }else if(raw_force>0){
-    pwm = 1500 + static_cast<int>(raw_force*cw_coeffs[thruster][1]);
+    us = 1500 + static_cast<int>(raw_force*cw_coeffs[thruster][1]);
   }else{
-    pwm = 1500;
+    us = 1500;
   }
 
-  return pwm;
+  return us;
+}
+
+void PWMController::PublishZeroPWM()
+{
+  pwm.header.stamp = ros::Time::now();
+
+  pwm.pwm.surge_port_lo = 1500;
+  pwm.pwm.surge_stbd_lo = 1500;
+  pwm.pwm.sway_fwd = 1500;
+  pwm.pwm.sway_aft = 1500;
+  pwm.pwm.heave_stbd_fwd = 1500;
+  pwm.pwm.heave_stbd_aft = 1500;
+  pwm.pwm.heave_port_aft = 1500;
+  pwm.pwm.heave_port_fwd = 1500;
+  pwm_pub.publish(pwm);
 }

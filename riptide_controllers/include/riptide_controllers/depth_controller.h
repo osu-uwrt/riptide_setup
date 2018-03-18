@@ -5,6 +5,7 @@
 #include "control_toolbox/pid.h"
 #include "std_msgs/Float64.h"
 #include "riptide_msgs/Depth.h"
+#include "riptide_msgs/SwitchState.h"
 
 class DepthController
 {
@@ -14,6 +15,7 @@ class DepthController
     ros::Subscriber depth_sub;
     ros::Subscriber cmd_sub;
     ros::Publisher cmd_pub;
+    ros::Subscriber kill_sub;
 
     control_toolbox::Pid depth_controller_pid;
     std_msgs::Float64 accel;
@@ -32,11 +34,13 @@ class DepthController
     ros::Duration sample_duration;
 
     void UpdateError();
+    void ResetController();
 
   public:
     DepthController();
     void CommandCB(const riptide_msgs::Depth::ConstPtr &depth);
     void DepthCB(const riptide_msgs::Depth::ConstPtr &cmd);
+    void SwitchCB(const riptide_msgs::SwitchState::ConstPtr &state);
  };
 
  #endif

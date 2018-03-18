@@ -10,7 +10,12 @@ find_package(catkin REQUIRED
     imu_3dm_gx4
     pointgrey_camera_driver
     message_filters
+    message_generation
 )
+
+add_service_files(FILES Pneumatics.srv)
+
+generate_messages()
 
 catkin_package(INCLUDE_DIRS include)
 

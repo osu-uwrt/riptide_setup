@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="riptide_vision" type="qualification_vision.py" name="qualification_vision" />
+</launch>  
