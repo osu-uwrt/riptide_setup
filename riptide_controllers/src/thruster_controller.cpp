@@ -4,7 +4,8 @@
 #undef report
 #undef progress
 
-tf::Matrix3x3 R_wRelb, R_bRelw; //World to body and body to world rot. matrices
+//Rotation Matrices: world relative to body, and body relative to world
+tf::Matrix3x3 R_wRelb, R_bRelw;
 tf::Vector3 ang_v;
 
 #define PI 3.141592653
