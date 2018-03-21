@@ -54,11 +54,10 @@ void IMUProcessor::magCallback(const imu_3dm_gx4::MagFieldCF::ConstPtr& mag_msg)
     heading += 360; //Add 360 deg.
   }
   state[0].heading = heading;
+
   //Set YAW equal to calculated heading
   //Multiply by -1 (positive z-axis points up)
   state[0].euler_rpy.z = -state[0].heading;
-  //Adjust YAW (negate the value - positive z-axis points up)
-  //state[0].euler_rpy.z *= -1;
 }
 
  //Callback
