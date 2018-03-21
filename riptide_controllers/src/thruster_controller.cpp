@@ -4,8 +4,10 @@
 #undef report
 #undef progress
 
-tf::Matrix3x3 rotation_matrix;
+tf::Matrix3x3 R_wRelb, R_bRelw; //World to body and body to world rot. matrices
 tf::Vector3 ang_v;
+
+#define PI 3.141592653
 
 // Thrust limits (N):
 double MIN_THRUST = -8.0;
@@ -25,7 +27,7 @@ double GRAVITY = 9.81;
 
 // Water density (kg/m^3)
 double WATER_DENSITY = 1000.0;
-double BUOYANCY = VOLUME * WATER_DENSITY * GRAVITY - GRAVITY * MASS;
+double BUOYANCY = VOLUME * WATER_DENSITY * GRAVITY;
 
 // Moments of inertia (kg*m^2)
 double Ixx = 0.52607145;
@@ -41,7 +43,7 @@ double cmdPitch = 0.0;
 double cmdYaw = 0.0;
 
 //BUOYANCY Boolean  <-
-double bouyant = 0.0;
+bool isBuoyant = false;
 
 struct vector
 {
@@ -84,10 +86,8 @@ struct surge
                   const T *const heave_stbd_aft, T *residual) const
   {
     residual[0] =
-        (rotation_matrix.getRow(0).x() * (/*surge_port_hi[0] + surge_stbd_hi[0] + */surge_port_lo[0] + surge_stbd_lo[0]) +
-         rotation_matrix.getRow(0).y() * (sway_fwd[0] + sway_aft[0]) +
-         rotation_matrix.getRow(0).z() *
-             (heave_port_fwd[0] + heave_stbd_fwd[0] + heave_port_aft[0] + heave_stbd_aft[0])) /
+        ((surge_port_lo[0] + surge_stbd_lo[0]) +
+          (R_wRelb.getRow(0).z() * (BUOYANCY*isBuoyant - MASS * GRAVITY))) /
             T(MASS) -
         T(cmdSurge);
     return true;
@@ -103,10 +103,8 @@ struct sway
                   const T *const heave_stbd_aft, T *residual) const
   {
     residual[0] =
-        (rotation_matrix.getRow(1).x() * (/*surge_port_hi[0] + surge_stbd_hi[0] +*/ surge_port_lo[0] + surge_stbd_lo[0]) +
-         rotation_matrix.getRow(1).y() * (sway_fwd[0] + sway_aft[0]) +
-         rotation_matrix.getRow(1).z() *
-             (heave_port_fwd[0] + heave_stbd_fwd[0] + heave_stbd_aft[0] + heave_port_aft[0])) /
+        ((sway_fwd[0] + sway_aft[0]) +
+         (R_wRelb.getRow(1).z() * (BUOYANCY*isBuoyant - MASS * GRAVITY))) /
             T(MASS) -
         T(cmdSway);
     return true;
@@ -123,9 +121,8 @@ struct heave
   {
 
       residual[0] =
-          (rotation_matrix.getRow(2).x() * (/*surge_port_hi[0] + surge_stbd_hi[0]*/ + surge_port_lo[0] + surge_stbd_lo[0]) +
-           rotation_matrix.getRow(2).y() * (sway_fwd[0] + sway_aft[0]) +
-           rotation_matrix.getRow(2).z() * (heave_port_fwd[0] + heave_stbd_fwd[0] + heave_port_aft[0] + heave_stbd_aft[0])) /
+          ((heave_port_fwd[0] + heave_port_aft[0] + heave_stbd_fwd[0] + heave_stbd_aft[0]) +
+           (R_wRelb.getRow(2).z() * (BUOYANCY*isBuoyant - MASS * GRAVITY))) /
            T(MASS) -
            T(cmdHeave);
     return true;
@@ -194,8 +191,10 @@ int main(int argc, char **argv)
 
 ThrusterController::ThrusterController(char **argv, tf::TransformListener *listener_adr)
 {
-  rotation_matrix.setIdentity();
+  R_bRelw.setIdentity();
+  R_wRelb.setIdentity();
   ang_v.setZero();
+  isBuoyant = false;
 
   listener = listener_adr;
 
@@ -308,20 +307,28 @@ ThrusterController::ThrusterController(char **argv, tf::TransformListener *liste
 #endif
 }
 
+//Get orientation from IMU
 void ThrusterController::state(const riptide_msgs::Imu::ConstPtr &msg)
 {
-  //tf::Vector3 tf;
-  //vector3MsgToTF(msg->euler_rpy, tf);
-  //rotation_matrix.setRPY(tf.x(), tf.y(), tf.z());
-  vector3MsgToTF(msg->angular_velocity, ang_v);
+  //Get euler angles, convert to radians, and make two rotation matrices
+  tf::Vector3 tf;
+  vector3MsgToTF(msg->euler_rpy, tf);
+  tf.setValue(tf.x()*PI/180, tf.y()*PI/180, tf.y()*PI/180);
+  R_wRelb.setRPY(tf.x(), tf.y(), tf.z());
+  R_bRelw = R_bRelw.transpose();
+
+  //Get angular velocity and convert to [rad/s]
+  vector3MsgToTF(msg->ang_v, ang_v);
+  ang_v.setValue(ang_v.x()*PI/180, ang_v.y()*PI/180, ang_v.y()*PI/180);
 }
 
+//Get depth and determine if buoyancy should be included
 void ThrusterController::depth(const riptide_msgs::Depth::ConstPtr &msg)
 {
-  if(msg->depth > 1){
-    bouyant = 1.0;
+  if(msg->depth > 0.2){
+    isBuoyant = true;
   } else {
-    bouyant = 0.0;
+    isBuoyant = false;
   }
 }
 
@@ -329,7 +336,7 @@ void ThrusterController::callback(const geometry_msgs::Accel::ConstPtr &a)
 {
   cmdSurge = a->linear.x;
   cmdSway = a->linear.y;
-  cmdHeave = a->linear.z + (bouyant * BUOYANCY)/MASS;
+  cmdHeave = a->linear.z;
   cmdRoll = a->angular.x;
   cmdPitch = a->angular.y;
   cmdYaw = a->angular.z;
