@@ -1,8 +1,9 @@
 <launch>
     <arg name="location" default="columbus" />
-    <arg name="device" default="/dev/imu_front" />
+    <arg name="device" default="/dev/imu_rear" />
     <arg name="mag_LPF_bandwidth" default="1" />
-    <arg name="accel_LPF_bandwidth" default="50" />
+    <arg name="accel_LPF_bandwidth" default="25" />
+    <arg name="gyro_LPF_bandwidth" default="25" />
     <node pkg="riptide_hardware" name="imu_processor" type="imu_processor" output="screen" >
       <rosparam file="$(find riptide_hardware)/cfg/$(arg location).yaml" command="load"/>
     </node>
@@ -12,6 +13,7 @@
       <arg name="device" value="$(arg device)" />
       <arg name="mag_LPF_bandwidth" value="$(arg mag_LPF_bandwidth)" />
       <arg name="accel_LPF_bandwidth" value="$(arg accel_LPF_bandwidth)" />
+      <arg name="gyro_LPF_bandwidth" value="$(arg gyro_LPF_bandwidth)" />
     </include>
     <!--<node pkg="riptide_hardware" name="imu_logger" type="imu_logger" output="screen" />-->
 </launch>
