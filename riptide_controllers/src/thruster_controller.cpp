@@ -88,7 +88,7 @@ struct surge
   {
     residual[0] =
         ((surge_port_lo[0] + surge_stbd_lo[0]) +
-          (R_wRelb.getRow(0).z() * (BUOYANCY*isBuoyant - MASS * GRAVITY))) /
+          (R_wRelb.getRow(0).z() * (T(BUOYANCY) - T(MASS) * T(GRAVITY))*T(isBuoyant))) /
             T(MASS) -
         T(cmdSurge);
     return true;
@@ -105,7 +105,7 @@ struct sway
   {
     residual[0] =
         ((sway_fwd[0] + sway_aft[0]) +
-         (R_wRelb.getRow(1).z() * (BUOYANCY*isBuoyant - MASS * GRAVITY))) /
+         (R_wRelb.getRow(1).z() * (T(BUOYANCY) - T(MASS) * T(GRAVITY))*T(isBuoyant))) /
             T(MASS) -
         T(cmdSway);
     return true;
@@ -123,7 +123,7 @@ struct heave
 
       residual[0] =
           ((heave_port_fwd[0] + heave_port_aft[0] + heave_stbd_fwd[0] + heave_stbd_aft[0]) +
-           (R_wRelb.getRow(2).z() * (BUOYANCY*isBuoyant - MASS * GRAVITY))) /
+           (R_wRelb.getRow(2).z() * (T(BUOYANCY) - T(MASS) * T(GRAVITY))*T(isBuoyant))) /
            T(MASS) -
            T(cmdHeave);
     return true;
