@@ -1,7 +1,6 @@
 <launch>
   <node pkg="rosserial_python" type="serial_node.py" name="arduino">
-    <param name="port" value="/dev/ttyACM2"/>
+    <param name="port" value="/dev/ttyACM1"/>
     <param name="baud" value="57600"/>
-    <remap from="state/depth" to="arduino/depth"/>
   </node>
 </launch>

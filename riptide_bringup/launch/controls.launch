@@ -1,6 +1,7 @@
 <launch>
-  <!-- CONTROL STACK / launch from bottom to top-->
-  <!--<include file="$(find riptide_hardware)/launch/coprocessor.launch" />-->
+  <include file="$(find riptide_hardware)/launch/coprocessor.launch" />
+  <include file="$(find riptide_hardware)/launch/arduino.launch" />
+
   <include file="$(find riptide_controllers)/launch/pwm_controller.launch" />
   <include file="$(find riptide_controllers)/launch/thruster_controller.launch"/> <!-- Accel to Thrust node -->
 
