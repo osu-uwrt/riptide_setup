@@ -3,11 +3,13 @@
 import rospy
 from smach import State, StateMachine
 import smach_ros
-from riptide_msgs import Constants
+from riptide_msgs import Constants, SwitchState
 import qualify_sm
+#import mission_sm
 
 class MissionSwitchMonitor(State):
     qualify_switch_status = 0
+    mission_switch_status = 0
 
     def __init__(self):
         State.__init__(self, outcomes=['qualify_switch_activated',
@@ -16,7 +18,7 @@ class MissionSwitchMonitor(State):
                         input_keys=[],
                         output_keys=[])
         rospy.init_node('mission_switch_monitor')
-        copro_sub = rospy.Subscriber("/state/switches", callback)
+        copro_sub = rospy.Subscriber("/state/switches", SwitchState, callback)
 
     def execute(self, userdata):
         userdata.qualify_switch_status = qualify_switch_status
@@ -39,20 +41,21 @@ class MissionSwitchMonitor(State):
             qualify_switch_status = STATUS_DEACTIVATED
             mission_switch_status = STATUS_DEACTIVATED
 
-
-mission_switch_sm = StateMachine(outcomes=['mission_completed', 'mission_failed'],
+mission_control_sm = StateMachine(outcomes=['mission_completed', 'mission_failed'],
                                 input_keys=[],
                                 output_keys=[])
-with missim_switch_sm:
+
+#Change second QUALIFY_SM to MISSION_SM when mission_sm is ready
+with missim_control_sm:
     StateMachine.add('MISSION_SWITCH_MONITOR', MissionSwitchMonitor(),
                     transitions={'no_switch_activated':'MISSION_SWITCH_MONITOR',
                                 'qualify_switch_activated':'QUALIFY_SM',
-                                'mission_switch_activated':'QUALIFY_SM'},
-                    remapping={'thruster_status':'thruster_status_sm'})
+                                'mission_switch_activated':'MISSION_SWITCH_MONITOR'},
+                    remapping={})
     StateMachine.add('QUALIFY_SM', 'qualify_sm',
-                    transitions={},
+                    transitions={'qualify_completed':'mission_completed'},
                     remapping={})
     #StateMachine.add('MISSION_SM', 'mission_sm',
     #                transitions={},
     #                remapping={})
-missim_switch_sm.execute()
+missim_control_sm.execute()

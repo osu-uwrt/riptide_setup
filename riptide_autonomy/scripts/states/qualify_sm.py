@@ -6,10 +6,9 @@ import smach_ros
 from riptide_msgs import Constants
 
 qualify_sm = StateMachine(outcomes=['qualify_completed', 'qualify_failed'],
-                        input_keys=['thruster_state_in'],
+                        input_keys=[],
                         output_keys=[])
 qualify_sm.userdata.riptideConstantsOffset = 100
-qualify_sm.userdata.qualify_switch_engage_time = 0 #Set to 0 initially
 
 with qualify_sm:
 
