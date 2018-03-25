@@ -38,15 +38,16 @@ void IMUProcessor::magCallback(const imu_3dm_gx4::MagFieldCF::ConstPtr& mag_msg)
   magBY = mag_msg->mag_field_components.y;
   magBZ = mag_msg->mag_field_components.z;
 
-  float mBX = 0.0, mBY = 0.0, mBZ = 0.0;
+  //Compute norm of body-frame mag vector
+  //float mBX = 0.0, mBY = 0.0, mBZ = 0.0;
   norm(magBX, magBY, magBZ, &mBX, &mBY, &mBZ);
 
   //Calculate x and y mag components in world frame
-  magWX = mBX*cos(lastPitch) + mBY*sin(lastPitch)*sin(lastRoll) + mBZ*sin(lastPitch)*cos(lastRoll);
-  magWY = - mBY*cos(lastRoll) + mBZ*sin(lastRoll);
+  mWX = mBX*cos(lastPitch) + mBY*sin(lastPitch)*sin(lastRoll) + mBZ*sin(lastPitch)*cos(lastRoll);
+  mWY = -mBY*cos(lastRoll) + mBZ*sin(lastRoll);
 
   //Calculate heading with arctan (use atan2)
-  heading = atan2(magWY, magWX) * 180/PI;
+  heading = atan2(mWY, mWX) * 180/PI;
 
   //Account for declination
   heading += declination; //Add declination value

@@ -30,7 +30,7 @@ private:
   //Only velocities and accelerations will be smoothed
   riptide_msgs::ImuVerbose state[7]; //Used for calculations, debugging, etc.
   riptide_msgs::Imu imu_state; //Used for the controllers
-  float magBX, magBY, magBZ, magWX, magWY, lastRoll, lastPitch, heading;
+  float magBX, magBY, magBZ, mBX, mBY, mBZ, mWX, mWY, lastRoll, lastPitch, heading;
   double latitude, longitude, altitude, declination;
 public:
   IMUProcessor(char **argv);
