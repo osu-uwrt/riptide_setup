@@ -16,7 +16,7 @@ double MAX_THRUST = 8.0;
 
 // Vehicle mass (kg):
 // TODO: Get this value from model
-double MASS = 34.47940950;
+double MASS = 33.5;
 
 // Vehcile volume (m^3)
 // TODO: Get this value from model
@@ -32,8 +32,8 @@ double BUOYANCY = VOLUME * WATER_DENSITY * GRAVITY;
 
 // Moments of inertia (kg*m^2)
 double Ixx = 0.52607145;
-double Iyy = -1.50451601;
-double Izz = -1.62450600;
+double Iyy = 1.50451601;
+double Izz = 1.62450600;
 
 // Acceleration commands (m/s^):
 double cmdSurge = 0.0;
