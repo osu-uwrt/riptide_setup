@@ -38,9 +38,12 @@ void IMUProcessor::magCallback(const imu_3dm_gx4::MagFieldCF::ConstPtr& mag_msg)
   magBY = mag_msg->mag_field_components.y;
   magBZ = mag_msg->mag_field_components.z;
 
+  float mBX = 0.0, mBY = 0.0, mBZ = 0.0;
+  norm(magBX, magBY, magBZ, &mBX, &mBY, &mBZ);
+
   //Calculate x and y mag components in world frame
-  magWY = magBZ*sin(lastRoll) - magBY*cos(lastRoll);
-  magWX = magBX*cos(lastPitch) + magBY*sin(lastPitch)*sin(lastRoll)+ magBZ*sin(lastPitch)*cos(lastRoll);
+  magWX = mBX*cos(lastPitch) + mBY*sin(lastPitch)*sin(lastRoll) + mBZ*sin(lastPitch)*cos(lastRoll);
+  magWY = - mBY*cos(lastRoll) + mBZ*sin(lastRoll);
 
   //Calculate heading with arctan (use atan2)
   heading = atan2(magWY, magWX) * 180/PI;
@@ -58,6 +61,13 @@ void IMUProcessor::magCallback(const imu_3dm_gx4::MagFieldCF::ConstPtr& mag_msg)
   //Set YAW equal to calculated heading
   //Multiply by -1 (positive z-axis points up)
   state[0].euler_rpy.z = -state[0].heading;
+}
+
+void IMUProcessor::norm(float v1, float v2, float v3, float *x, float *y, float *z) {
+  float magnitude = sqrt(v1*v1 + v2*v2 + v3*v3);
+  *x = v1/magnitude;
+  *y = v2/magnitude;
+  *z = v3/magnitude;
 }
 
  //Callback
@@ -177,6 +187,9 @@ void IMUProcessor::processEulerAngles() {
 
   //Adjust pitch (negate the value - positive y-axis points left)
   state[0].euler_rpy.y *= -1;
+
+  //lastRoll = state[0].euler_rpy.x * PI/180;
+  //lastPitch = state[0].euler_rpy.y * PI/180;
 
   //Reminder:
   //DO NOT adjust euler_rpy.z here. This value is calculated by the magnetometer

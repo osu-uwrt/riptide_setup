@@ -36,6 +36,7 @@ public:
   IMUProcessor(char **argv);
   //void callback(const imu_3dm_gx4::FilterOutput::ConstPtr& filter_msg);
   void magCallback(const imu_3dm_gx4::MagFieldCF::ConstPtr& mag_msg);
+  void norm(float v1, float v2, float v3, float *x, float *y, float *z);
   void filterCallback(const imu_3dm_gx4::FilterOutput::ConstPtr& filter_msg);
   void cvtRad2Deg();
   void processEulerAngles();
