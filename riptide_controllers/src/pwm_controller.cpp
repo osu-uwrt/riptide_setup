@@ -1,4 +1,14 @@
 #include "riptide_controllers/pwm_controller.h"
+#define SPL 0
+#define SSL 1
+#define SWA 2
+#define SWF 3
+#define HSF 4
+#define HSA 5
+#define HPA 6
+#define HPF 7
+#define NEG 0
+#define POS 1
 
 int main(int argc, char** argv)
 {
@@ -14,25 +24,32 @@ PWMController::PWMController() : nh()
   pwm_pub = nh.advertise<riptide_msgs::PwmStamped>("command/pwm", 1);
 
   //Initialization of the two trust/pwm slope arrays
-  //The first column is for negative force, second column is positive force
+  //The first column is for negative forces, second column is positive forces
 
-  ccw_coeffs[0][0] = -24.4498;
-  ccw_coeffs[0][1] = -28.0898;
-  ccw_coeffs[1][0] = 30.2115;
-  ccw_coeffs[1][1] = 23.3645;
-  ccw_coeffs[2][0] = 23.9234;
-  ccw_coeffs[2][1] = 28.4091;
-  ccw_coeffs[3][0] = 23.9810;
-  ccw_coeffs[3][1] = 27.47;
-
-  cw_coeffs[0][0] = 29.1545;
-  cw_coeffs[0][1] = 23.8095;
-  cw_coeffs[1][0] = -24.8138;
-  cw_coeffs[1][1] = -28.49;
-  cw_coeffs[2][0] = -34.7222;
-  cw_coeffs[2][1] = -25.5754;
-  cw_coeffs[3][0] = -30.1205;
-  cw_coeffs[3][1] = -22.6244;
+  // Surge Port Low
+  thrust_slope[SPL][NEG] = -5.349046;
+  thrust_slope[SPL][POS] = -6.176643;
+  // Surge Starboard Low
+  thrust_slope[SSL][NEG] = 5.234392;
+  thrust_slope[SSL][POS] = 6.393562;
+  // Sway Forward
+  thrust_slope[SWF][NEG] = 5.161853;
+  thrust_slope[SWF][POS] = 6.621582;
+  // Sway Aft
+  thrust_slope[SWA][NEG] = -5.444654;
+  thrust_slope[SWA][POS] = -6.239471;
+  // Heave Surge Forward
+  thrust_slope[HSF][NEG] = 5.159923;
+  thrust_slope[HSF][POS] = 6.277069
+  // Heave Port Forward
+  thrust_slope[HPF][NEG] = -5.222560;
+  thrust_slope[HPF][POS] = -6.042335;
+  // Heave Port Aft
+  thrust_slope[HPA][NEG] = -4.886643;
+  thrust_slope[HPA][POS] = -6.449618;
+  // Heave Starboard Aft
+  thrust_slope[HSA][NEG] = -5.215345;
+  thrust_slope[HSA][POS] = -6.202313;
 
   alive_timeout = ros::Duration(2);
   last_alive_time = ros::Time::now();
@@ -46,17 +63,17 @@ void PWMController::ThrustCB(const riptide_msgs::ThrustStamped::ConstPtr& thrust
   {
     pwm.header.stamp = thrust->header.stamp;
 
-    pwm.pwm.surge_port_lo = counterclockwise(thrust->force.surge_port_lo, 0);
-    pwm.pwm.surge_stbd_lo = clockwise(thrust->force.surge_stbd_lo, 0);
+    pwm.pwm.surge_port_lo = thrust2pwm(thrust->force.surge_port_lo, SPL);
+    pwm.pwm.surge_stbd_lo = thrust2pwm(thrust->force.surge_stbd_lo, SSL);
 
-    pwm.pwm.sway_fwd = counterclockwise(thrust->force.sway_fwd, 1);
-    pwm.pwm.sway_aft = clockwise(thrust->force.sway_aft, 1);
+    pwm.pwm.sway_fwd = thrust2pwm(thrust->force.sway_fwd, SWF);
+    pwm.pwm.sway_aft = thrust2pwm(thrust->force.sway_aft, SWA);
 
-    pwm.pwm.heave_stbd_fwd = clockwise(thrust->force.heave_stbd_fwd, 2);
-    pwm.pwm.heave_stbd_aft = counterclockwise(thrust->force.heave_stbd_aft, 2);
+    pwm.pwm.heave_stbd_fwd = thrust2pwm(thrust->force.heave_stbd_fwd, HSF);
+    pwm.pwm.heave_stbd_aft = thrust2pwm(thrust->force.heave_stbd_aft, HSA);
 
-    pwm.pwm.heave_port_aft = clockwise(thrust->force.heave_port_aft, 3);
-    pwm.pwm.heave_port_fwd = counterclockwise(thrust->force.heave_port_fwd, 3);
+    pwm.pwm.heave_port_aft = thrust2pwm(thrust->force.heave_port_aft, HPA);
+    pwm.pwm.heave_port_fwd = thrust2pwm(thrust->force.heave_port_fwd, HPF);
     pwm_pub.publish(pwm);
     last_alive_time = ros::Time::now();
     silent = false;
@@ -88,30 +105,16 @@ void PWMController::Loop()
   }
 }
 
-int PWMController::counterclockwise(double raw_force, int thruster)
+int PWMController::thrust2pwm(double raw_force, int thruster)
 {
   int us = 1500;
   if(raw_force<0){
-    us = 1500 + static_cast<int>(raw_force*ccw_coeffs[thruster][0]);
+    us = 1500 + static_cast<int>(raw_force*thrust_slope[thruster][NEG]);
   }else if(raw_force>0){
-    us = (int) (1500 + (raw_force*ccw_coeffs[thruster][1]));
+    us = (int) (1500 + (raw_force*thrust_slope[thruster][POS]));
   }else{
     us = 1500;
   }
-  return us;
-}
-
-int PWMController::clockwise(double raw_force, int thruster)
-{
-  int us = 1500;
-  if(raw_force<0){
-    us = 1500 + static_cast<int>(raw_force*cw_coeffs[thruster][0]);
-  }else if(raw_force>0){
-    us = 1500 + static_cast<int>(raw_force*cw_coeffs[thruster][1]);
-  }else{
-    us = 1500;
-  }
-
   return us;
 }
 

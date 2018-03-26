@@ -17,11 +17,9 @@ class PWMController
   riptide_msgs::PwmStamped pwm;
   void PublishZeroPWM();
 
-  int counterclockwise(double raw_force, int thruster);
-  int clockwise(double raw_force, int thruster);
+  int thrust2pwm(double raw_force, int thruster);
 
-  float ccw_coeffs[4][2]; //counterclockwise thrust slopes
-  float cw_coeffs[4][2]; //clockwise thrust slopes
+  float thrust_slope[8][2]; // thrust slopes
   bool dead;
   bool silent;
   ros::Time last_alive_time;
