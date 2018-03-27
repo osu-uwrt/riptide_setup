@@ -14,10 +14,11 @@ class PWMController
   ros::Subscriber cmd_sub;
   ros::Subscriber kill_sub;
   ros::Publisher pwm_pub;
-  riptide_msgs::PwmStamped pwm;
+  riptide_msgs::PwmStamped msg;
   void PublishZeroPWM();
 
   int thrust2pwm(double raw_force, int thruster);
+  void load_calibration(float &param, std::string name);
 
   float thrust_slope[8][2]; // thrust slopes
   bool dead;
