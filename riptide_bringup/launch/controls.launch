@@ -9,6 +9,6 @@
 
   <include file="$(find riptide_controllers)/launch/depth_controller.launch" /> <!-- Command/Depth to Z Accel -->
 
-  <include file="$(find riptide_hardware)/launch/imu.launch" />
-  <include file="$(find riptide_controllers)/launch/attitude_controller.launch" />
+<!--  <include file="$(find riptide_hardware)/launch/imu.launch" />-->
+ <!-- <include file="$(find riptide_controllers)/launch/attitude_controller.launch" />-->
 </launch>
