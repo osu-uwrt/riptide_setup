@@ -18,9 +18,6 @@ class MasterSwitchMonitor(State):
         copro_sub = rospy.Subscriber("/state/switches", SwitchState, callback)
 
     def execute(self, userdata):
-        #Set master_switch_status to 0 initially
-        userdata.master_switch_status = 0
-
         #Return 'master_switch_activated' if one of the following switches
         #is activated by ORDER OF IMPORTANCE:
         if kill_switch_status == STATUS_ACTIVATED:
@@ -56,13 +53,13 @@ class MasterSwitchMonitor(State):
 
 master_switch_monitor_sm = StateMachine(outcomes=['master_switch_activated'],
                                         input_keys=[],
-                                        output_keys=[])
+                                        output_keys=['master_switch_status'])
 master_switch_monitor_sm.userdata.master_switch_status = 0
 
 with master_switch_monitor_sm:
     StateMachine.add('MASTER_SWITCH_MONITOR', MasterSwitchMonitor(),
                         transitions={'master_switch_activated':'master_switch_activated',
-                                    'master_switch_deactivated':'MISSION_SWITCH_MONITOR'},
+                                    'master_switch_deactivated':'MASTER_SWITCH_MONITOR'},
                         remapping={'master_switch_status':'master_switch_status'})
 
 outcome = master_switch_monitor_sm.execute()

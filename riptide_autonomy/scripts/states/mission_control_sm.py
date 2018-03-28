@@ -43,9 +43,10 @@ class MissionSwitchMonitor(State):
 
 mission_control_sm = StateMachine(outcomes=['mission_completed', 'mission_failed'],
                                 input_keys=[],
-                                output_keys=[])
+                                output_keys=['mission_status'])
+mission_control_sm.userdata.mission_status = 0
 
-#Change second QUALIFY_SM to MISSION_SM when mission_sm is ready
+#Add MISSION_SM when mission_sm is ready
 with missim_control_sm:
     StateMachine.add('MISSION_SWITCH_MONITOR', MissionSwitchMonitor(),
                     transitions={'no_switch_activated':'MISSION_SWITCH_MONITOR',
@@ -54,8 +55,8 @@ with missim_control_sm:
                     remapping={})
     StateMachine.add('QUALIFY_SM', 'qualify_sm',
                     transitions={'qualify_completed':'mission_completed'},
-                    remapping={})
+                    remapping={'mission_status':'mission_status'})
     #StateMachine.add('MISSION_SM', 'mission_sm',
-    #                transitions={},
-    #                remapping={})
+    #                transitions={'mission_completed':'mission_completed'},
+    #                remapping={'mission_status':'mission_status'})
 missim_control_sm.execute()

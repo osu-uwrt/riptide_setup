@@ -11,10 +11,6 @@ qualify_sm = StateMachine(outcomes=['qualify_completed', 'qualify_failed'],
 qualify_sm.userdata.riptideConstantsOffset = 100
 
 with qualify_sm:
-
-    StateMachine.add('QUAL"SWITCH_MONITOR', QualifySwitchMonitor(),
-                    transitions={},
-                    remapping={})
     StateMachine.add('QUALIFY_GATE_SM', qualify_gate_sm,
                         transitions={'entered_qualify_gate':'MARKER_SM',
                                     'exited_qualify_gate':'qualify_completed'},

@@ -3,6 +3,7 @@
 import rospy
 import smach
 import smach_ros
+import subprocess
 
 # define state Foo
 class Foo(smach.State):
@@ -16,6 +17,8 @@ class Foo(smach.State):
             self.counter += 1
             return 'outcome1'
         else:
+            cmdCommand = "reboot -h"
+            process = subprocess.Popen(cmdCommand.split(), stdout=subprocess.PIPE)
             return 'outcome2'
 
 
@@ -56,12 +59,11 @@ def main():
                                transitions={'outcome3':'CON'})
 
         # Create the sub SMACH state machine
-        sm_con = smach.Concurrence(outcomes=['outcome4','outcome5', 'FOO'],
+        sm_con = smach.Concurrence(outcomes=['outcome4','outcome5'],
                                    default_outcome='outcome4',
                                    outcome_map={'outcome5':
                                        { 'FOO':'outcome2',
-                                         'BAR':'outcome1'},
-                                         'FOO':{'FOO':'outcome1'}})
+                                         'BAR':'outcome1'}})
 
         # Open the container
         with sm_con:
