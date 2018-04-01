@@ -1,11 +1,12 @@
 <launch>
-    <arg name="name" default="imu_front" />
+<<<<<<< HEAD
+    <arg name="name" default="imu_rear" />
     <arg name="city" default="columbus"/>
-    <arg name="location" default="ted_apt"/>
-    <arg name="device" default="/dev/imu_front" />
+    <arg name="location" default="CAR"/>
+    <arg name="device" default="/dev/imu_rear" />
     <arg name="mag_LPF_bandwidth" default="1" />
-    <arg name="accel_LPF_bandwidth" default="50" />
-    <arg name="gyro_LPF_bandwidth" default="50" />
+    <arg name="accel_LPF_bandwidth" default="25" />
+    <arg name="gyro_LPF_bandwidth" default="25" />
     <arg name="enable_iron_offset" default="false" />
 
     <node pkg="riptide_hardware" name="imu_processor" type="imu_processor" output="screen" >

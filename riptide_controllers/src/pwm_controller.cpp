@@ -20,17 +20,17 @@ PWMController::PWMController() : nh()
   ccw_coeffs[0][1] = -28.0898;
   ccw_coeffs[1][0] = 30.2115;
   ccw_coeffs[1][1] = 23.3645;
-  ccw_coeffs[2][0] = -23.9234;
-  ccw_coeffs[2][1] = -28.4091;
-  ccw_coeffs[3][0] = -23.9810;
-  ccw_coeffs[3][1] = -27.47;
+  ccw_coeffs[2][0] = 23.9234;
+  ccw_coeffs[2][1] = 28.4091;
+  ccw_coeffs[3][0] = 23.9810;
+  ccw_coeffs[3][1] = 27.47;
 
   cw_coeffs[0][0] = 29.1545;
   cw_coeffs[0][1] = 23.8095;
   cw_coeffs[1][0] = -24.8138;
   cw_coeffs[1][1] = -28.49;
-  cw_coeffs[2][0] = 34.7222;
-  cw_coeffs[2][1] = 25.5754;
+  cw_coeffs[2][0] = -34.7222;
+  cw_coeffs[2][1] = -25.5754;
   cw_coeffs[3][0] = -30.1205;
   cw_coeffs[3][1] = -22.6244;
 

@@ -16,7 +16,7 @@ double MAX_THRUST = 8.0;
 
 // Vehicle mass (kg):
 // TODO: Get this value from model
-double MASS = 34.47940950;
+double MASS = 33.5;
 
 // Vehcile volume (m^3)
 // TODO: Get this value from model
@@ -32,8 +32,8 @@ double BUOYANCY = VOLUME * WATER_DENSITY * GRAVITY;
 
 // Moments of inertia (kg*m^2)
 double Ixx = 0.52607145;
-double Iyy = -1.50451601;
-double Izz = -1.62450600;
+double Iyy = 1.50451601;
+double Izz = 1.62450600;
 
 // Acceleration commands (m/s^):
 double cmdSurge = 0.0;
@@ -88,7 +88,7 @@ struct surge
   {
     residual[0] =
         ((surge_port_lo[0] + surge_stbd_lo[0]) +
-          (R_wRelb.getRow(0).z() * (BUOYANCY*isBuoyant - MASS * GRAVITY))) /
+          (R_wRelb.getRow(0).z() * (T(BUOYANCY) - T(MASS) * T(GRAVITY))*T(isBuoyant))) /
             T(MASS) -
         T(cmdSurge);
     return true;
@@ -105,7 +105,7 @@ struct sway
   {
     residual[0] =
         ((sway_fwd[0] + sway_aft[0]) +
-         (R_wRelb.getRow(1).z() * (BUOYANCY*isBuoyant - MASS * GRAVITY))) /
+         (R_wRelb.getRow(1).z() * (T(BUOYANCY) - T(MASS) * T(GRAVITY))*T(isBuoyant))) /
             T(MASS) -
         T(cmdSway);
     return true;
@@ -123,7 +123,7 @@ struct heave
 
       residual[0] =
           ((heave_port_fwd[0] + heave_port_aft[0] + heave_stbd_fwd[0] + heave_stbd_aft[0]) +
-           (R_wRelb.getRow(2).z() * (BUOYANCY*isBuoyant - MASS * GRAVITY))) /
+           (R_wRelb.getRow(2).z() * (T(BUOYANCY) - T(MASS) * T(GRAVITY))*T(isBuoyant))) /
            T(MASS) -
            T(cmdHeave);
     return true;
