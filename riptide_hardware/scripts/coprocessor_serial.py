@@ -37,7 +37,7 @@ def main():
     dataRead = True
 
     # Add publishers
-    #depthPub = rospy.Publisher('/state/depth', Depth, queue_size=10)
+    depthPub = rospy.Publisher('/state/depth', Depth, queue_size=10)
     swPub = rospy.Publisher('/state/switches', SwitchState, queue_size=10)
 
     #Subscribe to Thruster PWMs
@@ -54,18 +54,18 @@ def main():
             data = ser.read()
             if data is not None:
                 #First two conditions check for start bytes
-                #if (data == "%" and not swRead):
-                #    depthRead = True
-		#    packet=""
-		if (data == "$" and not depthRead):
+                if (data == "%" and not swRead):
+                    depthRead = True
+		    packet=""
+		elif (data == "$" and not depthRead):
 		    swRead = True
                     packet=""
                 elif(data == '@'):
                     if(depthRead):
                        depthRead = False
-		       print packet
+		       #print packet
                        depthList = packet.split("!")
-		       print depthList
+		       #print depthList
 		       depth_msg.header.stamp = rospy.Time.now()
 		       depth_msg.temp = float(depthList[0].replace("\x00", ""))
                        depth_msg.pressure = float(depthList[1].replace("\x00", ""))
