@@ -12,15 +12,15 @@ IMU::IMU()
   this->IMU_.euler_rpy.x = 0;
   this->IMU_.euler_rpy.y = 0;
   this->IMU_.euler_rpy.z = 0;
-  this->IMU_.angular_velocity.x = 0;
-  this->IMU_.angular_velocity.y = 0;
-  this->IMU_.angular_velocity.z = 0;
-  this->IMU_.linear_acceleration.x = 0;
-  this->IMU_.linear_acceleration.y = 0;
-  this->IMU_.linear_acceleration.z = 0;
-  this->IMU_.angular_acceleration.x = 0;
-  this->IMU_.angular_acceleration.y = 0;
-  this->IMU_.angular_acceleration.z = 0;
+  this->IMU_.ang_v.x = 0;
+  this->IMU_.ang_v.y = 0;
+  this->IMU_.ang_v.z = 0;
+  this->IMU_.linear_accel.x = 0;
+  this->IMU_.linear_accel.y = 0;
+  this->IMU_.linear_accel.z = 0;
+  this->IMU_.ang_accel.x = 0;
+  this->IMU_.ang_accel.y = 0;
+  this->IMU_.ang_accel.z = 0;
 }
 
 IMU::~IMU()
@@ -69,17 +69,17 @@ void IMU::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     this->IMU_.euler_rpy.y = this->modelPose.rot.GetPitch()*180/M_PI;
     this->IMU_.euler_rpy.z = this->modelPose.rot.GetYaw()*180/M_PI;
 
-    this->IMU_.angular_velocity.x = angularVelocity.x;
-    this->IMU_.angular_velocity.y = angularVelocity.y;
-    this->IMU_.angular_velocity.z = angularVelocity.z;
+    this->IMU_.ang_v.x = angularVelocity.x;
+    this->IMU_.ang_v.y = angularVelocity.y;
+    this->IMU_.ang_v.z = angularVelocity.z;
 
-    this->IMU_.angular_acceleration.x = angularAccel.x;
-    this->IMU_.angular_acceleration.y = angularAccel.y;
-    this->IMU_.angular_acceleration.z = angularAccel.z;
+    this->IMU_.ang_accel.x = angularAccel.x;
+    this->IMU_.ang_accel.y = angularAccel.y;
+    this->IMU_.ang_accel.z = angularAccel.z;
 
-    this->IMU_.linear_acceleration.x = linearAccel.x;
-    this->IMU_.linear_acceleration.y = linearAccel.y;
-    this->IMU_.linear_acceleration.z = linearAccel.z;
+    this->IMU_.linear_accel.x = linearAccel.x;
+    this->IMU_.linear_accel.y = linearAccel.y;
+    this->IMU_.linear_accel.z = linearAccel.z;
 
     this->IMU_pub_.publish(this->IMU_);
 

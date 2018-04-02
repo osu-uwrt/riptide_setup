@@ -5,6 +5,7 @@
 #include "std_msgs/Float64.h"
 #include "geometry_msgs/Accel.h"
 #include "geometry_msgs/Vector3.h"
+#include "riptide_msgs/SwitchState.h"
 
 class CommandCombinator
 {
@@ -16,12 +17,15 @@ class CommandCombinator
     ros::Subscriber linear_z_sub;
 
     ros::Subscriber angular_sub;
+    ros::Subscriber kill_sub;
 
     ros::Publisher cmd_pub;
     geometry_msgs::Accel current_accel;
+    void ResetController();
 
   public:
     CommandCombinator();
+    void SwitchCB(const riptide_msgs::SwitchState::ConstPtr &state);
 
     void linearXCB(const std_msgs::Float64::ConstPtr &accel);
     void linearYCB(const std_msgs::Float64::ConstPtr &accel);

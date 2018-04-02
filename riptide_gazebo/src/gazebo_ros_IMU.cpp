@@ -52,9 +52,9 @@ void IMU::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   void IMU::Update()
   {
     this->IMU.euler_rpy.set(this->modelPose.getRoll()*180/M_PI, this->modelPose.getPitch()*180/M_PI, this->modelPose.getYaw()*180/M_PI);
-    this->IMU_.angular_velocity = angularVelocity;
-    this->IMU_.angular_acceleration = angularAccel;
-    this->IMU_.linear_acceleration = linearAccel;
+    this->IMU_.ang_v = angularVelocity;
+    this->IMU_.ang_accel = angularAccel;
+    this->IMU_.linear_accel = linearAccel;
     this->IMU_pub_.publish(this->IMU_);
   }
 }

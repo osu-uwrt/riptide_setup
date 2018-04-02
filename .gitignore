@@ -1,7 +1,7 @@
 *~
 *.bak
 .DS_Store
-
+*.pyc
 /CMakeLists.txt
 
 riptide_description/urdf/riptide.urdf
