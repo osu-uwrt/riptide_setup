@@ -56,34 +56,34 @@ def main():
                 #First two conditions check for start bytes
                 if (data == "%" and not swRead):
                     depthRead = True
-		    packet=""
-		elif (data == "$" and not depthRead):
-		    swRead = True
+		            packet=""
+		        elif (data == "$" and not depthRead):
+		            swRead = True
                     packet=""
                 elif(data == '@'):
                     if(depthRead):
-                       depthRead = False
-		       #print packet
-                       depthList = packet.split("!")
-		       #print depthList
-		       depth_msg.header.stamp = rospy.Time.now()
-		       depth_msg.temp = float(depthList[0].replace("\x00", ""))
-                       depth_msg.pressure = float(depthList[1].replace("\x00", ""))
-                       depth_msg.depth = float(depthList[2].replace("\x00",""))
-		       depth_msg.altitude = 0.0
-                       depthPub.publish(depth_msg);
-		    elif(swRead):
-			#print packet
-			swRead = False
-			# Populate switch message. Start at 1 to ignore line break
-			sw_msg.kill = True if packet[0] is '1' else False
-			sw_msg.sw1 = True if packet[1] is '1' else False
-			sw_msg.sw2 = True if packet[2] is '1' else False
-			sw_msg.sw3 = True if packet[3] is '1' else False
-			sw_msg.sw4 = True if packet[4] is '1' else False
-			sw_msg.sw5 = True if packet[5] is '1' else False
-			swPub.publish(sw_msg)
-		    packet = ""
+                        depthRead = False
+		                #print packet
+                        depthList = packet.split("!")
+		                #print depthList
+		                depth_msg.header.stamp = rospy.Time.now()
+		                depth_msg.temp = float(depthList[0].replace("\x00", ""))
+                        depth_msg.pressure = float(depthList[1].replace("\x00", ""))
+                        depth_msg.depth = float(depthList[2].replace("\x00",""))
+		                depth_msg.altitude = 0.0
+                        depthPub.publish(depth_msg);
+		            elif(swRead):
+			            #print packet
+			            swRead = False
+			            # Populate switch message. Start at 1 to ignore line break
+			            sw_msg.kill = True if packet[0] is '1' else False
+			            sw_msg.sw1 = True if packet[1] is '1' else False
+			            sw_msg.sw2 = True if packet[2] is '1' else False
+			            sw_msg.sw3 = True if packet[3] is '1' else False
+			            sw_msg.sw4 = True if packet[4] is '1' else False
+			            sw_msg.sw5 = True if packet[5] is '1' else False
+			            swPub.publish(sw_msg)
+		            packet = ""
                 else:
                     packet = packet + data
 
