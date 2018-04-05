@@ -38,27 +38,37 @@ void IMUProcessor::magCallback(const imu_3dm_gx4::MagFieldCF::ConstPtr& mag_msg)
   magBY = mag_msg->mag_field_components.y;
   magBZ = mag_msg->mag_field_components.z;
 
+  //Compute norm of body-frame mag vector
+  //float mBX = 0.0, mBY = 0.0, mBZ = 0.0;
+  norm(magBX, magBY, magBZ, &mBX, &mBY, &mBZ);
+
   //Calculate x and y mag components in world frame
-  magWY = magBZ*sin(lastRoll) - magBY*cos(lastRoll);
-  magWX = magBX*cos(lastPitch) + magBY*sin(lastPitch)*sin(lastRoll)+ magBZ*sin(lastPitch)*cos(lastRoll);
+  mWX = mBX*cos(lastPitch) + mBY*sin(lastPitch)*sin(lastRoll) + mBZ*sin(lastPitch)*cos(lastRoll);
+  mWY = -mBY*cos(lastRoll) + mBZ*sin(lastRoll);
 
   //Calculate heading with arctan (use atan2)
-  heading = atan2(magWY, magWX) * 180/PI;
+  heading = atan2(mWY, mWX) * 180/PI;
 
   //Account for declination
   heading += declination; //Add declination value
   if(heading > 180.0) { //Keep heading in the range [-180, 180] deg.
-    heading = heading - 360; //Subtarct 360 deg.
+    heading -= 360; //Subtract 360 deg.
   }
   else if(heading < -180.0) {
-    heading = heading + 360; //Add 360 deg.
+    heading += 360; //Add 360 deg.
   }
   state[0].heading = heading;
+
   //Set YAW equal to calculated heading
   //Multiply by -1 (positive z-axis points up)
   state[0].euler_rpy.z = -state[0].heading;
-  //Adjust YAW (negate the value - positive z-axis points up)
-  //state[0].euler_rpy.z *= -1;
+}
+
+void IMUProcessor::norm(float v1, float v2, float v3, float *x, float *y, float *z) {
+  float magnitude = sqrt(v1*v1 + v2*v2 + v3*v3);
+  *x = v1/magnitude;
+  *y = v2/magnitude;
+  *z = v3/magnitude;
 }
 
  //Callback
@@ -74,18 +84,21 @@ void IMUProcessor::magCallback(const imu_3dm_gx4::MagFieldCF::ConstPtr& mag_msg)
     state[0].gyro_bias = filter_msg->gyro_bias;
     state[0].euler_rpy_status = filter_msg->euler_rpy_status;
 
+    //DO NOT set euler_rpy.z here. This value is calculated by the magnetometer
+    //and is thus based on the magnetic field callback,
+
     state[0].heading_update = filter_msg->heading_update;
     state[0].heading_update_uncertainty = filter_msg->heading_update_uncertainty;
     state[0].heading_update_source = filter_msg->heading_update_source;
     state[0].heading_update_flags = filter_msg->heading_update_flags;
 
-    state[0].raw_linear_acceleration = filter_msg->linear_acceleration;
-    state[0].linear_acceleration = filter_msg->linear_acceleration;
-    state[0].linear_acceleration_status = filter_msg->linear_acceleration_status;
+    state[0].raw_linear_accel = filter_msg->linear_acceleration;
+    state[0].linear_accel = filter_msg->linear_acceleration;
+    state[0].linear_accel_status = filter_msg->linear_acceleration_status;
 
-    state[0].raw_angular_velocity = filter_msg->angular_velocity;
-    state[0].angular_velocity = filter_msg->angular_velocity;
-    state[0].angular_velocity_status = filter_msg->angular_velocity_status;
+    state[0].raw_ang_v = filter_msg->angular_velocity;
+    state[0].ang_v = filter_msg->angular_velocity;
+    state[0].ang_v_status = filter_msg->angular_velocity_status;
 
     lastRoll = state[0].euler_rpy.x;
     lastPitch = state[0].euler_rpy.y;
@@ -96,21 +109,13 @@ void IMUProcessor::magCallback(const imu_3dm_gx4::MagFieldCF::ConstPtr& mag_msg)
     //Process Euler Angles (adjust heading and signs)
     processEulerAngles();
 
-    //Set new delta time (convert nano seconds to seconds)
-    if(state[1].dt == 0) { //If dt[0] not set yet, set to 0.01s, which is roughly what it would be
-      state[0].dt = 0.01;
-    }
-    else { //dt has already been set, so find actual dt
-      state[0].dt = (double)state[0].header.stamp.toSec() - (double)state[1].header.stamp.toSec();
-    }
-
     //Populate shorthand matrices for data smoothing
-    av[0][0] = state[0].raw_angular_velocity.x;
-    av[1][0] = state[0].raw_angular_velocity.y;
-    av[2][0] = state[0].raw_angular_velocity.z;
-    la[0][0] = state[0].raw_linear_acceleration.x;
-    la[1][0] = state[0].raw_linear_acceleration.y;
-    la[2][0] = state[0].raw_linear_acceleration.z;
+    av[0][0] = state[0].raw_ang_v.x;
+    av[1][0] = state[0].raw_ang_v.y;
+    av[2][0] = state[0].raw_ang_v.z;
+    la[0][0] = state[0].raw_linear_accel.x;
+    la[1][0] = state[0].raw_linear_accel.y;
+    la[2][0] = state[0].raw_linear_accel.z;
 
     //Further process data
     if(cycles >= size) {
@@ -124,7 +129,7 @@ void IMUProcessor::magCallback(const imu_3dm_gx4::MagFieldCF::ConstPtr& mag_msg)
 
 
     //Must have completed 14 cycles because there need to be 7 smoothed data points
-    //before processing  velocities, accelerations, etc.
+    //before processing velocities, accelerations, etc.
     if(cycles < 14) {
       cycles += 1;
     }
@@ -152,7 +157,6 @@ void IMUProcessor::cvtRad2Deg() {
   state[0].raw_euler_rpy.z *= (180.0/PI);
   state[0].euler_rpy.x *= (180.0/PI);
   state[0].euler_rpy.y *= (180.0/PI);
-  //state[0].euler_rpy.z *= (180.0/PI);
 
   state[0].gyro_bias.x *= (180.0/PI);
   state[0].gyro_bias.y *= (180.0/PI);
@@ -161,12 +165,9 @@ void IMUProcessor::cvtRad2Deg() {
   state[0].heading_update *= (180/PI);
   state[0].heading_update_uncertainty *= (180/PI);
 
-  state[0].raw_angular_velocity.x *= (180.0/PI);
-  state[0].raw_angular_velocity.y *= (180.0/PI);
-  state[0].raw_angular_velocity.z *= (180.0/PI);
-  // state[0].angular_velocity.x *= (180.0/PI);
-  // state[0].angular_velocity.y *= (180.0/PI);
-  // state[0].angular_velocity.z *= (180.0/PI);
+  state[0].raw_ang_v.x *= (180.0/PI);
+  state[0].raw_ang_v.y *= (180.0/PI);
+  state[0].raw_ang_v.z *= (180.0/PI);
 }
 
 //Adjust Euler angles to be consistent with the AUV's axes
@@ -187,6 +188,13 @@ void IMUProcessor::processEulerAngles() {
 
   //Adjust pitch (negate the value - positive y-axis points left)
   state[0].euler_rpy.y *= -1;
+
+  //lastRoll = state[0].euler_rpy.x * PI/180;
+  //lastPitch = state[0].euler_rpy.y * PI/180;
+
+  //Reminder:
+  //DO NOT adjust euler_rpy.z here. This value is calculated by the magnetometer
+  //and is thus based on the magnetic field callback,
 }
 
 //Smooth Angular Velocity and Linear Acceleration with a Gaussian 7-point smooth
@@ -197,12 +205,12 @@ void IMUProcessor::smoothData() {
   int sumCoef = 27;
 
   //Set all desired values to smooth to 0
-  state[c].angular_velocity.x = 0;
-  state[c].angular_velocity.y = 0;
-  state[c].angular_velocity.z = 0;
-  state[c].linear_acceleration.x = 0;
-  state[c].linear_acceleration.y = 0;
-  state[c].linear_acceleration.z = 0;
+  state[c].ang_v.x = 0;
+  state[c].ang_v.y = 0;
+  state[c].ang_v.z = 0;
+  state[c].linear_accel.x = 0;
+  state[c].linear_accel.y = 0;
+  state[c].linear_accel.z = 0;
 
   //Smooth Data
   //Reminder for using shorthand matrices:
@@ -211,13 +219,13 @@ void IMUProcessor::smoothData() {
   //row 0 = x-axis, row 1 = y-axis, row 2 = z-axis
   //col 0 = state 0, col 1 = state 1, etc.
   for(int i = 0; i<size; i++) {
-    state[c].angular_velocity.x += coef[i]*av[0][i]/sumCoef;
-    state[c].angular_velocity.y += coef[i]*av[1][i]/sumCoef;
-    state[c].angular_velocity.z += coef[i]*av[2][i]/sumCoef;
+    state[c].ang_v.x += coef[i]*av[0][i]/sumCoef;
+    state[c].ang_v.y += coef[i]*av[1][i]/sumCoef;
+    state[c].ang_v.z += coef[i]*av[2][i]/sumCoef;
 
-    state[c].linear_acceleration.x += coef[i]*la[0][i]/sumCoef;
-    state[c].linear_acceleration.y += coef[i]*la[1][i]/sumCoef;
-    state[c].linear_acceleration.z += coef[i]*la[2][i]/sumCoef;
+    state[c].linear_accel.x += coef[i]*la[0][i]/sumCoef;
+    state[c].linear_accel.y += coef[i]*la[1][i]/sumCoef;
+    state[c].linear_accel.z += coef[i]*la[2][i]/sumCoef;
   }
 }
 
@@ -225,9 +233,9 @@ void IMUProcessor::smoothData() {
 void IMUProcessor::populateIMUState() {
   imu_state.header = state[c].header;
   imu_state.euler_rpy = state[c].euler_rpy;
-  imu_state.linear_acceleration = state[c].linear_acceleration;
-  imu_state.angular_velocity = state[c].angular_velocity;
-  imu_state.angular_acceleration = state[c].angular_acceleration;
+  imu_state.linear_accel = state[c].linear_accel;
+  imu_state.ang_v = state[c].ang_v;
+  imu_state.ang_accel = state[c].ang_accel;
 }
 
 //ROS loop function

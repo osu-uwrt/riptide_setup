@@ -40,3 +40,4 @@ add_dependencies(attitude_controller riptide_msgs_gencpp)
 
 add_executable(command_combinator src/command_combinator.cpp)
 target_link_libraries(command_combinator ${catkin_LIBRARIES})
+add_dependencies(command_combinator riptide_msgs_gencpp)
