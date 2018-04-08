@@ -3,7 +3,7 @@
 import rospy
 from smach import State, StateMachine
 import smach_ros
-from riptide_msgs import Constants
+from riptide_msgs.msg import Constants, ResetControls
 import auv_concurrence_sm
 import subprocess
 
@@ -21,14 +21,15 @@ class Idle(State):
         #Act on master_switch_status
         #Reset all controllers first, then loop back (kill disengaged)
         #or run script to restart or shutdown computer
-        if master_switch_status == MASTER_SWITCH_KILL:
-            return 'loop'
-        elif master_switch_status == MASTER_SWITCH_RESTART:
+
+        if master_switch_status == MASTER_SWITCH_RESTART:
             cmdCommand = "reboot -h"
             process = subprocess.Popen(cmdCommand.split(), stdout=subprocess.PIPE)
         elif master_switch_status == MASTER_SWITCH_SHUTDOWN:
             cmdCommand = "shutdown -h now"
             process = subprocess.Popen(cmdCommand.split(), stdout=subprocess.PIPE)
+        elif master_switch_status == MASTER_SWITCH_KILL:
+            return 'loop'
 
         #Otherwise, act on mission_status (wait for kill switch to be
         #disengaged and then reengaged)
@@ -39,6 +40,9 @@ class Idle(State):
             kill_switch_status = STATUS_DEACTIVATED
         elif data.kill == False:
             kill_switch_status = STATUS_ACTIVATED
+
+    def pubRestartControllerMsg():
+
 
 auv_controller_sm = StateMachine(outcomes = ['loop'],
                             input_keys=['master_switch_status', 'mission_status'],

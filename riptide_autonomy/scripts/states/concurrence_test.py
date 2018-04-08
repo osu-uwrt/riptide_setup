@@ -4,21 +4,23 @@ import rospy
 import smach
 import smach_ros
 import subprocess
+from std_msgs.msg import String
 
 # define state Foo
 class Foo(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['outcome1','outcome2'])
         self.counter = 0
+        test_pub = rospy.Publisher('test', String, queue_size = 10)
 
     def execute(self, userdata):
         rospy.loginfo('Executing state FOO')
         if self.counter < 3:
             self.counter += 1
+            fooString = "state_foo"
+            test_pub.publish(fooString)
             return 'outcome1'
         else:
-            cmdCommand = "reboot -h"
-            process = subprocess.Popen(cmdCommand.split(), stdout=subprocess.PIPE)
             return 'outcome2'
 
 
@@ -28,7 +30,7 @@ class Bar(smach.State):
         smach.State.__init__(self, outcomes=['outcome1'])
 
     def execute(self, userdata):
-        rospy.loginfo('Executing state BAR')
+        rospy.loginfo('Executing state BAR, wait for 5 sec')
         rospy.sleep(5.0)
         return 'outcome1'
 

@@ -3,7 +3,7 @@
 import rospy
 from smach import State, StateMachine
 import smach_ros
-from riptide_msgs import Constants, SwitchState
+from riptide_msgs.msg import Constants, SwitchState
 
 class MasterSwitchMonitor(State):
     kill_switch_status = 0
@@ -20,14 +20,15 @@ class MasterSwitchMonitor(State):
     def execute(self, userdata):
         #Return 'master_switch_activated' if one of the following switches
         #is activated by ORDER OF IMPORTANCE:
-        if kill_switch_status == STATUS_ACTIVATED:
-            userdata.master_switch_status = MASTER_SWITCH_KILL
-            return 'master_switch_activated'
-        elif restart_switch_status == STATUS_ACTIVATED:
+
+        if restart_switch_status == STATUS_ACTIVATED:
             userdata.master_switch_status = MASTER_SWITCH_RESTART
             return 'master_switch_activated'
         elif shutdown_switch_status == STATUS_ACTIVATED:
             userdata.master_switch_status = MASTER_SWITCH_SHUTDOWN
+            return 'master_switch_activated'
+        elif kill_switch_status == STATUS_ACTIVATED:
+            userdata.master_switch_status = MASTER_SWITCH_KILL
             return 'master_switch_activated'
         else:
             return 'master_switch_deactivated'

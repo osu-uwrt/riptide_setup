@@ -3,7 +3,7 @@
 import rospy
 from smach import Concurrence
 import smach_ros
-from riptide_msgs import Constants
+from riptide_msgs.msg import Constants
 import master_switch_monitor_sm
 import mission_control_sm
 #import saftey_sm
@@ -16,7 +16,7 @@ def child_term_cb(outcome_map):
 
 auv_concurrence = Concurrence(outcomes = ['exit'],
                  default_outcome = 'exit',
-                 output_keys=[]
+                 output_keys=['master_switch_status']
                  outcome_map = {})
 auv_concurrence.userdata.master_switch_status = 0
 auv_concurrence.userdata.mission_status = 0
