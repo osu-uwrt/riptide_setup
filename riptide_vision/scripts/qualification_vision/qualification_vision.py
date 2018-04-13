@@ -27,8 +27,8 @@ class ImageProcessor:
             print(e)
 
         if good:
-            response = RiptideVision().detect_gate(cv_image)
-            hud_img = RiptideVision().detect_gate_vis(cv_image, response)
+            response = RiptideVision().detect_pole(cv_image)
+            hud_img = RiptideVision().detect_pole_vis(cv_image, response)
             img = CompressedImage()
             img.header.stamp = rospy.Time.now()
             img.format = ".jpeg"
@@ -43,10 +43,10 @@ class ImageProcessor:
                 pos.x = 0
                 pos.y = response[3]
                 pos.z = response[4]
-                msg.left_pole_visible = response[1]
-                msg.right_pole_visible = response[2]
+                #msg.left_pole_visible = response[1]
+                #msg.right_pole_visible = response[2]
                 msg.object_data.visible = True
-                msg.object_data.rel_pos = pos
+                #msg.object_data.rel_pos = pos
 
             self.data_pub.publish(msg)
 
