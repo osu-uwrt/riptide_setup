@@ -37,8 +37,8 @@ def main():
     dataRead = True
 
     # Add publishers
-    depthPub = rospy.Publisher('/state/depth', Depth, queue_size=10)
-    swPub = rospy.Publisher('/state/switches', SwitchState, queue_size=10)
+    depthPub = rospy.Publisher('/state/depth', Depth, queue_size=1)
+    swPub = rospy.Publisher('/state/switches', SwitchState, queue_size=1)
 
     #Subscribe to Thruster PWMs
     rospy.Subscriber("/command/pwm", PwmStamped, pwm_callback)
@@ -63,7 +63,7 @@ def main():
                 elif(data == '@'):
                     if(depthRead):
                        depthRead = False
-		       #print packet
+		       # print packet
                        depthList = packet.split("!")
 		       #print depthList
 		       depth_msg.header.stamp = rospy.Time.now()
