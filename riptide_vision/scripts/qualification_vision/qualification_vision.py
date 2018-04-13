@@ -14,7 +14,7 @@ from geometry_msgs.msg import Vector3
 class ImageProcessor:
     def __init__(self):
         self.image_pub = rospy.Publisher("/forward/processed/compressed", CompressedImage, queue_size=1)
-        self.data_pub = rospy.Publisher("/state/vision/gate", GateData, queue_size=1)
+        self.data_pub = rospy.Publisher("/state/vision/pole", GateData, queue_size=1)
         self.fwd_sub = rospy.Subscriber("/forward/image_raw", Image, self.image_callback, queue_size=1)
         self.bridge = CvBridge()
 
@@ -41,12 +41,12 @@ class ImageProcessor:
             if (len(response) > 0):
                 pos = Vector3()
                 pos.x = 0
-                pos.y = response[3]
-                pos.z = response[4]
+                pos.y = response[2]
+                pos.z = response[3]
                 #msg.left_pole_visible = response[1]
                 #msg.right_pole_visible = response[2]
                 msg.object_data.visible = True
-                #msg.object_data.rel_pos = pos
+                msg.object_data.rel_pos = pos
 
             self.data_pub.publish(msg)
 

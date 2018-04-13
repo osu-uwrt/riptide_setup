@@ -37,6 +37,6 @@ AlignmentController::AlignmentController() {
 void AlignmentController::ObjectCB(const riptide_msgs::ObjectData::ConstPtr &msg) {
   // Y axis in robot frame maps to X axis of camera frame
   y_error = msg->rel_pos.x;
-
+  ROS_INFO("%f", y_error);
   AlignmentController::UpdateError();
 }
