@@ -18,6 +18,8 @@ add_message_files(
     Imu.msg
     ImuVerbose.msg
     SwitchState.msg
+    ObjectData.msg
+    GateData.msg
 )
 
 generate_messages(DEPENDENCIES std_msgs geometry_msgs)
