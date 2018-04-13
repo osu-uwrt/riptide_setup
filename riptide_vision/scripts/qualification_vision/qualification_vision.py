@@ -46,7 +46,7 @@ class ImageProcessor:
                 msg.left_pole_visible = response[1]
                 msg.right_pole_visible = response[2]
                 msg.object_data.visible = True
-                msg.object_data.relative_position = pos
+                msg.object_data.rel_pos = pos
 
             self.data_pub.publish(msg)
 
