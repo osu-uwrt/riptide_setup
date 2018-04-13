@@ -15,6 +15,7 @@ int main(int argc, char **argv) {
 }
 
 void AttitudeController::UpdateError() {
+
   sample_duration = ros::Time::now() - sample_start;
   dt = sample_duration.toSec();
 
@@ -43,6 +44,11 @@ void AttitudeController::UpdateError() {
   accel_cmd.y = pitch_controller_pid.computeCommand(pitch_error, pitch_error_dot, sample_duration);
   accel_cmd.z = yaw_controller_pid.computeCommand(yaw_error, yaw_error_dot, sample_duration);
 
+  error_msg.x = roll_error;
+  error_msg.y = pitch_error;
+  error_msg.z = yaw_error;
+
+  error_pub.publish(error_msg);
   cmd_pub.publish(accel_cmd);
   sample_start = ros::Time::now();
 }
@@ -63,6 +69,7 @@ AttitudeController::AttitudeController() {
     pitch_controller_pid.init(pcpid, false);
 
     cmd_pub = nh.advertise<geometry_msgs::Vector3>("command/accel/angular", 1);
+    error_pub = nh.advertise<geometry_msgs::Vector3>("error/angular", 1);
     sample_start = ros::Time::now();
 }
 
