@@ -15,7 +15,7 @@ class ImageProcessor:
     def __init__(self):
         self.image_pub = rospy.Publisher("/forward/processed/compressed", CompressedImage, queue_size=1)
         self.data_pub = rospy.Publisher("/state/vision/gate", GateData, queue_size=1)
-        self.fwd_sub = rospy.Subscriber("/forward/image_raw/compressed", CompressedImage, self.image_callback, queue_size=1)
+        self.fwd_sub = rospy.Subscriber("/forward/image_raw", Image, self.image_callback, queue_size=1)
         self.bridge = CvBridge()
 
     def image_callback(self, data):
