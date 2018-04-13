@@ -1,0 +1,3 @@
+riptide_msgs/ObjectData object_data
+bool left_pole_visible
+bool right_pole_visible
