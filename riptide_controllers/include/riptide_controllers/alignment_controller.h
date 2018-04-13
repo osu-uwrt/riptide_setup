@@ -4,7 +4,7 @@
 #include "ros/ros.h"
 #include "control_toolbox/pid.h"
 #include "std_msgs/Float64.h"
-#include "riptide_msgs/GateData.h"
+#include "riptide_msgs/ObjectData.h"
 
 class AlignmentController
 {

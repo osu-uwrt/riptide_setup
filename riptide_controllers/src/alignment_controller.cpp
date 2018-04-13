@@ -26,7 +26,7 @@ void AlignmentController::UpdateError() {
 
 AlignmentController::AlignmentController() {
     ros::NodeHandle ypid("sway_controller");
-    object_sub = nh.subscribe<riptide_msgs::ObjectData>("state/vision/pole/object_data", 1000, &AlignmentController::ObjectCB, this);
+    object_sub = nh.subscribe<riptide_msgs::ObjectData>("task/gate/object_data", 1000, &AlignmentController::ObjectCB, this);
     y_pid.init(ypid, false);
 
     cmd_pub = nh.advertise<std_msgs::Float64>("command/accel/linear/y", 1);

@@ -4,6 +4,10 @@
 #undef report
 #undef progress
 
+float round(float d) {
+  return floor(d + 0.5);
+}
+
 int main(int argc, char **argv) {
   ros::init(argc, argv, "attitude_controller");
   AttitudeController ac;
@@ -15,18 +19,18 @@ void AttitudeController::UpdateError() {
   dt = sample_duration.toSec();
 
   // Roll error
-  roll_error = roll_cmd - current_attitude.x;
+  roll_error = roll_cmd - round(current_attitude.x);
   roll_error_dot = (roll_error - last_error.x) / dt;
   last_error.x = roll_error;
 
   // Pitch error
-  pitch_error = pitch_cmd - current_attitude.y;
+  pitch_error = pitch_cmd - round(current_attitude.y);
   pitch_error_dot = (pitch_error - last_error.y) / dt;
   last_error.y = pitch_error;
 
   // Yaw error
   // Always take shortest path to setpoint
-  yaw_error = yaw_cmd - current_attitude.z;
+  yaw_error = yaw_cmd - round(current_attitude.z);
   if (yaw_error > 180)
       yaw_error -= 360;
   else if (yaw_error < -180)
@@ -80,9 +84,9 @@ void AttitudeController::SwitchCB(const riptide_msgs::SwitchState::ConstPtr &sta
 // Subscribe to command/orientation
 // set the MAX_ROLL and MAX_PITCH value in the header
 void AttitudeController::CommandCB(const geometry_msgs::Vector3::ConstPtr &cmd) {
-  roll_cmd = cmd->x;
-  pitch_cmd = cmd->y;
-  yaw_cmd = cmd->z;
+  roll_cmd = round(cmd->x);
+  pitch_cmd = round(cmd->y);
+  yaw_cmd = round(cmd->z);
 
   // Constrain pitch
   if(roll_cmd > MAX_ROLL)
