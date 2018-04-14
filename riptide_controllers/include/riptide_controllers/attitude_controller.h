@@ -18,13 +18,13 @@ class AttitudeController
     ros::Subscriber imu_sub;
     ros::Subscriber cmd_sub;
     ros::Subscriber kill_sub;
-    ros::Publisher cmd_pub;
+    ros::Publisher cmd_pub, error_pub;
 
     control_toolbox::Pid roll_controller_pid;
     control_toolbox::Pid pitch_controller_pid;
     control_toolbox::Pid yaw_controller_pid;
 
-    geometry_msgs::Vector3 accel_cmd;
+    geometry_msgs::Vector3 accel_cmd, error_msg;
 
     //PID
     double roll_error, pitch_error, yaw_error;

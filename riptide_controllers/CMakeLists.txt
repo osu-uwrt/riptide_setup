@@ -30,6 +30,10 @@ add_executable(depth_controller src/depth_controller.cpp)
 target_link_libraries(depth_controller ${catkin_LIBRARIES})
 add_dependencies(depth_controller riptide_msgs_gencpp)
 
+add_executable(alignment_controller src/alignment_controller.cpp)
+target_link_libraries(alignment_controller ${catkin_LIBRARIES})
+add_dependencies(alignment_controller riptide_msgs_gencpp)
+
 add_executable(pwm_controller src/pwm_controller.cpp)
 target_link_libraries(pwm_controller ${catkin_LIBRARIES})
 add_dependencies(pwm_controller riptide_msgs_gencpp)

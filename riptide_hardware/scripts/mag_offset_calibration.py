@@ -23,13 +23,13 @@ def pwmFillMsg(pwm):
     pwm_msg.header.stamp = rospy.Time.now()
     pwm_msg.pwm.surge_port_hi = 1500
     pwm_msg.pwm.surge_stbd_hi = 1500
-    pwm_msg.pwm.surge_port_lo = pwm
+    pwm_msg.pwm.surge_port_lo = 1500
     pwm_msg.pwm.surge_stbd_lo = 1500
     pwm_msg.pwm.sway_fwd = 1500
     pwm_msg.pwm.sway_aft = 1500
     pwm_msg.pwm.heave_port_fwd = 1500
     pwm_msg.pwm.heave_stbd_fwd = 1500
-    pwm_msg.pwm.heave_port_aft = 1500
+    pwm_msg.pwm.heave_port_aft = pwm
     pwm_msg.pwm.heave_stbd_aft = 1500
 
 def writeToFile(filename, pwm):
@@ -50,7 +50,9 @@ def main():
     increment = 25
     low = 1300
     high = 1700
-    filename = "/home/ros/osu-uwrt/riptide_software/src/riptide_hardware/cfg/test.csv"
+
+    filename = "/home/ros/osu-uwrt/riptide_software/src/riptide_hardware/cfg/heave_port_aft2.csv"
+
     time = rospy.Time.now().to_sec()
     count = 0
     ramp = 0
@@ -64,9 +66,9 @@ def main():
             if rospy.Time.now().to_sec() - time > 4.0:
                 state = 'writeValues'
                 time = rospy.Time.now().to_sec()
+
         elif state == 'writeValues':
-            #Write 40 values to file, obain readings at rate of 10 Hz
-            if count < 40 and (rospy.Time.now().to_sec() - time) >= 0.1:
+	    if count < 40 and (rospy.Time.now().to_sec() - time) >= 0.1:
                 writeToFile(filename, pwm)
                 time = rospy.Time.now().to_sec()
                 count = count + 1
