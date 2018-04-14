@@ -50,17 +50,14 @@ def main():
     increment = 25
     low = 1300
     high = 1700
+
     filename = "/home/ros/osu-uwrt/riptide_software/src/riptide_hardware/cfg/heave_port_aft2.csv"
+
     time = rospy.Time.now().to_sec()
     count = 0
     ramp = 0
 
     while not rospy.is_shutdown():
-        #file1 = open(filename, 'a+')
-        #with open(filename, 'a+'):
-        #testWriter = csv.writer(csvfile)
-        #rospy.
-
         #Do three ramps (up, down, up)
         #print(state)
         if state == 'pubPWM':
@@ -69,7 +66,8 @@ def main():
             if rospy.Time.now().to_sec() - time > 4.0:
                 state = 'writeValues'
                 time = rospy.Time.now().to_sec()
-        elif state == 'writeValues':  
+
+        elif state == 'writeValues':
 	    if count < 40 and (rospy.Time.now().to_sec() - time) >= 0.1:
                 writeToFile(filename, pwm)
                 time = rospy.Time.now().to_sec()
@@ -78,6 +76,8 @@ def main():
                 state = 'setPWM'
                 count = 0
         elif state == 'setPWM':
+            #Increment pwm while within range.
+            #If outside range, adjust according to the next ramp direction
             if pwm < high and pwm > low:
                 pwm = pwm + (-1)**ramp * increment
             elif ramp == 0:
@@ -90,30 +90,6 @@ def main():
             if ramp == 2 and pwm == 1525:
                 state = 'done'
             time = rospy.Time.now().to_sec()
-
-        # for ramp in range(0,3):
-        #     while pwm <= high and pwm >= low:
-        #         pwmFillMsg(pwm)
-        #         pwmPub.publish(pwm_msg)
-        #         rospy.sleep(2.0)
-        #
-        #         #Get mag values 5 times
-        #         for i in range(0, 5):
-        #             writeToFile(filename, pwm)
-        #             rospy.sleep(0.5)
-        #             if rospy.is_shutdown():
-        #                 done = True
-        #
-        #         #If testing is done (ramp = 2, and pwm back at 1500), break
-        #         if ramp == 2 and pwm == 1500:
-        #             break
-        #
-        #         #Increment or decrement pwm
-        #         pwm = pwm + (-1)**ramp * increment
-        #     if ramp == 0:
-        #         pwm = high - increment #Start going down
-        #     elif ramp == 1:
-        #         pwm = low + increment #Start going back up
 
         rate.sleep()
 

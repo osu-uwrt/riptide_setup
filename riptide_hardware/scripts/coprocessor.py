@@ -56,9 +56,9 @@ def main():
                 #First two conditions check for start bytes
                 if (data == "%" and not swRead):
                     depthRead = True
-		    packet=""
-		elif (data == "$" and not depthRead):
-		    swRead = True
+		            packet=""
+		        elif (data == "$" and not depthRead):
+		            swRead = True
                     packet=""
                 elif(data == '@'):
                     if(depthRead):
