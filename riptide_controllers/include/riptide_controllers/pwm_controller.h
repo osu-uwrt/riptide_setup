@@ -20,7 +20,7 @@ class PWMController
   int thrust2pwm(double raw_force, int thruster);
   void load_calibration(float &param, std::string name);
 
-  float thrust_slope[8][2]; // thrust slopes
+  float thrust_config[8][4]; // thrust slopes
   bool dead;
   bool silent;
   ros::Time last_alive_time;
