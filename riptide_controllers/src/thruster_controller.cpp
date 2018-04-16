@@ -11,8 +11,8 @@ tf::Vector3 ang_v;
 #define PI 3.141592653
 
 // Thrust limits (N):
-double MIN_THRUST = -8.0;
-double MAX_THRUST = 8.0;
+double MIN_THRUST = -50.0;
+double MAX_THRUST = 50.0;
 
 // Vehicle mass (kg):
 // TODO: Get this value from model
