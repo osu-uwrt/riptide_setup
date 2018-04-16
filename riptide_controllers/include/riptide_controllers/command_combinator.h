@@ -2,7 +2,7 @@
 #define COMMAND_COMBINATOR_H
 
 #include "ros/ros.h"
-#include "std_msgs/Float64.h"
+#include "std_msgs/Float32.h"
 #include "geometry_msgs/Accel.h"
 #include "geometry_msgs/Vector3.h"
 #include "riptide_msgs/SwitchState.h"
@@ -27,9 +27,9 @@ class CommandCombinator
     CommandCombinator();
     void SwitchCB(const riptide_msgs::SwitchState::ConstPtr &state);
 
-    void linearXCB(const std_msgs::Float64::ConstPtr &accel);
-    void linearYCB(const std_msgs::Float64::ConstPtr &accel);
-    void linearZCB(const std_msgs::Float64::ConstPtr &accel);
+    void linearXCB(const std_msgs::Float32::ConstPtr &accel);
+    void linearYCB(const std_msgs::Float32::ConstPtr &accel);
+    void linearZCB(const std_msgs::Float32::ConstPtr &accel);
 
     void angularCB(const geometry_msgs::Vector3::ConstPtr &accel);
  };

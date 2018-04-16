@@ -3,7 +3,7 @@
 
 #include "ros/ros.h"
 #include "control_toolbox/pid.h"
-#include "std_msgs/Float64.h"
+#include "std_msgs/Float32.h"
 #include "riptide_msgs/ObjectData.h"
 
 class AlignmentController
@@ -16,7 +16,7 @@ class AlignmentController
     ros::Publisher cmd_pub;
 
     control_toolbox::Pid y_pid;
-    std_msgs::Float64 accel;
+    std_msgs::Float32 accel;
 
     //PID
     double y_error;

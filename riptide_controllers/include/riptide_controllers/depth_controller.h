@@ -3,7 +3,7 @@
 
 #include "ros/ros.h"
 #include "control_toolbox/pid.h"
-#include "std_msgs/Float64.h"
+#include "std_msgs/Float32.h"
 #include "riptide_msgs/Depth.h"
 #include "riptide_msgs/SwitchState.h"
 
@@ -14,15 +14,15 @@ class DepthController
     ros::NodeHandle nh;
     ros::Subscriber depth_sub;
     ros::Subscriber cmd_sub;
-    ros::Publisher cmd_pub;
+    ros::Publisher cmd_pub, error_pub;
     ros::Subscriber kill_sub;
 
     control_toolbox::Pid depth_controller_pid;
-    std_msgs::Float64 accel;
+    std_msgs::Float32 accel;
+    riptide_msgs::Depth error_msg, current_depth;
 
     //PID
     double depth_error;
-    double current_depth;
     double cmd_depth;
     double d_error;
     double last_error;

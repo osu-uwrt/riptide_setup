@@ -61,16 +61,16 @@ AttitudeController::AttitudeController() {
 
     pid_initialized = false;
 
-    cmd_sub = nh.subscribe<geometry_msgs::Vector3>("command/attitude", 1000, &AttitudeController::CommandCB, this);
-    imu_sub = nh.subscribe<riptide_msgs::Imu>("state/imu", 1000, &AttitudeController::ImuCB, this);
-    kill_sub = nh.subscribe<riptide_msgs::SwitchState>("state/switches", 10, &AttitudeController::SwitchCB, this);
+    cmd_sub = nh.subscribe<geometry_msgs::Vector3>("command/attitude", 1, &AttitudeController::CommandCB, this);
+    imu_sub = nh.subscribe<riptide_msgs::Imu>("state/imu", 1, &AttitudeController::ImuCB, this);
+    kill_sub = nh.subscribe<riptide_msgs::SwitchState>("state/switches", 1, &AttitudeController::SwitchCB, this);
 
     roll_controller_pid.init(rcpid, false);
     yaw_controller_pid.init(ycpid, false);
     pitch_controller_pid.init(pcpid, false);
 
     cmd_pub = nh.advertise<geometry_msgs::Vector3>("command/accel/angular", 1);
-    error_pub = nh.advertise<geometry_msgs::Vector3Stamped>("error/angular", 1);
+    error_pub = nh.advertise<geometry_msgs::Vector3Stamped>("error/attitude", 1);
     sample_start = ros::Time::now();
 }
 

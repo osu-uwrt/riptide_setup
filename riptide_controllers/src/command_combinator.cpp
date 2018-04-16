@@ -6,17 +6,17 @@ int main(int argc, char **argv) {
   ros::spin();
 }
 
-void CommandCombinator::linearXCB(const std_msgs::Float64::ConstPtr &accel) {
+void CommandCombinator::linearXCB(const std_msgs::Float32::ConstPtr &accel) {
   current_accel.linear.x = accel->data;
   cmd_pub.publish(current_accel);
 }
 
-void CommandCombinator::linearYCB(const std_msgs::Float64::ConstPtr &accel) {
+void CommandCombinator::linearYCB(const std_msgs::Float32::ConstPtr &accel) {
   current_accel.linear.y = accel->data;
   cmd_pub.publish(current_accel);
 }
 
-void CommandCombinator::linearZCB(const std_msgs::Float64::ConstPtr &accel) {
+void CommandCombinator::linearZCB(const std_msgs::Float32::ConstPtr &accel) {
   current_accel.linear.z = accel->data;
   cmd_pub.publish(current_accel);
 }
@@ -36,9 +36,9 @@ void CommandCombinator::SwitchCB(const riptide_msgs::SwitchState::ConstPtr &stat
 }
 
 CommandCombinator::CommandCombinator() {
-    linear_x_sub = nh.subscribe<std_msgs::Float64>("command/accel/linear/x", 10, &CommandCombinator::linearXCB, this);
-    linear_y_sub = nh.subscribe<std_msgs::Float64>("command/accel/linear/y", 10, &CommandCombinator::linearYCB, this);
-    linear_z_sub = nh.subscribe<std_msgs::Float64>("command/accel/linear/z", 10, &CommandCombinator::linearZCB, this);
+    linear_x_sub = nh.subscribe<std_msgs::Float32>("command/accel/linear/x", 10, &CommandCombinator::linearXCB, this);
+    linear_y_sub = nh.subscribe<std_msgs::Float32>("command/accel/linear/y", 10, &CommandCombinator::linearYCB, this);
+    linear_z_sub = nh.subscribe<std_msgs::Float32>("command/accel/linear/z", 10, &CommandCombinator::linearZCB, this);
 
     angular_sub = nh.subscribe<geometry_msgs::Vector3>("command/accel/angular", 10, &CommandCombinator::angularCB, this);
     kill_sub = nh.subscribe<riptide_msgs::SwitchState>("state/switches", 10, &CommandCombinator::SwitchCB, this);
