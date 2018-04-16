@@ -23,6 +23,7 @@ void DepthController::UpdateError() {
   error_msg.header.stamp = current_depth.header.stamp;
   error_msg.depth = depth_error;
 
+  error_pub.publish(error_msg);
   cmd_pub.publish(accel);
   sample_start = current_depth.header.stamp;
 }
