@@ -53,10 +53,10 @@ def main():
         if ser is not None:
             data = ser.readline()[:-2]
             if data is not None and data[-1:] == "@":
-                packet = data[4:-4]
+                packet = data[5:-4]
 
                 # Check if depth (%) or switch ($)
-                if (data[0] == "%"):
+                if (data[1] == "%"):
                     depthList = packet.split("!");
                     depth_msg.header.stamp = rospy.Time.now()
                     depth_msg.temp = float(depthList[0].replace("\x00", ""))
@@ -64,7 +64,7 @@ def main():
                     depth_msg.depth = float(depthList[2].replace("\x00",""))
                     depth_msg.altitude = 0.0
                     depthPub.publish(depth_msg)
-                elif (data[0] == "$"):
+                elif (data[1] == "$"):
                     # Populate switch message. Start at 1 to ignore line break
                     sw_msg.kill = True if packet[0] is '1' else False
                     sw_msg.sw1 = True if packet[1] is '1' else False
