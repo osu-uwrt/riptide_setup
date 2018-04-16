@@ -6,7 +6,7 @@
 #include "ros/ros.h"
 #include "control_toolbox/pid.h"
 #include "geometry_msgs/Accel.h"
-#include "geometry_msgs/Vector3.h"
+#include "geometry_msgs/Vector3Stamped.h"
 #include "riptide_msgs/Imu.h"
 #include "riptide_msgs/SwitchState.h"
 
@@ -24,14 +24,14 @@ class AttitudeController
     control_toolbox::Pid pitch_controller_pid;
     control_toolbox::Pid yaw_controller_pid;
 
-    geometry_msgs::Vector3 accel_cmd, error_msg;
+    geometry_msgs::Vector3 accel_cmd, last_error;
 
     //PID
     double roll_error, pitch_error, yaw_error;
     double roll_error_dot, pitch_error_dot, yaw_error_dot;
     double roll_cmd, pitch_cmd, yaw_cmd;
 
-    geometry_msgs::Vector3 current_attitude, last_error;
+    geometry_msgs::Vector3Stamped current_attitude, error_msg;
 
     bool pid_initialized;
 

@@ -16,22 +16,22 @@ int main(int argc, char **argv) {
 
 void AttitudeController::UpdateError() {
 
-  sample_duration = ros::Time::now() - sample_start;
+  sample_duration = current_attitude.header.stamp - sample_start;
   dt = sample_duration.toSec();
 
   // Roll error
-  roll_error = roll_cmd - round(current_attitude.x);
+  roll_error = roll_cmd - round(current_attitude.vector.x);
   roll_error_dot = (roll_error - last_error.x) / dt;
   last_error.x = roll_error;
 
   // Pitch error
-  pitch_error = pitch_cmd - round(current_attitude.y);
+  pitch_error = pitch_cmd - round(current_attitude.vector.y);
   pitch_error_dot = (pitch_error - last_error.y) / dt;
   last_error.y = pitch_error;
 
   // Yaw error
   // Always take shortest path to setpoint
-  yaw_error = yaw_cmd - round(current_attitude.z);
+  yaw_error = yaw_cmd - round(current_attitude.vector.z);
   if (yaw_error > 180)
       yaw_error -= 360;
   else if (yaw_error < -180)
@@ -44,13 +44,14 @@ void AttitudeController::UpdateError() {
   accel_cmd.y = pitch_controller_pid.computeCommand(pitch_error, pitch_error_dot, sample_duration);
   accel_cmd.z = yaw_controller_pid.computeCommand(yaw_error, yaw_error_dot, sample_duration);
 
-  error_msg.x = roll_error;
-  error_msg.y = pitch_error;
-  error_msg.z = yaw_error;
+  error_msg.vector.x = roll_error;
+  error_msg.vector.y = pitch_error;
+  error_msg.vector.z = yaw_error;
+  error_msg.header.stamp = current_attitude.header.stamp;
 
   error_pub.publish(error_msg);
   cmd_pub.publish(accel_cmd);
-  sample_start = ros::Time::now();
+  sample_start = current_attitude.header.stamp;
 }
 
 AttitudeController::AttitudeController() {
@@ -69,13 +70,14 @@ AttitudeController::AttitudeController() {
     pitch_controller_pid.init(pcpid, false);
 
     cmd_pub = nh.advertise<geometry_msgs::Vector3>("command/accel/angular", 1);
-    error_pub = nh.advertise<geometry_msgs::Vector3>("error/angular", 1);
+    error_pub = nh.advertise<geometry_msgs::Vector3Stamped>("error/angular", 1);
     sample_start = ros::Time::now();
 }
 
 // Subscribe to state/imu
 void AttitudeController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu) {
-  current_attitude = imu->euler_rpy;
+  current_attitude.vector = imu->euler_rpy;
+  current_attitude.header = imu->header;
   if (pid_initialized) {
     AttitudeController::UpdateError();
   }
@@ -129,9 +131,9 @@ void AttitudeController::ResetController() {
   yaw_error_dot = 0;
   yaw_controller_pid.reset();
 
-  current_attitude.x = 0;
-  current_attitude.y = 0;
-  current_attitude.z = 0;
+  current_attitude.vector.x = 0;
+  current_attitude.vector.y = 0;
+  current_attitude.vector.z = 0;
   last_error.x = 0;
   last_error.y = 0;
   last_error.z = 0;
