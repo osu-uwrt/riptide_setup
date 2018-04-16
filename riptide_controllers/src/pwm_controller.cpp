@@ -131,7 +131,7 @@ int PWMController::thrust2pwm(double raw_force, int thruster)
   // Otherwise, set PWM to 1500 (0 thrust)
   if(raw_force < 0)
   {
-    pwm = (int) (thrust_config[thruster][NEG_XINT] + (raw_force*thrust_config[thruster][NEG_SLOPE]);
+    pwm = (int) (thrust_config[thruster][NEG_XINT] + (raw_force*thrust_config[thruster][NEG_SLOPE]));
   }
   else if(raw_force > 0){
     pwm = (int) (thrust_config[thruster][POS_XINT] + (raw_force*thrust_config[thruster][POS_SLOPE]));
