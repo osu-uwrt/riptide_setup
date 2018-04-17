@@ -22,8 +22,7 @@ class ImageProcessor:
         self.prev_pos = list();
 
     def image_callback(self, data):
-        if (obj_pub.getNumSubscribers() > 0):
-            self.process_gate(data)
+        self.process_gate(data)
 
     def pos_is_valid(self, new_pos):
         threshold = 20 #px
@@ -33,7 +32,6 @@ class ImageProcessor:
         return x and y and z
 
     def process_gate(self, data):
-        print "processing"
         good = False
         try:
             cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
@@ -53,7 +51,7 @@ class ImageProcessor:
             gate_msg = GateData()
             obj_msg = ObjectData()
             obj_msg.header.stamp = rospy.Time.now()
-            obj_msg.object_data.visible = False
+            obj_msg.visible = False
             if (len(response) > 0):
                 pos = Vector3()
                 pos.x = 0
@@ -83,10 +81,10 @@ class ImageProcessor:
 
                     gate_msg.left_pole_visible = response[1]
                     gate_msg.right_pole_visible = response[2]
-                    obj_msg.object_data.visible = True
-                    obj_msg.object_data.rel_pos = avg_pos
+                    obj_msg.visible = True
+                    obj_msg.rel_pos = avg_pos
             else:
-                self.prev_pos.clear()
+                del self.prev_pos[:]
 
             if (len(self.prev_pos) == 5):
                 self.gate_pub.publish(gate_msg)

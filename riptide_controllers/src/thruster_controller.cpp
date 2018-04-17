@@ -300,7 +300,7 @@ ThrusterController::ThrusterController(char **argv, tf::TransformListener *liste
   problem.SetParameterUpperBound(&heave_stbd_aft, 0, MAX_THRUST);
 
   // Configure solver
-  options.max_num_iterations = 100;
+  options.max_solver_time_in_seconds = 0.001;
   options.linear_solver_type = ceres::DENSE_QR;
 
 #ifdef progress
