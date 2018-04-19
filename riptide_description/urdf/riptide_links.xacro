@@ -41,7 +41,7 @@
       <compensation>1.4</compensation>
       <origin xyz= "${housing_com}"/>
       <limit radius=".25"/>
-      <damping xyz="60 100 100" rpy="20 50 50"/>
+      <damping xyz="300 500 500" rpy="100 100 100"/>
     </buoyancy>
   </link>
 

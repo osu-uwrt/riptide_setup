@@ -173,7 +173,7 @@ struct yaw
                   const T *const surge_stbd_lo, const T *const sway_fwd, const T *const sway_aft, T *residual) const
   {
     residual[0] = (/*surge_port_hi[0] * T(-pos_surge_port_hi.y) + surge_stbd_hi[0] * T(-pos_surge_stbd_hi.y) +*/
-                   surge_port_lo[0] * T(-pos_surge_port_lo.y) + surge_stbd_lo[0] * T(-pos_surge_stbd_lo.y) +
+                   //surge_port_lo[0] * T(-pos_surge_port_lo.y) + surge_stbd_lo[0] * T(-pos_surge_stbd_lo.y) +
                    sway_fwd[0] * T(pos_sway_fwd.x) + sway_aft[0] * T(pos_sway_aft.x) +
                    T(Ixx) * T(ang_v.x()) * T(ang_v.y()) - T(Iyy) * T(ang_v.x()) * T(ang_v.y())) /
                       T(Izz) -
