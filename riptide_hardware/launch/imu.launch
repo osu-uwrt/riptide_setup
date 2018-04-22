@@ -1,8 +1,8 @@
 <launch>
-    <arg name="name" default="imu_front" />
+    <arg name="name" default="imu_rear" />
     <arg name="city" default="columbus"/>
     <arg name="location" default="CAR"/>
-    <arg name="device" default="/dev/imu_front" />
+    <arg name="device" default="/dev/imu_rear" />
     <arg name="mag_LPF_bandwidth" default="1" />
     <arg name="accel_LPF_bandwidth" default="25" />
     <arg name="gyro_LPF_bandwidth" default="25" />
