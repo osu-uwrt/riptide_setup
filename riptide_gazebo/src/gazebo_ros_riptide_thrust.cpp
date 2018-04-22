@@ -10,8 +10,7 @@ GZ_REGISTER_MODEL_PLUGIN(RiptideThrust);
 
 RiptideThrust::RiptideThrust()
 {
-  this->thrust_.force.surge_port_hi = 0;
-  this->thrust_.force.surge_stbd_hi = 0;
+
   this->thrust_.force.surge_port_lo = 0;
   this->thrust_.force.surge_stbd_lo = 0;
   this->thrust_.force.sway_fwd = 0;
@@ -42,8 +41,6 @@ void RiptideThrust::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   if (_sdf->HasElement("robotNamespace"))
     this->robot_namespace_ = _sdf->GetElement("robotNamespace")->Get<std::string>() + "/";
 
-  this->surge_port_hi_ = _model->GetLink("surge_port_hi_link");
-  this->surge_stbd_hi_ = _model->GetLink("surge_stbd_hi_link");
   this->surge_port_lo_ = _model->GetLink("surge_port_lo_link");
   this->surge_stbd_lo_ = _model->GetLink("surge_stbd_lo_link");
   this->sway_fwd_ = _model->GetLink("sway_fwd_link");
@@ -67,8 +64,6 @@ void RiptideThrust::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
 void RiptideThrust::UpdateObjectForce(const riptide_msgs::ThrustStamped::ConstPtr& _msg)
 {
-  this->thrust_.force.surge_port_hi = _msg->force.surge_port_hi;
-  this->thrust_.force.surge_stbd_hi = _msg->force.surge_stbd_hi;
   this->thrust_.force.surge_port_lo = _msg->force.surge_port_lo;
   this->thrust_.force.surge_stbd_lo = _msg->force.surge_port_lo;
   this->thrust_.force.sway_fwd = _msg->force.sway_fwd;
@@ -86,8 +81,6 @@ void RiptideThrust::UpdateChild()
   math::Vector3 zero(0, 0, 0);
 
   // +z is "forward" thrust
-  math::Vector3 sph(0, 0, this->thrust_.force.surge_port_hi);
-  math::Vector3 ssh(0, 0, this->thrust_.force.surge_stbd_hi);
   math::Vector3 spl(0, 0, this->thrust_.force.surge_port_lo);
   math::Vector3 ssl(0, 0, this->thrust_.force.surge_stbd_lo);
   math::Vector3 sf(0, 0, this->thrust_.force.sway_fwd);
@@ -96,8 +89,7 @@ void RiptideThrust::UpdateChild()
   math::Vector3 hsf(0, 0, this->thrust_.force.heave_stbd_fwd);
   math::Vector3 hpa(0, 0, this->thrust_.force.heave_port_aft);
   math::Vector3 hsa(0, 0, this->thrust_.force.heave_stbd_aft);
-  this->surge_port_hi_->SetForce(zero);
-  this->surge_stbd_hi_->SetForce(zero);
+
   this->surge_port_lo_->SetForce(zero);
   this->surge_stbd_lo_->SetForce(zero);
   this->sway_fwd_->SetForce(zero);
@@ -107,8 +99,7 @@ void RiptideThrust::UpdateChild()
   this->heave_port_aft_->SetForce(zero);
   this->heave_stbd_aft_->SetForce(zero);
   // TODO(Conor): Simplify this giant block
-  this->surge_port_hi_->AddLinkForce(sph);
-  this->surge_stbd_hi_->AddLinkForce(ssh);
+
   this->surge_port_lo_->AddLinkForce(spl);
   this->surge_stbd_lo_->AddLinkForce(ssl);
   this->sway_fwd_->AddLinkForce(sf);

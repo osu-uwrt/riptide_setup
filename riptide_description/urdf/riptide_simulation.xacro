@@ -35,8 +35,6 @@
     </gazebo>
   </xacro:macro>
 
-  <xacro:thruster_link_gazebo name="surge_port_hi" />
-  <xacro:thruster_link_gazebo name="surge_stbd_hi" />
   <xacro:thruster_link_gazebo name="surge_port_lo" />
   <xacro:thruster_link_gazebo name="surge_stbd_lo" />
   <xacro:thruster_link_gazebo name="sway_fwd" />
@@ -80,8 +78,6 @@
     </gazebo>
   </xacro:macro>
 
-  <xacro:thruster_joint_gazebo name="surge_port_hi" />
-  <xacro:thruster_joint_gazebo name="surge_stbd_hi" />
   <xacro:thruster_joint_gazebo name="surge_port_lo" />
   <xacro:thruster_joint_gazebo name="surge_stbd_lo" />
   <xacro:thruster_joint_gazebo name="sway_fwd" />

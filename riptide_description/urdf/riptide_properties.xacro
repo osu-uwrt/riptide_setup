@@ -16,8 +16,6 @@
   <xacro:property name="chassis_pneumatics" value="-0.1172 0.0000 -0.0584" />
   <xacro:property name="chassis_port_battery" value="-0.1781 0.1302 -0.0140" />
   <xacro:property name="chassis_stbd_battery" value="-0.1781 -0.1302 -0.0140" />
-  <xacro:property name="chassis_surge_port_hi" value="-0.2238 0.1824 0.1384" />
-  <xacro:property name="chassis_surge_stbd_hi" value="-0.2238 -0.1824 0.1384" />
   <xacro:property name="chassis_surge_port_lo" value="-0.2238 0.1824 -0.0838" />
   <xacro:property name="chassis_surge_stbd_lo" value="-0.2238 -0.1824 -0.0838" />
   <xacro:property name="chassis_sway_fwd" value="0.3776 0.0000 -0.0838" />
@@ -75,8 +73,6 @@
   <xacro:property name="stbd_battery_mesh" value="package://riptide_description/meshes/stbd_battery.stl" />
   <xacro:property name="thruster_mesh" value="package://riptide_description/meshes/thruster.stl" />
 
-  <xacro:property name="align_surge_port_hi" value="0 ${-M_PI/2} ${M_PI}" />
-  <xacro:property name="align_surge_stbd_hi" value="0 ${M_PI/2} 0" />
   <xacro:property name="align_surge_port_lo" value="0 ${-M_PI/2} ${M_PI}" />
   <xacro:property name="align_surge_stbd_lo" value="0 ${M_PI/2} 0" />
   <xacro:property name="align_sway_fwd" value="0 ${M_PI/2} ${M_PI/2}" />
