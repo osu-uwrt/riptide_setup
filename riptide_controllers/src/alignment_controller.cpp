@@ -38,11 +38,10 @@ void AlignmentController::UpdateError() {
   sample_start = ros::Time::now();
 }
 
-
 AlignmentController::AlignmentController() {
     ros::NodeHandle xpid("surge_controller");
     ros::NodeHandle ypid("sway_controller");
-    object_sub = nh.subscribe<riptide_msgs::ObjectData>("task/" + tasks[tindex] + "/object_data", 1, &AlignmentController::ObjectCB, this);
+    object_sub = nh.subscribe<riptide_msgs::ObjectData>("task/" + tasks[tindex] + "/alignment", 1, &AlignmentController::ObjectCB, this);
     depth_sub = nh.subscribe<riptide_msgs::Depth>("state/depth", 1, &AlignmentController::DepthCB, this);
 
     x_pid.init(xpid, false);
@@ -68,5 +67,5 @@ void AlignmentController::ObjectCB(const riptide_msgs::ObjectData::ConstPtr &msg
 
 // Subscribe to state/depth to update the target depth passed along to the depth controller
 void AlignmentController::DepthCB(const riptide_msgs::ObjectData::ConstPtr &msg) {
-  
+
 }
