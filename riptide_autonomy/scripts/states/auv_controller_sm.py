@@ -14,13 +14,23 @@ class Idle(State):
         State.__init__(self, outcome=['loop'],
                         input_keys=['master_switch_status', 'mission_status'],
                         output_keys=[])
-        rospy.init_node('kill_switch_monitor')
-        copro_sub = rospy.Subscriber("/state/switches", SwitchState, callback)
+        rospy.init_node('reset_controllers')
+        controller_pub = rospy.Publisher('/controller/reset', ResetControls, queue_size=1)
 
     def execute(self, userdata):
         #Act on master_switch_status
         #Reset all controllers first, then loop back (kill disengaged)
         #or run script to restart or shutdown computer
+
+        #Reset Controllers
+        controller_msg = ResetControls()
+        controller_msg.reset_roll = True
+        controller_msg.reset_pitch = True
+        controller_msg.reset_yaw = True
+        controller_msg.reset_surge = True
+        controller_msg.reset_sway = True
+        controller_msg.reset_heave = True
+        controller_pub.Publish(controller_msg)
 
         if master_switch_status == MASTER_SWITCH_RESTART:
             cmdCommand = "reboot -h"

@@ -21,6 +21,8 @@ class MasterSwitchMonitor(State):
         #Return 'master_switch_activated' if one of the following switches
         #is activated by ORDER OF IMPORTANCE:
 
+        #ONLY MONITOR Kill Switch ###################################3
+
         if restart_switch_status == STATUS_ACTIVATED:
             userdata.master_switch_status = MASTER_SWITCH_RESTART
             return 'master_switch_activated'
