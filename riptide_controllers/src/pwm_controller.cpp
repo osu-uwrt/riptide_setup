@@ -7,8 +7,10 @@
 #define HSA 5
 #define HPA 6
 #define HPF 7
-#define NEG 0
-#define POS 1
+#define NEG_SLOPE 0
+#define NEG_XINT 1
+#define POS_SLOPE 2
+#define POS_XINT 3
 
 int main(int argc, char** argv)
 {
@@ -27,29 +29,45 @@ PWMController::PWMController() : nh()
   //The first column is for negative forces, second column is positive force
 
   // Surge Port Low
-  load_calibration(thrust_slope[SPL][NEG], "/SPL/NEG");
-  load_calibration(thrust_slope[SPL][POS], "/SPL/POS");
+  load_calibration(thrust_config[SPL][NEG_SLOPE], "/SPL/NEG/SLOPE");
+  load_calibration(thrust_config[SPL][POS_SLOPE], "/SPL/POS/SLOPE");
+  load_calibration(thrust_config[SPL][NEG_XINT], "/SPL/NEG/XINT");
+  load_calibration(thrust_config[SPL][POS_XINT], "/SPL/POS/XINT");
 
-  load_calibration(thrust_slope[SSL][NEG], "/SSL/NEG");
-  load_calibration(thrust_slope[SSL][POS], "/SSL/POS");
+  load_calibration(thrust_config[SSL][NEG_SLOPE], "/SSL/NEG/SLOPE");
+  load_calibration(thrust_config[SSL][POS_SLOPE], "/SSL/POS/SLOPE");
+  load_calibration(thrust_config[SSL][NEG_XINT], "/SSL/NEG/XINT");
+  load_calibration(thrust_config[SSL][POS_XINT], "/SSL/POS/XINT");
 
-  load_calibration(thrust_slope[HPA][NEG], "/HPA/NEG");
-  load_calibration(thrust_slope[HPA][POS], "/HPA/POS");
+  load_calibration(thrust_config[HPA][NEG_SLOPE], "/HPA/NEG/SLOPE");
+  load_calibration(thrust_config[HPA][POS_SLOPE], "/HPA/POS/SLOPE");
+  load_calibration(thrust_config[HPA][NEG_XINT], "/HPA/NEG/XINT");
+  load_calibration(thrust_config[HPA][POS_XINT], "/HPA/POS/XINT");
 
-  load_calibration(thrust_slope[HPF][NEG], "/HPF/NEG");
-  load_calibration(thrust_slope[HPF][POS], "/HPF/POS");
+  load_calibration(thrust_config[HPF][NEG_SLOPE], "/HPF/NEG/SLOPE");
+  load_calibration(thrust_config[HPF][POS_SLOPE], "/HPF/POS/SLOPE");
+  load_calibration(thrust_config[HPF][NEG_XINT], "/HPF/NEG/XINT");
+  load_calibration(thrust_config[HPF][POS_XINT], "/HPF/POS/XINT");
 
-  load_calibration(thrust_slope[HSA][NEG], "/HSA/NEG");
-  load_calibration(thrust_slope[HSA][POS], "/HSA/POS");
+  load_calibration(thrust_config[HSA][NEG_SLOPE], "/HSA/NEG/SLOPE");
+  load_calibration(thrust_config[HSA][POS_SLOPE], "/HSA/POS/SLOPE");
+  load_calibration(thrust_config[HSA][NEG_XINT], "/HSA/NEG/XINT");
+  load_calibration(thrust_config[HSA][POS_XINT], "/HSA/POS/XINT");
 
-  load_calibration(thrust_slope[HSF][NEG], "/HSF/NEG");
-  load_calibration(thrust_slope[HSF][POS], "/HSF/POS");
+  load_calibration(thrust_config[HSF][NEG_SLOPE], "/HSF/NEG/SLOPE");
+  load_calibration(thrust_config[HSF][POS_SLOPE], "/HSF/POS/SLOPE");
+  load_calibration(thrust_config[HSF][NEG_XINT], "/HSF/NEG/XINT");
+  load_calibration(thrust_config[HSF][POS_XINT], "/HSF/POS/XINT");
 
-  load_calibration(thrust_slope[SWF][NEG], "/SWF/NEG");
-  load_calibration(thrust_slope[SWF][POS], "/SWF/POS");
+  load_calibration(thrust_config[SWF][NEG_SLOPE], "/SWF/NEG/SLOPE");
+  load_calibration(thrust_config[SWF][POS_SLOPE], "/SWF/POS/SLOPE");
+  load_calibration(thrust_config[SWF][NEG_XINT], "/SWF/NEG/XINT");
+  load_calibration(thrust_config[SWF][POS_XINT], "/SWF/POS/XINT");
 
-  load_calibration(thrust_slope[SWA][NEG], "/SWA/NEG");
-  load_calibration(thrust_slope[SWA][POS], "/SWA/POS");
+  load_calibration(thrust_config[SWA][NEG_SLOPE], "/SWA/NEG/SLOPE");
+  load_calibration(thrust_config[SWA][POS_SLOPE], "/SWA/POS/SLOPE");
+  load_calibration(thrust_config[SWA][NEG_XINT], "/SWA/NEG/XINT");
+  load_calibration(thrust_config[SWA][POS_XINT], "/SWA/POS/XINT");
 
   alive_timeout = ros::Duration(2);
   last_alive_time = ros::Time::now();
@@ -113,10 +131,10 @@ int PWMController::thrust2pwm(double raw_force, int thruster)
   // Otherwise, set PWM to 1500 (0 thrust)
   if(raw_force < 0)
   {
-    pwm = 1500 + static_cast<int>(raw_force*thrust_slope[thruster][NEG]);
+    pwm = thrust_config[thruster][NEG_XINT] + static_cast<int>(raw_force*thrust_config[thruster][NEG_SLOPE]);
   }
   else if(raw_force > 0){
-    pwm = (int) (1500 + (raw_force*thrust_slope[thruster][POS]));
+    pwm = (int) (thrust_config[thruster][POS_XINT] + (raw_force*thrust_config[thruster][POS_SLOPE]));
   }
   else{
     pwm = 1500;
