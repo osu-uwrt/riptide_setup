@@ -8,6 +8,7 @@ from riptide_msgs.msg import PwmStamped
 from riptide_msgs.msg import SwitchState
 
 COM_PORT = '/dev/copro'
+
 ser = serial.Serial(COM_PORT, baudrate=9600, timeout=None)
 
 def pwm_callback(pwm_message):
