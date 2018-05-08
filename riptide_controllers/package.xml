@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<package>
+  <name>riptide_controllers</name>
+  <version>0.0.17</version>
+  <description>Controllers for OSU's Riptide AUV.</description>
+
+  <maintainer email="justice.251@osu.edu">Benji Justice</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://go.osu.edu/uwrt</url>
+  <url type="repository">http://github.com/osu-uwrt/riptide</url>
+
+  <author email="justice.251@osu.edu">Benji Justice</author>
+  <author email="cary.42@osu.edu">Conor Cary</author>
+  <author email="mahaffey.60@osu.edu">Sara Mahaffey</author>
+  
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>libceres-dev</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>imu_3dm_gx4</build_depend>
+  <build_depend>riptide_msgs</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>roslint</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>dynamic_reconfigure</build_depend>
+
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>riptide_msgs</run_depend>
+  <run_depend>roslaunch</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+
+  <export>
+  </export>
+
+</package>

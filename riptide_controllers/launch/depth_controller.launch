@@ -1,0 +1,4 @@
+<launch>
+  <rosparam command="load" ns="depth_controller" file="$(find riptide_controllers)/cfg/depth_config.yaml" />
+  <node pkg="riptide_controllers" type="depth_controller" name="depth_controller" output="screen" />
+</launch>
