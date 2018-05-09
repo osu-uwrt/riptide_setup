@@ -1,0 +1,32 @@
+language:
+  - cpp
+compiler:
+  - gcc
+notifications:
+  email:
+    recipients:
+      - sunke.polyu@gmail.com
+before_install: # Use this to prepare the system to install prerequisites or dependencies
+  - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu precise main" > /etc/apt/sources.list.d/ros-latest.list'
+  - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
+  - sudo apt-get update -qq
+install: # Use this to install any prerequisites or dependencies necessary to run your build
+  - export ROS_DISTRO=hydro
+  - sudo apt-get install -qq -y ros-$ROS_DISTRO-ros-base ros-$ROS_DISTRO-common-msgs ros-$ROS_DISTRO-diagnostic-updater
+  # Setup rosdep
+  - sudo rosdep init
+  - rosdep update
+before_script: # Use this to prepare your build for testing e.g. copy database configurations, environment variables, etc.
+  - export CI_SOURCE_PATH=$(pwd)
+  - export REPOSITORY_NAME=${PWD##*/}
+  - echo "Testing branch $TRAVIS_BRANCH of $REPOSITORY_NAME"
+  - source /opt/ros/$ROS_DISTRO/setup.bash
+  # Create workspace
+  - mkdir -p ~/ros/catkin_ws/src
+  - cd ~/ros/catkin_ws/src
+  - catkin_init_workspace
+  - ln -s $CI_SOURCE_PATH . # Link the repo we are testing to the new workspace
+  - cd ../
+  - export ROS_PARALLEL_JOBS='-j4 -l4' # Limit parallel jobs
+script: # All commands must exit with code 0 on success. Anything else is considered failure.
+  - catkin_make --cmake-args -DCMAKE_BUILD_TYPE=Release
