@@ -1,95 +1,174 @@
 #include "riptide_controllers/pwm_controller.h"
+#define SPL 0
+#define SSL 1
+#define SWA 2
+#define SWF 3
+#define HSF 4
+#define HSA 5
+#define HPA 6
+#define HPF 7
+#define NEG_SLOPE 0
+#define NEG_XINT 1
+#define POS_SLOPE 2
+#define POS_XINT 3
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "thruster_calibration");
-  ThrustCal thrust_cal;
-  thrust_cal.loop();
+  ros::init(argc, argv, "pwm_controller");
+  PWMController pwm_controller;
+  pwm_controller.Loop();
 }
 
-ThrustCal::ThrustCal() : nh()
+PWMController::PWMController() : nh()
 {
-  alive = ros::Time::now();
-  dead = false;
-  low = false;
+  cmd_sub = nh.subscribe<riptide_msgs::ThrustStamped>("command/thrust", 1, &PWMController::ThrustCB, this);
+  kill_sub = nh.subscribe<riptide_msgs::SwitchState>("state/switches", 1, &PWMController::SwitchCB, this);
+  pwm_pub = nh.advertise<riptide_msgs::PwmStamped>("command/pwm", 1);
 
-  nh.param<double>("battery/min_voltage", min_voltage, 17.5);
+  //Initialization of the two trust/pwm slope arrays
+  //The first column is for negative forces, second column is positive force
 
-  thrust = nh.subscribe<riptide_msgs::ThrustStamped>("command/thrust", 1, &ThrustCal::callback, this);
-  kill_it_with_fire = nh.subscribe<std_msgs::Empty>("state/kill", 1, &ThrustCal::killback, this);
-  outta_juice = nh.subscribe<riptide_msgs::Bat>("state/batteries", 1, &ThrustCal::voltsbacken, this);
-  pwm = nh.advertise<riptide_msgs::PwmStamped>("command/pwm", 1);
+  // Surge Port Low
+  load_calibration(thrust_config[SPL][NEG_SLOPE], "/SPL/NEG/SLOPE");
+  load_calibration(thrust_config[SPL][POS_SLOPE], "/SPL/POS/SLOPE");
+  load_calibration(thrust_config[SPL][NEG_XINT], "/SPL/NEG/XINT");
+  load_calibration(thrust_config[SPL][POS_XINT], "/SPL/POS/XINT");
+
+  load_calibration(thrust_config[SSL][NEG_SLOPE], "/SSL/NEG/SLOPE");
+  load_calibration(thrust_config[SSL][POS_SLOPE], "/SSL/POS/SLOPE");
+  load_calibration(thrust_config[SSL][NEG_XINT], "/SSL/NEG/XINT");
+  load_calibration(thrust_config[SSL][POS_XINT], "/SSL/POS/XINT");
+
+  load_calibration(thrust_config[HPA][NEG_SLOPE], "/HPA/NEG/SLOPE");
+  load_calibration(thrust_config[HPA][POS_SLOPE], "/HPA/POS/SLOPE");
+  load_calibration(thrust_config[HPA][NEG_XINT], "/HPA/NEG/XINT");
+  load_calibration(thrust_config[HPA][POS_XINT], "/HPA/POS/XINT");
+
+  load_calibration(thrust_config[HPF][NEG_SLOPE], "/HPF/NEG/SLOPE");
+  load_calibration(thrust_config[HPF][POS_SLOPE], "/HPF/POS/SLOPE");
+  load_calibration(thrust_config[HPF][NEG_XINT], "/HPF/NEG/XINT");
+  load_calibration(thrust_config[HPF][POS_XINT], "/HPF/POS/XINT");
+
+  load_calibration(thrust_config[HSA][NEG_SLOPE], "/HSA/NEG/SLOPE");
+  load_calibration(thrust_config[HSA][POS_SLOPE], "/HSA/POS/SLOPE");
+  load_calibration(thrust_config[HSA][NEG_XINT], "/HSA/NEG/XINT");
+  load_calibration(thrust_config[HSA][POS_XINT], "/HSA/POS/XINT");
+
+  load_calibration(thrust_config[HSF][NEG_SLOPE], "/HSF/NEG/SLOPE");
+  load_calibration(thrust_config[HSF][POS_SLOPE], "/HSF/POS/SLOPE");
+  load_calibration(thrust_config[HSF][NEG_XINT], "/HSF/NEG/XINT");
+  load_calibration(thrust_config[HSF][POS_XINT], "/HSF/POS/XINT");
+
+  load_calibration(thrust_config[SWF][NEG_SLOPE], "/SWF/NEG/SLOPE");
+  load_calibration(thrust_config[SWF][POS_SLOPE], "/SWF/POS/SLOPE");
+  load_calibration(thrust_config[SWF][NEG_XINT], "/SWF/NEG/XINT");
+  load_calibration(thrust_config[SWF][POS_XINT], "/SWF/POS/XINT");
+
+  load_calibration(thrust_config[SWA][NEG_SLOPE], "/SWA/NEG/SLOPE");
+  load_calibration(thrust_config[SWA][POS_SLOPE], "/SWA/POS/SLOPE");
+  load_calibration(thrust_config[SWA][NEG_XINT], "/SWA/NEG/XINT");
+  load_calibration(thrust_config[SWA][POS_XINT], "/SWA/POS/XINT");
+
+  alive_timeout = ros::Duration(2);
+  last_alive_time = ros::Time::now();
+  silent = false; // Silent refers to not receiving commands from the control stack
+  dead = true; // Dead refers to the kill switch being pulled
 }
 
-void ThrustCal::callback(const riptide_msgs::ThrustStamped::ConstPtr& thrust)
+void PWMController::ThrustCB(const riptide_msgs::ThrustStamped::ConstPtr& thrust)
 {
-  us.header.stamp = thrust->header.stamp;
-
-  us.pwm.surge_port_hi = clockwise(thrust->force.surge_port_hi);
-  us.pwm.surge_stbd_hi = counterclockwise(thrust->force.surge_stbd_hi);
-  us.pwm.surge_port_lo = counterclockwise(thrust->force.surge_port_lo);
-  us.pwm.surge_stbd_lo = clockwise(thrust->force.surge_stbd_lo);
-  us.pwm.sway_fwd = counterclockwise(thrust->force.sway_fwd);
-  us.pwm.sway_aft = clockwise(thrust->force.sway_aft);
-  us.pwm.heave_port_fwd = counterclockwise(thrust->force.heave_port_fwd);
-  us.pwm.heave_stbd_fwd = clockwise(thrust->force.heave_stbd_fwd);
-  us.pwm.heave_port_aft = clockwise(thrust->force.heave_port_aft);
-  us.pwm.heave_stbd_aft = counterclockwise(thrust->force.heave_stbd_aft);
-
-  pwm.publish(us);
-}
-
-void ThrustCal::killback(const std_msgs::Empty::ConstPtr& thrust)
-{
-  if (!low)
+  if (!dead)
   {
-    dead = false;
+    msg.header.stamp = thrust->header.stamp;
+
+    msg.pwm.surge_port_lo = thrust2pwm(thrust->force.surge_port_lo, SPL);
+    msg.pwm.surge_stbd_lo = thrust2pwm(thrust->force.surge_stbd_lo, SSL);
+
+    msg.pwm.sway_fwd = thrust2pwm(thrust->force.sway_fwd, SWF);
+    msg.pwm.sway_aft = thrust2pwm(thrust->force.sway_aft, SWA);
+
+    msg.pwm.heave_stbd_fwd = thrust2pwm(thrust->force.heave_stbd_fwd, HSF);
+    msg.pwm.heave_stbd_aft = thrust2pwm(thrust->force.heave_stbd_aft, HSA);
+
+    msg.pwm.heave_port_aft = thrust2pwm(thrust->force.heave_port_aft, HPA);
+    msg.pwm.heave_port_fwd = thrust2pwm(thrust->force.heave_port_fwd, HPF);
+    pwm_pub.publish(msg);
+    last_alive_time = ros::Time::now();
+    silent = false;
   }
-  alive = ros::Time::now();
 }
 
-void ThrustCal::voltsbacken(const riptide_msgs::Bat::ConstPtr& bat_stat)
+void PWMController::SwitchCB(const riptide_msgs::SwitchState::ConstPtr &state)
 {
-  if (bat_stat->voltage < min_voltage)
-  {
-    low = true;
-  }
+  dead = !state->kill;
 }
 
-void ThrustCal::loop()
+void PWMController::Loop()
 {
-  ros::Duration safe(2);
-  ros::Rate rate(50);
-  while (!ros::isShuttingDown())
+  ros::Rate rate(10);
+  while (ros::ok())
   {
-    ros::Duration timeout = ros::Time::now() - alive;
-    if (timeout > safe)
-    {
-      dead = true;
-    }
     ros::spinOnce();
+    ros::Duration quiet_time = ros::Time::now() - last_alive_time;
+    if (quiet_time >= alive_timeout)
+    {
+      silent = true;
+    }
+
+    if (silent || dead)
+    {
+      PWMController::PublishZeroPWM();
+    }
     rate.sleep();
   }
 }
 
-int ThrustCal::counterclockwise(double raw_force)
+int PWMController::thrust2pwm(double raw_force, int thruster)
 {
   int pwm = 1500;
-  if (!dead)
+  // If force is negative, use negative calibration.
+  // If force is positive, use positive calibration
+  // Otherwise, set PWM to 1500 (0 thrust)
+  if(raw_force < -0.01)
   {
-    pwm = 1500 + static_cast<int>(raw_force * 14);
+    pwm = thrust_config[thruster][NEG_XINT] + static_cast<int>(raw_force*thrust_config[thruster][NEG_SLOPE]);
+  }
+  else if(raw_force > 0.01){
+    pwm = (int) (thrust_config[thruster][POS_XINT] + (raw_force*thrust_config[thruster][POS_SLOPE]));
+  }
+  else{
+    pwm = 1500;
   }
   return pwm;
 }
 
-int ThrustCal::clockwise(double raw_force)
+void PWMController::PublishZeroPWM()
 {
-  int pwm = 1500;
+  msg.header.stamp = ros::Time::now();
 
-  if (!dead)
+  msg.pwm.surge_port_lo = 1500;
+  msg.pwm.surge_stbd_lo = 1500;
+  msg.pwm.sway_fwd = 1500;
+  msg.pwm.sway_aft = 1500;
+  msg.pwm.heave_stbd_fwd = 1500;
+  msg.pwm.heave_stbd_aft = 1500;
+  msg.pwm.heave_port_aft = 1500;
+  msg.pwm.heave_port_fwd = 1500;
+  pwm_pub.publish(msg);
+}
+
+void PWMController::load_calibration(float &param, std::string name)
+{
+  try
   {
-    pwm = 1500 - static_cast<int>(raw_force * 14);
+    if (!nh.getParam("/pwm_controller/" + name, param))
+    {
+      throw 0;
+    }
   }
-
-  return pwm;
+  catch(int e)
+  {
+    ROS_ERROR("Critical! No calibration set for %s. Shutting down...", name.c_str());
+    ros::shutdown();
+  }
 }

@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="riptide_hardware" type="mag_offset_calibration.py" name="mag_offset_calibration" output="screen" />
+  <include file="$(find riptide_hardware)/launch/imu.launch" />
+  <include file="$(find riptide_hardware)/launch/coprocessor.launch" />
+</launch>
