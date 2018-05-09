@@ -1,0 +1,3 @@
+Run it on your local machine to give your machine privileges to ssh into the robot without a password
+
+It will prompt for a one time password for riptide, after that, ssh'ing will be a lot easier / faster and enable you to use scripts more
