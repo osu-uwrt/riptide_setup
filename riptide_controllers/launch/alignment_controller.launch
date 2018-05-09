@@ -1,0 +1,4 @@
+<launch>
+  <rosparam command="load" ns="sway_controller" file="$(find riptide_controllers)/cfg/sway_config.yaml" />
+  <node pkg="riptide_controllers" type="alignment_controller" name="alignment_controller" output="screen" />
+</launch>

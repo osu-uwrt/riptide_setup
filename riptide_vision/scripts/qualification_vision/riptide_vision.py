@@ -408,7 +408,7 @@ class RiptideVision:
         return [roll_correction, beam_thickness, x_mid, y_mid, x_min, x_max, y_min, y_max, slope_avg]  # NOQA
 
 
-    def detect_pole_vis(img, packet):
+    def detect_pole_vis(self, img, packet):
         img = resize_img(img, (img.shape[1] / 3, img.shape[0] / 3))
 
         if packet != []:

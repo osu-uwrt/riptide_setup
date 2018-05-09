@@ -1,0 +1,5 @@
+Run it, it will transfer your local src (overwriting the old one), and initiate a compile on the robot
+
+The script assumes you have a file structure that looks like:
+
+	~/osu-uwrt/src/....
