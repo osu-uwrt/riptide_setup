@@ -12,6 +12,8 @@
 #define POS_SLOPE 2
 #define POS_XINT 3
 
+int this_file_changed = 0;
+
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "pwm_controller");
