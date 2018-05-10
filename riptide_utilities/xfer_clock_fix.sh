@@ -14,3 +14,4 @@ ssh ros@riptide 'sudo hwclock --systohc'
 ssh ros@riptide 'cd /home/ros/osu-uwrt/riptide_software && source ~/osu-uwrt/riptide_software/devel/setup.bash && source /opt/ros/kinetic/setup.bash && catkin_make'
 
 
+#ros ALL=(ALL) NOPASSWD: /bin/date, /sbin/hwclock
