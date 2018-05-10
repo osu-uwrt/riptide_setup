@@ -401,7 +401,7 @@ class RiptideVision:
                 hyp = (math.sqrt(math.pow((x_max - x_min), 2) + math.pow((y_max - y_min), 2)))
                 offset_angle = 0
                 # 57.2958 is used to convert radians to degrees
-                if hyp is not 0:
+                if hyp > 0:
                     offset_angle = (57.2958 * (math.acos(abs(x_max - x_min) / hyp)))  # NOQA
                     offset_angle = 90 - offset_angle
                 roll_correction = -round(offset_angle, 4)
@@ -413,9 +413,6 @@ class RiptideVision:
         cam_center_x = int(img.shape[1] / 2)
 
         return [roll_correction, beam_thickness, x_mid, y_mid, x_min, x_max, y_min, y_max, cam_center_x, cam_center_y]  # NOQA
-
-
-#TODO: Include Cam Center in return. Use this in alignment controller to calculate error, rather than doing it here.
 
     def detect_pole_vis(self, img, packet):
         if packet != []:
