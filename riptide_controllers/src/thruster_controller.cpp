@@ -367,14 +367,16 @@ void ThrusterController::callback(const geometry_msgs::Accel::ConstPtr &a)
   // Create stamped thrust message
   thrust.header.stamp = ros::Time::now();
 
-  thrust.force.surge_port_lo = surge_port_lo;
-  thrust.force.surge_stbd_lo = surge_stbd_lo;
-  thrust.force.sway_fwd = sway_fwd;
-  thrust.force.sway_aft = sway_aft;
-  thrust.force.heave_port_aft = heave_port_aft;
-  thrust.force.heave_stbd_aft = heave_stbd_aft;
-  thrust.force.heave_stbd_fwd = heave_stbd_fwd;
-  thrust.force.heave_port_fwd = heave_port_fwd;
+  //Forces are in POS dxn of the vehicle, where thrusts are what the
+  //thruster outputs (POS thrust equals NEG vehicle dxn)
+  thrust.force.surge_port_lo = -surge_port_lo;
+  thrust.force.surge_stbd_lo = -surge_stbd_lo;
+  thrust.force.sway_fwd = -sway_fwd;
+  thrust.force.sway_aft = -sway_aft;
+  thrust.force.heave_port_aft = -heave_port_aft;
+  thrust.force.heave_stbd_aft = -heave_stbd_aft;
+  thrust.force.heave_stbd_fwd = -heave_stbd_fwd;
+  thrust.force.heave_port_fwd = -heave_port_fwd;
 
   cmd_pub.publish(thrust);
 }
