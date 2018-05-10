@@ -129,11 +129,11 @@ int PWMController::thrust2pwm(double raw_force, int thruster)
   // If force is negative, use negative calibration.
   // If force is positive, use positive calibration
   // Otherwise, set PWM to 1500 (0 thrust)
-  if(raw_force < 0)
+  if(raw_force < -0.01)
   {
     pwm = (int) (thrust_config[thruster][NEG_XINT] + (raw_force*thrust_config[thruster][NEG_SLOPE]));
   }
-  else if(raw_force > 0){
+  else if(raw_force > 0.01){
     pwm = (int) (thrust_config[thruster][POS_XINT] + (raw_force*thrust_config[thruster][POS_SLOPE]));
   }
 

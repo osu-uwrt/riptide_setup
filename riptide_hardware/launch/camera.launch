@@ -10,6 +10,8 @@
 
       <param name="frame_id" value="$(arg camera_name)" />
       <param name="serial" value="$(arg serial_number)" />
+      <param name="frame_rate" value="30" />
+      <param name="video_mode" value="format7_mode1" />
     </node>
 
   </group>

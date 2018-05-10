@@ -22,6 +22,10 @@ add_message_files(
     GateData.msg
     PoleData.msg
     BoundingBox.msg
+    ResetControls.msg
+    ControlStatus.msg
+    ControlStatusAngular.msg
+    ControlStatusLinear.msg
 )
 
 generate_messages(DEPENDENCIES std_msgs geometry_msgs)

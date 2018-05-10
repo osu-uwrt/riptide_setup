@@ -80,10 +80,10 @@ vector pos_heave_port_fwd;
 struct surge
 {
   template <typename T>
-  bool operator()(const T *const surge_port_lo,
-                  const T *const surge_stbd_lo, const T *const sway_fwd, const T *const sway_aft,
-                  const T *const heave_port_fwd, const T *const heave_stbd_fwd, const T *const heave_port_aft,
-                  const T *const heave_stbd_aft, T *residual) const
+  bool operator()(const T *const surge_port_lo, const T *const surge_stbd_lo,
+                  const T *const sway_fwd, const T *const sway_aft,
+                  const T *const heave_port_fwd, const T *const heave_stbd_fwd,
+                  const T *const heave_port_aft, const T *const heave_stbd_aft, T *residual) const
   {
     residual[0] =
         ((surge_port_lo[0] + surge_stbd_lo[0]) +
@@ -97,10 +97,10 @@ struct surge
 struct sway
 {
   template <typename T>
-  bool operator()(const T *const surge_port_lo,
-                  const T *const surge_stbd_lo, const T *const sway_fwd, const T *const sway_aft,
-                  const T *const heave_port_fwd, const T *const heave_stbd_fwd, const T *const heave_port_aft,
-                  const T *const heave_stbd_aft, T *residual) const
+  bool operator()(const T *const surge_port_lo, const T *const surge_stbd_lo,
+                  const T *const sway_fwd, const T *const sway_aft,
+                  const T *const heave_port_fwd, const T *const heave_stbd_fwd,
+                  const T *const heave_port_aft, const T *const heave_stbd_aft, T *residual) const
   {
     residual[0] =
         ((sway_fwd[0] + sway_aft[0]) +
@@ -114,10 +114,10 @@ struct sway
 struct heave
 {
   template <typename T>
-  bool operator()(const T *const surge_port_lo,
-                  const T *const surge_stbd_lo, const T *const sway_fwd, const T *const sway_aft,
-                  const T *const heave_port_fwd, const T *const heave_stbd_fwd, const T *const heave_port_aft,
-                  const T *const heave_stbd_aft, T *residual) const
+  bool operator()(const T *const surge_port_lo, const T *const surge_stbd_lo,
+                  const T *const sway_fwd, const T *const sway_aft,
+                  const T *const heave_port_fwd, const T *const heave_stbd_fwd,
+                  const T *const heave_port_aft, const T *const heave_stbd_aft, T *residual) const
   {
 
       residual[0] =
@@ -133,9 +133,10 @@ struct heave
 struct roll
 {
   template <typename T>
-  bool operator()(const T *const sway_fwd, const T *const sway_aft, const T *const heave_port_fwd,
-                  const T *const heave_stbd_fwd, const T *const heave_port_aft, const T *const heave_stbd_aft,
-                  T *residual) const
+  bool operator()(const T *const surge_port_lo, const T *const surge_stbd_lo,
+                  const T *const sway_fwd, const T *const sway_aft,
+                  const T *const heave_port_fwd, const T *const heave_stbd_fwd,
+                  const T *const heave_port_aft, const T *const heave_stbd_aft, T *residual) const
   {
     residual[0] = (heave_port_fwd[0] * T(pos_heave_port_fwd.y) + heave_stbd_fwd[0] * T(pos_heave_stbd_fwd.y) +
                    heave_port_aft[0] * T(pos_heave_port_aft.y) + heave_stbd_aft[0] * T(pos_heave_stbd_aft.y) -
@@ -150,8 +151,9 @@ struct roll
 struct pitch
 {
   template <typename T>
-  bool operator()(const T *const surge_port_lo,
-                  const T *const surge_stbd_lo, const T *const heave_port_fwd, const T *const heave_stbd_fwd,
+  bool operator()(const T *const surge_port_lo, const T *const surge_stbd_lo,
+                  const T *const sway_fwd, const T *const sway_aft,
+                  const T *const heave_port_fwd, const T *const heave_stbd_fwd,
                   const T *const heave_port_aft, const T *const heave_stbd_aft, T *residual) const
   {
     residual[0] = (surge_port_lo[0] * T(pos_surge_port_lo.z) + surge_stbd_lo[0] * T(pos_surge_stbd_lo.z) +
@@ -167,11 +169,12 @@ struct pitch
 struct yaw
 {
   template <typename T>
-  bool operator()(const T *const surge_port_lo,
-                  const T *const surge_stbd_lo, const T *const sway_fwd, const T *const sway_aft, T *residual) const
+  bool operator()(const T *const surge_port_lo, const T *const surge_stbd_lo,
+                  const T *const sway_fwd, const T *const sway_aft,
+                  const T *const heave_port_fwd, const T *const heave_stbd_fwd,
+                  const T *const heave_port_aft, const T *const heave_stbd_aft, T *residual) const
   {
-    residual[0] = (/*surge_port_hi[0] * T(-pos_surge_port_hi.y) + surge_stbd_hi[0] * T(-pos_surge_stbd_hi.y) +*/
-                   surge_port_lo[0] * T(-pos_surge_port_lo.y) + surge_stbd_lo[0] * T(-pos_surge_stbd_lo.y) +
+    residual[0] = (surge_port_lo[0] * T(-pos_surge_port_lo.y) + surge_stbd_lo[0] * T(-pos_surge_stbd_lo.y) +
                    sway_fwd[0] * T(pos_sway_fwd.x) + sway_aft[0] * T(pos_sway_aft.x) +
                    T(Ixx) * T(ang_v.x()) * T(ang_v.y()) - T(Iyy) * T(ang_v.x()) * T(ang_v.y())) /
                       T(Izz) -
@@ -241,26 +244,27 @@ ThrusterController::ThrusterController(char **argv, tf::TransformListener *liste
                            &surge_port_lo, &surge_stbd_lo, &sway_fwd, &sway_aft,
                            &heave_port_fwd, &heave_stbd_fwd, &heave_port_aft, &heave_stbd_aft);
   problem.AddResidualBlock(new ceres::AutoDiffCostFunction<sway, 1, 1, 1, 1, 1, 1, 1, 1, 1>(new sway), NULL,
-                          &surge_port_lo, &surge_stbd_lo, &sway_fwd, &sway_aft,
+                           &surge_port_lo, &surge_stbd_lo, &sway_fwd, &sway_aft,
                            &heave_port_fwd, &heave_stbd_fwd, &heave_port_aft, &heave_stbd_aft);
   problem.AddResidualBlock(new ceres::AutoDiffCostFunction<heave, 1, 1, 1, 1, 1, 1, 1, 1, 1>(new heave), NULL,
                            &surge_port_lo, &surge_stbd_lo, &sway_fwd, &sway_aft,
                            &heave_port_fwd, &heave_stbd_fwd, &heave_stbd_aft, &heave_port_aft);
 
   // Angular
-  problem.AddResidualBlock(new ceres::AutoDiffCostFunction<roll, 1, 1, 1, 1, 1, 1, 1>(new roll), NULL,
-                           &sway_fwd, &sway_aft, &heave_port_fwd, &heave_stbd_fwd,
-                           &heave_port_aft, &heave_stbd_aft);
-  problem.AddResidualBlock(new ceres::AutoDiffCostFunction<pitch, 1, 1, 1, 1, 1, 1, 1>(new pitch), NULL,
-                           &surge_port_lo, &surge_stbd_lo, &heave_port_fwd,
-                           &heave_stbd_fwd, &heave_port_aft, &heave_stbd_aft);
-  problem.AddResidualBlock(new ceres::AutoDiffCostFunction<yaw, 1, 1, 1, 1, 1>(new yaw), NULL,
-                            &surge_port_lo, &surge_stbd_lo, &sway_fwd, &sway_aft);
+
+  problem.AddResidualBlock(new ceres::AutoDiffCostFunction<roll, 1, 1, 1, 1, 1, 1, 1, 1, 1>(new roll), NULL,
+                           &surge_port_lo, &surge_stbd_lo, &sway_fwd, &sway_aft,
+                           &heave_port_fwd, &heave_stbd_fwd, &heave_port_aft, &heave_stbd_aft);
+  problem.AddResidualBlock(new ceres::AutoDiffCostFunction<pitch, 1, 1, 1, 1, 1, 1, 1, 1, 1>(new pitch), NULL,
+                           &surge_port_lo, &surge_stbd_lo, &sway_fwd, &sway_aft,
+                           &heave_port_fwd, &heave_stbd_fwd, &heave_port_aft, &heave_stbd_aft);
+  problem.AddResidualBlock(new ceres::AutoDiffCostFunction<yaw, 1, 1, 1, 1, 1, 1, 1, 1, 1>(new yaw), NULL,
+                           &surge_port_lo, &surge_stbd_lo, &sway_fwd, &sway_aft,
+                           &heave_port_fwd, &heave_stbd_fwd, &heave_stbd_aft, &heave_port_aft);
 
   // Set constraints (min/max thruster force)
 
   // Surge thrusters
-
   problem.SetParameterLowerBound(&surge_port_lo, 0, MIN_THRUST);
   problem.SetParameterUpperBound(&surge_port_lo, 0, MAX_THRUST);
 
@@ -351,14 +355,16 @@ void ThrusterController::callback(const geometry_msgs::Accel::ConstPtr &a)
   // Create stamped thrust message
   thrust.header.stamp = ros::Time::now();
 
-  thrust.force.surge_port_lo = surge_port_lo;
-  thrust.force.surge_stbd_lo = surge_stbd_lo;
-  thrust.force.sway_fwd = sway_fwd;
-  thrust.force.sway_aft = sway_aft;
-  thrust.force.heave_port_aft = heave_port_aft;
-  thrust.force.heave_stbd_aft = heave_stbd_aft;
-  thrust.force.heave_stbd_fwd = heave_stbd_fwd;
-  thrust.force.heave_port_fwd = heave_port_fwd;
+  //Forces are in POS dxn of the vehicle, where thrusts are what the
+  //thruster outputs (POS thrust equals NEG vehicle dxn)
+  thrust.force.surge_port_lo = -surge_port_lo;
+  thrust.force.surge_stbd_lo = -surge_stbd_lo;
+  thrust.force.sway_fwd = -sway_fwd;
+  thrust.force.sway_aft = -sway_aft;
+  thrust.force.heave_port_aft = -heave_port_aft;
+  thrust.force.heave_stbd_aft = -heave_stbd_aft;
+  thrust.force.heave_stbd_fwd = -heave_stbd_fwd;
+  thrust.force.heave_port_fwd = -heave_port_fwd;
 
   cmd_pub.publish(thrust);
 }

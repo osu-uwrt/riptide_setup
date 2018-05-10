@@ -10,7 +10,6 @@ GZ_REGISTER_MODEL_PLUGIN(RiptideThrust);
 
 RiptideThrust::RiptideThrust()
 {
-
   this->thrust_.force.surge_port_lo = 0;
   this->thrust_.force.surge_stbd_lo = 0;
   this->thrust_.force.sway_fwd = 0;
@@ -98,7 +97,6 @@ void RiptideThrust::UpdateChild()
   this->heave_stbd_fwd_->SetForce(zero);
   this->heave_port_aft_->SetForce(zero);
   this->heave_stbd_aft_->SetForce(zero);
-  // TODO(Conor): Simplify this giant block
 
   this->surge_port_lo_->AddLinkForce(spl);
   this->surge_stbd_lo_->AddLinkForce(ssl);
