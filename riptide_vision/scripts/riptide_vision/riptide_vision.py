@@ -98,7 +98,7 @@ class RiptideVision:
         max_line_gap = 10
 
         # Allowed line slope values will be 0 +/- slope_thresh
-        slope_thresh = 2
+        slope_thresh = 0.5
 
         # (x1, y1): represent the left endpoint of the gate upper beam
         # (x2, y2): the opposite
@@ -121,8 +121,6 @@ class RiptideVision:
 
         if lines is None:
             return []
-
-        print(len(lines[0]))
 
         # Average valid line segments to get a slope_avg
         for line in lines[0]:
@@ -273,9 +271,6 @@ class RiptideVision:
         roll_correction = None
         beam_thickness = None
 
-        img_shrink_factor = 3
-        img = resize_img(img, (img.shape[1] / img_shrink_factor, img.shape[0] / img_shrink_factor))  # NOQA
-
         # Blur the image a bit to reduce detail and get better thresholding results
         blur = cv2.GaussianBlur(img, (5, 5), 3)
 
@@ -300,7 +295,7 @@ class RiptideVision:
         max_line_gap = 2
 
         # Allowed line slope values will be 0 +/- slope_thresh
-        slope_thresh = 3
+        slope_thresh = .5
 
         # (x1, y1): represent the left endpoint of the gate upper beam
         # (x2, y2): the opposite
@@ -332,13 +327,12 @@ class RiptideVision:
             y2 = line[3]
 
             # Hacky solution to avoid divide by zero
-            if x1 == x2:
-                x1 += 1
+            if y1 == y2:
+                y1 += 1
 
-            # The slope of the current line segment
-            slope = (np.float64(y2) - np.float64(y1)) / (np.float64(x2) - np.float64(x1))  # NOQA
-
-            if not((slope <= slope_thresh) and (slope >= -slope_thresh)):
+            # The slope of the current line segment relative to Y axis (pole is vertical)
+            slope = (np.float64(x2) - np.float64(x1)) / (np.float64(y2) - np.float64(y1))  # NOQA
+            if (slope <= slope_thresh) and (slope >= -slope_thresh):
                 if no_hits:
                     x1_avg = np.float64(x1)
                     y1_avg = np.float64(y1)
@@ -376,6 +370,9 @@ class RiptideVision:
 
         # If valid line segments found
         if no_hits is False:
+            if x2_avg == x1_avg:
+                x2_avg += 1
+
             slope_avg = (y2_avg - y1_avg) / (x2_avg - x1_avg)
 
             # The point slope equation can be used to extend the averaged line
@@ -385,33 +382,43 @@ class RiptideVision:
             y_max = slope_avg * (x_max - x1_avg) + y1_avg
             y_min = y_min.astype(int)
             y_max = y_max.astype(int)
+            x_min = x_min.astype(int)
+            x_max = x_max.astype(int)
 
             x_mid = int((x1_avg + x2_avg) / 2)
             y_mid = int((y1_avg + y2_avg) / 2)
 
             if slope_avg < 0:
                 # 57.2958 is used to convert radians to degrees
-                offset_angle = (57.2958 * (math.acos(abs(x_max - x_min) / (math.sqrt(math.pow((x_max - x_min), 2) + math.pow((y_max - y_min), 2))))))  # NOQA
-                offset_angle = abs(offset_angle - 90.0)
+                hyp = (math.sqrt(math.pow((x_max - x_min), 2) + math.pow((y_max - y_min), 2)))
+                offset_angle = 0
+                if hyp > 0:
+                    offset_angle = (57.2958 * (math.acos(abs(x_max - x_min) / hyp)))  # NOQA
+                    offset_angle = abs(offset_angle - 90.0)
                 roll_correction = round(offset_angle, 4)
                 roll_correction = roll_correction
             else:
+                hyp = (math.sqrt(math.pow((x_max - x_min), 2) + math.pow((y_max - y_min), 2)))
+                offset_angle = 0
                 # 57.2958 is used to convert radians to degrees
-                offset_angle = (57.2958 * (math.acos(abs(x_max - x_min) / (math.sqrt(math.pow((x_max - x_min), 2) + math.pow((y_max - y_min), 2))))))  # NOQA
-                offset_angle = 90 - offset_angle
-                roll_correction = round(offset_angle, 4)
-                roll_correction = -roll_correction
+                if hyp is not 0:
+                    offset_angle = (57.2958 * (math.acos(abs(x_max - x_min) / hyp)))  # NOQA
+                    offset_angle = 90 - offset_angle
+                roll_correction = -round(offset_angle, 4)
 
             sum_rows = np.sum(hls, axis=1)
             beam_thickness = sum_rows[y_mid] / 255
 
-        return [roll_correction, beam_thickness, x_mid, y_mid, x_min, x_max, y_min, y_max, slope_avg]  # NOQA
+        cam_center_y = int(img.shape[0] / 2)
+        cam_center_x = int(img.shape[1] / 2)
 
+        return [roll_correction, beam_thickness, x_mid, y_mid, x_min, x_max, y_min, y_max, cam_center_x, cam_center_y]  # NOQA
+
+
+#TODO: Include Cam Center in return. Use this in alignment controller to calculate error, rather than doing it here.
 
     def detect_pole_vis(self, img, packet):
-        img = resize_img(img, (img.shape[1] / 3, img.shape[0] / 3))
-
         if packet != []:
-            cv2.line(img, (packet[4], packet[6]), (packet[5], packet[7]), (0, 255, 0), 3)  # NOQA
+            cv2.rectangle(img, (packet[4], packet[6]), (int(packet[4]+packet[1]), packet[7]), (0, 255, 0), 3)  # NOQA
 
         return img

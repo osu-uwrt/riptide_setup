@@ -3,5 +3,6 @@
     <arg name="camera_name" value="forward" />
     <arg name="serial_number" value="14490573" />
   </include> -->
-  <node pkg="riptide_vision" type="qualification_vision.py" name="qualification_vision" output="screen" />
+  
+  <node pkg="riptide_vision" type="oculus.py" name="oculus" output="screen" />
 </launch>
