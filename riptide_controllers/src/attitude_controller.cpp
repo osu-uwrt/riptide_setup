@@ -60,12 +60,10 @@ void AttitudeController::UpdateError() {
     accel_cmd.z = yaw_controller_pid.computeCommand(yaw_error, yaw_error_dot, sample_duration_yaw);
   }
 
-  //Publish status and command messages if at least one axis is initialized
-  if(pid_roll_init || pid_pitch_init || pid_yaw_init) {
-    status_msg.header.stamp = ros::Time::now();
-    status_pub.publish(status_msg);
-    cmd_pub.publish(accel_cmd);
-  }
+  //Publish status and command messages
+  status_msg.header.stamp = ros::Time::now();
+  status_pub.publish(status_msg);
+  cmd_pub.publish(accel_cmd);
 
   //update sample_start time if pid initialized for that axis
   if(pid_roll_init)
@@ -234,6 +232,7 @@ void AttitudeController::ResetRoll() {
   status_msg.roll.error = 0;
 
   pid_roll_init = false;
+  accel_cmd.x = 0;
 }
 
 void AttitudeController::ResetPitch() {
@@ -252,6 +251,7 @@ void AttitudeController::ResetPitch() {
   status_msg.pitch.error = 0;
 
   pid_pitch_init = false;
+  accel_cmd.y = 0;
 }
 
 void AttitudeController::ResetYaw() {
@@ -270,4 +270,5 @@ void AttitudeController::ResetYaw() {
   status_msg.yaw.error = 0;
 
   pid_yaw_init = false;
+  accel_cmd.z = 0;
 }
