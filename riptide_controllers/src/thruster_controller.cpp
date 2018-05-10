@@ -207,9 +207,9 @@ ThrusterController::ThrusterController(char **argv, tf::TransformListener *liste
   cmd_pub = nh.advertise<riptide_msgs::ThrustStamped>("command/thrust", 1);
 
   listener->waitForTransform("/base_link", "/surge_port_lo_link", ros::Time(0), ros::Duration(10.0));
-  listener->lookupTransform("/base_link", "/surge_port_lo_link", ros::Time(0), tf_surge[2]);
+  listener->lookupTransform("/base_link", "/surge_port_lo_link", ros::Time(0), tf_surge[0]);
   listener->waitForTransform("/base_link", "/surge_stbd_lo_link", ros::Time(0), ros::Duration(10.0));
-  listener->lookupTransform("/base_link", "/surge_stbd_lo_link", ros::Time(0), tf_surge[3]);
+  listener->lookupTransform("/base_link", "/surge_stbd_lo_link", ros::Time(0), tf_surge[1]);
   listener->waitForTransform("/base_link", "/sway_fwd_link", ros::Time(0), ros::Duration(10.0));
   listener->lookupTransform("/base_link", "/sway_fwd_link", ros::Time(0), tf_sway[0]);
   listener->waitForTransform("/base_link", "/sway_aft_link", ros::Time(0), ros::Duration(10.0));
@@ -223,8 +223,8 @@ ThrusterController::ThrusterController(char **argv, tf::TransformListener *liste
   listener->waitForTransform("/base_link", "/heave_stbd_aft_link", ros::Time(0), ros::Duration(10.0));
   listener->lookupTransform("/base_link", "/heave_stbd_aft_link", ros::Time(0), tf_heave[3]);
 
-  get_transform(&pos_surge_port_lo, &tf_surge[2]);
-  get_transform(&pos_surge_stbd_lo, &tf_surge[3]);
+  get_transform(&pos_surge_port_lo, &tf_surge[0]);
+  get_transform(&pos_surge_stbd_lo, &tf_surge[1]);
   get_transform(&pos_sway_fwd, &tf_sway[0]);
   get_transform(&pos_sway_aft, &tf_sway[1]);
   get_transform(&pos_heave_port_fwd, &tf_heave[0]);

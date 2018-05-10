@@ -21,10 +21,10 @@ void CommandCombinator::linearZCB(const std_msgs::Float64::ConstPtr &accel) {
   cmd_pub.publish(current_accel);
 }
 
-void CommandCombinator::angularCB(const geometry_msgs::Vector3::ConstPtr &accel) {
-  current_accel.angular.x = accel->x;
-  current_accel.angular.y = accel->y;
-  current_accel.angular.z = accel->z;
+void CommandCombinator::angularCB(const geometry_msgs::Vector3::ConstPtr &ang_accel) {
+  current_accel.angular.x = ang_accel->x;
+  current_accel.angular.y = ang_accel->y;
+  current_accel.angular.z = ang_accel->z;
   cmd_pub.publish(current_accel);
 }
 

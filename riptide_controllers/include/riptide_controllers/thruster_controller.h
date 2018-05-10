@@ -37,7 +37,7 @@ class ThrusterController
   double heave_port_aft, heave_stbd_aft, heave_stbd_fwd, heave_port_fwd;//<-
   // TF
   tf::TransformListener *listener;
-  tf::StampedTransform tf_surge[4];
+  tf::StampedTransform tf_surge[2];
   tf::StampedTransform tf_sway[2];
   tf::StampedTransform tf_heave[4];
 

@@ -25,7 +25,7 @@ class AttitudeController
     control_toolbox::Pid pitch_controller_pid;
     control_toolbox::Pid yaw_controller_pid;
 
-    geometry_msgs::Vector3 accel_cmd;
+    geometry_msgs::Vector3 ang_accel_cmd;
     riptide_msgs::ControlStatusAngular status_msg;
 
     //PID
@@ -37,9 +37,12 @@ class AttitudeController
 
     bool pid_roll_init, pid_pitch_init, pid_yaw_init;
 
-    ros::Time sample_start_roll, sample_start_pitch, sample_start_yaw;
+    /*ros::Time sample_start_roll, sample_start_pitch, sample_start_yaw;
     ros::Duration sample_duration_roll, sample_duration_pitch, sample_duration_yaw;
-    double dt_roll, dt_pitch, dt_yaw;
+    double dt_roll, dt_pitch, dt_yaw;*/
+    ros::Time sample_start;
+    ros::Duration sample_duration;
+    double dt;
 
     void InitPubMsg();
     void UpdateError();
