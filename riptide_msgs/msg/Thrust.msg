@@ -1,5 +1,5 @@
-float32 surge_port_hi
-float32 surge_stbd_hi
+#float32 surge_port_hi
+#float32 surge_stbd_hi
 float32 surge_port_lo
 float32 surge_stbd_lo
 float32 sway_fwd

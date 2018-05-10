@@ -205,8 +205,6 @@
     </link>
   </xacro:macro>
 
-  <xacro:thruster_link thruster="surge_port_hi" />
-  <xacro:thruster_link thruster="surge_stbd_hi" />
   <xacro:thruster_link thruster="surge_port_lo" />
   <xacro:thruster_link thruster="surge_stbd_lo" />
   <xacro:thruster_link thruster="sway_fwd" />
