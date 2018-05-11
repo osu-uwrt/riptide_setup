@@ -21,6 +21,8 @@ void DepthController::UpdateError() {
 
   accel.data = depth_controller_pid.computeCommand(depth_error, depth_error_dot, sample_duration);
 
+  status_msg.header.stamp = ros::Time::now();
+  status_pub.publish(status_msg);
   cmd_pub.publish(accel);
   sample_start = ros::Time::now();
 }
@@ -43,6 +45,7 @@ DepthController::DepthController() {
     status_msg.reference = 0;
     status_msg.current = 0;
     status_msg.error = 0;
+    accel.data = 0;
 }
 
 // Subscribe to command/depth

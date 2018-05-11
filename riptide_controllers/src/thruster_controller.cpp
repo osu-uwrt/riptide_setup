@@ -204,7 +204,7 @@ ThrusterController::ThrusterController(char **argv, tf::TransformListener *liste
   state_sub = nh.subscribe<riptide_msgs::Imu>("state/imu", 1, &ThrusterController::state, this);
   depth_sub = nh.subscribe<riptide_msgs::Depth>("state/depth", 1, &ThrusterController::depth, this); //<-
   cmd_sub = nh.subscribe<geometry_msgs::Accel>("command/accel", 1, &ThrusterController::callback, this);
-  cmd_pub = nh.advertise<riptide_msgs::ThrustStamped>("command/thrust", 1);
+  cmd_pub = nh.advertise<riptide_msgs::ThrustStamped>("command/thrust", 5);
 
   listener->waitForTransform("/base_link", "/surge_port_lo_link", ros::Time(0), ros::Duration(10.0));
   listener->lookupTransform("/base_link", "/surge_port_lo_link", ros::Time(0), tf_surge[0]);
