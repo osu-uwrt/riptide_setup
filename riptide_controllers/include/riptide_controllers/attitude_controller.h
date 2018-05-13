@@ -1,7 +1,5 @@
 #ifndef ATTITUDE_CONTROLLER_H
 #define ATTITUDE_CONTROLLER_H
-#define MAX_ROLL 20
-#define MAX_PITCH 20
 
 #include "ros/ros.h"
 #include "control_toolbox/pid.h"
@@ -39,12 +37,10 @@ class AttitudeController
     ros::Time sample_start_roll, sample_start_pitch, sample_start_yaw;
     ros::Duration sample_duration_roll, sample_duration_pitch, sample_duration_yaw;
     double dt_roll, dt_pitch, dt_yaw;
-    /*ros::Time sample_start;
-    ros::Duration sample_duration;
-    double dt;*/
 
     void InitPubMsg();
     void UpdateError();
+    double ConstrainError(double error, double max);
     void ResetController(const riptide_msgs::ResetControls::ConstPtr& reset_msg);
     void ResetRoll();
     void ResetPitch();
@@ -53,7 +49,8 @@ class AttitudeController
   public:
     AttitudeController();
     void CommandCB(const geometry_msgs::Vector3::ConstPtr &cmd);
-    void ImuCB(const riptide_msgs::Imu::ConstPtr &imu);
+    void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
+    void Loop();
  };
 
  #endif

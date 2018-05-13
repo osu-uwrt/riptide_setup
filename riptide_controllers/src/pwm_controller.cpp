@@ -115,8 +115,8 @@ void PWMController::ResetController(const riptide_msgs::ResetControls::ConstPtr 
 
 void PWMController::Loop()
 {
-  //IMPORTANT: You MUST have a delay in publishing pwm msgs because copro
-  //can only process data so fast
+  // IMPORTANT: You MUST have a delay in publishing pwm msgs because copro
+  // can only process data so fast
   ros::Rate rate(100);
   while (ros::ok())
   {
