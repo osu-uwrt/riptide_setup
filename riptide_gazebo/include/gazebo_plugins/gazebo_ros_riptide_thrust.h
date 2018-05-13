@@ -32,8 +32,8 @@ class RiptideThrust : public ModelPlugin
   event::ConnectionPtr update_connection_;
   physics::WorldPtr world_;
   // Thrusters
-  physics::LinkPtr surge_port_hi_;
-  physics::LinkPtr surge_stbd_hi_;
+  //physics::LinkPtr surge_port_hi_;
+  //physics::LinkPtr surge_stbd_hi_;
   physics::LinkPtr surge_port_lo_;
   physics::LinkPtr surge_stbd_lo_;
   physics::LinkPtr sway_fwd_;

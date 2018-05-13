@@ -10,3 +10,4 @@ mv /tmp/sshkey ~/.ssh/sshkey
 mv /tmp/sshkey.pub ~/.ssh/sshkey.pub
 
 ssh-add -D
+ssh-add sshkey

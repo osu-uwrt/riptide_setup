@@ -16,8 +16,6 @@ def pwm_callback(pwm_message):
     pwmEnd = "@@@@"
 
     #Each thruster's pwm value is stored
-    ssh = str(pwm_message.pwm.surge_stbd_hi)
-    sph = str(pwm_message.pwm.surge_port_hi)
     spl = str(pwm_message.pwm.surge_port_lo)
     ssl = str(pwm_message.pwm.surge_stbd_lo)
     swf = str(pwm_message.pwm.sway_fwd)
@@ -28,7 +26,7 @@ def pwm_callback(pwm_message):
     hpf = str(pwm_message.pwm.heave_port_fwd)
 
     #The pwm values and start and end bytes are added to a String and written
-    final_pwm = pwmStart + spl + ssl + swf + swa + hpa + hsa + hsf + hpf + ssh + sph + pwmEnd
+    final_pwm = pwmStart + spl + ssl + swf + swa + hpa + hsa + hsf + hpf + pwmEnd
     final_pwm = bytes(final_pwm)
     ser.write(final_pwm)
 
@@ -41,7 +39,7 @@ def main():
     swPub = rospy.Publisher('/state/switches', SwitchState, queue_size=1)
 
     #Subscribe to Thruster PWMs
-    rospy.Subscriber("/command/pwm", PwmStamped, pwm_callback)
+    rospy.Subscriber("/command/pwm", PwmStamped, pwm_callback, queue_size=1)
 
     packet = ""
     depthRead = False
@@ -66,6 +64,7 @@ def main():
                     depthPub.publish(depth_msg)
                 elif (data[1] == "$"):
                     # Populate switch message. Start at 1 to ignore line break
+                    sw_msg.header.stamp = rospy.Time.now()
                     sw_msg.kill = True if packet[0] is '1' else False
                     sw_msg.sw1 = True if packet[1] is '1' else False
                     sw_msg.sw2 = True if packet[2] is '1' else False
