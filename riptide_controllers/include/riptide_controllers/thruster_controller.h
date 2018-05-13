@@ -15,8 +15,7 @@
 #include "imu_3dm_gx4/FilterOutput.h"
 #include "riptide_msgs/Depth.h"
 #include "riptide_msgs/MassVol.h"
-#include "riptide_msgs/RotationOut.h"//<-
-
+#include "riptide_msgs/RotationOut.h"
 #include "riptide_msgs/ThrustStamped.h"
 
 class ThrusterController
@@ -44,13 +43,12 @@ class ThrusterController
 
  public:
   ThrusterController(char **argv, tf::TransformListener *listener_adr);
-  void state(const riptide_msgs::Imu::ConstPtr &msg);
-  void depth(const riptide_msgs::Depth::ConstPtr &msg);     //<-
-  void callback(const geometry_msgs::Accel::ConstPtr &a);
-  void massVolCB(const riptide_msgs::MassVol::ConstPtr &mv);
-  void loop();
-  void BlaineSolver();
-  void rotationCB(const riptide_msgs::RotationOut::ConstPtr &desired);
+  void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
+  void DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg);     //<-
+  void AccelCB(const geometry_msgs::Accel::ConstPtr &a);
+  void MassVolCB(const riptide_msgs::MassVol::ConstPtr &mv);
+  void Loop();
+  void RotationCB(const riptide_msgs::RotationOut::ConstPtr &desired);
 };
 
 #endif

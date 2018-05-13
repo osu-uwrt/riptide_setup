@@ -17,7 +17,7 @@ tf::Vector3 ang_v;
 // when the heave thrust is capped at too low of a number. If these limits are
 // laxed, then the solver will not turn on those additional thrusters and the
 // output will be as expected.
-// DO NOT LOWER THAN 200.
+// NOTE: For the time being, the upper/lower bounds have been REMOVED from the solver
 double MIN_THRUST = -200.0;
 double MAX_THRUST = 200.0;
 
@@ -182,39 +182,16 @@ struct yaw
   }
 };
 
-// Add two more equations (8 unknowns -> 8 equations)
-// NOTE: It seems that ceres already tries to minimze all outputs as it solves
-// and hence, these may be unnecessary.
-// Heave Constraint
-struct heave_constraint
-{
-  template <typename T>
-  bool operator()(const T *const heave_port_fwd, const T *const heave_stbd_fwd,
-                  const T *const heave_port_aft, const T *const heave_stbd_aft, T *residual) const
-  {
-    residual[0] = (heave_stbd_fwd[0] + heave_port_aft[0]) - (heave_stbd_aft[0] + heave_port_fwd[0]);
-    return true;
-  }
-};
-
-// Yaw Constraint
-struct yaw_constraint
-{
-  template <typename T>
-  bool operator()(const T *const surge_port_lo, const T *const surge_stbd_lo,
-                  const T *const sway_fwd, const T *const sway_aft, T *residual) const
-  {
-    residual[0] = (surge_port_lo[0] + sway_fwd[0]) - (surge_stbd_lo[0] + sway_aft[0]);
-    return true;
-  }
-};
+// NOTE: It seems that ceres already tries to minimze all outputs as it solves.
+// Hence, it seems unnecessary to add two more equations to create a
+// SLE (system of linear eqns) composed of 8 equations and 8 unknowns)
 
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "thruster_controller");
   tf::TransformListener tf_listener;
   ThrusterController ThrusterController(argv, &tf_listener);
-  ThrusterController.loop();
+  ThrusterController.Loop();
 }
 
 ThrusterController::ThrusterController(char **argv, tf::TransformListener *listener_adr)
@@ -231,12 +208,12 @@ ThrusterController::ThrusterController(char **argv, tf::TransformListener *liste
 
   thrust.header.frame_id = "base_link";
 
-  state_sub = nh.subscribe<riptide_msgs::Imu>("state/imu", 1, &ThrusterController::state, this);
-  depth_sub = nh.subscribe<riptide_msgs::Depth>("state/depth", 1, &ThrusterController::depth, this);
-  mass_vol_sub = nh.subscribe<riptide_msgs::MassVol>("mass_vol", 1, &ThrusterController::massVolCB, this); //<-
-  cmd_sub = nh.subscribe<geometry_msgs::Accel>("command/accel", 1, &ThrusterController::callback, this);
+  state_sub = nh.subscribe<riptide_msgs::Imu>("state/imu", 1, &ThrusterController::ImuCB, this);
+  depth_sub = nh.subscribe<riptide_msgs::Depth>("state/depth", 1, &ThrusterController::DepthCB, this);
+  mass_vol_sub = nh.subscribe<riptide_msgs::MassVol>("mass_vol", 1, &ThrusterController::MassVolCB, this); //<-
+  cmd_sub = nh.subscribe<geometry_msgs::Accel>("command/accel", 1, &ThrusterController::AccelCB, this);
   cmd_pub = nh.advertise<riptide_msgs::ThrustStamped>("command/thrust", 1);
-  rotation_sub = nh.subscribe<riptide_msgs::RotationOut>("rotation/desired", 1, &ThrusterController::rotationCB, this);
+  rotation_sub = nh.subscribe<riptide_msgs::RotationOut>("rotation/desired", 1, &ThrusterController::RotationCB, this);
   rotation_pub = nh.advertise<geometry_msgs::Vector3>("rotation/vector", 1);
 
   listener->waitForTransform("/base_link", "/surge_port_lo_link", ros::Time(0), ros::Duration(10.0));
@@ -268,7 +245,6 @@ ThrusterController::ThrusterController(char **argv, tf::TransformListener *liste
   google::InitGoogleLogging(argv[0]);
 
   // PROBLEM SETUP
-
   // Add residual blocks (equations)
 
   // Linear
@@ -289,42 +265,6 @@ ThrusterController::ThrusterController(char **argv, tf::TransformListener *liste
   problem.AddResidualBlock(new ceres::AutoDiffCostFunction<yaw, 1, 1, 1, 1, 1>(new yaw), NULL,
                            &surge_port_lo, &surge_stbd_lo, &sway_fwd, &sway_aft);
 
-  // Additional constraints
-  // Leave commented out
-  /*problem.AddResidualBlock(new ceres::AutoDiffCostFunction<heave_constraint, 1, 1, 1, 1, 1>(new heave_constraint), NULL,
-                           &heave_port_fwd, &heave_stbd_fwd, &heave_port_aft, &heave_stbd_aft);
-  problem.AddResidualBlock(new ceres::AutoDiffCostFunction<yaw_constraint, 1, 1, 1, 1, 1>(new yaw_constraint), NULL,
-                           &surge_port_lo, &surge_stbd_lo, &sway_fwd, &sway_aft);*/
-
-  // Set constraints (min/max thruster force)
-  // See note at top of file about the use of bounds!
-  // Surge thrusters
-  problem.SetParameterLowerBound(&surge_port_lo, 0, MIN_THRUST);
-  problem.SetParameterUpperBound(&surge_port_lo, 0, MAX_THRUST);
-
-  problem.SetParameterLowerBound(&surge_stbd_lo, 0, MIN_THRUST);
-  problem.SetParameterUpperBound(&surge_stbd_lo, 0, MAX_THRUST);
-
-  // Sway thrusters
-  problem.SetParameterLowerBound(&sway_fwd, 0, MIN_THRUST);
-  problem.SetParameterUpperBound(&sway_fwd, 0, MAX_THRUST);
-
-  problem.SetParameterLowerBound(&sway_aft, 0, MIN_THRUST);
-  problem.SetParameterUpperBound(&sway_aft, 0, MAX_THRUST);
-
-  // Heave thrusters
-  problem.SetParameterLowerBound(&heave_port_fwd, 0, MIN_THRUST);
-  problem.SetParameterUpperBound(&heave_port_fwd, 0, MAX_THRUST);
-
-  problem.SetParameterLowerBound(&heave_stbd_fwd, 0, MIN_THRUST);
-  problem.SetParameterUpperBound(&heave_stbd_fwd, 0, MAX_THRUST);
-
-  problem.SetParameterLowerBound(&heave_port_aft, 0, MIN_THRUST);
-  problem.SetParameterUpperBound(&heave_port_aft, 0, MAX_THRUST);
-
-  problem.SetParameterLowerBound(&heave_stbd_aft, 0, MIN_THRUST);
-  problem.SetParameterUpperBound(&heave_stbd_aft, 0, MAX_THRUST);
-
   // Configure solver
   options.max_num_iterations = 250;
   options.linear_solver_type = ceres::DENSE_QR;
@@ -334,15 +274,16 @@ ThrusterController::ThrusterController(char **argv, tf::TransformListener *liste
 #endif
 }
 
-void ThrusterController::rotationCB(const riptide_msgs::RotationOut::ConstPtr &desired) {
+// Used as a test publisher to verify rotation matrix
+void ThrusterController::RotationCB(const riptide_msgs::RotationOut::ConstPtr &desired) {
   geometry_msgs::Vector3 v, rot_out;
-  v = desired->vector;
-  if(desired->world) { //Compute vector in world frame
+  v = desired->vector; // Input vector from message
+  if(desired->world) { // Compute vector in world frame
     rot_out.x = R_b2w.getRow(0).x()*v.x + R_b2w.getRow(0).y()*v.y + R_b2w.getRow(0).z()*v.z;
     rot_out.y = R_b2w.getRow(1).x()*v.x + R_b2w.getRow(1).y()*v.y + R_b2w.getRow(1).z()*v.z;
     rot_out.z = R_b2w.getRow(2).x()*v.x + R_b2w.getRow(2).y()*v.y + R_b2w.getRow(2).z()*v.z;
   }
-  else if(desired->body) { //Compute vector in body frame
+  else if(desired->body) { // Compute vector in body frame
     rot_out.x = R_w2b.getRow(0).x()*v.x + R_w2b.getRow(0).y()*v.y + R_w2b.getRow(0).z()*v.z;
     rot_out.y = R_w2b.getRow(1).x()*v.x + R_w2b.getRow(1).y()*v.y + R_w2b.getRow(1).z()*v.z;
     rot_out.z = R_w2b.getRow(2).x()*v.x + R_w2b.getRow(2).y()*v.y + R_w2b.getRow(2).z()*v.z;
@@ -350,50 +291,39 @@ void ThrusterController::rotationCB(const riptide_msgs::RotationOut::ConstPtr &d
   rotation_pub.publish(rot_out);
 }
 
-void ThrusterController::massVolCB(const riptide_msgs::MassVol::ConstPtr& mv) {
+// Adjust mass and volume on the fly
+void ThrusterController::MassVolCB(const riptide_msgs::MassVol::ConstPtr& mv) {
   mass = mv->mass;
   volume = mv->volume;
   buoyancy = volume*WATER_DENSITY*GRAVITY;
 }
 
 //Get orientation from IMU
-void ThrusterController::state(const riptide_msgs::Imu::ConstPtr &msg)
+void ThrusterController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
 {
   //Get euler angles, convert to radians, and make two rotation matrices
   tf::Vector3 tf;
-  vector3MsgToTF(msg->euler_rpy, tf);
+  vector3MsgToTF(imu_msg->euler_rpy, tf);
   tf.setValue(tf.x()*PI/180, tf.y()*PI/180, tf.z()*PI/180);
   R_b2w.setRPY(tf.x(), tf.y(), tf.z()); //Body to world rotations --> world_vector =  R_b2w * body_vector
-  R_w2b = R_b2w.inverse(); //World to body rotations --> body_vector = R_w2b * world_vector
+  R_w2b = R_b2w.transpose(); //World to body rotations --> body_vector = R_w2b * world_vector
 
   //Get angular velocity and convert to [rad/s]
-  vector3MsgToTF(msg->ang_v, ang_v);
+  vector3MsgToTF(imu_msg->ang_v, ang_v);
   ang_v.setValue(ang_v.x()*PI/180, ang_v.y()*PI/180, ang_v.y()*PI/180);
 }
 
 //Get depth and determine if buoyancy should be included
-void ThrusterController::depth(const riptide_msgs::Depth::ConstPtr &msg)
+void ThrusterController::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg)
 {
-  if(msg->depth > 0.2){
+  if(depth_msg->depth > 0.2){
     isBuoyant = true;
   } else {
     isBuoyant = false;
   }
 }
 
-void ThrusterController::BlaineSolver()
-{
-  surge_port_lo = cmdSurge / 2.0 - cmdYaw / 2.0;
-  surge_stbd_lo = cmdSurge / 2.0 + cmdYaw / 2.0;
-  sway_fwd = cmdSway / 2.0 + cmdYaw / 2.0;
-  sway_aft = cmdSway / 2.0 - cmdYaw / 2.0;
-  heave_port_aft = cmdHeave / 4.0 + cmdRoll / 4.0 + cmdPitch / 4.0;
-  heave_stbd_aft = cmdHeave / 4.0 - cmdRoll / 4.0 + cmdPitch / 4.0;
-  heave_stbd_fwd = cmdHeave / 4.0 - cmdRoll / 4.0 - cmdPitch / 4.0;
-  heave_port_fwd = cmdHeave / 4.0 + cmdRoll / 4.0 - cmdPitch / 4.0;
-}
-
-void ThrusterController::callback(const geometry_msgs::Accel::ConstPtr &a)
+void ThrusterController::AccelCB(const geometry_msgs::Accel::ConstPtr &a)
 {
   cmdSurge = a->linear.x;
   cmdSway = a->linear.y;
@@ -452,7 +382,7 @@ void ThrusterController::callback(const geometry_msgs::Accel::ConstPtr &a)
   cmd_pub.publish(thrust);
 }
 
-void ThrusterController::loop()
+void ThrusterController::Loop()
 {
   ros::spin();
 }

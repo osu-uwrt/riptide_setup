@@ -1,3 +1,3 @@
 <launch>
-  <node pkg="riptide_controllers" type="command_combinator" name="command_combinator" />
+  <node pkg="riptide_controllers" type="command_combinator" name="command_combinator" output="screen"/>
 </launch>
