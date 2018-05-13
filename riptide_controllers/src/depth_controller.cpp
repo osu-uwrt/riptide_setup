@@ -10,6 +10,28 @@ int main(int argc, char **argv) {
   ros::spin();
 }
 
+DepthController::DepthController() {
+    ros::NodeHandle dcpid("depth_controller");
+
+    pid_depth_init = false;
+
+    depth_controller_pid.init(dcpid, false);
+
+    cmd_sub = nh.subscribe<riptide_msgs::Depth>("command/depth", 1, &DepthController::CommandCB, this);
+    depth_sub = nh.subscribe<riptide_msgs::Depth>("state/depth", 1, &DepthController::DepthCB, this);
+    reset_sub = nh.subscribe<riptide_msgs::ResetControls>("controls/reset", 1, &DepthController::ResetController, this);
+
+    cmd_pub = nh.advertise<std_msgs::Float64>("command/accel/linear/z", 1);
+    status_pub = nh.advertise<riptide_msgs::ControlStatus>("controls/status/depth", 1);
+
+    sample_start = ros::Time::now();
+
+    status_msg.reference = 0;
+    status_msg.current = 0;
+    status_msg.error = 0;
+    accel.data = 0;
+}
+
 void DepthController::UpdateError() {
   sample_duration = ros::Time::now() - sample_start;
   dt = sample_duration.toSec();
@@ -25,27 +47,6 @@ void DepthController::UpdateError() {
   status_pub.publish(status_msg);
   cmd_pub.publish(accel);
   sample_start = ros::Time::now();
-}
-
-DepthController::DepthController() {
-    ros::NodeHandle dcpid("depth_controller");
-
-    pid_depth_init = false;
-
-    depth_controller_pid.init(dcpid, false);
-
-    cmd_sub = nh.subscribe<riptide_msgs::Depth>("command/depth", 1000, &DepthController::CommandCB, this);
-    depth_sub = nh.subscribe<riptide_msgs::Depth>("state/depth", 1000, &DepthController::DepthCB, this);
-    kill_sub = nh.subscribe<riptide_msgs::SwitchState>("state/switches", 10, &DepthController::SwitchCB, this);
-
-    cmd_pub = nh.advertise<std_msgs::Float64>("command/accel/linear/z", 1);
-
-    sample_start = ros::Time::now();
-
-    status_msg.reference = 0;
-    status_msg.current = 0;
-    status_msg.error = 0;
-    accel.data = 0;
 }
 
 // Subscribe to command/depth
@@ -71,13 +72,6 @@ void DepthController::CommandCB(const riptide_msgs::Depth::ConstPtr &cmd) {
 
   if(pid_depth_init)
     DepthController::UpdateError();
-}
-
-//Subscribe to state/switches
-void DepthController::SwitchCB(const riptide_msgs::SwitchState::ConstPtr &state) {
-  if (!state->kill) {
-    DepthController::ResetDepth();
-  }
 }
 
 void DepthController::ResetController(const riptide_msgs::ResetControls::ConstPtr &reset_msg) {

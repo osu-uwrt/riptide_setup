@@ -27,13 +27,12 @@ AttitudeController::AttitudeController() {
     yaw_controller_pid.init(ycpid, false);
     pitch_controller_pid.init(pcpid, false);
 
-    cmd_sub = nh.subscribe<geometry_msgs::Vector3>("command/attitude", 1000, &AttitudeController::CommandCB, this);
-    imu_sub = nh.subscribe<riptide_msgs::Imu>("state/imu", 1000, &AttitudeController::ImuCB, this);
-    kill_sub = nh.subscribe<riptide_msgs::SwitchState>("state/switches", 10, &AttitudeController::SwitchCB, this);
-    reset_sub = nh.subscribe<riptide_msgs::ResetControls>("controls/reset", 10, &AttitudeController::ResetController, this);
+    cmd_sub = nh.subscribe<geometry_msgs::Vector3>("command/attitude", 1, &AttitudeController::CommandCB, this);
+    imu_sub = nh.subscribe<riptide_msgs::Imu>("state/imu", 1, &AttitudeController::ImuCB, this);
+    reset_sub = nh.subscribe<riptide_msgs::ResetControls>("controls/reset", 1, &AttitudeController::ResetController, this);
 
     cmd_pub = nh.advertise<geometry_msgs::Vector3>("command/accel/angular", 1);
-    status_pub = nh.advertise<riptide_msgs::ControlStatusAngular>("controls/status/angular", 100);
+    status_pub = nh.advertise<riptide_msgs::ControlStatusAngular>("controls/status/angular", 1);
 
     sample_start_roll = ros::Time::now();
     sample_start_pitch = sample_start_roll;
@@ -174,24 +173,15 @@ void AttitudeController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu) {
   }
 }
 
-//Subscribe to state/switches
-void AttitudeController::SwitchCB(const riptide_msgs::SwitchState::ConstPtr &state) {
-  if (!state->kill) {
-    AttitudeController::ResetRoll();
-    AttitudeController::ResetPitch();
-    AttitudeController::ResetYaw();
-  }
-}
-
 // Subscribe to command/orientation
 // set the MAX_ROLL and MAX_PITCH value in the header
 void AttitudeController::CommandCB(const geometry_msgs::Vector3::ConstPtr &cmd) {
   roll_cmd = round(cmd->x);
   pitch_cmd = round(cmd->y);
   yaw_cmd = round(cmd->z);
-  status_msg.roll.current = roll_cmd;
-  status_msg.pitch.current = pitch_cmd;
-  status_msg.yaw.current = yaw_cmd;
+  status_msg.roll.reference = roll_cmd;
+  status_msg.pitch.reference = pitch_cmd;
+  status_msg.yaw.reference = yaw_cmd;
 
   // Constrain pitch
   if(roll_cmd > MAX_ROLL)

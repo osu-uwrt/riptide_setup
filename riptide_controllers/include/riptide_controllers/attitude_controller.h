@@ -8,7 +8,6 @@
 #include "geometry_msgs/Accel.h"
 #include "geometry_msgs/Vector3.h"
 #include "riptide_msgs/Imu.h"
-#include "riptide_msgs/SwitchState.h"
 #include "riptide_msgs/ResetControls.h"
 #include "riptide_msgs/ControlStatus.h"
 #include "riptide_msgs/ControlStatusAngular.h"
@@ -18,7 +17,7 @@ class AttitudeController
   private:
     // Comms
     ros::NodeHandle nh;
-    ros::Subscriber imu_sub, cmd_sub, kill_sub, reset_sub;
+    ros::Subscriber imu_sub, cmd_sub, reset_sub;
     ros::Publisher cmd_pub, status_pub;
 
     control_toolbox::Pid roll_controller_pid;
@@ -53,7 +52,6 @@ class AttitudeController
 
   public:
     AttitudeController();
-    void SwitchCB(const riptide_msgs::SwitchState::ConstPtr &state);
     void CommandCB(const geometry_msgs::Vector3::ConstPtr &cmd);
     void ImuCB(const riptide_msgs::Imu::ConstPtr &imu);
  };

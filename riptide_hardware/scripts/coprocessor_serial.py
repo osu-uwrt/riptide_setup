@@ -39,7 +39,7 @@ def main():
     swPub = rospy.Publisher('/state/switches', SwitchState, queue_size=1)
 
     #Subscribe to Thruster PWMs
-    rospy.Subscriber("/command/pwm", PwmStamped, pwm_callback)
+    rospy.Subscriber("/command/pwm", PwmStamped, pwm_callback, queue_size=1)
 
     packet = ""
     depthRead = False
