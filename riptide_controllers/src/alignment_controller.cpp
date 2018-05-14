@@ -17,55 +17,49 @@ void AlignmentController::UpdateError() {
   sample_duration = ros::Time::now() - sample_start;
   dt = sample_duration.toSec();
 
-  // We are trying to align: -error = target
-  x_error = -x_target;
-  y_error = -y_target;
 
-  d_x_error = (x_error - last_x_error) / dt;
-  d_y_error = (y_error - last_y_error) / dt;
+  d_surge_error = (surge_error - last_surge_error) / dt;
+  d_sway_error = (sway_error - last_sway_error) / dt;
 
-  last_x_error = x_error;
-  last_y_error = y_error;
+  last_surge_error = surge_error;
+  last_sway_error = sway_error;
 
-  accel_x.data = x_pid.computeCommand(x_error, d_x_error, sample_duration);
-  accel_y.data = y_pid.computeCommand(y_error, d_y_error, sample_duration);
-  depth.data = d_error + current_depth;
+  accel_x.data = surge_pid.computeCommand(surge_error, d_surge_error, sample_duration);
+  accel_y.data = sway_pid.computeCommand(sway_error, d_sway_error, sample_duration);
 
-  // Use depth controller to set
-  d_pub.publish(depth);
-  x_pub.publish(accel_x);
-  y_pub.publish(accel_y);
+  surge_pub.publish(accel_x);
+  sway_pub.publish(accel_y);
   sample_start = ros::Time::now();
 }
 
 AlignmentController::AlignmentController() {
-    ros::NodeHandle xpid("surge_controller");
-    ros::NodeHandle ypid("sway_controller");
-    object_sub = nh.subscribe<riptide_msgs::ObjectData>("task/" + tasks[tindex] + "/alignment", 1, &AlignmentController::ObjectCB, this);
-    depth_sub = nh.subscribe<riptide_msgs::Depth>("state/depth", 1, &AlignmentController::DepthCB, this);
+    ros::NodeHandle surge_pid("surge_controller");
+    ros::NodeHandle sway_pid("sway_controller");
+    task_sub = nh.subscribe<riptide_msgs::TaskAlignment>("task/" + tasks[tindex] + "/alignment", 1, &AlignmentController::TaskAlignmentCB, this);
+    cmd_sub = nh.subscribe<riptide_msgs::AlignmentCommand>("command/alignment", 1, &AlignmentController::CommandAlignmentCB, this)
 
-    x_pid.init(xpid, false);
-    y_pid.init(ypid, false);
+    surge_pid.init(surgepid, false);
+    sway_pid.init(ypid, false);
+    pid_initialized = false;
 
-    x_pub = nh.advertise<std_msgs::Float32>("command/accel/linear/x", 1);
-    y_pub = nh.advertise<std_msgs::Float32>("command/accel/linear/y", 1);
-    d_pub = nh.advertise<std_msgs::Float32>("command/depth", 1);
+    surge_pub = nh.advertise<std_msgs::Float32>("command/accel/linear/x", 1);
+    sway_pub = nh.advertise<std_msgs::Float32>("command/accel/linear/y", 1);
 
     sample_start = ros::Time::now();
 }
 
 // Subscribe to state/vision/<task>/object_data to get relative position of task.
 // Task position is the setpoint
-void AlignmentController::ObjectCB(const riptide_msgs::ObjectData::ConstPtr &msg) {
-  x_target = msg->rel_pos.x;
-  y_target = msg->rel_pos.y;
-  d_error = -msg->rel_pos.z;
+void AlignmentController::TaskAlignmentCB(const riptide_msgs::ObjectData::ConstPtr &msg) {
+  if (pid_initialized) {
 
-  ROS_INFO("%f", y_target);
-  AlignmentController::UpdateError();
+    AlignmentController::UpdateError();
+  }
 }
 
-// Subscribe to state/depth to update the target depth passed along to the depth controller
-void AlignmentController::DepthCB(const riptide_msgs::ObjectData::ConstPtr &msg) {
+void AlignmentController::CommandAlignmentCB(const riptide_msgs::CommandAlignment::ConstPtr &msg) {
+  if (!pid_initialized)
+    pid_initialized = true;
 
+  AlignmentController::UpdateError();
 }

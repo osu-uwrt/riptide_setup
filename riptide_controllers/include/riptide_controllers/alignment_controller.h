@@ -3,16 +3,16 @@
 
 #include "ros/ros.h"
 #include "control_toolbox/pid.h"
-#include "std_msgs/Float32.h"
-#include "riptide_msgs/ObjectData.h"
+#include "riptide_msgs/TaskAlignment.h"
 
 class AlignmentController
 {
   private:
     // Comms
     ros::NodeHandle nh;
-    ros::Subscriber object_sub;
+    ros::Subscriber task_sub;
 
+    ros::Subscriber cmd_sub;
     ros::Publisher cmd_pub;
 
     control_toolbox::Pid y_pid;
@@ -20,11 +20,16 @@ class AlignmentController
 
     //PID
     double y_error;
+    double x_error;
     double d_y_error;
+    double d_x_error;
     double last_y_error;
+    double last_x_error;
     double dt;
 
-    bool pid_initialized;
+    double cmd_width
+
+    bool pid_initialized
 
     ros::Time sample_start;
     ros::Duration sample_duration;
@@ -33,7 +38,8 @@ class AlignmentController
 
   public:
     AlignmentController();
-    void ObjectCB(const riptide_msgs::ObjectData::ConstPtr &msg);
+    void TaskAlignmentCB(const riptide_msgs::TaskAlignment::ConstPtr &msg);
+    void CommandAlignmentCB(const riptide_msgs::CommandAlignment::ConstPtr &msg);
  };
 
  #endif
