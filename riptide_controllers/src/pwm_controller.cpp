@@ -11,6 +11,8 @@
 #define NEG_XINT 1
 #define POS_SLOPE 2
 #define POS_XINT 3
+#define MIN_PWM 1300
+#define MAX_PWM 1700
 
 int main(int argc, char** argv)
 {
@@ -23,6 +25,7 @@ PWMController::PWMController() : nh()
 {
   cmd_sub = nh.subscribe<riptide_msgs::ThrustStamped>("command/thrust", 1, &PWMController::ThrustCB, this);
   kill_sub = nh.subscribe<riptide_msgs::SwitchState>("state/switches", 1, &PWMController::SwitchCB, this);
+  reset_sub = nh.subscribe<riptide_msgs::ResetControls>("controls/reset", 1, &PWMController::ResetController, this);
   pwm_pub = nh.advertise<riptide_msgs::PwmStamped>("command/pwm", 1);
 
   //Initialization of the two trust/pwm slope arrays
@@ -77,7 +80,7 @@ PWMController::PWMController() : nh()
 
 void PWMController::ThrustCB(const riptide_msgs::ThrustStamped::ConstPtr& thrust)
 {
-  if (!dead)
+  if (!dead && !silent)
   {
     msg.header.stamp = thrust->header.stamp;
 
@@ -103,9 +106,18 @@ void PWMController::SwitchCB(const riptide_msgs::SwitchState::ConstPtr &state)
   dead = !state->kill;
 }
 
+void PWMController::ResetController(const riptide_msgs::ResetControls::ConstPtr &reset_msg) {
+  if(reset_msg->reset_pwm)
+    silent = true;
+  else
+    silent = false;
+}
+
 void PWMController::Loop()
 {
-  ros::Rate rate(10);
+  // IMPORTANT: You MUST have a delay in publishing pwm msgs because copro
+  // can only process data so fast
+  ros::Rate rate(100);
   while (ros::ok())
   {
     ros::spinOnce();
@@ -131,11 +143,22 @@ int PWMController::thrust2pwm(double raw_force, int thruster)
   // Otherwise, set PWM to 1500 (0 thrust)
   if(raw_force < -0.01)
   {
-    pwm = (int) (thrust_config[thruster][NEG_XINT] + (raw_force*thrust_config[thruster][NEG_SLOPE]));
+    pwm = thrust_config[thruster][NEG_XINT] + static_cast<int>(raw_force*thrust_config[thruster][NEG_SLOPE]);
   }
   else if(raw_force > 0.01){
     pwm = (int) (thrust_config[thruster][POS_XINT] + (raw_force*thrust_config[thruster][POS_SLOPE]));
   }
+  else{
+    pwm = 1500;
+  }
+
+  // Constrain pwm output
+  // The thruster controller should not be the one constraining the output, it
+  // really should be the pwm controller.
+  if(pwm > MAX_PWM)
+    pwm = MAX_PWM;
+  if(pwm < MIN_PWM)
+    pwm = MIN_PWM;
 
   return pwm;
 }

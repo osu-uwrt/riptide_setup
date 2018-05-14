@@ -6,13 +6,13 @@
 #include "riptide_msgs/PwmStamped.h"
 #include "riptide_msgs/ThrustStamped.h"
 #include "riptide_msgs/SwitchState.h"
+#include "riptide_msgs/ResetControls.h"
 
 class PWMController
 {
  private:
   ros::NodeHandle nh;
-  ros::Subscriber cmd_sub;
-  ros::Subscriber kill_sub;
+  ros::Subscriber cmd_sub, kill_sub, reset_sub;
   ros::Publisher pwm_pub;
   riptide_msgs::PwmStamped msg;
   void PublishZeroPWM();
@@ -30,7 +30,8 @@ class PWMController
   PWMController();
   void ThrustCB(const riptide_msgs::ThrustStamped::ConstPtr &thrust);
   void SwitchCB(const riptide_msgs::SwitchState::ConstPtr &state);
-  void Loop();
+  void ResetController(const riptide_msgs::ResetControls::ConstPtr &reset_msg);
+  void Loop(); //A loop fxn is needed b/c copro can only read msgs so quickly
 };
 
 #endif

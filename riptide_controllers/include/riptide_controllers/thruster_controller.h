@@ -13,8 +13,9 @@
 #include "geometry_msgs/Accel.h"
 #include "riptide_msgs/Imu.h"
 #include "imu_3dm_gx4/FilterOutput.h"
-#include "riptide_msgs/Depth.h"     //<-
-
+#include "riptide_msgs/Depth.h"
+#include "riptide_msgs/MassVol.h"
+#include "riptide_msgs/RotationOut.h"
 #include "riptide_msgs/ThrustStamped.h"
 
 class ThrusterController
@@ -22,10 +23,8 @@ class ThrusterController
  private:
   // Comms
   ros::NodeHandle nh;
-  ros::Subscriber state_sub;
-  ros::Subscriber cmd_sub;
-  ros::Subscriber depth_sub;  //<-
-  ros::Publisher cmd_pub;
+  ros::Subscriber state_sub, cmd_sub, depth_sub, mass_vol_sub, rotation_sub;
+  ros::Publisher cmd_pub, rotation_pub;
   riptide_msgs::ThrustStamped thrust;
   // Math
   ceres::Problem problem;
@@ -41,12 +40,15 @@ class ThrusterController
   tf::StampedTransform tf_sway[2];
   tf::StampedTransform tf_heave[4];
 
+
  public:
   ThrusterController(char **argv, tf::TransformListener *listener_adr);
-  void state(const riptide_msgs::Imu::ConstPtr &msg);
-  void depth(const riptide_msgs::Depth::ConstPtr &msg);     //<-
-  void callback(const geometry_msgs::Accel::ConstPtr &a);
-  void loop();
+  void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
+  void DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg);     //<-
+  void AccelCB(const geometry_msgs::Accel::ConstPtr &a);
+  void MassVolCB(const riptide_msgs::MassVol::ConstPtr &mv);
+  void Loop();
+  void RotationCB(const riptide_msgs::RotationOut::ConstPtr &desired);
 };
 
 #endif

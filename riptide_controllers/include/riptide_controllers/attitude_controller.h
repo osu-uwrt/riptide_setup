@@ -1,14 +1,11 @@
 #ifndef ATTITUDE_CONTROLLER_H
 #define ATTITUDE_CONTROLLER_H
-#define MAX_ROLL 20
-#define MAX_PITCH 20
 
 #include "ros/ros.h"
 #include "control_toolbox/pid.h"
 #include "geometry_msgs/Accel.h"
 #include "geometry_msgs/Vector3.h"
 #include "riptide_msgs/Imu.h"
-#include "riptide_msgs/SwitchState.h"
 #include "riptide_msgs/ResetControls.h"
 #include "riptide_msgs/ControlStatus.h"
 #include "riptide_msgs/ControlStatusAngular.h"
@@ -18,14 +15,14 @@ class AttitudeController
   private:
     // Comms
     ros::NodeHandle nh;
-    ros::Subscriber imu_sub, cmd_sub, kill_sub, reset_sub;
+    ros::Subscriber imu_sub, cmd_sub, reset_sub;
     ros::Publisher cmd_pub, status_pub;
 
     control_toolbox::Pid roll_controller_pid;
     control_toolbox::Pid pitch_controller_pid;
     control_toolbox::Pid yaw_controller_pid;
 
-    geometry_msgs::Vector3 accel_cmd;
+    geometry_msgs::Vector3 ang_accel_cmd;
     riptide_msgs::ControlStatusAngular status_msg;
 
     //PID
@@ -43,6 +40,7 @@ class AttitudeController
 
     void InitPubMsg();
     void UpdateError();
+    double ConstrainError(double error, double max);
     void ResetController(const riptide_msgs::ResetControls::ConstPtr& reset_msg);
     void ResetRoll();
     void ResetPitch();
@@ -50,9 +48,9 @@ class AttitudeController
 
   public:
     AttitudeController();
-    void SwitchCB(const riptide_msgs::SwitchState::ConstPtr &state);
     void CommandCB(const geometry_msgs::Vector3::ConstPtr &cmd);
-    void ImuCB(const riptide_msgs::Imu::ConstPtr &imu);
+    void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
+    void Loop();
  };
 
  #endif

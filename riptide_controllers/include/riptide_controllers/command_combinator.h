@@ -2,10 +2,9 @@
 #define COMMAND_COMBINATOR_H
 
 #include "ros/ros.h"
-#include "std_msgs/Float32.h"
+#include "std_msgs/Float64.h"
 #include "geometry_msgs/Accel.h"
 #include "geometry_msgs/Vector3.h"
-#include "riptide_msgs/SwitchState.h"
 
 class CommandCombinator
 {
@@ -15,23 +14,23 @@ class CommandCombinator
     ros::Subscriber linear_x_sub;
     ros::Subscriber linear_y_sub;
     ros::Subscriber linear_z_sub;
-
     ros::Subscriber angular_sub;
-    ros::Subscriber kill_sub;
+    ros::Subscriber depth_sub;
 
     ros::Publisher cmd_pub;
     geometry_msgs::Accel current_accel;
+    geometry_msgs::Vector3 linear_accel, depth_accel;
     void ResetController();
 
   public:
     CommandCombinator();
-    void SwitchCB(const riptide_msgs::SwitchState::ConstPtr &state);
-
-    void linearXCB(const std_msgs::Float32::ConstPtr &accel);
-    void linearYCB(const std_msgs::Float32::ConstPtr &accel);
-    void linearZCB(const std_msgs::Float32::ConstPtr &accel);
-
-    void angularCB(const geometry_msgs::Vector3::ConstPtr &accel);
+    void LinearXCB(const std_msgs::Float64::ConstPtr &accel);
+    void LinearYCB(const std_msgs::Float64::ConstPtr &accel);
+    void LinearZCB(const std_msgs::Float64::ConstPtr &accel);
+    void DepthCB(const geometry_msgs::Vector3::ConstPtr &d_accel);
+    void AngularCB(const geometry_msgs::Vector3::ConstPtr &ang_accel);
+    void CombineLinear();
+    void Loop();
  };
 
  #endif

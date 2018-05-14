@@ -6,3 +6,4 @@ bool reset_roll
 bool reset_pitch
 bool reset_yaw
 bool reset_depth
+bool reset_pwm

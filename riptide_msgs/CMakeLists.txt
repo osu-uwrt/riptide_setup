@@ -27,6 +27,8 @@ add_message_files(
     ControlStatusAngular.msg
     ControlStatusLinear.msg
     AlignmentCommand.msg
+    MassVol.msg
+    RotationOut.msg
 )
 
 generate_messages(DEPENDENCIES std_msgs geometry_msgs)
