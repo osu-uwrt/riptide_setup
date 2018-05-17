@@ -22,5 +22,4 @@
       <arg name="gyro_LPF_bandwidth" value="$(arg gyro_LPF_bandwidth)" />
       <arg name="enable_iron_offset" value="$(arg enable_iron_offset)" />
     </include>
-    <!--<node pkg="riptide_hardware" name="imu_logger" type="imu_logger" output="screen" />-->
 </launch>

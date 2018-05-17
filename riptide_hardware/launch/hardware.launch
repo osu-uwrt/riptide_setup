@@ -1,0 +1,5 @@
+<launch>
+  <include file="$(find riptide_hardware)/launch/coprocessor.launch" />
+  <include file="$(find riptide_hardware)/launch/imu.launch" />
+  <include file="$(find riptide_hardware)/launch/cameras.launch" />
+</launch>
