@@ -10,6 +10,7 @@
 #include "ros/ros.h"
 #include "tf/transform_listener.h"
 #include "geometry_msgs/Vector3.h"
+#include "geometry_msgs/Vector3Stamped.h"
 #include "geometry_msgs/Accel.h"
 #include "riptide_msgs/Imu.h"
 #include "imu_3dm_gx4/FilterOutput.h"
@@ -25,6 +26,7 @@ class ThrusterController
   ros::Subscriber state_sub, cmd_sub, depth_sub, mass_vol_sub, buoyancy_sub;
   ros::Publisher cmd_pub, buoyancy_pub;
   riptide_msgs::ThrustStamped thrust;
+  bool debug_controller; // If true, key params can be input via messages
 
   // Math
   ceres::Problem problem;
@@ -34,7 +36,6 @@ class ThrusterController
   ceres::Problem buoyancyProblem;
   ceres::Solver::Options buoyancyOptions;
   ceres::Solver::Summary buoyancySummary;
-  geometry_msgs::Vector3 buoyancy_pos;
 
   /*// Results
   double surge_port_lo, surge_stbd_lo;

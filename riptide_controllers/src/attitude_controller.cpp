@@ -70,7 +70,7 @@ void AttitudeController::UpdateError() {
     dt_roll = sample_duration_roll.toSec();
 
     roll_error = roll_cmd - round(current_attitude.x);
-    roll_error = AttitudeController::ConstrainError(roll_error, MAX_ROLL_ERROR);
+    roll_error = AttitudeController::Constrain(roll_error, MAX_ROLL_ERROR);
     roll_error_dot = (roll_error - last_error.x) / dt_roll;
     last_error.x = roll_error;
     status_msg.roll.error = roll_error;
@@ -84,7 +84,7 @@ void AttitudeController::UpdateError() {
     dt_pitch = sample_duration_pitch.toSec();
 
     pitch_error = pitch_cmd - round(current_attitude.y);
-    pitch_error = AttitudeController::ConstrainError(pitch_error, MAX_PITCH_ERROR);
+    pitch_error = AttitudeController::Constrain(pitch_error, MAX_PITCH_ERROR);
     pitch_error_dot = (pitch_error - last_error.y) / dt_pitch;
     last_error.y = pitch_error;
     status_msg.pitch.error = pitch_error;
@@ -103,7 +103,7 @@ void AttitudeController::UpdateError() {
         yaw_error -= 360;
     else if (yaw_error < -180)
         yaw_error += 360;
-    yaw_error = AttitudeController::ConstrainError(yaw_error, MAX_YAW_ERROR);
+    yaw_error = AttitudeController::Constrain(yaw_error, MAX_YAW_ERROR);
 
     yaw_error_dot = (yaw_error - last_error.z) / dt_yaw;
     last_error.z = yaw_error;
@@ -125,12 +125,12 @@ void AttitudeController::UpdateError() {
 // Constrain physical error. This acts as a way to break up the motion into
 // smaller segments. Otherwise, if error is too large, the vehicle would move
 // too quickly in the water in exhibit large overshoot
-double AttitudeController::ConstrainError(double error, double max) {
-  if(error > max)
+double AttitudeController::Constrain(double current, double max) {
+  if(current > max)
     return max;
-  else if(error < -1*max)
+  else if(current < -1*max)
     return -1*max;
-  return error;
+  return current;
 }
 
 // Subscribe to state/imu

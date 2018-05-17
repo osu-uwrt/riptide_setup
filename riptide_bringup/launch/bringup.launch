@@ -1,4 +1,8 @@
 <launch>
- <include file="$(find riptide_hardware)/launch/hardware.launch" />
- <include file="$(find riptide_controllers)/launch/controllers.launch" />
+  <arg name="debug" default="false" />
+
+  <include file="$(find riptide_hardware)/launch/hardware.launch" />
+  <include file="$(find riptide_controllers)/launch/controllers.launch" >
+    <arg name="debug" value="$(arg debug)" />
+  </include>
 </launch>

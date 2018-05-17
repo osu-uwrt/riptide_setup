@@ -1,5 +1,12 @@
 #include "riptide_controllers/command_combinator.h"
 
+#define MAX_X_ACCEL 9.9 // [m/s^2]
+#define MAX_Y_ACCEL 9.9 // [m/s^2]
+#define MAX_Z_ACCEL 9.9 // [m/s^2]
+#define MAX_ROLL_ACCEL 32 // [rad/s^2]
+#define MAX_PITCH_ACCEL 17  // [rad/s^2]
+#define MAX_YAW_ACCEL 9.9 // [rad/s^2]
+
 int main(int argc, char **argv) {
   ros::init(argc, argv, "command_combinator");
   CommandCombinator cc;
@@ -31,35 +38,30 @@ CommandCombinator::CommandCombinator() {
 
 void CommandCombinator::LinearXCB(const std_msgs::Float64::ConstPtr &accel) {
   linear_accel.x = accel->data;
-  //CommandCombinator::CombineLinear();
-  //cmd_pub.publish(current_accel);
 }
 
 void CommandCombinator::LinearYCB(const std_msgs::Float64::ConstPtr &accel) {
   linear_accel.y = accel->data;
-  //CommandCombinator::CombineLinear();
-  //cmd_pub.publish(current_accel);
 }
 
 void CommandCombinator::LinearZCB(const std_msgs::Float64::ConstPtr &accel) {
   linear_accel.z = accel->data;
-  //CommandCombinator::CombineLinear();
-  //cmd_pub.publish(current_accel);
 }
 
 void CommandCombinator::AngularCB(const geometry_msgs::Vector3::ConstPtr &ang_accel) {
   current_accel.angular.x = ang_accel->x;
   current_accel.angular.y = ang_accel->y;
   current_accel.angular.z = ang_accel->z;
-  //CommandCombinator::CombineLinear();
-  //cmd_pub.publish(current_accel);
+
+  current_accel.angular.x = CommandCombinator::Constrain(current_accel.angular.x, MAX_ROLL_ACCEL);
+  current_accel.angular.y = CommandCombinator::Constrain(current_accel.angular.y, MAX_PITCH_ACCEL);
+  current_accel.angular.z = CommandCombinator::Constrain(current_accel.angular.z, MAX_YAW_ACCEL);
 }
 
 void CommandCombinator::DepthCB(const geometry_msgs::Vector3::ConstPtr & d_accel) {
   depth_accel.x = d_accel->x;
   depth_accel.y = d_accel->y;
   depth_accel.z = d_accel->z;
-  //CommandCombinator::CombineLinear();
 }
 
 void CommandCombinator::ResetController() {
@@ -76,6 +78,18 @@ void CommandCombinator::CombineLinear() {
   current_accel.linear.x = linear_accel.x + depth_accel.x;
   current_accel.linear.y = linear_accel.y + depth_accel.y;
   current_accel.linear.z = linear_accel.z + depth_accel.z;
+
+  current_accel.linear.x = CommandCombinator::Constrain(current_accel.linear.x, MAX_X_ACCEL);
+  current_accel.linear.y = CommandCombinator::Constrain(current_accel.linear.y, MAX_Y_ACCEL);
+  current_accel.linear.z = CommandCombinator::Constrain(current_accel.linear.z, MAX_Z_ACCEL);
+}
+
+double CommandCombinator::Constrain(double current, double max) {
+  if(current > max)
+    return max;
+  else if(current < -1*max)
+    return -1*max;
+  return current;
 }
 
 void CommandCombinator::Loop() {
