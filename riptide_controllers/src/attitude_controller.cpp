@@ -4,8 +4,8 @@
 #undef report
 #undef progress
 
-#define MAX_ROLL_ERROR 20
-#define MAX_PITCH_ERROR 20
+#define MAX_ROLL_ERROR 10
+#define MAX_PITCH_ERROR 10
 #define MAX_YAW_ERROR 45
 
 float round(float d) {
