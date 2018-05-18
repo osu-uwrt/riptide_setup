@@ -30,6 +30,7 @@ class AlignmentController
     ros::Duration sample_duration;
 
     void UpdateError();
+    void AlignmentController::UpdateTaskID(int id);
 
   public:
     AlignmentController();
