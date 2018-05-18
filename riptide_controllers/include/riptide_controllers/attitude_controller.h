@@ -40,7 +40,7 @@ class AttitudeController
 
     void InitPubMsg();
     void UpdateError();
-    double ConstrainError(double error, double max);
+    double Constrain(double current, double max);
     void ResetController(const riptide_msgs::ResetControls::ConstPtr& reset_msg);
     void ResetRoll();
     void ResetPitch();

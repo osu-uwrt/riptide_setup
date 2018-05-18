@@ -5,7 +5,7 @@
 #undef progress
 
 #define PI 3.141592653
-#define MAX_DEPTH_ERROR 2
+#define MAX_DEPTH_ERROR 1.5
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "depth_controller");

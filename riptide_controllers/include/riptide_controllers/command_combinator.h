@@ -30,6 +30,7 @@ class CommandCombinator
     void DepthCB(const geometry_msgs::Vector3::ConstPtr &d_accel);
     void AngularCB(const geometry_msgs::Vector3::ConstPtr &ang_accel);
     void CombineLinear();
+    double Constrain(double current, double max);
     void Loop();
  };
 
