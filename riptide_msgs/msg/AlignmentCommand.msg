@@ -1,7 +1,7 @@
 std_msgs/Header header
 
 int8 YZ=0 # Forward cameras
-int8 XY=1 # Downward cameras
+int8 YX=1 # Downward cameras
 
 # Plane in which we are aligning
 int8 alignment_plane

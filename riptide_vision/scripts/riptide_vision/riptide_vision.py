@@ -233,24 +233,20 @@ class RiptideVision:
             cam_center_y = int(img.shape[0] / 2)
             cam_center_x = int(img.shape[1] / 2)
 
-            # 2.0 is a constant for meters, displacement is in meters
-            displacement_x = round(((x_center - cam_center_x) * 2.0) / upper_beam_pixel_magnitude, 4)  # NOQA
-            displacement_y = round(((cam_center_y - y_center) * 2.0) / upper_beam_pixel_magnitude, 4)  # NOQA
-
         packet = []
         packet.append(left_pole_visible)
         packet.append(right_pole_visible)
-        packet.append(displacement_x)
-        packet.append(displacement_y)
         packet.append(roll_correction)
+        packet.append(x_min)
+        packet.append(y_min)
+        packet.append(x_max)
+        packet.append(y_max)
         packet.append(x_mid)
         packet.append(y_mid)
         packet.append(x_center)
         packet.append(y_center)
-        packet.append(cam_center_x)
-        packet.append(cam_center_y)
 
-        if None in [x_mid, y_mid, x_center, y_center, cam_center_x, cam_center_y]:
+        if None in [x_mid, y_mid, x_center, y_center]:
             return []
 
         return packet
@@ -260,7 +256,8 @@ class RiptideVision:
     # this can be improved but it is not a priority
     def detect_gate_vis(self, img, packet):
         if len(packet) != 0:
-            cv2.line(img, (packet[5], packet[6]), (packet[7], packet[8]), (0, 0, 255), 5)  # NOQA
+            cv2.line(img, (packet[7], packet[8]), (packet[9], packet[10]), (0, 0, 255), 5)  # NOQA
+            cv2.rectangle(img, (packet[3], packet[4]), (packet[5], packet[6]), (0, 0, 255), 5)  # NOQA
         return img
 
     def compressed_img_msg_data(self, type, image):

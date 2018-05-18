@@ -16,7 +16,7 @@ class Oculus:
     # Class constants
     SHAKE_THRESHOLD = 20    # Allowable amount of difference between positions
     MAX_SAMPLES = 5         # Number of previous positions to store for averaging
-    DEBUG = False           # Setting to true will publish processed images on debug topic
+    DEBUG = True           # Setting to true will publish processed images on debug topic
     MODE_NONE = -1
     MODE_GATE = 0           # Detect gate mode
     MODE_POLE = 1           # Detect pole mode
@@ -52,7 +52,7 @@ class Oculus:
         if (self.gate_processor.IsConnected()):
             if (self.mode != self.MODE_GATE):
                 self.update_mode(self.MODE_GATE, "task/gate/alignment")
-            pos = self.gate_processor.Process(cv_image, self.image_pub)
+            pos, bbox = self.gate_processor.Process(cv_image, self.image_pub)
         elif (self.pole_processor.IsConnected()):
             if (self.mode != self.MODE_POLE):
                 self.update_mode(self.MODE_POLE, "task/pole/alignment")
@@ -148,7 +148,7 @@ class Oculus:
                 self.reset_processor()
         else:
             align_msg.visible = False
-        print 1
+
         self.alignment_pub.publish(align_msg)
 
 def main():

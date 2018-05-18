@@ -17,6 +17,7 @@ class GateProcessor(TaskProcessor):
         gate_msg.left_pole_visible = False
         gate_msg.right_pole_visible = False
         pos = None
+        bbox = None
 
         # Process the image
         response = RiptideVision().detect_gate(image)
@@ -27,6 +28,10 @@ class GateProcessor(TaskProcessor):
             pos.x = 0
             pos.y = response[2]
             pos.z = response[3]
+
+            bbox = BoundingBox()
+            bbox.top_left = Point(0, response[3], response[4])
+            bbox.bottom_right = Point(0, response[5], response[6])
 
             gate_msg.left_pole_visible = response[0]
             gate_msg.right_pole_visible = response[1]
@@ -39,4 +44,4 @@ class GateProcessor(TaskProcessor):
         # Publish data
         self.task_pub.publish(gate_msg)
 
-        return pos
+        return pos, bbox

@@ -5,9 +5,6 @@
 #undef progress
 #define MAX_TASK_ID 1
 
-string[] tasks = {"gate", "pole"};
-int current_task_id = 0;
-
 int main(int argc, char **argv) {
   ros::init(argc, argv, "alignment_controller");
   AlignmentController ac;
@@ -25,7 +22,7 @@ void AlignmentController::UpdateError() {
   error.y = (target.y - task.y);
   error_dot.y = (error.y - last_error.y) / dt;
   last_error.y = error.y;
-  sway_cmd = y_pid.computeCommand(error.y, error_dot.y, sample_duration);
+  sway_cmd.data = y_pid.computeCommand(error.y, error_dot.y, sample_duration);
 
   // If we are aligning in the YZ plane (forward cam), then X acceleration is
   // dependent on bounding box width (approximation for distance from task), while
@@ -33,21 +30,21 @@ void AlignmentController::UpdateError() {
   // If we are aligning in the YX plane (downward cam), then Z acceleration is
   // dependent on boudning box width, while X acceleration is determined by offset
   // in the X axis.
-  if (alignment_plane == AlignmentCommand.YZ) {
+  if (alignment_plane == riptide_msgs::AlignmentCommand::YZ) {
     error.z = (target.z - task.z);
     error.x = (target_bbox_width - task_bbox_width);
-  } else if (alignment_plane == AlignmentCommand.YX) {
+  } else if (alignment_plane == riptide_msgs::AlignmentCommand::YX) {
     error.z = (target_bbox_width - task_bbox_width);
     error.x = (target.x - task.x);
   }
 
   error_dot.x = (error.x - last_error.x) / dt;
   last_error.x = error.x;
-  surge_cmd = x_pid.computeCommand(error.x, error_dot.x, sample_duration);
+  surge_cmd.data = x_pid.computeCommand(error.x, error_dot.x, sample_duration);
 
   error_dot.z = (error.z - last_error.z) / dt;
   last_error.z = error.z;
-  heave_cmd = z_pid.computeCommand(error.z, error_dot.z, sample_duration);
+  heave_cmd.data = z_pid.computeCommand(error.z, error_dot.z, sample_duration);
 
 
   x_pub.publish(surge_cmd);
@@ -63,7 +60,8 @@ AlignmentController::AlignmentController() {
     ros::NodeHandle sway("sway_controller");
     ros::NodeHandle heave("heave_controller");
 
-    alignment_sub = nh.subscribe<riptide_msgs::TaskAlignment>("task/" + tasks[current_task_id] + "/alignment", 1, &AlignmentController::AlignmentCB, this);
+    // Default to gate alignment
+    alignment_sub = nh.subscribe<riptide_msgs::TaskAlignment>("task/gate/alignment", 1, &AlignmentController::AlignmentCB, this);
     command_sub = nh.subscribe<riptide_msgs::AlignmentCommand>("command/alignment", 1, &AlignmentController::CommandCB, this);
 
     x_pid.init(surge, false);
@@ -84,7 +82,7 @@ void AlignmentController::UpdateTaskID(int id) {
   // Validate id
   if (id >= 0 && id < MAX_TASK_ID) {
     alignment_sub.shutdown(); // Unsubscribe from old task topic
-    alignment_sub = nh.subscribe<riptide_msgs::TaskAlignment>("task/" + tasks[current_task_id] + "/alignment", 1, &AlignmentController::AlignmentCB, this);
+    alignment_sub = nh.subscribe<riptide_msgs::TaskAlignment>(topics[current_task_id], 1, &AlignmentController::AlignmentCB, this);
     current_task_id = id;
   }
 }
@@ -94,14 +92,14 @@ void AlignmentController::UpdateTaskID(int id) {
 // Subscribe to state/vision/<task>/object_data to get relative position of task.
 void AlignmentController::AlignmentCB(const riptide_msgs::TaskAlignment::ConstPtr &msg) {
   if (pid_initialized) {
-    task.x = msg.relative_pos.x;
-    task.y = msg.relative_pos.y;
-    task.z = msg.relative_pos.z;
+    task.x = msg->relative_pos.x;
+    task.y = msg->relative_pos.y;
+    task.z = msg->relative_pos.z;
 
     // Boudning box width is always captured by the Y coordinate of the bounding box vertices.
     // This is because we only care about the YZ (forward cam) and YX (downward cam)
     // planes
-    task_bbox_width = abs(msg.bbox.top_left.y - msg.bbox.bottom_right.y);
+    task_bbox_width = abs(msg->bbox.top_left.y - msg->bbox.bottom_right.y);
 
     AlignmentController::UpdateError();
   }
@@ -111,16 +109,16 @@ void AlignmentController::AlignmentCB(const riptide_msgs::TaskAlignment::ConstPt
 // Parameters: AlignmentCommand msg
 // Subscribe to /command/alignment to get target alignment relative to task
 void AlignmentController::CommandCB(const riptide_msgs::AlignmentCommand::ConstPtr &cmd) {
-  alignment_plane = cmd.alignment_plane;
+  alignment_plane = cmd->alignment_plane;
 
-  target.x = cmd.target_pos.x;
-  target.y = cmd.target_pos.y;
-  target.z = cmd.target_pos.z;
+  target.x = cmd->target_pos.x;
+  target.y = cmd->target_pos.y;
+  target.z = cmd->target_pos.z;
 
-  target_bbox_width = cmd.bbox_width;
+  target_bbox_width = cmd->bbox_width;
 
-  if (cmd.task_id != current_task_id) {
-    AlignmentController::UpdateTaskID(cmd.task_id);
+  if (cmd->task_id != current_task_id) {
+    AlignmentController::UpdateTaskID(cmd->task_id);
   }
 
   AlignmentController::UpdateError();
