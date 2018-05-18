@@ -93,16 +93,18 @@ void AlignmentController::UpdateTaskID(int id) {
 // Parameters: TaskAlignment msg
 // Subscribe to state/vision/<task>/object_data to get relative position of task.
 void AlignmentController::AlignmentCB(const riptide_msgs::TaskAlignment::ConstPtr &msg) {
-  task.x = msg.relative_pos.x;
-  task.y = msg.relative_pos.y;
-  task.z = msg.relative_pos.z;
+  if (pid_initialized) {
+    task.x = msg.relative_pos.x;
+    task.y = msg.relative_pos.y;
+    task.z = msg.relative_pos.z;
 
-  // Boudning box width is always captured by the Y coordinate of the bounding box vertices.
-  // This is because we only care about the YZ (forward cam) and YX (downward cam)
-  // planes
-  task_bbox_width = abs(msg.bbox.top_left.y - msg.bbox.bottom_right.y);
+    // Boudning box width is always captured by the Y coordinate of the bounding box vertices.
+    // This is because we only care about the YZ (forward cam) and YX (downward cam)
+    // planes
+    task_bbox_width = abs(msg.bbox.top_left.y - msg.bbox.bottom_right.y);
 
-  AlignmentController::UpdateError();
+    AlignmentController::UpdateError();
+  }
 }
 
 // Function: CommandCB
@@ -122,4 +124,7 @@ void AlignmentController::CommandCB(const riptide_msgs::AlignmentCommand::ConstP
   }
 
   AlignmentController::UpdateError();
+
+  if (!pid_initialized)
+    pid_initialized = true;
 }
