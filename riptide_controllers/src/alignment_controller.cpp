@@ -82,8 +82,12 @@ void AlignmentController::UpdateTaskID(int id) {
   // Validate id
   if (id >= 0 && id < MAX_TASK_ID) {
     alignment_sub.shutdown(); // Unsubscribe from old task topic
-    alignment_sub = nh.subscribe<riptide_msgs::TaskAlignment>(topics[current_task_id], 1, &AlignmentController::AlignmentCB, this);
     current_task_id = id;
+    alignment_sub = nh.subscribe<riptide_msgs::TaskAlignment>(topics[current_task_id], 1, &AlignmentController::AlignmentCB, this);
+
+    // Notes:
+    // 1. Reset previous controllers
+    // 2. Add controller status messages
   }
 }
 
