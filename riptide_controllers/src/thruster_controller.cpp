@@ -30,13 +30,13 @@ double MAX_THRUST = 200.0;
 
 // Vehicle mass (kg):
 // Updated 5-15-18
-double MASS = 35.10;
+double MASS = 35.70;
 double WEIGHT = MASS*GRAVITY;
 
 // Vehcile volume (m^3)
 // TODO: Get this value from model
 // Updated on 5/11/18
-double VOLUME = 0.03511; // Start with guess, then tune in software
+double VOLUME = 0.03575; // Start with guess, then tune in software
 double BUOYANCY = VOLUME * WATER_DENSITY * GRAVITY;
 
 /*// Moments of inertia (kg*m^2)
@@ -226,7 +226,8 @@ struct tuneRoll
                   T(R_w2b.getRow(2).z()) * T(buoyancy) * pos_buoyancy_y[0] +
                   T(sway_fwd) * T(-pos_sway_fwd.z) + T(sway_aft) * T(-pos_sway_aft.z) +
                   T(heave_port_fwd) * T(pos_heave_port_fwd.y) + T(heave_port_aft) * T(pos_heave_port_aft.y) +
-                  T(heave_stbd_fwd) * T(pos_heave_stbd_fwd.y) + T(heave_stbd_aft) * T(pos_heave_stbd_aft.y);
+                  T(heave_stbd_fwd) * T(pos_heave_stbd_fwd.y) + T(heave_stbd_aft) * T(pos_heave_stbd_aft.y) -
+                  (T(ang_v.z()) * T(ang_v.y())) * (T(Izz) - T(Iyy));
     return true;
   }
 };
@@ -244,7 +245,8 @@ struct tunePitch
                   T(R_w2b.getRow(2).z()) * T(buoyancy) * (-pos_buoyancy_x[0]) +
                   T(surge_port_lo) * T(pos_surge_port_lo.z) + T(surge_stbd_lo) * T(pos_surge_stbd_lo.z) +
                   T(heave_port_aft) * T(-pos_heave_port_aft.x) + T(heave_stbd_aft) * T(-pos_heave_stbd_aft.x) +
-                  T(heave_port_fwd) * T(-pos_heave_port_fwd.x) + T(heave_stbd_fwd) * T(-pos_heave_stbd_fwd.x);
+                  T(heave_port_fwd) * T(-pos_heave_port_fwd.x) + T(heave_stbd_fwd) * T(-pos_heave_stbd_fwd.x) -
+                  (T(ang_v.x()) * T(ang_v.z())) * (T(Ixx) - T(Izz));
     return true;
   }
 };
@@ -261,7 +263,8 @@ struct tuneYaw
     residual[0] = T(R_w2b.getRow(0).z()) * T(buoyancy) * (-pos_buoyancy_y[0]) +
                   T(R_w2b.getRow(1).z()) * T(buoyancy) * (pos_buoyancy_x[0]) +
                   T(surge_port_lo) * T(-pos_surge_port_lo.y) + T(surge_stbd_lo) * T(-pos_surge_stbd_lo.y) +
-                  T(sway_fwd) * T(pos_sway_fwd.x) + T(sway_aft) * T(pos_sway_aft.x);
+                  T(sway_fwd) * T(pos_sway_fwd.x) + T(sway_aft) * T(pos_sway_aft.x) -
+                  (T(ang_v.y()) * T(ang_v.x())) * (T(Iyy) - T(Ixx));
     return true;
   }
 };
