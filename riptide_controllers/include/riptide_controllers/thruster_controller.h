@@ -9,6 +9,9 @@
 
 #include "ros/ros.h"
 #include "tf/transform_listener.h"
+#include <dynamic_reconfigure/server.h>
+#include <riptide_controllers/VehicleParamsConfig.h>
+
 #include "geometry_msgs/Vector3.h"
 #include "geometry_msgs/Vector3Stamped.h"
 #include "geometry_msgs/Accel.h"
@@ -22,7 +25,7 @@ class ThrusterController
 {
  private:
   // Comms
-  ros::NodeHandle nh;
+  //ros::NodeHandle nh;
   ros::Subscriber state_sub, cmd_sub, depth_sub, mass_vol_sub, buoyancy_sub;
   ros::Publisher cmd_pub, buoyancy_pub;
   riptide_msgs::ThrustStamped thrust;
@@ -50,6 +53,7 @@ class ThrusterController
 
  public:
   ThrusterController(char **argv, tf::TransformListener *listener_adr);
+  void dynamicReconfigCallback(riptide_controllers::VehicleParamsConfig &config, uint32_t levels);
   void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
   void DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg);
   void AccelCB(const geometry_msgs::Accel::ConstPtr &a);

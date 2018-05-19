@@ -3,6 +3,7 @@ project(riptide_controllers)
 
 find_package(catkin REQUIRED
     COMPONENTS
+    dynamic_reconfigure
     geometry_msgs
     imu_3dm_gx4
     riptide_msgs
@@ -16,15 +17,22 @@ find_package(catkin REQUIRED
 
 find_package(Ceres REQUIRED)
 
+generate_dynamic_reconfigure_options(
+  cfg/VehicleParams.cfg
+)
+
 catkin_package(INCLUDE_DIRS include)
 
 roslint_cpp()
 
-include_directories(include ${catkin_INCLUDE_DIRS} ${CERES_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS}
+  ${CERES_INCLUDE_DIRS}
+  ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake
+)
 
 add_executable(thruster_controller src/thruster_controller.cpp)
 target_link_libraries(thruster_controller ${catkin_LIBRARIES} ${CERES_LIBRARIES})
-add_dependencies(thruster_controller riptide_msgs_gencpp)
+add_dependencies(thruster_controller riptide_controllers_gencfg riptide_msgs_gencpp)
 
 add_executable(depth_controller src/depth_controller.cpp)
 target_link_libraries(depth_controller ${catkin_LIBRARIES})

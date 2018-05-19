@@ -280,6 +280,10 @@ int main(int argc, char **argv)
 
 ThrusterController::ThrusterController(char **argv, tf::TransformListener *listener_adr)
 {
+  ros::NodeHandle nh("thruster_controller");
+
+
+
   R_b2w.setIdentity();
   R_w2b.setIdentity();
   ang_v.setZero();
@@ -300,20 +304,55 @@ ThrusterController::ThrusterController(char **argv, tf::TransformListener *liste
 
   thrust.header.frame_id = "base_link";
 
-  nh.param<bool>("thruster_controller/debug", debug_controller, false);
+  nh.getParam("debug", debug_controller);
+
+  nh.getParam("HPF/X", pos_heave_port_fwd.x);
+  nh.getParam("HPF/Y", pos_heave_port_fwd.y);
+  nh.getParam("HPF/Z", pos_heave_port_fwd.z);
+
+  nh.getParam("HPA/X", pos_heave_port_aft.x);
+  nh.getParam("HPA/Y", pos_heave_port_aft.y);
+  nh.getParam("HPA/Z", pos_heave_port_aft.z);
+
+  nh.getParam("HSF/X", pos_heave_stbd_fwd.x);
+  nh.getParam("HSF/Y", pos_heave_stbd_fwd.y);
+  nh.getParam("HSF/Z", pos_heave_stbd_fwd.z);
+
+  nh.getParam("HSA/X", pos_heave_stbd_aft.x);
+  nh.getParam("HSA/Y", pos_heave_stbd_aft.y);
+  nh.getParam("HSA/Z", pos_heave_stbd_aft.z);
+
+  nh.getParam("SWF/X", pos_sway_fwd.x);
+  nh.getParam("SWF/Y", pos_sway_fwd.y);
+  nh.getParam("SWF/Z", pos_sway_fwd.z);
+
+  nh.getParam("SWA/X", pos_sway_aft.x);
+  nh.getParam("SWA/Y", pos_sway_aft.y);
+  nh.getParam("SWA/Z", pos_sway_aft.z);
+
+  nh.getParam("SPL/X", pos_surge_port_lo.x);
+  nh.getParam("SPL/Y", pos_surge_port_lo.y);
+  nh.getParam("SPL/Z", pos_surge_port_lo.z);
+
+  nh.getParam("SSL/X", pos_surge_stbd_lo.x);
+  nh.getParam("SSL/Y", pos_surge_stbd_lo.y);
+  nh.getParam("SSL/Z", pos_surge_stbd_lo.z);
 
   state_sub = nh.subscribe<riptide_msgs::Imu>("state/imu", 1, &ThrusterController::ImuCB, this);
   depth_sub = nh.subscribe<riptide_msgs::Depth>("state/depth", 1, &ThrusterController::DepthCB, this);
   cmd_sub = nh.subscribe<geometry_msgs::Accel>("command/accel", 1, &ThrusterController::AccelCB, this);
   cmd_pub = nh.advertise<riptide_msgs::ThrustStamped>("command/thrust", 1);
 
-
-
   // Debug variables
   if(debug_controller) {
-    mass_vol_sub = nh.subscribe<riptide_msgs::MassVol>("input/mass_vol", 1, &ThrusterController::MassVolCB, this);
+    dynamic_reconfigure::Server<riptide_controllers::VehicleParamsConfig> server;
+    dynamic_reconfigure::Server<riptide_controllers::VehicleParamsConfig>::CallbackType f;
+    f = boost::bind(&ThrusterController::dynamicReconfigCallback, this, _1, _2);
+    server.setCallback(f);
+
+    /*mass_vol_sub = nh.subscribe<riptide_msgs::MassVol>("input/mass_vol", 1, &ThrusterController::MassVolCB, this);
     buoyancy_sub = nh.subscribe<geometry_msgs::Vector3>("input/pos_buoyancy", 1, &ThrusterController::BuoyancyCB, this);
-    buoyancy_pub = nh.advertise<geometry_msgs::Vector3Stamped>("output/pos_buoyancy", 1);
+    buoyancy_pub = nh.advertise<geometry_msgs::Vector3Stamped>("output/pos_buoyancy", 1);*/
 
     // Published in a message
     buoyancy_pos.vector.x = 0;
@@ -321,7 +360,7 @@ ThrusterController::ThrusterController(char **argv, tf::TransformListener *liste
     buoyancy_pos.vector.z = 0;
   }
 
-  listener->waitForTransform("/base_link", "/surge_port_lo_link", ros::Time(0), ros::Duration(10.0));
+  /*listener->waitForTransform("/base_link", "/surge_port_lo_link", ros::Time(0), ros::Duration(10.0));
   listener->lookupTransform("/base_link", "/surge_port_lo_link", ros::Time(0), tf_surge[0]);
   listener->waitForTransform("/base_link", "/surge_stbd_lo_link", ros::Time(0), ros::Duration(10.0));
   listener->lookupTransform("/base_link", "/surge_stbd_lo_link", ros::Time(0), tf_surge[1]);
@@ -345,7 +384,7 @@ ThrusterController::ThrusterController(char **argv, tf::TransformListener *liste
   GetTransform(&pos_heave_port_fwd, &tf_heave[0]);
   GetTransform(&pos_heave_stbd_fwd, &tf_heave[1]);
   GetTransform(&pos_heave_port_aft, &tf_heave[2]);
-  GetTransform(&pos_heave_stbd_aft, &tf_heave[3]);
+  GetTransform(&pos_heave_stbd_aft, &tf_heave[3]);*/
 
   google::InitGoogleLogging(argv[0]);
 
@@ -392,6 +431,12 @@ ThrusterController::ThrusterController(char **argv, tf::TransformListener *liste
 #ifdef progress
   options.minimizer_progress_to_stdout = true;
 #endif
+}
+
+// Callback for dynamic reconfigure
+void ThrusterController::dynamicReconfigCallback(riptide_controllers::VehicleParamsConfig &config, uint32_t levels) {
+  ROS_INFO("Reconfigure request : \n\t%f\n\t%f\n\t%f\n\t%f\n\t%f ",
+           config.Mass, config.Volume, config.Buoyancy_X, config.Buoyancy_Y, config.Buoyancy_Y);
 }
 
 void ThrusterController::BuoyancyCB(const geometry_msgs::Vector3::ConstPtr &b_msg) {
