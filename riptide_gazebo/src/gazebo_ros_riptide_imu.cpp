@@ -81,6 +81,8 @@ void IMU::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     this->IMU_.linear_accel.y = linearAccel.y;
     this->IMU_.linear_accel.z = linearAccel.z;
 
+    this->IMU_.header.stamp = ros::Time::now();
+
     this->IMU_pub_.publish(this->IMU_);
 
   }

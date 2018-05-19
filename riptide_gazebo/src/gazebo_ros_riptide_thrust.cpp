@@ -88,6 +88,7 @@ void RiptideThrust::UpdateChild()
   math::Vector3 hsf(0, 0, this->thrust_.force.heave_stbd_fwd);
   math::Vector3 hpa(0, 0, this->thrust_.force.heave_port_aft);
   math::Vector3 hsa(0, 0, this->thrust_.force.heave_stbd_aft);
+
   this->surge_port_lo_->SetForce(zero);
   this->surge_stbd_lo_->SetForce(zero);
   this->sway_fwd_->SetForce(zero);
@@ -96,7 +97,7 @@ void RiptideThrust::UpdateChild()
   this->heave_stbd_fwd_->SetForce(zero);
   this->heave_port_aft_->SetForce(zero);
   this->heave_stbd_aft_->SetForce(zero);
-  // TODO(Conor): Simplify this giant block
+
   this->surge_port_lo_->AddLinkForce(spl);
   this->surge_stbd_lo_->AddLinkForce(ssl);
   this->sway_fwd_->AddLinkForce(sf);

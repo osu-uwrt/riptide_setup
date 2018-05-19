@@ -35,8 +35,6 @@
     </gazebo>
   </xacro:macro>
 
-  <xacro:thruster_link_gazebo name="surge_port_hi" />
-  <xacro:thruster_link_gazebo name="surge_stbd_hi" />
   <xacro:thruster_link_gazebo name="surge_port_lo" />
   <xacro:thruster_link_gazebo name="surge_stbd_lo" />
   <xacro:thruster_link_gazebo name="sway_fwd" />
@@ -80,8 +78,6 @@
     </gazebo>
   </xacro:macro>
 
-  <xacro:thruster_joint_gazebo name="surge_port_hi" />
-  <xacro:thruster_joint_gazebo name="surge_stbd_hi" />
   <xacro:thruster_joint_gazebo name="surge_port_lo" />
   <xacro:thruster_joint_gazebo name="surge_stbd_lo" />
   <xacro:thruster_joint_gazebo name="sway_fwd" />
@@ -168,9 +164,9 @@
   <!-- Stereo Camera -->
 
   <gazebo reference="camera_fwd_port_link">
-    <sensor type="multicamera" name="stereo_camera">
+    <sensor type="camera" name="forward">
       <update_rate>30.0</update_rate>
-      <camera name="left">
+      <camera name="forward">
         <horizontal_fov>1.3962634</horizontal_fov>
         <image>
           <width>800</width>
@@ -187,28 +183,10 @@
           <stddev>0.007</stddev>
         </noise>
       </camera>
-      <camera name="right">
-        <pose>0 -0.07 0 0 0 0</pose>
-        <horizontal_fov>1.3962634</horizontal_fov>
-        <image>
-          <width>800</width>
-          <height>800</height>
-          <format>R8G8B8</format>
-        </image>
-        <clip>
-          <near>0.02</near>
-          <far>300</far>
-        </clip>
-        <noise>
-          <type>gaussian</type>
-          <mean>0.0</mean>
-          <stddev>0.007</stddev>
-        </noise>
-      </camera>
-      <plugin name="stereo_camera_controller" filename="libgazebo_ros_multicamera.so">
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
         <alwaysOn>true</alwaysOn>
-        <updateRate>0.0</updateRate>
-        <cameraName>riptide/stereo_fwd</cameraName>
+        <updateRate>30.0</updateRate>
+        <cameraName>forward</cameraName>
         <imageTopicName>image_raw</imageTopicName>
         <cameraInfoTopicName>camera_info</cameraInfoTopicName>
         <frameName>camera_fwd_port_link</frameName>
