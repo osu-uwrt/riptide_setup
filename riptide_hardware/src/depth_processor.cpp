@@ -10,7 +10,7 @@ int main(int argc, char** argv)
 //Constructor
 DepthProcessor::DepthProcessor() : nh()
 {
- depth_sub = nh.subscribe<riptide_msgs::Depth>("state/depth/raw", 1, &DepthProcessor::DepthCB, this);
+ depth_sub = nh.subscribe<riptide_msgs::Depth>("state/depth_raw", 1, &DepthProcessor::DepthCB, this);
  state_depth_pub = nh.advertise<riptide_msgs::Depth>("state/depth", 1);
  c = 2; //center of smoothed data
  cycles = 1;

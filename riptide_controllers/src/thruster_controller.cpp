@@ -277,10 +277,10 @@ int main(int argc, char **argv)
   ThrusterController.Loop();
 }
 
-ThrusterController::ThrusterController(char **argv) : nh("thruster_controller")
+ThrusterController::ThrusterController(char **argv)
 {
   // Load parameters from .yaml files or launch files
-  nh.param("debug", debug_controller, false);
+  nh.param("/thruster_controller/debug", debug_controller, false);
 
   ThrusterController::LoadProperty("HPF/X", pos_heave_port_fwd.x);
   ThrusterController::LoadProperty("HPF/Y", pos_heave_port_fwd.y);
@@ -342,8 +342,8 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller")
     server.setCallback(cb);
 
     /*mass_vol_sub = nh.subscribe<riptide_msgs::MassVol>("input/mass_vol", 1, &ThrusterController::MassVolCB, this);
-    buoyancy_sub = nh.subscribe<geometry_msgs::Vector3>("input/pos_buoyancy", 1, &ThrusterController::BuoyancyCB, this);
-    buoyancy_pub = nh.advertise<geometry_msgs::Vector3Stamped>("output/pos_buoyancy", 1);*/
+    buoyancy_sub = nh.subscribe<geometry_msgs::Vector3>("input/pos_buoyancy", 1, &ThrusterController::BuoyancyCB, this);*/
+    buoyancy_pub = nh.advertise<geometry_msgs::Vector3Stamped>("output/pos_buoyancy", 1);
 
     // Published in a message
     buoyancy_pos.vector.x = 0;
@@ -428,7 +428,7 @@ void ThrusterController::LoadProperty(std::string name, double &param)
 {
   try
   {
-    if (!nh.getParam(name, param))
+    if (!nh.getParam("/thruster_controller/" + name, param))
     {
       throw 0;
     }

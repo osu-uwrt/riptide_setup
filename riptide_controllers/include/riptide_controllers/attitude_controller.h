@@ -5,6 +5,7 @@
 #include "control_toolbox/pid.h"
 #include "geometry_msgs/Accel.h"
 #include "geometry_msgs/Vector3.h"
+#include "tf/transform_listener.h"
 #include "riptide_msgs/Imu.h"
 #include "riptide_msgs/ResetControls.h"
 #include "riptide_msgs/ControlStatus.h"
@@ -23,12 +24,16 @@ class AttitudeController
     control_toolbox::Pid yaw_controller_pid;
 
     geometry_msgs::Vector3 ang_accel_cmd;
+    //float output_z;
     riptide_msgs::ControlStatusAngular status_msg;
+
+    tf::Matrix3x3 R_b2w, R_w2b;
+    tf::Vector3 tf;
 
     //PID
     double roll_error, pitch_error, yaw_error;
     double roll_error_dot, pitch_error_dot, yaw_error_dot;
-    double roll_cmd, pitch_cmd, yaw_cmd;
+    double roll_cmd, pitch_cmd, yaw_cmd, prev_roll_cmd, prev_pitch_cmd, prev_yaw_cmd;
 
     geometry_msgs::Vector3 current_attitude, last_error;
 

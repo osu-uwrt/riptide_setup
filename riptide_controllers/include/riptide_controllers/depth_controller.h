@@ -30,7 +30,7 @@ class DepthController
     //PID
     double depth_error;
     double current_depth;
-    double depth_cmd;
+    double depth_cmd, prev_depth_cmd;
     double depth_error_dot;
     double last_error;
     double dt;

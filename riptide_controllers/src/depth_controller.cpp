@@ -39,6 +39,7 @@ DepthController::DepthController() {
     accel.x = 0;
     accel.y = 0;
     accel.z = 0;
+    DepthController::ResetDepth();
 }
 
 void DepthController::UpdateError() {
@@ -89,8 +90,14 @@ void DepthController::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg) {
 
 // Subscribe to state/depth
 void DepthController::CommandCB(const riptide_msgs::Depth::ConstPtr &cmd) {
+  // If a new AND different command arrives, reset the controllers
+  if(cmd->depth != prev_depth_cmd) {
+    DepthController::ResetDepth();
+  }
+
   depth_cmd = cmd->depth;
   status_msg.reference = depth_cmd;
+  prev_depth_cmd = depth_cmd;
 }
 
 // Create rotation matrix from IMU orientation
@@ -109,6 +116,7 @@ void DepthController::ResetController(const riptide_msgs::ResetControls::ConstPt
 }
 
 void DepthController::ResetDepth() {
+  prev_depth_cmd = 0;
   depth_cmd = 0;
   depth_error = 0;
   depth_error_dot = 0;

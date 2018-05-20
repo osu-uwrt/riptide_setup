@@ -4,9 +4,11 @@
 #undef report
 #undef progress
 
+#define PI 3.141592653
+
 #define MAX_ROLL_ERROR 10
 #define MAX_PITCH_ERROR 10
-#define MAX_YAW_ERROR 45
+#define MAX_YAW_ERROR 30
 
 float round(float d) {
   return floor(d + 0.5);
@@ -43,6 +45,9 @@ AttitudeController::AttitudeController() {
     sample_start_yaw = sample_start_roll;
 
     AttitudeController::InitPubMsg();
+    AttitudeController::ResetRoll();
+    AttitudeController::ResetPitch();
+    AttitudeController::ResetYaw();
 }
 
 void AttitudeController::InitPubMsg() {
@@ -134,8 +139,8 @@ double AttitudeController::Constrain(double current, double max) {
 }
 
 // Subscribe to state/imu
-void AttitudeController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu) {
-  current_attitude = imu->euler_rpy;
+void AttitudeController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg) {
+  current_attitude = imu_msg->euler_rpy;
   status_msg.roll.current = current_attitude.x;
   status_msg.pitch.current = current_attitude.y;
   status_msg.yaw.current = current_attitude.z;
@@ -144,12 +149,34 @@ void AttitudeController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu) {
 // Subscribe to command/orientation
 // set the MAX_ROLL and MAX_PITCH value in the header
 void AttitudeController::CommandCB(const geometry_msgs::Vector3::ConstPtr &cmd) {
+  // If a new AND different command arrives, reset the controllers
+  if(round(cmd->x) != prev_roll_cmd){
+    AttitudeController::ResetRoll();
+    ROS_INFO("resetting roll");
+  }
+  if(round(cmd->y) != prev_pitch_cmd) {
+    AttitudeController::ResetPitch();
+    ROS_INFO("resetting pitch");
+  }
+  if(round(cmd->z) != prev_yaw_cmd) {
+    AttitudeController::ResetYaw();
+    ROS_INFO("resetting yaw");
+  }
+
   roll_cmd = round(cmd->x);
   pitch_cmd = round(cmd->y);
   yaw_cmd = round(cmd->z);
+
   status_msg.roll.reference = roll_cmd;
   status_msg.pitch.reference = pitch_cmd;
   status_msg.yaw.reference = yaw_cmd;
+
+  prev_roll_cmd = roll_cmd;
+  prev_pitch_cmd = pitch_cmd;
+  prev_yaw_cmd = yaw_cmd;
+
+  //ROS_INFO("END: new cmd = %f", yaw_cmd);
+  //ROS_INFO("END: prev cmd = %f", prev_yaw_cmd);
 }
 
 void AttitudeController::ResetController(const riptide_msgs::ResetControls::ConstPtr& reset_msg) {
@@ -168,6 +195,7 @@ void AttitudeController::ResetController(const riptide_msgs::ResetControls::Cons
 }
 
 void AttitudeController::ResetRoll() {
+  prev_roll_cmd = 0;
   roll_cmd = 0;
   roll_error = 0;
   roll_error_dot = 0;
@@ -187,6 +215,7 @@ void AttitudeController::ResetRoll() {
 }
 
 void AttitudeController::ResetPitch() {
+  prev_pitch_cmd = 0;
   pitch_cmd = 0;
   pitch_error = 0;
   pitch_error_dot = 0;
@@ -206,6 +235,7 @@ void AttitudeController::ResetPitch() {
 }
 
 void AttitudeController::ResetYaw() {
+  prev_yaw_cmd = 0;
   yaw_cmd = 0;
   yaw_error = 0;
   yaw_error_dot = 0;
@@ -221,6 +251,7 @@ void AttitudeController::ResetYaw() {
   status_msg.yaw.error = 0;
 
   pid_yaw_init = false;
+  //output_z = 0;
   ang_accel_cmd.z = 0;
 }
 
