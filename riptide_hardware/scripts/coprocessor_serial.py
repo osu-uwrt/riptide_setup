@@ -35,7 +35,7 @@ def main():
     dataRead = True
 
     # Add publishers
-    depthPub = rospy.Publisher('/state/depth', Depth, queue_size=1)
+    depthPub = rospy.Publisher('/state/depth/raw', Depth, queue_size=1) #publish raw for the depth processor 
     swPub = rospy.Publisher('/state/switches', SwitchState, queue_size=1)
 
     #Subscribe to Thruster PWMs
