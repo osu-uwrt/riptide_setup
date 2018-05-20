@@ -30,14 +30,14 @@ double MAX_THRUST = 200.0;
 
 // Vehicle mass (kg):
 // Updated 5-15-18
-double MASS = 35.70;
-double WEIGHT = MASS*GRAVITY;
+double mass;
+double weight = mass*GRAVITY;
 
 // Vehcile volume (m^3)
 // TODO: Get this value from model
 // Updated on 5/11/18
-double VOLUME = 0.03575; // Start with guess, then tune in software
-double BUOYANCY = VOLUME * WATER_DENSITY * GRAVITY;
+double volume;
+double buoyancy = volume * WATER_DENSITY * GRAVITY;
 
 /*// Moments of inertia (kg*m^2)
 double Ixx = 0.52607145;
@@ -67,7 +67,6 @@ tf::Matrix3x3 R_w2b, R_b2w;
 tf::Vector3 ang_v;
 
 // Debug variables
-double mass, weight, volume, buoyancy;
 geometry_msgs::Vector3Stamped buoyancy_pos;
 
 void GetTransform(vector *v, tf::StampedTransform *tform)
@@ -273,70 +272,64 @@ struct tuneYaw
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "thruster_controller");
-  tf::TransformListener tf_listener;
-  ThrusterController ThrusterController(argv, &tf_listener);
+  //tf::TransformListener tf_listener;
+  ThrusterController ThrusterController(argv);
   ThrusterController.Loop();
 }
 
-ThrusterController::ThrusterController(char **argv, tf::TransformListener *listener_adr)
+ThrusterController::ThrusterController(char **argv) : nh("thruster_controller")
 {
-  ros::NodeHandle nh("thruster_controller");
+  // Load parameters from .yaml files or launch files
+  nh.param("debug", debug_controller, false);
 
+  ThrusterController::LoadProperty("HPF/X", pos_heave_port_fwd.x);
+  ThrusterController::LoadProperty("HPF/Y", pos_heave_port_fwd.y);
+  ThrusterController::LoadProperty("HPF/Z", pos_heave_port_fwd.z);
 
+  ThrusterController::LoadProperty("HPA/X", pos_heave_port_aft.x);
+  ThrusterController::LoadProperty("HPA/Y", pos_heave_port_aft.y);
+  ThrusterController::LoadProperty("HPA/Z", pos_heave_port_aft.z);
+
+  ThrusterController::LoadProperty("HSF/X", pos_heave_stbd_fwd.x);
+  ThrusterController::LoadProperty("HSF/Y", pos_heave_stbd_fwd.y);
+  ThrusterController::LoadProperty("HSF/Z", pos_heave_stbd_fwd.z);
+
+  ThrusterController::LoadProperty("HSA/X", pos_heave_stbd_aft.x);
+  ThrusterController::LoadProperty("HSA/Y", pos_heave_stbd_aft.y);
+  ThrusterController::LoadProperty("HSA/Z", pos_heave_stbd_aft.z);
+
+  ThrusterController::LoadProperty("SWF/X", pos_sway_fwd.x);
+  ThrusterController::LoadProperty("SWF/Y", pos_sway_fwd.y);
+  ThrusterController::LoadProperty("SWF/Z", pos_sway_fwd.z);
+
+  ThrusterController::LoadProperty("SWA/X", pos_sway_aft.x);
+  ThrusterController::LoadProperty("SWA/Y", pos_sway_aft.y);
+  ThrusterController::LoadProperty("SWA/Z", pos_sway_aft.z);
+
+  ThrusterController::LoadProperty("SPL/X", pos_surge_port_lo.x);
+  ThrusterController::LoadProperty("SPL/Y", pos_surge_port_lo.y);
+  ThrusterController::LoadProperty("SPL/Z", pos_surge_port_lo.z);
+
+  ThrusterController::LoadProperty("SSL/X", pos_surge_stbd_lo.x);
+  ThrusterController::LoadProperty("SSL/Y", pos_surge_stbd_lo.y);
+  ThrusterController::LoadProperty("SSL/Z", pos_surge_stbd_lo.z);
+
+  ThrusterController::LoadProperty("Mass", mass);
+  ThrusterController::LoadProperty("Volume", volume);
+  ThrusterController::LoadProperty("Buoyancy_X_POS", pos_buoyancy.x);
+  ThrusterController::LoadProperty("Buoyancy_Y_POS", pos_buoyancy.y);
+  ThrusterController::LoadProperty("Buoyancy_Z_POS", pos_buoyancy.z);
 
   R_b2w.setIdentity();
   R_w2b.setIdentity();
   ang_v.setZero();
 
   isBuoyant = false;
-  debug_controller = false;
-  mass = MASS;
-  weight = WEIGHT;
-  volume = VOLUME;
-  buoyancy = BUOYANCY;
+  weight = mass*GRAVITY;
+  buoyancy = volume*WATER_DENSITY*GRAVITY;
 
-  // Used in EOMs
-  pos_buoyancy.x = 0;
-  pos_buoyancy.y = 0;
-  pos_buoyancy.z = 0;
-
-  listener = listener_adr;
-
-  thrust.header.frame_id = "base_link";
-
-  nh.getParam("debug", debug_controller);
-
-  nh.getParam("HPF/X", pos_heave_port_fwd.x);
-  nh.getParam("HPF/Y", pos_heave_port_fwd.y);
-  nh.getParam("HPF/Z", pos_heave_port_fwd.z);
-
-  nh.getParam("HPA/X", pos_heave_port_aft.x);
-  nh.getParam("HPA/Y", pos_heave_port_aft.y);
-  nh.getParam("HPA/Z", pos_heave_port_aft.z);
-
-  nh.getParam("HSF/X", pos_heave_stbd_fwd.x);
-  nh.getParam("HSF/Y", pos_heave_stbd_fwd.y);
-  nh.getParam("HSF/Z", pos_heave_stbd_fwd.z);
-
-  nh.getParam("HSA/X", pos_heave_stbd_aft.x);
-  nh.getParam("HSA/Y", pos_heave_stbd_aft.y);
-  nh.getParam("HSA/Z", pos_heave_stbd_aft.z);
-
-  nh.getParam("SWF/X", pos_sway_fwd.x);
-  nh.getParam("SWF/Y", pos_sway_fwd.y);
-  nh.getParam("SWF/Z", pos_sway_fwd.z);
-
-  nh.getParam("SWA/X", pos_sway_aft.x);
-  nh.getParam("SWA/Y", pos_sway_aft.y);
-  nh.getParam("SWA/Z", pos_sway_aft.z);
-
-  nh.getParam("SPL/X", pos_surge_port_lo.x);
-  nh.getParam("SPL/Y", pos_surge_port_lo.y);
-  nh.getParam("SPL/Z", pos_surge_port_lo.z);
-
-  nh.getParam("SSL/X", pos_surge_stbd_lo.x);
-  nh.getParam("SSL/Y", pos_surge_stbd_lo.y);
-  nh.getParam("SSL/Z", pos_surge_stbd_lo.z);
+  //listener = listener_adr;
+  //thrust.header.frame_id = "base_link";
 
   state_sub = nh.subscribe<riptide_msgs::Imu>("state/imu", 1, &ThrusterController::ImuCB, this);
   depth_sub = nh.subscribe<riptide_msgs::Depth>("state/depth", 1, &ThrusterController::DepthCB, this);
@@ -345,10 +338,8 @@ ThrusterController::ThrusterController(char **argv, tf::TransformListener *liste
 
   // Debug variables
   if(debug_controller) {
-    dynamic_reconfigure::Server<riptide_controllers::VehicleParamsConfig> server;
-    dynamic_reconfigure::Server<riptide_controllers::VehicleParamsConfig>::CallbackType f;
-    f = boost::bind(&ThrusterController::dynamicReconfigCallback, this, _1, _2);
-    server.setCallback(f);
+    cb = boost::bind(&ThrusterController::DynamicReconfigCallback, this, _1, _2);
+    server.setCallback(cb);
 
     /*mass_vol_sub = nh.subscribe<riptide_msgs::MassVol>("input/mass_vol", 1, &ThrusterController::MassVolCB, this);
     buoyancy_sub = nh.subscribe<geometry_msgs::Vector3>("input/pos_buoyancy", 1, &ThrusterController::BuoyancyCB, this);
@@ -397,7 +388,7 @@ ThrusterController::ThrusterController(char **argv, tf::TransformListener *liste
   problem.AddResidualBlock(new ceres::AutoDiffCostFunction<sway, 1, 1, 1>(new sway), NULL,
                            &sway_fwd, &sway_aft);
   problem.AddResidualBlock(new ceres::AutoDiffCostFunction<heave, 1, 1, 1, 1, 1>(new heave), NULL,
-                           &heave_port_fwd, &heave_stbd_fwd, &heave_stbd_aft, &heave_port_aft);
+                           &heave_port_fwd, &heave_stbd_fwd, &heave_port_aft, &heave_stbd_aft);
 
   // Angular
   problem.AddResidualBlock(new ceres::AutoDiffCostFunction<roll, 1, 1, 1, 1, 1, 1, 1>(new roll), NULL,
@@ -433,10 +424,32 @@ ThrusterController::ThrusterController(char **argv, tf::TransformListener *liste
 #endif
 }
 
+void ThrusterController::LoadProperty(std::string name, double &param)
+{
+  try
+  {
+    if (!nh.getParam(name, param))
+    {
+      throw 0;
+    }
+  }
+  catch(int e)
+  {
+    ROS_ERROR("Critical! No property set for %s. Shutting down...", name.c_str());
+    ros::shutdown();
+  }
+}
+
 // Callback for dynamic reconfigure
-void ThrusterController::dynamicReconfigCallback(riptide_controllers::VehicleParamsConfig &config, uint32_t levels) {
-  ROS_INFO("Reconfigure request : \n\t%f\n\t%f\n\t%f\n\t%f\n\t%f ",
-           config.Mass, config.Volume, config.Buoyancy_X, config.Buoyancy_Y, config.Buoyancy_Y);
+void ThrusterController::DynamicReconfigCallback(riptide_controllers::VehiclePropertiesConfig &config, uint32_t levels) {
+  mass = config.Mass;
+  volume = config.Volume;
+  pos_buoyancy.x = config.Buoyancy_X_POS;
+  pos_buoyancy.y = config.Buoyancy_Y_POS;
+  pos_buoyancy.z = config.Buoyancy_Y_POS;
+
+  weight = mass*GRAVITY;
+  buoyancy = volume*WATER_DENSITY*GRAVITY;
 }
 
 void ThrusterController::BuoyancyCB(const geometry_msgs::Vector3::ConstPtr &b_msg) {

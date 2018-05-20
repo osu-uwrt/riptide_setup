@@ -18,10 +18,15 @@ find_package(catkin REQUIRED
 find_package(Ceres REQUIRED)
 
 generate_dynamic_reconfigure_options(
-  cfg/VehicleParams.cfg
+  cfg/VehicleProperties.cfg
 )
 
-catkin_package(INCLUDE_DIRS include)
+catkin_package(
+  INCLUDE_DIRS
+    include
+  CATKIN_DEPENDS
+    dynamic_reconfigure
+)
 
 roslint_cpp()
 
