@@ -150,18 +150,12 @@ void AttitudeController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg) {
 // set the MAX_ROLL and MAX_PITCH value in the header
 void AttitudeController::CommandCB(const geometry_msgs::Vector3::ConstPtr &cmd) {
   // If a new AND different command arrives, reset the controllers
-  if(round(cmd->x) != prev_roll_cmd){
+  if(round(cmd->x) != prev_roll_cmd)
     AttitudeController::ResetRoll();
-    ROS_INFO("resetting roll");
-  }
-  if(round(cmd->y) != prev_pitch_cmd) {
+  if(round(cmd->y) != prev_pitch_cmd)
     AttitudeController::ResetPitch();
-    ROS_INFO("resetting pitch");
-  }
-  if(round(cmd->z) != prev_yaw_cmd) {
+  if(round(cmd->z) != prev_yaw_cmd)
     AttitudeController::ResetYaw();
-    ROS_INFO("resetting yaw");
-  }
 
   roll_cmd = round(cmd->x);
   pitch_cmd = round(cmd->y);
@@ -174,9 +168,6 @@ void AttitudeController::CommandCB(const geometry_msgs::Vector3::ConstPtr &cmd) 
   prev_roll_cmd = roll_cmd;
   prev_pitch_cmd = pitch_cmd;
   prev_yaw_cmd = yaw_cmd;
-
-  //ROS_INFO("END: new cmd = %f", yaw_cmd);
-  //ROS_INFO("END: prev cmd = %f", prev_yaw_cmd);
 }
 
 void AttitudeController::ResetController(const riptide_msgs::ResetControls::ConstPtr& reset_msg) {

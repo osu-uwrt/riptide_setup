@@ -91,9 +91,8 @@ void DepthController::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg) {
 // Subscribe to state/depth
 void DepthController::CommandCB(const riptide_msgs::Depth::ConstPtr &cmd) {
   // If a new AND different command arrives, reset the controllers
-  if(cmd->depth != prev_depth_cmd) {
+  if(cmd->depth != prev_depth_cmd)
     DepthController::ResetDepth();
-  }
 
   depth_cmd = cmd->depth;
   status_msg.reference = depth_cmd;

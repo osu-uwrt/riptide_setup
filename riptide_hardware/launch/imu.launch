@@ -7,9 +7,13 @@
     <arg name="accel_LPF_bandwidth" default="25" />
     <arg name="gyro_LPF_bandwidth" default="25" />
     <arg name="enable_iron_offset" default="false" />
+    <arg name="post_IIR_LPF_bandwidth" default="10" />
+    <arg name="filter_rate" default="100"/>
 
     <node pkg="riptide_hardware" name="imu_processor" type="imu_processor" output="screen" >
       <rosparam file="$(find riptide_hardware)/cfg/$(arg city).yaml" command="load"/>
+      <param name="post_IIR_LPF_bandwidth" type="int" value="$(arg post_IIR_LPF_bandwidth)" />
+      <param name="filter_rate" type="int" value="$(arg filter_rate)" />
     </node>
 
     <include file="$(find imu_3dm_gx4)/launch/imu.launch" >
