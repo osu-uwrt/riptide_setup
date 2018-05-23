@@ -9,7 +9,6 @@ int main(int argc, char** argv)
  imu.Loop();
 }
 
-// Constructor
 IMUProcessor::IMUProcessor(char **argv)
 {
  imu_filter_sub = nh.subscribe<imu_3dm_gx4::FilterOutput>("imu/filter", 1, &IMUProcessor::FilterCallback, this);
@@ -17,23 +16,24 @@ IMUProcessor::IMUProcessor(char **argv)
  imu_verbose_state_pub = nh.advertise<riptide_msgs::ImuVerbose>("state/imu_verbose", 1);
  imu_state_pub = nh.advertise<riptide_msgs::Imu>("state/imu", 1);
 
- IMUProcessor::LoadProperty("latitude", latitude); // Default is Columbus latitude
- IMUProcessor::LoadProperty("longitude", longitude);
- IMUProcessor::LoadProperty("altitude", altitude);
  IMUProcessor::LoadProperty("declination", declination);
- IMUProcessor::LoadProperty("post_IIR_LPF_Bandwidth", post_IIR_LPF_Bandwidth, 50);
- IMUProcessor::LoadProperty("filter_rate", filter_rate, 100);
+ IMUProcessor::LoadProperty("post_IIR_LPF_bandwidth", post_IIR_LPF_bandwidth);
+ IMUProcessor::LoadProperty("filter_rate", filter_rate); // Filter rate MUST be an integer, decided by manufacturer
 
- zero_ang_vel_thresh = 1;
- cycles = 1;
- c = 3; // Index of center element in state array
- size = 7; // Size of state array
-
- float fc = post_IIR_LPF_Bandwidth;
+ // IIR LPF Variables
+ double fc = post_IIR_LPF_bandwidth; // Shorthand variable for IIR bandwidth
  dt = 1.0/filter_rate;
- alpha = 2*PI*dt*fc / (2*PI*dt*fc + 1);
+ alpha = 2*PI*dt*fc / (2*PI*dt*fc + 1); // Multiplier
+
+ prev_ang_vel.x = 0;
+ prev_ang_vel.y = 0;
+ prev_ang_vel.z = 0;
+ prev_linear_accel.x = 0;
+ prev_linear_accel.y = 0;
+ prev_linear_accel.z = 0;
 }
 
+// Load property from namespace
 void IMUProcessor::LoadProperty(std::string name, double &param)
 {
   try
@@ -45,7 +45,24 @@ void IMUProcessor::LoadProperty(std::string name, double &param)
   }
   catch(int e)
   {
-    ROS_ERROR("Critical! No property set for %s. Shutting down...", name.c_str());
+    ROS_ERROR("Critical! IMU Processor has no property set for %s. Shutting down...", name.c_str());
+    ros::shutdown();
+  }
+}
+
+// Load property from namespace
+void IMUProcessor::LoadProperty(std::string name, int &param)
+{
+  try
+  {
+    if (!nh.getParam("/imu_processor/" + name, param))
+    {
+      throw 0;
+    }
+  }
+  catch(int e)
+  {
+    ROS_ERROR("Critical! IMU Processor has no property set for %s. Shutting down...", name.c_str());
     ros::shutdown();
   }
 }
@@ -75,11 +92,10 @@ void IMUProcessor::MagCallback(const imu_3dm_gx4::MagFieldCF::ConstPtr& mag_msg)
   else if(heading < -180.0) {
     heading += 360; //Add 360 deg.
   }
-  state[0].heading = heading;
+  verbose_state.heading = heading;
 
-  //Set YAW equal to calculated heading
-  //Multiply by -1 (positive z-axis points up)
-  state[0].euler_rpy.z = -state[0].heading;
+  //Flip the sign since positive z-axis points up
+  verbose_state.euler_rpy.z = -verbose_state.heading;
 }
 
 // Normalize vector components, and write new values to specified address
@@ -93,31 +109,31 @@ void IMUProcessor::Norm(float v1, float v2, float v3, float *x, float *y, float 
 // Callback
 void IMUProcessor::FilterCallback(const imu_3dm_gx4::FilterOutput::ConstPtr& filter_msg)
 {
-  // Put message data into state[0]
-  state[0].header = filter_msg->header;
-  state[0].header.frame_id = "base_link";
+  // Put message data into verbose_state
+  verbose_state.header = filter_msg->header;
+  verbose_state.header.frame_id = "base_link";
 
-  state[0].raw_euler_rpy = filter_msg->euler_rpy;
-  state[0].euler_rpy.x = filter_msg->euler_rpy.x;
-  state[0].euler_rpy.y = filter_msg->euler_rpy.y;
-  state[0].gyro_bias = filter_msg->gyro_bias;
-  state[0].euler_rpy_status = filter_msg->euler_rpy_status;
+  verbose_state.raw_euler_rpy = filter_msg->euler_rpy;
+  verbose_state.euler_rpy.x = filter_msg->euler_rpy.x;
+  verbose_state.euler_rpy.y = filter_msg->euler_rpy.y;
+  verbose_state.gyro_bias = filter_msg->gyro_bias;
+  verbose_state.euler_rpy_status = filter_msg->euler_rpy_status;
 
   // DO NOT set euler_rpy.z here. This value is calculated by the magnetometer
   // and is thus based on the magnetic field callback,
 
-  state[0].heading_update = filter_msg->heading_update;
-  state[0].heading_update_uncertainty = filter_msg->heading_update_uncertainty;
-  state[0].heading_update_source = filter_msg->heading_update_source;
-  state[0].heading_update_flags = filter_msg->heading_update_flags;
+  verbose_state.heading_update = filter_msg->heading_update;
+  verbose_state.heading_update_uncertainty = filter_msg->heading_update_uncertainty;
+  verbose_state.heading_update_source = filter_msg->heading_update_source;
+  verbose_state.heading_update_flags = filter_msg->heading_update_flags;
 
-  state[0].raw_linear_accel = filter_msg->linear_acceleration;
-  state[0].linear_accel = filter_msg->linear_acceleration;
-  state[0].linear_accel_status = filter_msg->linear_acceleration_status;
+  verbose_state.raw_linear_accel = filter_msg->linear_acceleration;
+  verbose_state.linear_accel = filter_msg->linear_acceleration;
+  verbose_state.linear_accel_status = filter_msg->linear_acceleration_status;
 
-  state[0].raw_ang_v = filter_msg->angular_velocity;
-  state[0].ang_v = filter_msg->angular_velocity;
-  state[0].ang_v_status = filter_msg->angular_velocity_status;
+  verbose_state.raw_ang_vel = filter_msg->angular_velocity;
+  verbose_state.ang_vel = filter_msg->angular_velocity;
+  verbose_state.ang_vel_status = filter_msg->angular_velocity_status;
 
   // Convert angular values from radians to degrees
   IMUProcessor::CvtRad2Deg();
@@ -126,21 +142,10 @@ void IMUProcessor::FilterCallback(const imu_3dm_gx4::FilterOutput::ConstPtr& fil
   IMUProcessor::ProcessEulerAngles();
 
   // Compute rotation matrix (use a yaw of 0 [rad])
-  tf.setValue(state[0].euler_rpy.x*PI/180, state[0].euler_rpy.y*PI/180, 0);
+  tf.setValue(verbose_state.euler_rpy.x*PI/180, verbose_state.euler_rpy.y*PI/180, 0);
   R_b2w.setRPY(tf.x(), tf.y(), tf.z()); //Body to world rotations --> world_vector =  R_b2w * body_vector
 
-  // Populate shorthand matrices for data smoothing
-  av[0][0] = state[0].raw_ang_v.x;
-  av[1][0] = state[0].raw_ang_v.y;
-  av[2][0] = state[0].raw_ang_v.z;
-  la[0][0] = state[0].raw_linear_accel.x;
-  la[1][0] = state[0].raw_linear_accel.y;
-  la[2][0] = state[0].raw_linear_accel.z;
-
-  // Further process data
-  /*if(cycles >= size) {
-    IMUProcessor::SmoothDataGauss();
-  }*/
+  // Smmoth angular velocity and linear accel with IIR LPF
   IMUProcessor::SmoothDataIIR();
 
   // Process linear acceleration (Remove centrifugal and tangential components)
@@ -149,124 +154,77 @@ void IMUProcessor::FilterCallback(const imu_3dm_gx4::FilterOutput::ConstPtr& fil
   // Process angular acceleration (Use 3-pt backwards rule to approximate angular acceleration)
 
 
-  // Must have completed 14 cycles because there need to be 7 smoothed data points
-  // before processing velocities, accelerations, etc.
-  if(cycles < 14) {
-    cycles += 1;
-  }
-
-  prev_ang_vel[0] = state[0].ang_v.x;
-  prev_ang_vel[1] = state[0].ang_v.y;
-  prev_ang_vel[2] = state[0].ang_v.z;
-  prev_linear_accel[0] = state[0].linear_accel.x;
-  prev_linear_accel[1] = state[0].linear_accel.y;
-  prev_linear_accel[2] = state[0].linear_accel.z;
-
   // Publish messages
   IMUProcessor::PopulateIMUState();
-  imu_verbose_state_pub.publish(state[0]);
+  imu_verbose_state_pub.publish(verbose_state);
   imu_state_pub.publish(imu_state);
-
-  // Adjust previous states and shorthand matrices
-  for(int i=6; i>0; i--) {
-    state[i] = state[i-1];
-
-    for(int j=0; j<3; j++) {
-      av[j][i] = av[j][i-1];
-      la[j][i] = la[j][i-1];
-    }
-  }
 }
 
 // Convert all data fields from radians to degrees
 void IMUProcessor::CvtRad2Deg() {
-  state[0].raw_euler_rpy.x *= (180.0/PI);
-  state[0].raw_euler_rpy.y *= (180.0/PI);
-  state[0].raw_euler_rpy.z *= (180.0/PI);
-  state[0].euler_rpy.x *= (180.0/PI);
-  state[0].euler_rpy.y *= (180.0/PI);
+  verbose_state.raw_euler_rpy.x *= (180.0/PI);
+  verbose_state.raw_euler_rpy.y *= (180.0/PI);
+  verbose_state.raw_euler_rpy.z *= (180.0/PI);
+  verbose_state.euler_rpy.x *= (180.0/PI);
+  verbose_state.euler_rpy.y *= (180.0/PI);
 
-  state[0].gyro_bias.x *= (180.0/PI);
-  state[0].gyro_bias.y *= (180.0/PI);
-  state[0].gyro_bias.z *= (180.0/PI);
+  verbose_state.gyro_bias.x *= (180.0/PI);
+  verbose_state.gyro_bias.y *= (180.0/PI);
+  verbose_state.gyro_bias.z *= (180.0/PI);
 
-  state[0].heading_update *= (180/PI);
-  state[0].heading_update_uncertainty *= (180/PI);
+  verbose_state.heading_update *= (180/PI);
+  verbose_state.heading_update_uncertainty *= (180/PI);
 
-  state[0].raw_ang_v.x *= (180.0/PI);
-  state[0].raw_ang_v.y *= (180.0/PI);
-  state[0].raw_ang_v.z *= (180.0/PI);
+  verbose_state.raw_ang_vel.x *= (180.0/PI);
+  verbose_state.raw_ang_vel.y *= (180.0/PI);
+  verbose_state.raw_ang_vel.z *= (180.0/PI);
 }
 
 // Adjust Euler angles to be consistent with the AUV's axes
 void IMUProcessor::ProcessEulerAngles() {
   // Adjust ROLL
-  if(state[0].euler_rpy.x > -180 && state[0].euler_rpy.x < 0) {
-    state[0].euler_rpy.x += 180;
+  if(verbose_state.euler_rpy.x > -180 && verbose_state.euler_rpy.x < 0) {
+    verbose_state.euler_rpy.x += 180;
   }
-  else if(state[0].euler_rpy.x > 0 && state[0].euler_rpy.x < 180) {
-    state[0].euler_rpy.x -= 180;
+  else if(verbose_state.euler_rpy.x > 0 && verbose_state.euler_rpy.x < 180) {
+    verbose_state.euler_rpy.x -= 180;
   }
-  else if(state[0].euler_rpy.x == 0) {
-    state[0].euler_rpy.x = 180;
+  else if(verbose_state.euler_rpy.x == 0) {
+    verbose_state.euler_rpy.x = 180;
   }
-  else if(state[0].euler_rpy.x == 180 || state[0].euler_rpy.x == -180) {
-    state[0].euler_rpy.x = 0;
+  else if(verbose_state.euler_rpy.x == 180 || verbose_state.euler_rpy.x == -180) {
+    verbose_state.euler_rpy.x = 0;
   }
 
-  // Adjust pitch (negate the value - positive y-axis points left)
-  state[0].euler_rpy.y *= -1;
+  // Adjust PITCH (negate the value - positive y-axis points left)
+  verbose_state.euler_rpy.y *= -1;
 }
 
-// Smooth Angular Velocity and Linear Acceleration with a Gaussian 7-point smooth
-// NOTE: Smoothed values are actually centered about the middle state within
-// the state array, state 4 (c = center = index 3)
-void IMUProcessor::SmoothDataGauss() {
-  int coef[size] = {1, 3, 6, 7, 6, 3, 1};
-  int sumCoef = 27;
-
-  // Set all desired values to smooth to 0
-  state[c].ang_v.x = 0;
-  state[c].ang_v.y = 0;
-  state[c].ang_v.z = 0;
-  state[c].linear_accel.x = 0;
-  state[c].linear_accel.y = 0;
-  state[c].linear_accel.z = 0;
-
-  // Smooth Data
-  // Reminder for using shorthand matrices:
-  // "av" = "Angular Velocity"
-  // "la" = "Linear Acceleration"
-  // row 0 = x-axis, row 1 = y-axis, row 2 = z-axis
-  // col 0 = state 0, col 1 = state 1, etc.
-  for(int i = 0; i<size; i++) {
-    state[c].ang_v.x += coef[i]*av[0][i]/sumCoef;
-    state[c].ang_v.y += coef[i]*av[1][i]/sumCoef;
-    state[c].ang_v.z += coef[i]*av[2][i]/sumCoef;
-
-    state[c].linear_accel.x += coef[i]*la[0][i]/sumCoef;
-    state[c].linear_accel.y += coef[i]*la[1][i]/sumCoef;
-    state[c].linear_accel.z += coef[i]*la[2][i]/sumCoef;
-  }
-}
-
+// IIR LPF Smoothing Algorithm
 void IMUProcessor::SmoothDataIIR() {
-  state[0].ang_v.x = alpha*state[0].raw_ang_v.x + (1-alpha)*prev_ang_vel[0];
-  state[0].ang_v.y = alpha*state[0].raw_ang_v.y + (1-alpha)*prev_ang_vel[1];
-  state[0].ang_v.z = alpha*state[0].raw_ang_v.z + (1-alpha)*prev_ang_vel[2];
+  verbose_state.ang_vel.x = alpha*verbose_state.raw_ang_vel.x + (1-alpha)*prev_ang_vel.x;
+  verbose_state.ang_vel.y = alpha*verbose_state.raw_ang_vel.y + (1-alpha)*prev_ang_vel.y;
+  verbose_state.ang_vel.z = alpha*verbose_state.raw_ang_vel.z + (1-alpha)*prev_ang_vel.z;
 
-  state[0].linear_accel.x = alpha*state[0].raw_linear_accel.x + (1-alpha)*prev_linear_accel[0];
-  state[0].linear_accel.y = alpha*state[0].raw_linear_accel.y + (1-alpha)*prev_linear_accel[1];
-  state[0].linear_accel.z = alpha*state[0].raw_linear_accel.z + (1-alpha)*prev_linear_accel[2];
+  verbose_state.linear_accel.x = alpha*verbose_state.raw_linear_accel.x + (1-alpha)*prev_linear_accel.x;
+  verbose_state.linear_accel.y = alpha*verbose_state.raw_linear_accel.y + (1-alpha)*prev_linear_accel.y;
+  verbose_state.linear_accel.z = alpha*verbose_state.raw_linear_accel.z + (1-alpha)*prev_linear_accel.z;
+
+  prev_ang_vel.x = verbose_state.ang_vel.x;
+  prev_ang_vel.y = verbose_state.ang_vel.y;
+  prev_ang_vel.z = verbose_state.ang_vel.z;
+  prev_linear_accel.x = verbose_state.linear_accel.x;
+  prev_linear_accel.y = verbose_state.linear_accel.y;
+  prev_linear_accel.z = verbose_state.linear_accel.z;
 }
 
 // Populate imu_state message
 void IMUProcessor::PopulateIMUState() {
-  imu_state.header = state[c].header;
-  imu_state.euler_rpy = state[c].euler_rpy;
-  imu_state.linear_accel = state[c].linear_accel;
-  imu_state.ang_v = state[c].ang_v;
-  imu_state.ang_accel = state[c].ang_accel;
+  imu_state.header = verbose_state.header;
+  imu_state.euler_rpy = verbose_state.euler_rpy;
+  imu_state.linear_accel = verbose_state.linear_accel;
+  imu_state.ang_vel = verbose_state.ang_vel;
+  imu_state.ang_accel = verbose_state.ang_accel;
 }
 
 // ROS loop function

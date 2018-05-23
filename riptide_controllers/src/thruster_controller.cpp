@@ -340,9 +340,6 @@ ThrusterController::ThrusterController(char **argv)
   if(debug_controller) {
     cb = boost::bind(&ThrusterController::DynamicReconfigCallback, this, _1, _2);
     server.setCallback(cb);
-
-    /*mass_vol_sub = nh.subscribe<riptide_msgs::MassVol>("input/mass_vol", 1, &ThrusterController::MassVolCB, this);
-    buoyancy_sub = nh.subscribe<geometry_msgs::Vector3>("input/pos_buoyancy", 1, &ThrusterController::BuoyancyCB, this);*/
     buoyancy_pub = nh.advertise<geometry_msgs::Vector3Stamped>("output/pos_buoyancy", 1);
 
     // Published in a message
@@ -435,7 +432,7 @@ void ThrusterController::LoadProperty(std::string name, double &param)
   }
   catch(int e)
   {
-    ROS_ERROR("Critical! No property set for %s. Shutting down...", name.c_str());
+    ROS_ERROR("Critical! Thruster Controller has no property set for %s. Shutting down...", name.c_str());
     ros::shutdown();
   }
 }
@@ -450,24 +447,7 @@ void ThrusterController::DynamicReconfigCallback(riptide_controllers::VehiclePro
 
   weight = mass*GRAVITY;
   buoyancy = volume*WATER_DENSITY*GRAVITY;
-}
-
-void ThrusterController::BuoyancyCB(const geometry_msgs::Vector3::ConstPtr &b_msg) {
-  if(debug_controller) {
-    pos_buoyancy.x = b_msg->x;
-    pos_buoyancy.y = b_msg->y;
-    pos_buoyancy.z = b_msg->z;
-  }
-}
-
-// Adjust mass and volume on the fly
-void ThrusterController::MassVolCB(const riptide_msgs::MassVol::ConstPtr& mv) {
-  if(debug_controller) {
-    mass = mv->mass;
-    weight = mass*GRAVITY;
-    volume = mv->volume;
-    buoyancy = volume*WATER_DENSITY*GRAVITY;
-  }
+  ROS_INFO("pos_buoyancy.x %f", config.Buoyancy_X_POS);
 }
 
 //Get orientation from IMU
@@ -481,7 +461,7 @@ void ThrusterController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
   R_w2b = R_b2w.transpose(); //World to body rotations --> body_vector = R_w2b * world_vector
 
   //Get angular velocity and convert to [rad/s]
-  vector3MsgToTF(imu_msg->ang_v, ang_v);
+  vector3MsgToTF(imu_msg->ang_vel, ang_v);
   ang_v.setValue(ang_v.x()*PI/180, ang_v.y()*PI/180, ang_v.y()*PI/180);
 }
 

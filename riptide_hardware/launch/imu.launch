@@ -7,12 +7,12 @@
     <arg name="accel_LPF_bandwidth" default="25" />
     <arg name="gyro_LPF_bandwidth" default="25" />
     <arg name="enable_iron_offset" default="false" />
-    <arg name="post_IIR_LPF_bandwidth" default="10" />
+    <arg name="post_IIR_LPF_bandwidth" default="17" />
     <arg name="filter_rate" default="100"/>
 
     <node pkg="riptide_hardware" name="imu_processor" type="imu_processor" output="screen" >
       <rosparam file="$(find riptide_hardware)/cfg/$(arg city).yaml" command="load"/>
-      <param name="post_IIR_LPF_bandwidth" type="int" value="$(arg post_IIR_LPF_bandwidth)" />
+      <param name="post_IIR_LPF_bandwidth" type="double" value="$(arg post_IIR_LPF_bandwidth)" />
       <param name="filter_rate" type="int" value="$(arg filter_rate)" />
     </node>
 
@@ -21,6 +21,7 @@
       <arg name="name" value="$(arg name)" />
       <arg name="city" value="$(arg city)" />
       <arg name="location" value="$(arg location)" />
+      <arg name="filter_rate" value="$(arg filter_rate)" />
       <arg name="mag_LPF_bandwidth" value="$(arg mag_LPF_bandwidth)" />
       <arg name="accel_LPF_bandwidth" value="$(arg accel_LPF_bandwidth)" />
       <arg name="gyro_LPF_bandwidth" value="$(arg gyro_LPF_bandwidth)" />

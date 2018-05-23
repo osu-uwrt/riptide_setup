@@ -31,6 +31,14 @@ DepthController::DepthController() {
     cmd_pub = nh.advertise<geometry_msgs::Vector3>("command/accel/depth", 1);
     status_pub = nh.advertise<riptide_msgs::ControlStatus>("controls/status/depth", 1);
 
+    DepthController::LoadProperty("PID_IIR_LPF_bandwidth", PID_IIR_LPF_bandwidth);
+    DepthController::LoadProperty("sensor_rate", sensor_rate);
+
+    // IIR LPF Variables
+    double fc = PID_IIR_LPF_bandwidth; // Shorthand variable for IIR bandwidth
+    dt_iir = 1.0/sensor_rate;
+    alpha = 2*PI*dt_iir*fc / (2*PI*dt_iir*fc + 1); // Multiplier
+
     sample_start = ros::Time::now();
 
     status_msg.reference = 0;
@@ -42,13 +50,31 @@ DepthController::DepthController() {
     DepthController::ResetDepth();
 }
 
+// Load property from namespace
+void DepthController::LoadProperty(std::string name, double &param)
+{
+  try
+  {
+    if (!nh.getParam("/depth_controller/" + name, param))
+    {
+      throw 0;
+    }
+  }
+  catch(int e)
+  {
+    ROS_ERROR("Critical! Depth Controller has no property set for %s. Shutting down...", name.c_str());
+    ros::shutdown();
+  }
+}
+
 void DepthController::UpdateError() {
   if(pid_depth_init) {
     sample_duration = ros::Time::now() - sample_start;
     dt = sample_duration.toSec();
 
     depth_error = depth_cmd - current_depth;
-    depth_error = DepthController::ConstrainError(depth_error, MAX_DEPTH_ERROR);
+    depth_error = DepthController::Constrain(depth_error, MAX_DEPTH_ERROR);
+    depth_error = DepthController::SmoothErrorIIR(depth_error, last_error);
     depth_error_dot = (depth_error - last_error) / dt;
     last_error = depth_error;
     status_msg.error = depth_error;
@@ -74,12 +100,17 @@ void DepthController::UpdateError() {
 // Constrain physical error. This acts as a way to break up the motion into
 // smaller segments. Otherwise, if error is too large, the vehicle would move
 // too quickly in the water and exhibit large overshoot
-double DepthController::ConstrainError(double error, double max) {
-  if(error > max)
+double DepthController::Constrain(double current, double max) {
+  if(current > max)
     return max;
-  else if(error < -1*max)
+  else if(current < -1*max)
     return -1*max;
-  return error;
+  return current;
+}
+
+// Apply IIR LPF to depth error
+double DepthController::SmoothErrorIIR(double input, double prev) {
+  return (alpha*input + (1-alpha)*prev);
 }
 
 // Subscribe to command/depth

@@ -5,7 +5,7 @@
 
 
 #include "ros/ros.h"
-#include "riptide_msgs/Depth.h" 
+#include "riptide_msgs/Depth.h"
 
 
 class DepthProcessor
@@ -14,20 +14,18 @@ class DepthProcessor
 private:
   ros::NodeHandle nh;
   ros::Subscriber depth_sub;
-  ros::Publisher state_depth_pub;
+  ros::Publisher depth_state_pub;
 
-  int cycles;
-  int c; //Center index for arrays
-  int size; //Size of state array
+  // IIR LPF Variables
+  double post_IIR_LPF_bandwidth, sensor_rate, dt, alpha, prev_depth;
 
-  //datasmoothing array
-  float ds[5];
-  riptide_msgs::Depth state[5]; //five of these for the data smoothing
+  riptide_msgs::Depth depth_state;
 public:
   DepthProcessor();
-  void DepthCB(const riptide_msgs::Depth::ConstPtr& msg);
-  void smoothData();
-  void loop();
+  void LoadProperty(std::string, double &param);
+  void DepthCB(const riptide_msgs::Depth::ConstPtr& depth_msg);
+  void SmoothDataIIR();
+  void Loop();
 };
 
 #endif

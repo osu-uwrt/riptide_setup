@@ -12,9 +12,9 @@ IMU::IMU()
   this->IMU_.euler_rpy.x = 0;
   this->IMU_.euler_rpy.y = 0;
   this->IMU_.euler_rpy.z = 0;
-  this->IMU_.ang_v.x = 0;
-  this->IMU_.ang_v.y = 0;
-  this->IMU_.ang_v.z = 0;
+  this->IMU_.ang_vel.x = 0;
+  this->IMU_.ang_vel.y = 0;
+  this->IMU_.ang_vel.z = 0;
   this->IMU_.linear_accel.x = 0;
   this->IMU_.linear_accel.y = 0;
   this->IMU_.linear_accel.z = 0;
@@ -69,9 +69,9 @@ void IMU::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     this->IMU_.euler_rpy.y = this->modelPose.rot.GetPitch()*180/M_PI;
     this->IMU_.euler_rpy.z = this->modelPose.rot.GetYaw()*180/M_PI;
 
-    this->IMU_.ang_v.x = angularVelocity.x;
-    this->IMU_.ang_v.y = angularVelocity.y;
-    this->IMU_.ang_v.z = angularVelocity.z;
+    this->IMU_.ang_vel.x = angularVelocity.x;
+    this->IMU_.ang_vel.y = angularVelocity.y;
+    this->IMU_.ang_vel.z = angularVelocity.z;
 
     this->IMU_.ang_accel.x = angularAccel.x;
     this->IMU_.ang_accel.y = angularAccel.y;

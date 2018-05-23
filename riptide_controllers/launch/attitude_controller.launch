@@ -1,6 +1,13 @@
 <launch>
+  <arg name="PID_IIR_LPF_bandwidth" default="17" />
+  <arg name="imu_filter_rate" default="100"/>
+
   <rosparam command="load" ns="roll_controller" file="$(find riptide_controllers)/cfg/roll_config.yaml" />
   <rosparam command="load" ns="pitch_controller" file="$(find riptide_controllers)/cfg/pitch_config.yaml" />
   <rosparam command="load" ns="yaw_controller" file="$(find riptide_controllers)/cfg/yaw_config.yaml" />
-  <node pkg="riptide_controllers" type="attitude_controller" name="attitude_controller" output="screen" />
+
+  <node pkg="riptide_controllers" type="attitude_controller" name="attitude_controller" output="screen" >
+    <param name="PID_IIR_LPF_bandwidth" type="double" value="$(arg PID_IIR_LPF_bandwidth)" />
+    <param name="imu_filter_rate" type="double" value="$(arg imu_filter_rate)" />
+  </node>
 </launch>

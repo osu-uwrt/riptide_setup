@@ -27,6 +27,9 @@ class AttitudeController
     //float output_z;
     riptide_msgs::ControlStatusAngular status_msg;
 
+    // IIR Filter variables for D-term
+    double PID_IIR_LPF_bandwidth, dt_iir, alpha, imu_filter_rate;
+
     tf::Matrix3x3 R_b2w, R_w2b;
     tf::Vector3 tf;
 
@@ -46,6 +49,7 @@ class AttitudeController
     void InitPubMsg();
     void UpdateError();
     double Constrain(double current, double max);
+    double SmoothErrorIIR(double input, double prev);
     void ResetController(const riptide_msgs::ResetControls::ConstPtr& reset_msg);
     void ResetRoll();
     void ResetPitch();
@@ -53,6 +57,7 @@ class AttitudeController
 
   public:
     AttitudeController();
+    void LoadProperty(std::string name, double &param);
     void CommandCB(const geometry_msgs::Vector3::ConstPtr &cmd);
     void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
     void Loop();

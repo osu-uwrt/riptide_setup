@@ -40,6 +40,14 @@ AttitudeController::AttitudeController() {
     cmd_pub = nh.advertise<geometry_msgs::Vector3>("command/accel/angular", 1);
     status_pub = nh.advertise<riptide_msgs::ControlStatusAngular>("controls/status/angular", 1);
 
+    AttitudeController::LoadProperty("PID_IIR_LPF_bandwidth", PID_IIR_LPF_bandwidth);
+    AttitudeController::LoadProperty("imu_filter_rate", imu_filter_rate);
+
+    // IIR LPF Variables
+    double fc = PID_IIR_LPF_bandwidth; // Shorthand variable for IIR bandwidth
+    dt_iir = 1.0/imu_filter_rate;
+    alpha = 2*PI*dt_iir*fc / (2*PI*dt_iir*fc + 1); // Multiplier
+
     sample_start_roll = ros::Time::now();
     sample_start_pitch = sample_start_roll;
     sample_start_yaw = sample_start_roll;
@@ -68,6 +76,23 @@ void AttitudeController::InitPubMsg() {
   ang_accel_cmd.z = 0;
 }
 
+// Load property from namespace
+void AttitudeController::LoadProperty(std::string name, double &param)
+{
+  try
+  {
+    if (!nh.getParam("/attitude_controller/" + name, param))
+    {
+      throw 0;
+    }
+  }
+  catch(int e)
+  {
+    ROS_ERROR("Critical! Attitude Controller has no property set for %s. Shutting down...", name.c_str());
+    ros::shutdown();
+  }
+}
+
 void AttitudeController::UpdateError() {
   // Roll error
   if(pid_roll_init) {
@@ -76,6 +101,7 @@ void AttitudeController::UpdateError() {
 
     roll_error = roll_cmd - round(current_attitude.x);
     roll_error = AttitudeController::Constrain(roll_error, MAX_ROLL_ERROR);
+    roll_error = AttitudeController::SmoothErrorIIR(roll_error, last_error.x);
     roll_error_dot = (roll_error - last_error.x) / dt_roll;
     last_error.x = roll_error;
     status_msg.roll.error = roll_error;
@@ -90,6 +116,7 @@ void AttitudeController::UpdateError() {
 
     pitch_error = pitch_cmd - round(current_attitude.y);
     pitch_error = AttitudeController::Constrain(pitch_error, MAX_PITCH_ERROR);
+    pitch_error = AttitudeController::SmoothErrorIIR(pitch_error, last_error.y);
     pitch_error_dot = (pitch_error - last_error.y) / dt_pitch;
     last_error.y = pitch_error;
     status_msg.pitch.error = pitch_error;
@@ -109,6 +136,7 @@ void AttitudeController::UpdateError() {
     else if (yaw_error < -180)
         yaw_error += 360;
     yaw_error = AttitudeController::Constrain(yaw_error, MAX_YAW_ERROR);
+    yaw_error = AttitudeController::SmoothErrorIIR(yaw_error, last_error.z);
 
     yaw_error_dot = (yaw_error - last_error.z) / dt_yaw;
     last_error.z = yaw_error;
@@ -136,6 +164,11 @@ double AttitudeController::Constrain(double current, double max) {
   else if(current < -1*max)
     return -1*max;
   return current;
+}
+
+// Apply IIR LPF to depth error
+double AttitudeController::SmoothErrorIIR(double input, double prev) {
+  return (alpha*input + (1-alpha)*prev);
 }
 
 // Subscribe to state/imu
