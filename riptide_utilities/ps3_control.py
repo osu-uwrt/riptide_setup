@@ -61,5 +61,5 @@ def controller_callback(joy_msg):
 if __name__ == '__main__':
 	rospy.init_node('ps3_control')
 	rospy.Subscriber('joy', Joy, controller_callback)
-	pub = rospy.Publisher('command/pwm', Pwm)
+	pub = rospy.Publisher('command/pwm', Pwm, queue_size=1)
 	rospy.spin()

@@ -1,3 +1,5 @@
 <launch>
+  <arg name="machine"/>
   <node pkg="riptide_hardware" type="coprocessor_serial.py" name="coprocessor_driver" output="screen" />
+  <!--<node machine="$(arg machine)" pkg="riptide_hardware" type="coprocessor_serial.py" name="coprocessor_driver" output="screen" />-->
 </launch>
