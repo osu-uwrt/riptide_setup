@@ -21,7 +21,8 @@
   <build_depend>roslint</build_depend>
   <build_depend>message_generation</build_depend>
   <build_depend>imu_3dm_gx4</build_depend>
-  
+  <build_depend>tf</build_depend>
+
   <run_depend>roslaunch</run_depend>
   <run_depend>rosserial_msgs</run_depend>
   <run_depend>rosserial_python</run_depend>

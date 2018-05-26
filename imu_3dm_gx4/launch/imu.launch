@@ -42,9 +42,6 @@
     <!-- Enable auto-config for Hard and Soft Iron Offset -->
     <arg name="enable_iron_offset" default="false" />
 
-    <!-- Magnetometer Magnitude Error Adaptive Measurement -->
-    <!--<arg name="enable_mag_err_adapt_msmt" default="false" />-->
-
     <node pkg="imu_3dm_gx4" name="$(arg imu)" type="imu_3dm_gx4" output="$(arg output)">
         <param name="device" type="string" value="$(arg device)" />
         <param name="verbose" type="bool" value="$(arg verbose)"/>
@@ -70,8 +67,5 @@
         <rosparam file="$(find riptide_hardware)/cfg/$(arg city).yaml" command="load"/>
         <rosparam file="$(find riptide_hardware)/cfg/sensor_to_vehicle_tf.yaml" command="load"/>
         <rosparam file="$(find riptide_hardware)/cfg/$(arg name)_$(arg city)_$(arg location).yaml" command="load"/>
-
-        <!--<param name="enable_mag_err_adapt_msmt" type="bool" value="$(arg enable_mag_err_adapt_msmt)" /-->
-        <!--<rosparam file="$(find riptide_hardware)/cfg/mag_err_adapt_msmt.yaml" command="load"/>-->
     </node>
 </launch>

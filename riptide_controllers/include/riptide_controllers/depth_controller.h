@@ -20,7 +20,10 @@ class DepthController
 
     control_toolbox::Pid depth_controller_pid;
     geometry_msgs::Vector3 accel;
-    double output;
+    double output, MAX_DEPTH_ERROR;
+
+    // IIR Filter variables for D-term
+    double PID_IIR_LPF_bandwidth, dt_iir, alpha, sensor_rate;
 
     riptide_msgs::ControlStatus status_msg;
 
@@ -28,11 +31,10 @@ class DepthController
     tf::Vector3 tf;
 
     //PID
-    double depth_error;
+    double depth_error, depth_error_dot;
     double current_depth;
-    double depth_cmd;
-    double depth_error_dot;
-    double last_error;
+    double depth_cmd, prev_depth_cmd;
+    double last_error, last_error_dot;
     double dt;
 
     bool pid_depth_init;
@@ -41,12 +43,14 @@ class DepthController
     ros::Duration sample_duration;
 
     void UpdateError();
-    double ConstrainError(double error, double max);
+    double Constrain(double current, double max);
+    double SmoothErrorIIR(double input, double prev);
     void ResetController(const riptide_msgs::ResetControls::ConstPtr &reset_msg);
     void ResetDepth();
 
   public:
     DepthController();
+    void LoadProperty(std::string name, double &param);
     void CommandCB(const riptide_msgs::Depth::ConstPtr &cmd);
     void DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg);
     void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);

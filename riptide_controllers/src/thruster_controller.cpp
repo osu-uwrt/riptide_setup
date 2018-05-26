@@ -7,9 +7,12 @@
 #define PI 3.141592653
 #define GRAVITY 9.81 //[m/s^2]
 #define WATER_DENSITY 1000.0 //[kg/m^3]
-#define Ixx 0.52607145
+
+// **Please keep these in case they get deleted from the vehicle_properties.yaml file
+/*#define Ixx 0.52607145
 #define Iyy 1.50451601
-#define Izz 1.62450600
+#define Izz 1.62450600*/
+double Ixx, Iyy, Izz;
 
 struct vector {
   double x;
@@ -277,11 +280,12 @@ int main(int argc, char **argv)
   ThrusterController.Loop();
 }
 
-ThrusterController::ThrusterController(char **argv) : nh("thruster_controller")
+ThrusterController::ThrusterController(char **argv)
 {
   // Load parameters from .yaml files or launch files
-  nh.param("debug", debug_controller, false);
+  nh.param("/thruster_controller/debug", debug_controller, false);
 
+  // Load postions of each thruster relative to CoM
   ThrusterController::LoadProperty("HPF/X", pos_heave_port_fwd.x);
   ThrusterController::LoadProperty("HPF/Y", pos_heave_port_fwd.y);
   ThrusterController::LoadProperty("HPF/Z", pos_heave_port_fwd.z);
@@ -314,8 +318,12 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller")
   ThrusterController::LoadProperty("SSL/Y", pos_surge_stbd_lo.y);
   ThrusterController::LoadProperty("SSL/Z", pos_surge_stbd_lo.z);
 
+  // Load vehicle properties
   ThrusterController::LoadProperty("Mass", mass);
   ThrusterController::LoadProperty("Volume", volume);
+  ThrusterController::LoadProperty("Ixx", Ixx);
+  ThrusterController::LoadProperty("Iyy", Iyy);
+  ThrusterController::LoadProperty("Izz", Izz);
   ThrusterController::LoadProperty("Buoyancy_X_POS", pos_buoyancy.x);
   ThrusterController::LoadProperty("Buoyancy_Y_POS", pos_buoyancy.y);
   ThrusterController::LoadProperty("Buoyancy_Z_POS", pos_buoyancy.z);
@@ -340,10 +348,7 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller")
   if(debug_controller) {
     cb = boost::bind(&ThrusterController::DynamicReconfigCallback, this, _1, _2);
     server.setCallback(cb);
-
-    /*mass_vol_sub = nh.subscribe<riptide_msgs::MassVol>("input/mass_vol", 1, &ThrusterController::MassVolCB, this);
-    buoyancy_sub = nh.subscribe<geometry_msgs::Vector3>("input/pos_buoyancy", 1, &ThrusterController::BuoyancyCB, this);
-    buoyancy_pub = nh.advertise<geometry_msgs::Vector3Stamped>("output/pos_buoyancy", 1);*/
+    buoyancy_pub = nh.advertise<geometry_msgs::Vector3Stamped>("output/pos_buoyancy", 1);
 
     // Published in a message
     buoyancy_pos.vector.x = 0;
@@ -428,14 +433,14 @@ void ThrusterController::LoadProperty(std::string name, double &param)
 {
   try
   {
-    if (!nh.getParam(name, param))
+    if (!nh.getParam("/thruster_controller/" + name, param))
     {
       throw 0;
     }
   }
   catch(int e)
   {
-    ROS_ERROR("Critical! No property set for %s. Shutting down...", name.c_str());
+    ROS_ERROR("Critical! Thruster Controller has no property set for %s. Shutting down...", name.c_str());
     ros::shutdown();
   }
 }
@@ -452,24 +457,6 @@ void ThrusterController::DynamicReconfigCallback(riptide_controllers::VehiclePro
   buoyancy = volume*WATER_DENSITY*GRAVITY;
 }
 
-void ThrusterController::BuoyancyCB(const geometry_msgs::Vector3::ConstPtr &b_msg) {
-  if(debug_controller) {
-    pos_buoyancy.x = b_msg->x;
-    pos_buoyancy.y = b_msg->y;
-    pos_buoyancy.z = b_msg->z;
-  }
-}
-
-// Adjust mass and volume on the fly
-void ThrusterController::MassVolCB(const riptide_msgs::MassVol::ConstPtr& mv) {
-  if(debug_controller) {
-    mass = mv->mass;
-    weight = mass*GRAVITY;
-    volume = mv->volume;
-    buoyancy = volume*WATER_DENSITY*GRAVITY;
-  }
-}
-
 //Get orientation from IMU
 void ThrusterController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
 {
@@ -481,7 +468,7 @@ void ThrusterController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
   R_w2b = R_b2w.transpose(); //World to body rotations --> body_vector = R_w2b * world_vector
 
   //Get angular velocity and convert to [rad/s]
-  vector3MsgToTF(imu_msg->ang_v, ang_v);
+  vector3MsgToTF(imu_msg->ang_vel, ang_v);
   ang_v.setValue(ang_v.x()*PI/180, ang_v.y()*PI/180, ang_v.y()*PI/180);
 }
 

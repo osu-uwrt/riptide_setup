@@ -10,6 +10,7 @@ find_package(catkin REQUIRED
     imu_3dm_gx4
     pointgrey_camera_driver
     message_filters
+    tf
     message_generation
 )
 

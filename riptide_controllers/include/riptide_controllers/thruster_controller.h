@@ -62,9 +62,7 @@ class ThrusterController
   void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
   void DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg);
   void AccelCB(const geometry_msgs::Accel::ConstPtr &a);
-  void MassVolCB(const riptide_msgs::MassVol::ConstPtr &mv);
   void Loop();
-  void BuoyancyCB(const geometry_msgs::Vector3::ConstPtr &b_msg);
 };
 
 #endif

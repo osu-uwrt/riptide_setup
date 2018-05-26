@@ -1,0 +1,3 @@
+max_roll_error: 10 # [deg]
+max_pitch_error: 10 # [deg]
+max_yaw_error: 30 # [deg]
