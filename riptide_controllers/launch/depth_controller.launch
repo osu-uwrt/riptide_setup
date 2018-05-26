@@ -2,7 +2,7 @@
   <arg name="PID_IIR_LPF_bandwidth" default="17" />
   <arg name="sensor_rate" default="22"/>
 
-  <rosparam command="load" ns="depth_controller" file="$(find riptide_controllers)/cfg/depth_config.yaml" />
+  <rosparam command="load" ns="depth_controller" file="$(find riptide_controllers)/cfg/pid_config_depth.yaml" />
   <node pkg="riptide_controllers" type="depth_controller" name="depth_controller" output="screen" >
     <param name="PID_IIR_LPF_bandwidth" type="double" value="$(arg PID_IIR_LPF_bandwidth)" />
     <param name="sensor_rate" type="double" value="$(arg sensor_rate)" />

@@ -24,8 +24,8 @@ class AttitudeController
     control_toolbox::Pid yaw_controller_pid;
 
     geometry_msgs::Vector3 ang_accel_cmd;
-    //float output_z;
     riptide_msgs::ControlStatusAngular status_msg;
+    double MAX_ROLL_ERROR, MAX_PITCH_ERROR, MAX_YAW_ERROR;
 
     // IIR Filter variables for D-term
     double PID_IIR_LPF_bandwidth, dt_iir, alpha, imu_filter_rate;
@@ -38,13 +38,17 @@ class AttitudeController
     double roll_error_dot, pitch_error_dot, yaw_error_dot;
     double roll_cmd, pitch_cmd, yaw_cmd, prev_roll_cmd, prev_pitch_cmd, prev_yaw_cmd;
 
-    geometry_msgs::Vector3 current_attitude, last_error;
+    geometry_msgs::Vector3 current_attitude, last_error, last_error_dot;;
 
     bool pid_roll_init, pid_pitch_init, pid_yaw_init;
 
-    ros::Time sample_start_roll, sample_start_pitch, sample_start_yaw;
+    /*ros::Time sample_start_roll, sample_start_pitch, sample_start_yaw;
     ros::Duration sample_duration_roll, sample_duration_pitch, sample_duration_yaw;
-    double dt_roll, dt_pitch, dt_yaw;
+    double dt_roll, dt_pitch, dt_yaw;*/
+
+    ros::Time sample_start;
+    ros::Duration sample_duration;
+    double dt;
 
     void InitPubMsg();
     void UpdateError();

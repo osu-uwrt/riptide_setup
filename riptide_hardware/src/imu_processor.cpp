@@ -202,6 +202,7 @@ void IMUProcessor::ProcessEulerAngles() {
 
 // IIR LPF Smoothing Algorithm
 void IMUProcessor::SmoothDataIIR() {
+  // Output = alpha*new + (1-alpha)*previous
   verbose_state.ang_vel.x = alpha*verbose_state.raw_ang_vel.x + (1-alpha)*prev_ang_vel.x;
   verbose_state.ang_vel.y = alpha*verbose_state.raw_ang_vel.y + (1-alpha)*prev_ang_vel.y;
   verbose_state.ang_vel.z = alpha*verbose_state.raw_ang_vel.z + (1-alpha)*prev_ang_vel.z;

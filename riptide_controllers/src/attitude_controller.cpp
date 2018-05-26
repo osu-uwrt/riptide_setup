@@ -6,9 +6,9 @@
 
 #define PI 3.141592653
 
-#define MAX_ROLL_ERROR 10
+/*#define MAX_ROLL_ERROR 10
 #define MAX_PITCH_ERROR 10
-#define MAX_YAW_ERROR 30
+#define MAX_YAW_ERROR 30*/
 
 float round(float d) {
   return floor(d + 0.5);
@@ -40,6 +40,9 @@ AttitudeController::AttitudeController() {
     cmd_pub = nh.advertise<geometry_msgs::Vector3>("command/accel/angular", 1);
     status_pub = nh.advertise<riptide_msgs::ControlStatusAngular>("controls/status/angular", 1);
 
+    AttitudeController::LoadProperty("max_roll_error", MAX_ROLL_ERROR);
+    AttitudeController::LoadProperty("max_pitch_error", MAX_PITCH_ERROR);
+    AttitudeController::LoadProperty("max_yaw_error", MAX_YAW_ERROR);
     AttitudeController::LoadProperty("PID_IIR_LPF_bandwidth", PID_IIR_LPF_bandwidth);
     AttitudeController::LoadProperty("imu_filter_rate", imu_filter_rate);
 
@@ -48,9 +51,10 @@ AttitudeController::AttitudeController() {
     dt_iir = 1.0/imu_filter_rate;
     alpha = 2*PI*dt_iir*fc / (2*PI*dt_iir*fc + 1); // Multiplier
 
-    sample_start_roll = ros::Time::now();
+    /*sample_start_roll = ros::Time::now();
     sample_start_pitch = sample_start_roll;
-    sample_start_yaw = sample_start_roll;
+    sample_start_yaw = sample_start_roll;*/
+    sample_start = ros::Time::now();
 
     AttitudeController::InitPubMsg();
     AttitudeController::ResetRoll();
@@ -94,40 +98,45 @@ void AttitudeController::LoadProperty(std::string name, double &param)
 }
 
 void AttitudeController::UpdateError() {
+  sample_duration = ros::Time::now() - sample_start;
+  dt = sample_duration.toSec();
+
   // Roll error
   if(pid_roll_init) {
-    sample_duration_roll = ros::Time::now() - sample_start_roll;
-    dt_roll = sample_duration_roll.toSec();
+    /*sample_duration_roll = ros::Time::now() - sample_start_roll;
+    dt_roll = sample_duration_roll.toSec();*/
 
     roll_error = roll_cmd - round(current_attitude.x);
     roll_error = AttitudeController::Constrain(roll_error, MAX_ROLL_ERROR);
-    roll_error = AttitudeController::SmoothErrorIIR(roll_error, last_error.x);
-    roll_error_dot = (roll_error - last_error.x) / dt_roll;
+    roll_error_dot = (roll_error - last_error.x) / dt;
+    roll_error_dot = AttitudeController::SmoothErrorIIR(roll_error_dot, last_error_dot.x);
     last_error.x = roll_error;
+    last_error_dot.x = roll_error_dot;
     status_msg.roll.error = roll_error;
 
-    ang_accel_cmd.x = roll_controller_pid.computeCommand(roll_error, roll_error_dot, sample_duration_roll);
+    ang_accel_cmd.x = roll_controller_pid.computeCommand(roll_error, roll_error_dot, sample_duration);
   }
 
   // Pitch error
   if(pid_pitch_init) {
-    sample_duration_pitch = ros::Time::now() - sample_start_pitch;
-    dt_pitch = sample_duration_pitch.toSec();
+    /*sample_duration_pitch = ros::Time::now() - sample_start_pitch;
+    dt_pitch = sample_duration_pitch.toSec();*/
 
     pitch_error = pitch_cmd - round(current_attitude.y);
     pitch_error = AttitudeController::Constrain(pitch_error, MAX_PITCH_ERROR);
-    pitch_error = AttitudeController::SmoothErrorIIR(pitch_error, last_error.y);
-    pitch_error_dot = (pitch_error - last_error.y) / dt_pitch;
+    pitch_error_dot = (pitch_error - last_error.y) / dt;
+    pitch_error_dot = AttitudeController::SmoothErrorIIR(pitch_error_dot, last_error_dot.y);
     last_error.y = pitch_error;
+    last_error_dot.y = pitch_error_dot;
     status_msg.pitch.error = pitch_error;
 
-    ang_accel_cmd.y = pitch_controller_pid.computeCommand(pitch_error, pitch_error_dot, sample_duration_pitch);
+    ang_accel_cmd.y = pitch_controller_pid.computeCommand(pitch_error, pitch_error_dot, sample_duration);
   }
 
   // Yaw error
   if(pid_yaw_init) {
-    sample_duration_yaw = ros::Time::now() - sample_start_yaw;
-    dt_yaw = sample_duration_yaw.toSec();
+    /*sample_duration_yaw = ros::Time::now() - sample_start_yaw;
+    dt_yaw = sample_duration_yaw.toSec();*/
 
     // Always take shortest path to setpoint
     yaw_error = yaw_cmd - round(current_attitude.z);
@@ -136,23 +145,25 @@ void AttitudeController::UpdateError() {
     else if (yaw_error < -180)
         yaw_error += 360;
     yaw_error = AttitudeController::Constrain(yaw_error, MAX_YAW_ERROR);
-    yaw_error = AttitudeController::SmoothErrorIIR(yaw_error, last_error.z);
 
-    yaw_error_dot = (yaw_error - last_error.z) / dt_yaw;
+    yaw_error_dot = (yaw_error - last_error.z) / dt;
+    yaw_error_dot = AttitudeController::SmoothErrorIIR(yaw_error_dot, last_error_dot.z);
     last_error.z = yaw_error;
+    last_error_dot.z = yaw_error_dot;
     status_msg.yaw.error = yaw_error;
 
-    ang_accel_cmd.z = yaw_controller_pid.computeCommand(yaw_error, yaw_error_dot, sample_duration_yaw);
+    ang_accel_cmd.z = yaw_controller_pid.computeCommand(yaw_error, yaw_error_dot, sample_duration);
   }
 
   // ALWAYS Publish status and command messages
-  status_msg.header.stamp = ros::Time::now();
+  status_msg.header.stamp = sample_start;
   status_pub.publish(status_msg);
   cmd_pub.publish(ang_accel_cmd);
 
-  sample_start_roll = ros::Time::now();
+  /*sample_start_roll = ros::Time::now();
   sample_start_pitch = ros::Time::now();
-  sample_start_yaw = ros::Time::now();
+  sample_start_yaw = ros::Time::now();*/
+  sample_start = ros::Time::now();
 }
 
 // Constrain physical error. This acts as a way to break up the motion into
@@ -226,10 +237,11 @@ void AttitudeController::ResetRoll() {
   roll_controller_pid.reset();
   current_attitude.x = 0;
   last_error.x = 0;
+  last_error_dot.x = 0;
 
-  sample_start_roll = ros::Time::now();
+  /*sample_start_roll = ros::Time::now();
   sample_duration_roll = ros::Duration(0);
-  dt_roll = 0;
+  dt_roll = 0;*/
 
   status_msg.roll.reference = 0;
   status_msg.roll.error = 0;
@@ -246,10 +258,11 @@ void AttitudeController::ResetPitch() {
   pitch_controller_pid.reset();
   current_attitude.y = 0;
   last_error.y = 0;
+  last_error_dot.y = 0;
 
-  sample_start_pitch = ros::Time::now();
+  /*sample_start_pitch = ros::Time::now();
   sample_duration_pitch = ros::Duration(0);
-  dt_pitch = 0;
+  dt_pitch = 0;*/
 
   status_msg.pitch.reference = 0;
   status_msg.pitch.error = 0;
@@ -266,16 +279,16 @@ void AttitudeController::ResetYaw() {
   yaw_controller_pid.reset();
   current_attitude.z = 0;
   last_error.z = 0;
+  last_error_dot.z = 0;
 
-  sample_start_yaw = ros::Time::now();
+  /*sample_start_yaw = ros::Time::now();
   sample_duration_yaw = ros::Duration(0);
-  dt_yaw = 0;
+  dt_yaw = 0;*/
 
   status_msg.yaw.reference = 0;
   status_msg.yaw.error = 0;
 
   pid_yaw_init = false;
-  //output_z = 0;
   ang_accel_cmd.z = 0;
 }
 

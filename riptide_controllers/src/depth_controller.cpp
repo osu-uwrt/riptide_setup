@@ -5,7 +5,6 @@
 #undef progress
 
 #define PI 3.141592653
-#define MAX_DEPTH_ERROR 1.5
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "depth_controller");
@@ -31,6 +30,7 @@ DepthController::DepthController() {
     cmd_pub = nh.advertise<geometry_msgs::Vector3>("command/accel/depth", 1);
     status_pub = nh.advertise<riptide_msgs::ControlStatus>("controls/status/depth", 1);
 
+    DepthController::LoadProperty("max_depth_error", MAX_DEPTH_ERROR);
     DepthController::LoadProperty("PID_IIR_LPF_bandwidth", PID_IIR_LPF_bandwidth);
     DepthController::LoadProperty("sensor_rate", sensor_rate);
 
@@ -74,9 +74,10 @@ void DepthController::UpdateError() {
 
     depth_error = depth_cmd - current_depth;
     depth_error = DepthController::Constrain(depth_error, MAX_DEPTH_ERROR);
-    depth_error = DepthController::SmoothErrorIIR(depth_error, last_error);
     depth_error_dot = (depth_error - last_error) / dt;
+    depth_error_dot = DepthController::SmoothErrorIIR(depth_error_dot, last_error_dot);
     last_error = depth_error;
+    last_error_dot = depth_error_dot;
     status_msg.error = depth_error;
 
     output = depth_controller_pid.computeCommand(depth_error, depth_error_dot, sample_duration);
@@ -153,6 +154,7 @@ void DepthController::ResetDepth() {
   depth_controller_pid.reset();
   current_depth = 0;
   last_error = 0;
+  last_error_dot = 0;
 
   sample_start = ros::Time::now();
   sample_duration = ros::Duration(0);

@@ -7,9 +7,12 @@
 #define PI 3.141592653
 #define GRAVITY 9.81 //[m/s^2]
 #define WATER_DENSITY 1000.0 //[kg/m^3]
-#define Ixx 0.52607145
+
+// **Please keep these in case they get deleted from the vehicle_properties.yaml file
+/*#define Ixx 0.52607145
 #define Iyy 1.50451601
-#define Izz 1.62450600
+#define Izz 1.62450600*/
+double Ixx, Iyy, Izz;
 
 struct vector {
   double x;
@@ -282,6 +285,7 @@ ThrusterController::ThrusterController(char **argv)
   // Load parameters from .yaml files or launch files
   nh.param("/thruster_controller/debug", debug_controller, false);
 
+  // Load postions of each thruster relative to CoM
   ThrusterController::LoadProperty("HPF/X", pos_heave_port_fwd.x);
   ThrusterController::LoadProperty("HPF/Y", pos_heave_port_fwd.y);
   ThrusterController::LoadProperty("HPF/Z", pos_heave_port_fwd.z);
@@ -314,8 +318,12 @@ ThrusterController::ThrusterController(char **argv)
   ThrusterController::LoadProperty("SSL/Y", pos_surge_stbd_lo.y);
   ThrusterController::LoadProperty("SSL/Z", pos_surge_stbd_lo.z);
 
+  // Load vehicle properties
   ThrusterController::LoadProperty("Mass", mass);
   ThrusterController::LoadProperty("Volume", volume);
+  ThrusterController::LoadProperty("Ixx", Ixx);
+  ThrusterController::LoadProperty("Iyy", Iyy);
+  ThrusterController::LoadProperty("Izz", Izz);
   ThrusterController::LoadProperty("Buoyancy_X_POS", pos_buoyancy.x);
   ThrusterController::LoadProperty("Buoyancy_Y_POS", pos_buoyancy.y);
   ThrusterController::LoadProperty("Buoyancy_Z_POS", pos_buoyancy.z);
@@ -447,7 +455,6 @@ void ThrusterController::DynamicReconfigCallback(riptide_controllers::VehiclePro
 
   weight = mass*GRAVITY;
   buoyancy = volume*WATER_DENSITY*GRAVITY;
-  ROS_INFO("pos_buoyancy.x %f", config.Buoyancy_X_POS);
 }
 
 //Get orientation from IMU

@@ -1,6 +1,7 @@
 antiwindup: False
-d: 0.01
-i: 0.12
+d: 0.0
+i: 0.0
 i_clamp_max: 5.0
 i_clamp_min: 0.0
-p:  0.25
+p:  1.5
+max_depth_error: 1.5

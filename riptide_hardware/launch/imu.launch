@@ -4,11 +4,11 @@
     <arg name="location" default="CAR"/>
     <arg name="device" default="/dev/imu_front" />
     <arg name="mag_LPF_bandwidth" default="10" />
-    <arg name="accel_LPF_bandwidth" default="25" />
-    <arg name="gyro_LPF_bandwidth" default="25" />
+    <arg name="accel_LPF_bandwidth" default="50" />
+    <arg name="gyro_LPF_bandwidth" default="50" />
     <arg name="enable_iron_offset" default="false" />
     <arg name="post_IIR_LPF_bandwidth" default="17" />
-    <arg name="filter_rate" default="100"/>
+    <arg name="filter_rate" default="100"/> <!-- MUST be an integer, gets passed to actual imu.launch file -->
 
     <node pkg="riptide_hardware" name="imu_processor" type="imu_processor" output="screen" >
       <rosparam file="$(find riptide_hardware)/cfg/$(arg city).yaml" command="load"/>

@@ -20,7 +20,7 @@ class DepthController
 
     control_toolbox::Pid depth_controller_pid;
     geometry_msgs::Vector3 accel;
-    double output;
+    double output, MAX_DEPTH_ERROR;
 
     // IIR Filter variables for D-term
     double PID_IIR_LPF_bandwidth, dt_iir, alpha, sensor_rate;
@@ -34,7 +34,7 @@ class DepthController
     double depth_error, depth_error_dot;
     double current_depth;
     double depth_cmd, prev_depth_cmd;
-    double last_error;
+    double last_error, last_error_dot;
     double dt;
 
     bool pid_depth_init;
