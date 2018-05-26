@@ -75,7 +75,7 @@ PWMController::PWMController() : nh()
 
   alive_timeout = ros::Duration(2);
   last_alive_time = ros::Time::now();
-  silent = false; // Silent refers to not receiving commands from the control stack
+  silent = true; // Silent refers to not receiving commands from the control stack
   dead = true; // Dead refers to the kill switch being pulled
 }
 

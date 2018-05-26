@@ -24,10 +24,10 @@ float64 heading_update_flags #0 = no update received within 2 sec, 1 = update re
 
 geometry_msgs/Vector3 raw_linear_accel #This is actually ABSOLUTE acceleration, [m/s^2]
 geometry_msgs/Vector3 linear_accel #Smoothed/corrected linear acceleration, [m/s^2]
-geometry_msgs/Vector3 raw_ang_v #[rad/s]
-geometry_msgs/Vector3 ang_v #Smoothed ang_v, [deg/s]
+geometry_msgs/Vector3 raw_ang_vel #[rad/s]
+geometry_msgs/Vector3 ang_vel #Smoothed ang_v, [deg/s]
 geometry_msgs/Vector3 ang_accel #[rad/s^2]
 
 float64 euler_rpy_status #0 = invalid, 1 = valid, 2 = values referenced to magnetic north
-float64 ang_v_status #0 = invalid, 1 = valid
+float64 ang_vel_status #0 = invalid, 1 = valid
 float64 linear_accel_status #0 = invalid, 1 = valid

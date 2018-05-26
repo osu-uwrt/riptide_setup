@@ -205,13 +205,6 @@ int main(int argc, char **argv) {
   bool enable_iron_offset;
   float hx, hy, hz, m11, m12, m13, m21, m22, m23, m31, m32, m33;
 
-  // Variabls for Magnetometer Magnitude Error Adaptive Measurements
-  /*bool enableMagErrAdaptMsmt;
-  float magLPFBandwidth, magLowLim, magHighLim, magLowLimUncertainty;
-  float magHighLimUncertainty, magMinUncertainty;
-  float LPFBandwidth, lowLim, highLim, lowLimUncertainty;
-  float highLimUncertainty, minUncertainty;*/
-
   // Load Main Parameters from Launch File
   nh.param<std::string>("device", device, "/dev/imu_front");
   nh.param<int>("baudrate", baudrate, 115200);
@@ -256,15 +249,6 @@ int main(int argc, char **argv) {
   nh.param<float>("m33", m33, 1.0);
   float hard_offset[3] = {hx, hy, hz};
   float soft_matrix[9] = {m11, m12, m13, m21, m22, m23, m31, m32, m33};
-
-  // Parameters to adjust Magnetometer Magnitude Error Adaptive Measurement
-  /*nh.param<bool>("enable_mag_err_adapt_msmt", enableMagErrAdaptMsmt, false);
-  nh.param<float>("LPF_bandwidth", magLPFBandwidth, 25);
-  nh.param<float>("low_limit", magLowLim, -0.1);
-  nh.param<float>("high_limit", magHighLim, 0.1);
-  nh.param<float>("low_limit_uncertainty", magLowLimUncertainty, 0.1);
-  nh.param<float>("high_limit_uncertainty", magHighLimUncertainty, 0.1);
-  nh.param<float>("min_uncertainty", magMinUncertainty, 0.05);*/
 
   if (requestedFilterRate < 0 || requestedImuRate < 0) {
     ROS_ERROR("imu_rate and filter_rate must be > 0");
@@ -397,26 +381,6 @@ int main(int argc, char **argv) {
     }
     ROS_INFO("\tEnable Status: %i", enable_iron_offset);
     ROS_INFO("\tFile: %s_%s_%s.yaml", name.c_str(), city.c_str(), location.c_str());
-
-    /*ROS_INFO("Magnetometer Magnitude Err. Adapt Msmt");
-    imu.setMagFilterErrAdaptMsmt(enableMagErrAdaptMsmt, magLPFBandwidth,
-        magLowLim, magHighLim, magLowLimUncertainty, magHighLimUncertainty,
-        magMinUncertainty);
-    imu.getMagFilterErrAdaptMsmt(LPFBandwidth, lowLim, highLim,
-      lowLimUncertainty, highLimUncertainty, minUncertainty);
-
-    std::string boolValue = "enabled";
-    if(!enableMagErrAdaptMsmt) {
-      boolValue = "disabled";
-    }
-
-    ROS_INFO("\tEnable Status: %s", boolValue.c_str());
-    ROS_INFO("\tLPF Bandwidth (Hz): %f", LPFBandwidth);
-    ROS_INFO("\tLow Lim (Gauss): %f", lowLim);
-    ROS_INFO("\tHigh Lim (Gauss): %f", highLim);
-    ROS_INFO("\tLow Lim Uncrty (Gauss): %f", lowLimUncertainty);
-    ROS_INFO("\tHigh Lim Uncrty (Gauss): %f", highLimUncertainty);
-    ROS_INFO("\tMin Uncrty (Gauss): %f", minUncertainty);*/
     //////////////////////////////////////////////////////////////////////////
 
     // Configure diagnostic updater
