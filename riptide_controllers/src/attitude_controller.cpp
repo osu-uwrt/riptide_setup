@@ -177,7 +177,7 @@ double AttitudeController::Constrain(double current, double max) {
   return current;
 }
 
-// Apply IIR LPF to depth error
+// Apply IIR LPF to error
 double AttitudeController::SmoothErrorIIR(double input, double prev) {
   return (alpha*input + (1-alpha)*prev);
 }
@@ -193,25 +193,28 @@ void AttitudeController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg) {
 // Subscribe to command/orientation
 // set the MAX_ROLL and MAX_PITCH value in the header
 void AttitudeController::CommandCB(const geometry_msgs::Vector3::ConstPtr &cmd) {
-  // If a new AND different command arrives, reset the controllers
-  if(round(cmd->x) != prev_roll_cmd)
-    AttitudeController::ResetRoll();
-  if(round(cmd->y) != prev_pitch_cmd)
-    AttitudeController::ResetPitch();
-  if(round(cmd->z) != prev_yaw_cmd)
-    AttitudeController::ResetYaw();
+  // Reset controller if target value has changed
+  // Also update commands and status_msg
+  if((round(cmd->x) != last_roll_cmd) && pid_roll_init) {
+    roll_controller_pid.reset();
+    roll_cmd = round(cmd->x);
+    last_roll_cmd = roll_cmd;
+    status_msg.roll.reference = roll_cmd;
+  }
 
-  roll_cmd = round(cmd->x);
-  pitch_cmd = round(cmd->y);
-  yaw_cmd = round(cmd->z);
+  if((round(cmd->y) != last_pitch_cmd) && pid_pitch_init) {
+    pitch_controller_pid.reset();
+    pitch_cmd = round(cmd->y);
+    last_pitch_cmd = pitch_cmd;
+    status_msg.pitch.reference = pitch_cmd;
+  }
 
-  status_msg.roll.reference = roll_cmd;
-  status_msg.pitch.reference = pitch_cmd;
-  status_msg.yaw.reference = yaw_cmd;
-
-  prev_roll_cmd = roll_cmd;
-  prev_pitch_cmd = pitch_cmd;
-  prev_yaw_cmd = yaw_cmd;
+  if((round(cmd->z) != last_yaw_cmd) && pid_yaw_init) {
+    yaw_controller_pid.reset();
+    yaw_cmd = round(cmd->z);
+    last_yaw_cmd = yaw_cmd;
+    status_msg.yaw.reference = yaw_cmd;
+  }
 }
 
 void AttitudeController::ResetController(const riptide_msgs::ResetControls::ConstPtr& reset_msg) {
@@ -230,12 +233,11 @@ void AttitudeController::ResetController(const riptide_msgs::ResetControls::Cons
 }
 
 void AttitudeController::ResetRoll() {
-  prev_roll_cmd = 0;
+  roll_controller_pid.reset();
+  last_roll_cmd = 0;
   roll_cmd = 0;
   roll_error = 0;
   roll_error_dot = 0;
-  roll_controller_pid.reset();
-  current_attitude.x = 0;
   last_error.x = 0;
   last_error_dot.x = 0;
 
@@ -251,12 +253,11 @@ void AttitudeController::ResetRoll() {
 }
 
 void AttitudeController::ResetPitch() {
-  prev_pitch_cmd = 0;
+  pitch_controller_pid.reset();
+  last_pitch_cmd = 0;
   pitch_cmd = 0;
   pitch_error = 0;
   pitch_error_dot = 0;
-  pitch_controller_pid.reset();
-  current_attitude.y = 0;
   last_error.y = 0;
   last_error_dot.y = 0;
 
@@ -272,12 +273,11 @@ void AttitudeController::ResetPitch() {
 }
 
 void AttitudeController::ResetYaw() {
-  prev_yaw_cmd = 0;
+  yaw_controller_pid.reset();
+  last_yaw_cmd = 0;
   yaw_cmd = 0;
   yaw_error = 0;
   yaw_error_dot = 0;
-  yaw_controller_pid.reset();
-  current_attitude.z = 0;
   last_error.z = 0;
   last_error_dot.z = 0;
 

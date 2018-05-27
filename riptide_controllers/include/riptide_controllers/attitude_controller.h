@@ -36,7 +36,7 @@ class AttitudeController
     //PID
     double roll_error, pitch_error, yaw_error;
     double roll_error_dot, pitch_error_dot, yaw_error_dot;
-    double roll_cmd, pitch_cmd, yaw_cmd, prev_roll_cmd, prev_pitch_cmd, prev_yaw_cmd;
+    double roll_cmd, pitch_cmd, yaw_cmd, last_roll_cmd, last_pitch_cmd, last_yaw_cmd;
 
     geometry_msgs::Vector3 current_attitude, last_error, last_error_dot;;
 

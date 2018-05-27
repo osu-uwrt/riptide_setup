@@ -5,6 +5,7 @@
 #undef progress
 
 #define PI 3.141592653
+#define MIN_DEPTH 0
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "depth_controller");
@@ -22,7 +23,7 @@ DepthController::DepthController() {
 
     depth_controller_pid.init(dcpid, false);
 
-    cmd_sub = nh.subscribe<riptide_msgs::Depth>("command/depth", 1, &DepthController::CommandCB, this);
+    cmd_sub = nh.subscribe<riptide_msgs::DepthCommand>("command/depth", 1, &DepthController::CommandCB, this);
     depth_sub = nh.subscribe<riptide_msgs::Depth>("state/depth", 1, &DepthController::DepthCB, this);
     imu_sub = nh.subscribe<riptide_msgs::Imu>("state/imu", 1, &DepthController::ImuCB, this);
     reset_sub = nh.subscribe<riptide_msgs::ResetControls>("controls/reset", 1, &DepthController::ResetController, this);
@@ -121,14 +122,20 @@ void DepthController::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg) {
 }
 
 // Subscribe to state/depth
-void DepthController::CommandCB(const riptide_msgs::Depth::ConstPtr &cmd) {
-  // If a new AND different command arrives, reset the controllers
-  if(cmd->depth != prev_depth_cmd)
+void DepthController::CommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd) {
+  // Reset controller if target value has changed
+  if((cmd->absolute != last_depth_cmd_absolute) && pid_depth_init)
     DepthController::ResetDepth();
 
-  depth_cmd = cmd->depth;
+  if(cmd->absolute != 0)
+    depth_cmd = cmd->absolute;
+  else
+    depth_cmd = current_depth + cmd->relative;
+
+  if(depth_cmd < 0) // Min. depth is zero
+    depth_cmd = 0;
   status_msg.reference = depth_cmd;
-  prev_depth_cmd = depth_cmd;
+  last_depth_cmd_absolute = cmd->absolute;
 }
 
 // Create rotation matrix from IMU orientation
@@ -147,12 +154,11 @@ void DepthController::ResetController(const riptide_msgs::ResetControls::ConstPt
 }
 
 void DepthController::ResetDepth() {
-  prev_depth_cmd = 0;
+  depth_controller_pid.reset();
   depth_cmd = 0;
   depth_error = 0;
   depth_error_dot = 0;
-  depth_controller_pid.reset();
-  current_depth = 0;
+  last_depth_cmd_absolute = 0;
   last_error = 0;
   last_error_dot = 0;
 

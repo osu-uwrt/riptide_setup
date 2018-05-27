@@ -6,6 +6,7 @@
 #include "geometry_msgs/Vector3.h"
 #include "tf/transform_listener.h"
 #include "riptide_msgs/Depth.h"
+#include "riptide_msgs/DepthCommand.h"
 #include "riptide_msgs/Imu.h"
 #include "riptide_msgs/ResetControls.h"
 #include "riptide_msgs/ControlStatus.h"
@@ -33,7 +34,7 @@ class DepthController
     //PID
     double depth_error, depth_error_dot;
     double current_depth;
-    double depth_cmd, prev_depth_cmd;
+    double depth_cmd, last_depth_cmd_absolute;
     double last_error, last_error_dot;
     double dt;
 
@@ -51,7 +52,7 @@ class DepthController
   public:
     DepthController();
     void LoadProperty(std::string name, double &param);
-    void CommandCB(const riptide_msgs::Depth::ConstPtr &cmd);
+    void CommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd);
     void DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg);
     void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
     void Loop();
