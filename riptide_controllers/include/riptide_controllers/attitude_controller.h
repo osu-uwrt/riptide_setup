@@ -26,12 +26,13 @@ class AttitudeController
     geometry_msgs::Vector3 ang_accel_cmd;
     riptide_msgs::ControlStatusAngular status_msg;
     double MAX_ROLL_ERROR, MAX_PITCH_ERROR, MAX_YAW_ERROR;
+    double MAX_ROLL_LIMIT, MAX_PITCH_LIMIT;
 
     // IIR Filter variables for D-term
     double PID_IIR_LPF_bandwidth, dt_iir, alpha, imu_filter_rate;
 
     tf::Matrix3x3 R_b2w, R_w2b;
-    tf::Vector3 tf;
+    tf::Vector3 tf, ang_vel;
 
     //PID
     double roll_error, pitch_error, yaw_error;
@@ -42,15 +43,11 @@ class AttitudeController
 
     bool pid_roll_init, pid_pitch_init, pid_yaw_init;
 
-    /*ros::Time sample_start_roll, sample_start_pitch, sample_start_yaw;
-    ros::Duration sample_duration_roll, sample_duration_pitch, sample_duration_yaw;
-    double dt_roll, dt_pitch, dt_yaw;*/
-
     ros::Time sample_start;
     ros::Duration sample_duration;
     double dt;
 
-    void InitPubMsg();
+    void InitMsgs();
     void UpdateError();
     double Constrain(double current, double max);
     double SmoothErrorIIR(double input, double prev);
@@ -62,7 +59,7 @@ class AttitudeController
   public:
     AttitudeController();
     void LoadProperty(std::string name, double &param);
-    void CommandCB(const geometry_msgs::Vector3::ConstPtr &cmd);
+    void ManualCommandCB(const geometry_msgs::Vector3::ConstPtr &cmd);
     void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
     void Loop();
  };

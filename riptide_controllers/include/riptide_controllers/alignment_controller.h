@@ -19,10 +19,11 @@ class AlignmentController
     // Comms
     ros::NodeHandle nh;
     ros::Subscriber alignment_sub, command_sub, reset_sub;
-    ros::Publisher x_pub, y_pub, z_pub, status_pub;
+    ros::Publisher xy_pub, z_pub, status_pub;
 
     control_toolbox::Pid x_pid, y_pid, z_pid;
-    std_msgs::Float32 surge_cmd, sway_cmd, heave_cmd;
+    double heave_cmd;
+    geometry_msgs::Vector3 xy_cmd;
     riptide_msgs::DepthCommand depth_cmd;
 
     riptide_msgs::ControlStatusLinear status_msg;
@@ -41,7 +42,7 @@ class AlignmentController
     ros::Time sample_start;
     ros::Duration sample_duration;
 
-    void InitPubMsg();
+    void InitMsgs();
     void UpdateError();
     void UpdateTaskID(int id);
     double Constrain(double current, double max);

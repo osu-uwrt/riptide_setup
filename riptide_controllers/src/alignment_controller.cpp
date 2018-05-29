@@ -26,9 +26,8 @@ AlignmentController::AlignmentController() {
     command_sub = nh.subscribe<riptide_msgs::AlignmentCommand>("command/alignment", 1, &AlignmentController::CommandCB, this);
     reset_sub = nh.subscribe<riptide_msgs::ResetControls>("controls/reset", 1, &AlignmentController::ResetController, this);
 
-    x_pub = nh.advertise<std_msgs::Float32>("command/accel/linear/x", 1);
-    y_pub = nh.advertise<std_msgs::Float32>("command/accel/linear/y", 1);
-    z_pub = nh.advertise<riptide_msgs::DepthCommand>("command/depth", 1);
+    xy_pub = nh.advertise<geometry_msgs::Vector3>("command/auto/accel/linear", 1); // auto -> published by controller
+    z_pub = nh.advertise<riptide_msgs::DepthCommand>("command/auto/depth", 1); // auto -> published by controller
     status_pub = nh.advertise<riptide_msgs::ControlStatusLinear>("controls/status/linear", 1);
 
     AlignmentController::LoadProperty("max_x_error", MAX_X_ERROR);
@@ -36,10 +35,10 @@ AlignmentController::AlignmentController() {
     AlignmentController::LoadProperty("max_z_error", MAX_Z_ERROR);
 
     sample_start = ros::Time::now();
-    AlignmentController::InitPubMsg();
+    AlignmentController::InitMsgs();
 }
 
-void AlignmentController::InitPubMsg() {
+void AlignmentController::InitMsgs() {
   status_msg.x.reference = 0;
   status_msg.x.current = 0;
   status_msg.x.error = 0;
@@ -84,7 +83,7 @@ void AlignmentController::UpdateError() {
     error_dot.y = (error.y - last_error.y) / dt;
     last_error.y = error.y;
     status_msg.y.error = last_error.y;
-    sway_cmd.data = y_pid.computeCommand(error.y, error_dot.y, sample_duration);
+    xy_cmd.y = y_pid.computeCommand(error.y, error_dot.y, sample_duration);
   }
 
   // If we are aligning in the YZ plane (forward cam), then X acceleration is
@@ -103,7 +102,7 @@ void AlignmentController::UpdateError() {
     error_dot.x = (error.x - last_error.x) / dt;
     last_error.x = error.x;
     status_msg.x.error = last_error.x;
-    surge_cmd.data = x_pid.computeCommand(error.x, error_dot.x, sample_duration);
+    xy_cmd.x = x_pid.computeCommand(error.x, error_dot.x, sample_duration);
   }
 
   if(pid_heave_init) {
@@ -116,14 +115,15 @@ void AlignmentController::UpdateError() {
     error_dot.z = (error.z - last_error.z) / dt;
     last_error.z = error.z;
     status_msg.z.error = last_error.z;
-    heave_cmd.data = z_pid.computeCommand(error.z, error_dot.z, sample_duration);
+    heave_cmd = z_pid.computeCommand(error.z, error_dot.z, sample_duration);
   }
 
-  x_pub.publish(surge_cmd);
-  y_pub.publish(sway_cmd);
+  xy_cmd.z = 0;
+  xy_pub.publish(xy_cmd);
 
+  depth_cmd.isManual = false;
   depth_cmd.absolute = 0;
-  depth_cmd.relative = heave_cmd.data;
+  depth_cmd.relative = heave_cmd;
   z_pub.publish(depth_cmd); // Output goes straight to the depth controller
 
   status_msg.header.stamp = sample_start;
@@ -145,16 +145,10 @@ double AlignmentController::Constrain(double current, double max) {
 //
 void AlignmentController::UpdateTaskID(int id) {
   // Validate id
-  if (id >= 0 && id < MAX_TASK_ID) {
+  if (id >= 0 && id <= MAX_TASK_ID) {
     alignment_sub.shutdown(); // Unsubscribe from old task topic
     current_task_id = id;
     alignment_sub = nh.subscribe<riptide_msgs::TaskAlignment>(topics[current_task_id], 1, &AlignmentController::AlignmentCB, this);
-
-    // Notes:
-    // 1. Reset previous controllers
-    // 2. Add controller status messages
-    // 3. Use Riptide_Constants.msg
-    // 4. Add manual and auto linear/accel commands for convenience
   }
 }
 
@@ -187,6 +181,8 @@ void AlignmentController::AlignmentCB(const riptide_msgs::TaskAlignment::ConstPt
 // Subscribe to /command/alignment to get target alignment relative to task
 void AlignmentController::CommandCB(const riptide_msgs::AlignmentCommand::ConstPtr &cmd) {
   alignment_plane = cmd->alignment_plane;
+  if(alignment_plane != riptide_msgs::AlignmentCommand::YZ && alignment_plane != riptide_msgs::AlignmentCommand::YX)
+    alignment_plane = riptide_msgs::AlignmentCommand::YZ; // Default to YZ-plane (fwd cam)
 
   if(cmd->task_id != current_task_id) {
     AlignmentController::UpdateTaskID(cmd->task_id);
@@ -195,18 +191,18 @@ void AlignmentController::CommandCB(const riptide_msgs::AlignmentCommand::ConstP
   // Reset conroller if target value has changed
   // Also update commands and status_msg
   target_bbox_width = cmd->bbox_width;
-  if((cmd->target_pos.y != last_target.y) && pid_sway_init) {
+  if(pid_sway_init && (cmd->target_pos.y != last_target.y)) {
     y_pid.reset();
     target.y = cmd->target_pos.y;
     last_target.y = target.y;
     status_msg.y.reference = target.y;
   }
   if(alignment_plane == riptide_msgs::AlignmentCommand::YZ) { // Using fwd cam
-    if((cmd->bbox_width != last_target_bbox_width) && pid_surge_init) {
+    if(pid_surge_init && (cmd->bbox_width != last_target_bbox_width)) {
       x_pid.reset();
       status_msg.x.reference = target_bbox_width;
     }
-    if((cmd->target_pos.z != last_target.z) && pid_heave_init) {
+    if(pid_heave_init && (cmd->target_pos.z != last_target.z)) {
       z_pid.reset();
       target.z = cmd->target_pos.z;
       last_target.z = target.z;
@@ -214,11 +210,11 @@ void AlignmentController::CommandCB(const riptide_msgs::AlignmentCommand::ConstP
     }
   }
   else if(alignment_plane == riptide_msgs::AlignmentCommand::YX) { // Using dwn cam
-    if((cmd->bbox_width != last_target_bbox_width) && pid_heave_init) {
+    if(pid_heave_init && (cmd->bbox_width != last_target_bbox_width)) {
       z_pid.reset();
       status_msg.z.reference = target_bbox_width;
     }
-    if((cmd->target_pos.x != last_target.x) && pid_surge_init) {
+    if(pid_surge_init && (cmd->target_pos.x != last_target.x)) {
       x_pid.reset();
       target.x = cmd->target_pos.x;
       last_target.x = target.x;
@@ -252,8 +248,11 @@ void AlignmentController::ResetSurge() {
   last_target.x = 0;
   last_error.x = 0;
 
+  status_msg.x.reference = 0;
+  status_msg.x.error = 0;
+
   pid_surge_init = false;
-  surge_cmd.data = 0;
+  xy_cmd.x = 0;
 }
 
 void AlignmentController::ResetSway() {
@@ -264,8 +263,11 @@ void AlignmentController::ResetSway() {
   last_target.y = 0;
   last_error.y = 0;
 
+  status_msg.y.reference = 0;
+  status_msg.y.error = 0;
+
   pid_sway_init = false;
-  sway_cmd.data = 0;
+  xy_cmd.y = 0;
 }
 
 void AlignmentController::ResetHeave() {
@@ -276,8 +278,11 @@ void AlignmentController::ResetHeave() {
   last_target.z = 0;
   last_error.z = 0;
 
+  status_msg.z.reference = 0;
+  status_msg.z.error = 0;
+
   pid_heave_init = false;
-  heave_cmd.data = 0;
+  heave_cmd = 0;
 }
 
 void AlignmentController::Loop() {
