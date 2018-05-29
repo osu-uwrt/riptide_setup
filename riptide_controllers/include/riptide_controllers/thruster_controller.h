@@ -18,7 +18,6 @@
 #include "riptide_msgs/Imu.h"
 #include "imu_3dm_gx4/FilterOutput.h"
 #include "riptide_msgs/Depth.h"
-#include "riptide_msgs/MassVol.h"
 #include "riptide_msgs/ThrustStamped.h"
 
 class ThrusterController
