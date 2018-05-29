@@ -5,7 +5,6 @@
 #undef progress
 
 #define PI 3.141592653
-#define MAX_DEPTH_ERROR 2
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "depth_controller");
@@ -31,6 +30,15 @@ DepthController::DepthController() {
     cmd_pub = nh.advertise<geometry_msgs::Vector3>("command/accel/depth", 1);
     status_pub = nh.advertise<riptide_msgs::ControlStatus>("controls/status/depth", 1);
 
+    DepthController::LoadProperty("max_depth_error", MAX_DEPTH_ERROR);
+    DepthController::LoadProperty("PID_IIR_LPF_bandwidth", PID_IIR_LPF_bandwidth);
+    DepthController::LoadProperty("sensor_rate", sensor_rate);
+
+    // IIR LPF Variables
+    double fc = PID_IIR_LPF_bandwidth; // Shorthand variable for IIR bandwidth
+    dt_iir = 1.0/sensor_rate;
+    alpha = 2*PI*dt_iir*fc / (2*PI*dt_iir*fc + 1); // Multiplier
+
     sample_start = ros::Time::now();
 
     status_msg.reference = 0;
@@ -39,6 +47,24 @@ DepthController::DepthController() {
     accel.x = 0;
     accel.y = 0;
     accel.z = 0;
+    DepthController::ResetDepth();
+}
+
+// Load property from namespace
+void DepthController::LoadProperty(std::string name, double &param)
+{
+  try
+  {
+    if (!nh.getParam("/depth_controller/" + name, param))
+    {
+      throw 0;
+    }
+  }
+  catch(int e)
+  {
+    ROS_ERROR("Critical! Depth Controller has no property set for %s. Shutting down...", name.c_str());
+    ros::shutdown();
+  }
 }
 
 void DepthController::UpdateError() {
@@ -47,9 +73,11 @@ void DepthController::UpdateError() {
     dt = sample_duration.toSec();
 
     depth_error = depth_cmd - current_depth;
-    depth_error = DepthController::ConstrainError(depth_error, MAX_DEPTH_ERROR);
+    depth_error = DepthController::Constrain(depth_error, MAX_DEPTH_ERROR);
     depth_error_dot = (depth_error - last_error) / dt;
+    depth_error_dot = DepthController::SmoothErrorIIR(depth_error_dot, last_error_dot);
     last_error = depth_error;
+    last_error_dot = depth_error_dot;
     status_msg.error = depth_error;
 
     output = depth_controller_pid.computeCommand(depth_error, depth_error_dot, sample_duration);
@@ -73,12 +101,17 @@ void DepthController::UpdateError() {
 // Constrain physical error. This acts as a way to break up the motion into
 // smaller segments. Otherwise, if error is too large, the vehicle would move
 // too quickly in the water and exhibit large overshoot
-double DepthController::ConstrainError(double error, double max) {
-  if(error > max)
+double DepthController::Constrain(double current, double max) {
+  if(current > max)
     return max;
-  else if(error < -1*max)
+  else if(current < -1*max)
     return -1*max;
-  return error;
+  return current;
+}
+
+// Apply IIR LPF to depth error
+double DepthController::SmoothErrorIIR(double input, double prev) {
+  return (alpha*input + (1-alpha)*prev);
 }
 
 // Subscribe to command/depth
@@ -89,8 +122,13 @@ void DepthController::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg) {
 
 // Subscribe to state/depth
 void DepthController::CommandCB(const riptide_msgs::Depth::ConstPtr &cmd) {
+  // If a new AND different command arrives, reset the controllers
+  if(cmd->depth != prev_depth_cmd)
+    DepthController::ResetDepth();
+
   depth_cmd = cmd->depth;
   status_msg.reference = depth_cmd;
+  prev_depth_cmd = depth_cmd;
 }
 
 // Create rotation matrix from IMU orientation
@@ -109,12 +147,14 @@ void DepthController::ResetController(const riptide_msgs::ResetControls::ConstPt
 }
 
 void DepthController::ResetDepth() {
+  prev_depth_cmd = 0;
   depth_cmd = 0;
   depth_error = 0;
   depth_error_dot = 0;
   depth_controller_pid.reset();
   current_depth = 0;
   last_error = 0;
+  last_error_dot = 0;
 
   sample_start = ros::Time::now();
   sample_duration = ros::Duration(0);

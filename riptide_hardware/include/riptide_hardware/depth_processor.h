@@ -14,11 +14,18 @@ class DepthProcessor
 private:
   ros::NodeHandle nh;
   ros::Subscriber depth_sub;
-  ros::Publisher state_depth_pub;
-  riptide_msgs::Depth lastDepth;
+  ros::Publisher depth_state_pub;
+
+  // IIR LPF Variables
+  double post_IIR_LPF_bandwidth, sensor_rate, dt, alpha, prev_depth;
+
+  riptide_msgs::Depth depth_state;
 public:
   DepthProcessor();
-  void DepthCB(const riptide_msgs::Depth::ConstPtr& msg);
+  void LoadProperty(std::string, double &param);
+  void DepthCB(const riptide_msgs::Depth::ConstPtr& depth_msg);
+  void SmoothDataIIR();
+  void Loop();
 };
 
 #endif
