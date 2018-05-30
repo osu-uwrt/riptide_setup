@@ -3,7 +3,6 @@
 
 #include "ros/ros.h"
 #include "control_toolbox/pid.h"
-#include "std_msgs/Float32.h"
 #include "riptide_msgs/TaskAlignment.h"
 #include "riptide_msgs/AlignmentCommand.h"
 #include "riptide_msgs/DepthCommand.h"

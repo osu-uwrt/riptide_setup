@@ -5,5 +5,5 @@ d: 0.0
 i: 0.0
 i_clamp_max: 5.0
 i_clamp_min: 0.0
-p:  2.0
+p:  8.0
 max_depth_error: 1.0

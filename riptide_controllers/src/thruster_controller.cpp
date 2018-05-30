@@ -275,7 +275,6 @@ struct tuneYaw
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "thruster_controller");
-  //tf::TransformListener tf_listener;
   ThrusterController ThrusterController(argv);
   ThrusterController.Loop();
 }
@@ -336,9 +335,6 @@ ThrusterController::ThrusterController(char **argv)
   weight = mass*GRAVITY;
   buoyancy = volume*WATER_DENSITY*GRAVITY;
 
-  //listener = listener_adr;
-  //thrust.header.frame_id = "base_link";
-
   state_sub = nh.subscribe<riptide_msgs::Imu>("state/imu", 1, &ThrusterController::ImuCB, this);
   depth_sub = nh.subscribe<riptide_msgs::Depth>("state/depth", 1, &ThrusterController::DepthCB, this);
   cmd_sub = nh.subscribe<geometry_msgs::Accel>("command/accel", 1, &ThrusterController::AccelCB, this);
@@ -355,32 +351,6 @@ ThrusterController::ThrusterController(char **argv)
     buoyancy_pos.vector.y = 0;
     buoyancy_pos.vector.z = 0;
   }
-
-  /*listener->waitForTransform("/base_link", "/surge_port_lo_link", ros::Time(0), ros::Duration(10.0));
-  listener->lookupTransform("/base_link", "/surge_port_lo_link", ros::Time(0), tf_surge[0]);
-  listener->waitForTransform("/base_link", "/surge_stbd_lo_link", ros::Time(0), ros::Duration(10.0));
-  listener->lookupTransform("/base_link", "/surge_stbd_lo_link", ros::Time(0), tf_surge[1]);
-  listener->waitForTransform("/base_link", "/sway_fwd_link", ros::Time(0), ros::Duration(10.0));
-  listener->lookupTransform("/base_link", "/sway_fwd_link", ros::Time(0), tf_sway[0]);
-  listener->waitForTransform("/base_link", "/sway_aft_link", ros::Time(0), ros::Duration(10.0));
-  listener->lookupTransform("/base_link", "/sway_aft_link", ros::Time(0), tf_sway[1]);
-  listener->waitForTransform("/base_link", "/heave_port_fwd_link", ros::Time(0), ros::Duration(10.0));
-  listener->lookupTransform("/base_link", "/heave_port_fwd_link", ros::Time(0), tf_heave[0]);
-  listener->waitForTransform("/base_link", "/heave_stbd_fwd_link", ros::Time(0), ros::Duration(10.0));
-  listener->lookupTransform("/base_link", "/heave_stbd_fwd_link", ros::Time(0), tf_heave[1]);
-  listener->waitForTransform("/base_link", "/heave_port_aft_link", ros::Time(0), ros::Duration(10.0));
-  listener->lookupTransform("/base_link", "/heave_port_aft_link", ros::Time(0), tf_heave[2]);
-  listener->waitForTransform("/base_link", "/heave_stbd_aft_link", ros::Time(0), ros::Duration(10.0));
-  listener->lookupTransform("/base_link", "/heave_stbd_aft_link", ros::Time(0), tf_heave[3]);
-
-  GetTransform(&pos_surge_port_lo, &tf_surge[0]);
-  GetTransform(&pos_surge_stbd_lo, &tf_surge[1]);
-  GetTransform(&pos_sway_fwd, &tf_sway[0]);
-  GetTransform(&pos_sway_aft, &tf_sway[1]);
-  GetTransform(&pos_heave_port_fwd, &tf_heave[0]);
-  GetTransform(&pos_heave_stbd_fwd, &tf_heave[1]);
-  GetTransform(&pos_heave_port_aft, &tf_heave[2]);
-  GetTransform(&pos_heave_stbd_aft, &tf_heave[3]);*/
 
   google::InitGoogleLogging(argv[0]);
 

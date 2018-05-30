@@ -1,3 +1,3 @@
-max_x_error: 200 # [pixels]
-max_y_error: 200 # [pixels]
-max_z_error: 200 # [pixels]
+max_x_error: 50 # [pixels]
+max_y_error: 50 # [pixels]
+max_z_error: 50 # [pixels]
