@@ -1,4 +1,8 @@
 <launch>
-  <rosparam command="load" ns="sway_controller" file="$(find riptide_controllers)/cfg/sway_config.yaml" />
-  <node pkg="riptide_controllers" type="alignment_controller" name="alignment_controller" output="screen" />
+  <rosparam command="load" ns="surge_controller" file="$(find riptide_controllers)/cfg/pid_config_surge.yaml" />
+  <rosparam command="load" ns="sway_controller" file="$(find riptide_controllers)/cfg/pid_config_sway.yaml" />
+  <rosparam command="load" ns="heave_controller" file="$(find riptide_controllers)/cfg/pid_config_heave.yaml" />
+  <node pkg="riptide_controllers" type="alignment_controller" name="alignment_controller" output="screen" >
+    <rosparam command="load" file="$(find riptide_controllers)/cfg/alignment_controller_properties.yaml" />
+  </node>
 </launch>

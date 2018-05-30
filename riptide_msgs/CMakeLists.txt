@@ -18,12 +18,16 @@ add_message_files(
     Imu.msg
     ImuVerbose.msg
     SwitchState.msg
-    ObjectData.msg
+    TaskAlignment.msg
     GateData.msg
+    PoleData.msg
+    BoundingBox.msg
     ResetControls.msg
     ControlStatus.msg
     ControlStatusAngular.msg
     ControlStatusLinear.msg
+    AlignmentCommand.msg
+    DepthCommand.msg
 )
 
 generate_messages(DEPENDENCIES std_msgs geometry_msgs)
