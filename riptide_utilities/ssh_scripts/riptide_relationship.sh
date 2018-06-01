@@ -11,3 +11,5 @@ mv /tmp/sshkey.pub ~/.ssh/sshkey.pub
 
 ssh-add -D
 ssh-add sshkey
+
+ssh-keyscan riptide >> ~/.ssh/known_hosts 
