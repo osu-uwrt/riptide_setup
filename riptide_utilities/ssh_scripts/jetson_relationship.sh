@@ -12,4 +12,4 @@ mv /tmp/sshkey.pub ~/.ssh/sshkey.pub
 ssh-add -D
 ssh-add sshkey
 
-ssh-keyscan jetson >> ~/.ssh/known_hosts 
+ssh-keyscan jetson >> ~/.ssh/known_hosts
