@@ -15,18 +15,17 @@
 
 import rospy
 from sensor_msgs.msg import Joy
-from riptide_msgs.msg import Pwm
+from riptide_msgs.msg import PwmStamped
 
 pub = None
 
 def controller_callback(joy_msg):
-
 	FORWARD_THRUST_FACTOR = 150
 	VERTICAL_THRUST_FACTOR = 150
 	SWAY_FACTOR = 150
 
 	verbose = True
-	msg = Pwm()
+	msg = PwmStamped()
 
 	axes = joy_msg.axes
 
@@ -37,14 +36,14 @@ def controller_callback(joy_msg):
 	left_trigger = (-1 * axes[12] + 1) / 2
 	right_trigger = (-1 * axes[13] + 1) / 2
 
-	msg.surge_port_lo = 1500 + FORWARD_THRUST_FACTOR * left_stick_vertical
-	msg.surge_stbd_lo = 1500 + FORWARD_THRUST_FACTOR * left_stick_vertical
-	msg.sway_fwd = 1500 + SWAY_FACTOR * right_stick_horizontal
-	msg.sway_aft = 1500 - SWAY_FACTOR * right_stick_horizontal
-	msg.heave_port_fwd = 1500 + VERTICAL_THRUST_FACTOR * (right_trigger if right_trigger > left_trigger else -1 * left_trigger)
-	msg.heave_stbd_fwd = 1500 + VERTICAL_THRUST_FACTOR * (right_trigger if right_trigger > left_trigger else -1 * left_trigger)
-	msg.heave_port_aft = 1500 + VERTICAL_THRUST_FACTOR * (right_trigger if right_trigger > left_trigger else -1 * left_trigger)
-	msg.heave_stbd_aft = 1500 + VERTICAL_THRUST_FACTOR * (right_trigger if right_trigger > left_trigger else -1 * left_trigger)
+	msg.pwm.surge_port_lo = 1500 + FORWARD_THRUST_FACTOR * left_stick_vertical
+	msg.pwm.surge_stbd_lo = 1500 - FORWARD_THRUST_FACTOR * left_stick_vertical
+	msg.pwm.sway_fwd = 1500 - SWAY_FACTOR * right_stick_horizontal
+	msg.pwm.sway_aft = 1500 - SWAY_FACTOR * right_stick_horizontal
+	msg.pwm.heave_port_fwd = 1500 - VERTICAL_THRUST_FACTOR * (right_trigger if right_trigger > left_trigger else -1 * left_trigger)
+	msg.pwm.heave_stbd_fwd = 1500 + VERTICAL_THRUST_FACTOR * (right_trigger if right_trigger > left_trigger else -1 * left_trigger)
+	msg.pwm.heave_port_aft = 1500 + VERTICAL_THRUST_FACTOR * (right_trigger if right_trigger > left_trigger else -1 * left_trigger)
+	msg.pwm.heave_stbd_aft = 1500 - VERTICAL_THRUST_FACTOR * (right_trigger if right_trigger > left_trigger else -1 * left_trigger)
 
 	if verbose:
 		print "Left Stick vertical:", left_stick_vertical
@@ -61,5 +60,5 @@ def controller_callback(joy_msg):
 if __name__ == '__main__':
 	rospy.init_node('ps3_control')
 	rospy.Subscriber('joy', Joy, controller_callback)
-	pub = rospy.Publisher('command/pwm', Pwm)
+	pub = rospy.Publisher('/command/pwm', PwmStamped, queue_size=1)
 	rospy.spin()

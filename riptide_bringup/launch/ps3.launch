@@ -2,6 +2,4 @@
   <include file="$(find riptide_hardware)/launch/coprocessor.launch" />
   <node pkg="riptide_utilities" type="ps3_control.py" name="ps3"/>
   <node pkg="joy" type="joy_node" name="joy_node"/>
-
-
 </launch>
