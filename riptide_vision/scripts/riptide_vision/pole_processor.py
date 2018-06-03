@@ -24,15 +24,34 @@ class PoleProcessor(TaskProcessor):
 
         # Package data (if there is any)
         if (len(response) > 0):
+            x_min = response[2]
+            y_min = response[3]
+            x_max = response[4]
+            y_max = response[5]
+            x_mid = response[6]
+            y_mid = response[7]
+            cam_center_x = response[8]
+            cam_center_y = response[9]
+
+            # Adjust all X and Y positions to be relative to the center of the camera frame
+            # Also maintain the axes convention in here (X is pos. to the right, Y is pos. down)
+            x_min = x_min - cam_center_x
+            x_max = x_max - cam_center_x
+            x_mid = x_mid - cam_center_x
+
+            y_min = y_min - cam_center_y
+            y_max = y_max - cam_center_y
+            y_mid = y_mid - cam_center_y
+
             # pos = the middle of the pole in vehicle coordinate frame
             pos = Point()
             pos.x = 0
-            pos.y = -response[6] # Cam frame x negated
-            pos.z = -response[7] # Cam frame y negated
+            pos.y = -x_mid # Cam frame x negated
+            pos.z = -y_mid # Cam frame y negated
 
             bbox = BoundingBox()
-            bbox.top_left = Point(0, -response[2], -response[3])
-            bbox.bottom_right = Point(0, -response[4], -response[5])
+            bbox.top_left = Point(0, -x_min, -y_min)
+            bbox.bottom_right = Point(0, -x_max, -y_max)
 
             pole_msg.roll_correction = response[0]
             pole_msg.beam_thickness = response[1]
