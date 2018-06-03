@@ -233,6 +233,16 @@ class RiptideVision:
             cam_center_y = int(img.shape[0] / 2)
             cam_center_x = int(img.shape[1] / 2)
 
+        # Adjust all X and Y positions to be relative to the center of the camera frame
+        # Also maintain the axes convention in here (X is pos. to the right, Y is pos. down)
+        x_min = x_min - cam_center_x
+        x_max = x_max - cam_center_x
+        x_mid = x_mid - cam_center_x
+
+        y_min = y_min - cam_center_y
+        y_max = y_max - cam_center_y
+        y_mid = y_mid - cam_center_y
+
         packet = []
         packet.append(left_pole_visible)
         packet.append(right_pole_visible)
@@ -409,10 +419,20 @@ class RiptideVision:
         cam_center_y = int(img.shape[0] / 2)
         cam_center_x = int(img.shape[1] / 2)
 
-        return [roll_correction, beam_thickness, x_mid, y_mid, x_min, x_max, y_min, y_max, cam_center_x, cam_center_y]  # NOQA
+        # Adjust all X and Y positions to be relative to the center of the camera frame
+        # Also maintain the axes convention in here (X is pos. to the right, Y is pos. down)
+        x_min = x_min - cam_center_x
+        x_max = x_max - cam_center_x
+        x_mid = x_mid - cam_center_x
+
+        y_min = y_min - cam_center_y
+        y_max = y_max - cam_center_y
+        y_mid = y_mid - cam_center_y
+
+        return [roll_correction, beam_thickness, x_min, y_min, x_max, y_max, x_mid, y_mid, cam_center_x, cam_center_y]  # NOQA
 
     def detect_pole_vis(self, img, packet):
         if packet != []:
-            cv2.rectangle(img, (packet[4], packet[6]), (int(packet[4]+packet[1]), packet[7]), (0, 255, 0), 3)  # NOQA
+            cv2.rectangle(img, (packet[2], packet[3]), (int(packet[2]+packet[1]), packet[5]), (0, 255, 0), 3)  # NOQA
 
         return img

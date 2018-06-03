@@ -24,14 +24,15 @@ class GateProcessor(TaskProcessor):
 
         # Package data (if there is any)
         if (len(response) > 0):
+            # pos = the middle of the gate in vehicle coordinate frame
             pos = Point()
             pos.x = 0
-            pos.y = response[2]
-            pos.z = response[3]
+            pos.y = -response[7] # Cam frame x negated
+            pos.z = -response[8] # Cam frame y negated
 
             bbox = BoundingBox()
-            bbox.top_left = Point(0, response[3], response[4])
-            bbox.bottom_right = Point(0, response[5], response[6])
+            bbox.top_left = Point(0, -response[3], -response[4])
+            bbox.bottom_right = Point(0, -response[5], -response[6])
 
             gate_msg.left_pole_visible = response[0]
             gate_msg.right_pole_visible = response[1]
