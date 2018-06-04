@@ -126,7 +126,7 @@ void DepthController::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg) {
 void DepthController::ManualCommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd) {
   // Reset controller if absolute target value has changed
   if(cmd->isManual && pid_depth_init && (cmd->absolute != last_depth_cmd_absolute))
-    DepthController::ResetDepth();
+    depth_controller_pid.reset();
 
   depth_cmd = cmd->absolute;
   if(depth_cmd < 0) // Min. depth is zero
@@ -140,6 +140,7 @@ void DepthController::AutoCommandCB(const riptide_msgs::DepthCommand::ConstPtr &
   // Do NOT reset controller if using auto commands - this will only waste time
   // in having the controller reset itself with every callback
   if(!cmd->isManual && pid_depth_init)
+    depth_controller_pid.reset();
     depth_cmd = current_depth + cmd->relative;
 
   if(depth_cmd < 0) // Min. depth is zero

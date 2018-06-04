@@ -1,0 +1,18 @@
+<launch>
+  <arg name="port" value="2" />
+  <arg name="rate" value="100" />
+  <arg name="max_depth" value="4" />
+
+  <node pkg="joy" type="joy_node" name="joystick_driver">
+    <param name="dev" value="/dev/input/js$(arg port)" />
+  </node>
+
+  <node pkg="riptide_teleop" type="ps3_control" name="ps3_control" >
+    <rosparam command="load" file="$(find riptide_teleop)/cfg/ps3_button_mapping.yaml" />
+    <rosparam command="load" file="$(find riptide_teleop)/cfg/ps3_command_rates.yaml" />
+    <rosparam command="load" file="$(find riptide_controllers)/cfg/attitude_controller_properties.yaml" />
+    <rosparam command="load" file="$(find riptide_controllers)/cfg/max_accel.yaml" />
+    <param name="rate" type="int" value="$(arg rate)" />
+    <param name="max_depth" type="double" value="$(arg max_depth)" />
+  </node>
+</launch>

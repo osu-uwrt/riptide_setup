@@ -4,6 +4,7 @@ from riptide_msgs.msg import GateData, BoundingBox
 from riptide_vision import RiptideVision
 from geometry_msgs.msg import Point
 import time
+import lib
 
 # Class GateProcessor
 # Inherits from TaskProcessor
@@ -22,8 +23,8 @@ class GateProcessor(TaskProcessor):
 
         # Process the image
         t = time.time()
-        response = RiptideVision().detect_gate(image)
-        print "Found gate in %2.2f" % (time.time() - t)
+        response, _ = lib.find_gate(image)
+        print "'New:' Found gate in %2.2f" % (time.time() - t)
 
 
         # Package data (if there is any)
@@ -32,8 +33,8 @@ class GateProcessor(TaskProcessor):
             y_min = response[4]
             x_max = response[5]
             y_max = response[6]
-            x_mid = response[7]
-            y_mid = response[8]
+            x_center = response[9]
+            y_center = response[10]
             cam_center_x = response[11]
             cam_center_y = response[12]
 
@@ -41,17 +42,17 @@ class GateProcessor(TaskProcessor):
             # Also maintain the axes convention in here (X is pos. to the right, Y is pos. down)
             x_min = x_min - cam_center_x
             x_max = x_max - cam_center_x
-            x_mid = x_mid - cam_center_x
+            x_center = x_center - cam_center_x
 
             y_min = y_min - cam_center_y
             y_max = y_max - cam_center_y
-            y_mid = y_mid - cam_center_y
+            y_center = y_center - cam_center_y
 
             # pos = the middle of the gate in vehicle coordinate frame
             pos = Point()
             pos.x = 0
-            pos.y = -x_mid # Cam frame x negated
-            pos.z = -y_mid # Cam frame y negated
+            pos.y = -x_center # Cam frame x negated
+            pos.z = -y_center # Cam frame y negated
 
             bbox = BoundingBox()
             bbox.top_left = Point(0, -x_min, -y_min)
