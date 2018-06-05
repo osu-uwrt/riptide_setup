@@ -10,11 +10,9 @@ find_package(catkin REQUIRED
     tf
 )
 
-catkin_package()
-
-roslint_cpp()
-
+catkin_package(INCLUDE_DIRS include)
 include_directories(include ${catkin_INCLUDE_DIRS})
+roslint_cpp()
 
 add_executable(ps3_controller src/ps3_controller.cpp)
 target_link_libraries(ps3_controller ${catkin_LIBRARIES})

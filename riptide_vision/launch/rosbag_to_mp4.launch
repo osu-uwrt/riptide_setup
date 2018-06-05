@@ -1,0 +1,10 @@
+<launch>
+  <arg name="camera" default="forward" />
+  <arg name="file_name" default="pool_test.mp4" />
+  <arg name="fps" default=""
+
+  <node pkg="riptide_vision" type="rosbag_to_mp4" name="rosbag_to_mp4">
+    <param name="camera" type="string" value="$(arg camera)" />
+    <param name="file_name" type="string" value="$(arg file_name)" />
+  </node>
+</launch>

@@ -282,7 +282,7 @@ int main(int argc, char **argv)
 ThrusterController::ThrusterController(char **argv)
 {
   // Load parameters from .yaml files or launch files
-  nh.param("/thruster_controller/debug", debug_controller, false);
+  nh.param<bool>("/thruster_controller/debug", debug_controller, false);
 
   // Load postions of each thruster relative to CoM
   ThrusterController::LoadProperty("HPF/X", pos_heave_port_fwd.x);
