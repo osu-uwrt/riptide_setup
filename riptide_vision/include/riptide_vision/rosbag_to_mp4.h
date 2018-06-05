@@ -23,10 +23,15 @@ private:
   //  3. An image of type cv::Mat - this is the actual image object in c++
   cv_bridge::CvImagePtr cv_ptr;
 
+  cv::VideoWriter videoWriter;
+  std::string topic, fileName, filePath, camera, username;
+  int width, height, frame_rate, frames;
+
 public:
-  RosbagToMP4(cv::VideoWriter vWriter);
+  RosbagToMP4();
   ~RosbagToMP4();
   void WriteVideo(const sensor_msgs::ImageConstPtr& msg); // Image callback
+  void Loop();
 };
 
 #endif
