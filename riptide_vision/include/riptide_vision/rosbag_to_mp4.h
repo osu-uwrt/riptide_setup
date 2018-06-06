@@ -24,7 +24,7 @@ private:
   cv_bridge::CvImagePtr cv_ptr;
 
   cv::VideoWriter videoWriter;
-  std::string topic, fileName, filePath, camera, username;
+  std::string topic, file_name, ext, file_path, camera, username;
   int width, height, frame_rate, frames;
 
 public:

@@ -1,15 +1,17 @@
 <launch>
   <arg name="topic" default="/forward/image_raw" />
-  <arg name="file_name" default="pool_test.mp4" />
   <arg name="username" default="tsender" />
+  <arg name="file_name" default="pool_test" />
+  <arg name="ext" default=".mp4" />
   <arg name="frame_rate" default="30" /> <!--or 16-->
-  <arg name="width" default="644" /> <!--max = 1288-->
-  <arg name="height" default="482" /> <!--max = 964-->
+  <arg name="width" default="1288" /> <!--max = 1288-->
+  <arg name="height" default="964" /> <!--max = 964-->
 
   <node pkg="riptide_vision" type="rosbag_to_mp4" name="rosbag_to_mp4" output="screen" >
     <param name="topic" type="string" value="$(arg topic)" />
-    <param name="file_name" type="string" value="$(arg file_name)" />
     <param name="username" type="string" value="$(arg username)" />
+    <param name="file_name" type="string" value="$(arg file_name)" />
+    <param name="ext" type="string" value="$(arg ext)" />
     <param name="frame_rate" type="int" value="$(arg frame_rate)" />
     <param name="height" type="int" value="$(arg height)" />
     <param name="width" type="int" value="$(arg width)" />
