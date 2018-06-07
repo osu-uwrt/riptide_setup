@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
   dc.Loop();
 }
 
-DepthController::DepthController() {
+DepthController::DepthController() : nh("depth_controller") {
     ros::NodeHandle dcpid("depth_controller");
     R_b2w.setIdentity();
     R_w2b.setIdentity();
@@ -23,15 +23,16 @@ DepthController::DepthController() {
 
     depth_controller_pid.init(dcpid, false);
 
-    man_cmd_sub = nh.subscribe<riptide_msgs::DepthCommand>("command/manual/depth", 1, &DepthController::ManualCommandCB, this);
-    auto_cmd_sub = nh.subscribe<riptide_msgs::DepthCommand>("command/auto/depth", 1, &DepthController::AutoCommandCB, this);
-    depth_sub = nh.subscribe<riptide_msgs::Depth>("state/depth", 1, &DepthController::DepthCB, this);
-    imu_sub = nh.subscribe<riptide_msgs::Imu>("state/imu", 1, &DepthController::ImuCB, this);
-    reset_sub = nh.subscribe<riptide_msgs::ResetControls>("controls/reset", 1, &DepthController::ResetController, this);
+    man_cmd_sub = nh.subscribe<riptide_msgs::DepthCommand>("/command/manual/depth", 1, &DepthController::ManualCommandCB, this);
+    auto_cmd_sub = nh.subscribe<riptide_msgs::DepthCommand>("/command/auto/depth", 1, &DepthController::AutoCommandCB, this);
+    depth_sub = nh.subscribe<riptide_msgs::Depth>("/state/depth", 1, &DepthController::DepthCB, this);
+    imu_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &DepthController::ImuCB, this);
+    reset_sub = nh.subscribe<riptide_msgs::ResetControls>("/controls/reset", 1, &DepthController::ResetController, this);
 
-    cmd_pub = nh.advertise<geometry_msgs::Vector3>("command/auto/accel/depth", 1);
-    status_pub = nh.advertise<riptide_msgs::ControlStatus>("controls/status/depth", 1);
+    cmd_pub = nh.advertise<geometry_msgs::Vector3>("/command/auto/accel/depth", 1);
+    status_pub = nh.advertise<riptide_msgs::ControlStatus>("/controls/status/depth", 1);
 
+    DepthController::LoadProperty("max_depth", MAX_DEPTH);
     DepthController::LoadProperty("max_depth_error", MAX_DEPTH_ERROR);
     DepthController::LoadProperty("PID_IIR_LPF_bandwidth", PID_IIR_LPF_bandwidth);
     DepthController::LoadProperty("sensor_rate", sensor_rate);
@@ -57,7 +58,7 @@ void DepthController::LoadProperty(std::string name, double &param)
 {
   try
   {
-    if (!nh.getParam("/depth_controller/" + name, param))
+    if(!nh.getParam(name, param))
     {
       throw 0;
     }
@@ -129,6 +130,7 @@ void DepthController::ManualCommandCB(const riptide_msgs::DepthCommand::ConstPtr
     depth_controller_pid.reset();
 
   depth_cmd = cmd->absolute;
+  depth_cmd = DepthController::Constrain(depth_cmd, MAX_DEPTH);
   if(depth_cmd < 0) // Min. depth is zero
     depth_cmd = 0;
   status_msg.reference = depth_cmd;
@@ -143,6 +145,7 @@ void DepthController::AutoCommandCB(const riptide_msgs::DepthCommand::ConstPtr &
     depth_controller_pid.reset();
     depth_cmd = current_depth + cmd->relative;
 
+  depth_cmd = DepthController::Constrain(depth_cmd, MAX_DEPTH);
   if(depth_cmd < 0) // Min. depth is zero
     depth_cmd = 0;
   status_msg.reference = depth_cmd;

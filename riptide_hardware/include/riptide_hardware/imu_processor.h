@@ -36,7 +36,7 @@ private:
   tf::Vector3 tf;
 
 public:
-  IMUProcessor(char **argv);
+  IMUProcessor();
   void LoadProperty(std::string name, double &param);
   void LoadProperty(std::string name, int &param);
   void MagCallback(const imu_3dm_gx4::MagFieldCF::ConstPtr& mag_msg);

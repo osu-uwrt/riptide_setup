@@ -8,14 +8,14 @@ int main(int argc, char** argv) {
   rtm.Loop();
 }
 
-RosbagToMP4::RosbagToMP4() {
-  nh.param<std::string>("/rosbag_to_mp4/topic", topic, (std::string)"/forward/image_raw");
-  nh.param<std::string>("/rosbag_to_mp4/username", username, (std::string)"tsender");
-  nh.param<std::string>("/rosbag_to_mp4/file_name", file_name, (std::string)"pool_test");
-  nh.param<std::string>("/rosbag_to_mp4/ext", ext, (std::string)".mp4");
-  nh.param<int>("/rosbag_to_mp4/frame_rate", frame_rate, 30); // Could also be 16
-  nh.param<int>("/rosbag_to_mp4/width", width, 1288); // Max 1288
-  nh.param<int>("/rosbag_to_mp4/height", height, 964); // Max 964
+RosbagToMP4::RosbagToMP4() : nh("rosbag_to_mp4") {
+  nh.getParam("topic", topic);
+  nh.getParam("username", username);
+  nh.getParam("file_name", file_name);
+  nh.getParam("ext", ext);
+  nh.getParam("frame_rate", frame_rate);
+  nh.getParam("width", width); // Max 1288
+  nh.getParam("height", height);
 
   Size frame_size(width, height);
   file_path = "/home/" + username + "/rosbags/" + file_name + ext;
@@ -30,6 +30,10 @@ RosbagToMP4::RosbagToMP4() {
 RosbagToMP4::~RosbagToMP4() {
   videoWriter.release();
   destroyAllWindows();
+  double total_sec = frames / frame_rate;
+  int min = total_sec / 60;
+  double sec = total_sec - min*60.0;
+  printf("\nApprox. video duration: %i min, %.2f sec\n\n", min, sec);
 }
 
 void RosbagToMP4::WriteVideo(const sensor_msgs::Image::ConstPtr &msg) {
@@ -46,8 +50,8 @@ void RosbagToMP4::WriteVideo(const sensor_msgs::Image::ConstPtr &msg) {
   if(!cv_ptr->image.empty()) {
     if(videoWriter.isOpened()) {
       videoWriter.write(cv_ptr->image);
-      //frames++;
-      //ROS_INFO("Wrote %i frames to %s", frames, (file_name + ext).c_str());
+      frames++;
+      ROS_INFO("Wrote %i frames to %s", frames, (file_name + ext).c_str());
       imshow(OPENCV_WINDOW, cv_ptr->image);
       waitKey(3);
     }
@@ -56,7 +60,7 @@ void RosbagToMP4::WriteVideo(const sensor_msgs::Image::ConstPtr &msg) {
 
 void RosbagToMP4::Loop()
 {
-  ros::Rate rate(2*frame_rate);
+  ros::Rate rate(frame_rate);
   while (ros::ok())
   {
     ros::spinOnce();

@@ -279,10 +279,9 @@ int main(int argc, char **argv)
   ThrusterController.Loop();
 }
 
-ThrusterController::ThrusterController(char **argv)
-{
+ThrusterController::ThrusterController(char **argv) : nh("thruster_controller") {
   // Load parameters from .yaml files or launch files
-  nh.param<bool>("/thruster_controller/debug", debug_controller, false);
+  nh.getParam("debug", debug_controller);
 
   // Load postions of each thruster relative to CoM
   ThrusterController::LoadProperty("HPF/X", pos_heave_port_fwd.x);
@@ -335,16 +334,16 @@ ThrusterController::ThrusterController(char **argv)
   weight = mass*GRAVITY;
   buoyancy = volume*WATER_DENSITY*GRAVITY;
 
-  state_sub = nh.subscribe<riptide_msgs::Imu>("state/imu", 1, &ThrusterController::ImuCB, this);
-  depth_sub = nh.subscribe<riptide_msgs::Depth>("state/depth", 1, &ThrusterController::DepthCB, this);
-  cmd_sub = nh.subscribe<geometry_msgs::Accel>("command/accel", 1, &ThrusterController::AccelCB, this);
-  cmd_pub = nh.advertise<riptide_msgs::ThrustStamped>("command/thrust", 1);
+  state_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &ThrusterController::ImuCB, this);
+  depth_sub = nh.subscribe<riptide_msgs::Depth>("/state/depth", 1, &ThrusterController::DepthCB, this);
+  cmd_sub = nh.subscribe<geometry_msgs::Accel>("/command/accel", 1, &ThrusterController::AccelCB, this);
+  cmd_pub = nh.advertise<riptide_msgs::ThrustStamped>("/command/thrust", 1);
 
   // Debug variables
   if(debug_controller) {
     cb = boost::bind(&ThrusterController::DynamicReconfigCallback, this, _1, _2);
     server.setCallback(cb);
-    buoyancy_pub = nh.advertise<geometry_msgs::Vector3Stamped>("output/pos_buoyancy", 1);
+    buoyancy_pub = nh.advertise<geometry_msgs::Vector3Stamped>("/debug/pos_buoyancy", 1);
 
     // Published in a message
     buoyancy_pos.vector.x = 0;
@@ -403,7 +402,7 @@ void ThrusterController::LoadProperty(std::string name, double &param)
 {
   try
   {
-    if (!nh.getParam("/thruster_controller/" + name, param))
+    if (!nh.getParam(name, param))
     {
       throw 0;
     }

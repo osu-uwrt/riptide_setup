@@ -1,20 +1,19 @@
 <launch>
-  <arg name="port" value="2" />
-  <arg name="rate" value="100" />
-  <arg name="max_depth" value="4" />
-  <arg name="depth_status" value="true" />
+  <arg name="port" default="2" />
+  <arg name="rate" default="100" />
+  <arg name="is_depth_working" default="true" />
 
   <node pkg="joy" type="joy_node" name="joystick_driver">
     <param name="dev" value="/dev/input/js$(arg port)" />
-  </node>
+  </node>-
 
-  <node pkg="riptide_teleop" type="ps3_control" name="ps3_control" >
+  <node pkg="riptide_teleop" type="ps3_controller" name="ps3_controller" output="screen" >
     <rosparam command="load" file="$(find riptide_teleop)/cfg/ps3_command_rates.yaml" />
     <rosparam command="load" file="$(find riptide_controllers)/cfg/attitude_controller_properties.yaml" />
+    <rosparam command="load" file="$(find riptide_controllers)/cfg/depth_controller_properties.yaml" />
     <rosparam command="load" file="$(find riptide_controllers)/cfg/max_accel.yaml" />
     <rosparam command="load" file="$(find riptide_controllers)/cfg/vehicle_properties.yaml" />
     <param name="rate" type="int" value="$(arg rate)" />
-    <param name="max_depth" type="double" value="$(arg max_depth)" />
-    <param name="depth_status" type="bool" value="$(arg depth_status)" />
+    <param name="is_depth_working" type="bool" value="$(arg is_depth_working)" />
   </node>
 </launch>

@@ -2,6 +2,7 @@
 #define PS3_CONTROLLER_H
 
 #include "ros/ros.h"
+#include "cmath"
 #include "sensor_msgs/Joy.h"
 #include "geometry_msgs/Vector3.h"
 #include "tf/transform_listener.h"
@@ -20,7 +21,7 @@ class PS3Controller
   geometry_msgs::Vector3 cmd_attitude, cmd_accel, delta_attitude;
   riptide_msgs::DepthCommand cmd_depth;
   riptide_msgs::ResetControls reset_msg;
-  bool isReset, isStarted, isInit, isDepthWorking;
+  bool isReset, isStarted, isInit, isDepthWorking, isR2Init, isL2Init;
   tf::Vector3 tf;
   int rt;
   double delta_depth, mass, volume, stable_z_accel;
@@ -31,10 +32,11 @@ class PS3Controller
 
   // Multiplication Factors (based on command rates)
   double roll_factor, pitch_factor, yaw_factor, depth_factor;
-  bool surge_factor, sway_factor, heave_factor;
 
   void InitMsgs();
   double Constrain(double current, double max);
+  void ResetControllers();
+  void EnableControllers();
   void UpdateCommands();
   void PublishCommands();
 
