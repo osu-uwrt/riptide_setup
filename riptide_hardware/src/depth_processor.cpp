@@ -10,10 +10,9 @@ int main(int argc, char** argv)
 }
 
 //Constructor
-DepthProcessor::DepthProcessor() : nh()
-{
- depth_sub = nh.subscribe<riptide_msgs::Depth>("state/depth_raw", 1, &DepthProcessor::DepthCB, this);
- depth_state_pub = nh.advertise<riptide_msgs::Depth>("state/depth", 1);
+DepthProcessor::DepthProcessor() : nh("depth_processor") {
+ depth_sub = nh.subscribe<riptide_msgs::Depth>("/depth/raw", 1, &DepthProcessor::DepthCB, this);
+ depth_state_pub = nh.advertise<riptide_msgs::Depth>("/state/depth", 1);
  DepthProcessor::LoadProperty("post_IIR_LPF_bandwidth", post_IIR_LPF_bandwidth);
  DepthProcessor::LoadProperty("sensor_rate", sensor_rate);
 
@@ -28,7 +27,7 @@ void DepthProcessor::LoadProperty(std::string name, double &param)
 {
   try
   {
-    if (!nh.getParam("/depth_processor/" + name, param))
+    if (!nh.getParam(name, param))
     {
       throw 0;
     }
