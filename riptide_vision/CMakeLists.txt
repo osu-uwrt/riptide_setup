@@ -5,6 +5,7 @@ find_package(catkin REQUIRED
     COMPONENTS
     rospy
     roscpp
+    roslint
     riptide_msgs
     sensor_msgs
     cv_bridge

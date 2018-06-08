@@ -2,7 +2,7 @@
   <arg name="topic" default="/forward/image_raw" />
   <arg name="username" default="tsender" />
   <arg name="file_name" default="pool_test" />
-  <arg name="ext" default=".mp4" />
+  <arg name="ext" default=".avi" /> <!--Leave as .avi-->
   <arg name="frame_rate" default="30" />
   <arg name="width" default="1288" /> <!--max = 1288-->
   <arg name="height" default="964" /> <!--max = 964-->
