@@ -1,14 +1,13 @@
-#include "riptide_vision/rosbag_to_mp4.h"
+#include "riptide_vision/extract_video.h"
 using namespace cv;
-static const std::string OPENCV_WINDOW = "Image Window";
 
 int main(int argc, char** argv) {
-  ros::init(argc, argv, "rosbag_to_mp4");
-  RosbagToMP4 rtm;
-  rtm.Loop();
+  ros::init(argc, argv, "extract_video");
+  ExtractVideo ev;
+  ev.Loop();
 }
 
-RosbagToMP4::RosbagToMP4() : nh("rosbag_to_mp4") {
+ExtractVideo::ExtractVideo() : nh("extract_video") {
   nh.getParam("topic", topic);
   nh.getParam("username", username);
   nh.getParam("file_name", file_name);
@@ -20,17 +19,16 @@ RosbagToMP4::RosbagToMP4() : nh("rosbag_to_mp4") {
   Size frame_size(width, height);
   file_path = "/home/" + username + "/rosbags/" + file_name + ext;
   videoWriter = VideoWriter(file_path, CV_FOURCC('M', 'J', 'P', 'G'), frame_rate, frame_size, true);
-  //namedWindow(OPENCV_WINDOW, WINDOW_NORMAL);
 
-  image_sub = nh.subscribe<sensor_msgs::Image>(topic, 1, &RosbagToMP4::WriteVideo, this);
+  image_sub = nh.subscribe<sensor_msgs::Image>(topic, 1, &ExtractVideo::WriteVideo, this);
 
-  ROS_INFO("Rosbag to MP4 ready.");
+  ROS_INFO("Ready to extract video.");
   ROS_INFO("Subscribing to topic: %s", topic.c_str());
   ROS_INFO("Writing video to file: %s", file_path.c_str());
   frames = 0;
 }
 
-RosbagToMP4::~RosbagToMP4() {
+ExtractVideo::~ExtractVideo() {
   videoWriter.release();
   destroyAllWindows();
   double total_sec = (frames*1.0) / frame_rate; // Multiply by 1.0 to perform "double" math
@@ -39,7 +37,7 @@ RosbagToMP4::~RosbagToMP4() {
   printf("\nVideo duration: %.3f sec (%i min and %.3f sec)\n\n", total_sec, min, sec);
 }
 
-void RosbagToMP4::WriteVideo(const sensor_msgs::Image::ConstPtr &msg) {
+void ExtractVideo::WriteVideo(const sensor_msgs::Image::ConstPtr &msg) {
   try {
     // Use the BGR8 image_encoding for proper color encoding
     cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
@@ -51,7 +49,7 @@ void RosbagToMP4::WriteVideo(const sensor_msgs::Image::ConstPtr &msg) {
 
   if(!cv_ptr->image.empty()) {
     if(videoWriter.isOpened()) {
-      if(frames == 0) {
+      if(frames == 0) { // Verify frame sizes and notify user of any wrong values
         int w = cv_ptr->image.size().width;
         int h = cv_ptr->image.size().height;
         if(w != width || h != height) {
@@ -62,14 +60,12 @@ void RosbagToMP4::WriteVideo(const sensor_msgs::Image::ConstPtr &msg) {
       videoWriter.write(cv_ptr->image);
       frames++;
       ROS_INFO("Wrote %i frames", frames);
-      //imshow(OPENCV_WINDOW, cv_ptr->image);
-      waitKey(3);
     }
   }
   cv_ptr.reset();
 }
 
-void RosbagToMP4::Loop()
+void ExtractVideo::Loop()
 {
   ros::Rate rate(frame_rate);
   while (ros::ok())

@@ -22,11 +22,17 @@
   <build_depend>message_generation</build_depend>
   <build_depend>imu_3dm_gx4</build_depend>
   <build_depend>tf</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>cv_bridge</build_depend>
+  <build_depend>OpenCV</build_depend>
 
   <run_depend>roslaunch</run_depend>
   <run_depend>rosserial_msgs</run_depend>
   <run_depend>rosserial_python</run_depend>
   <run_depend>pointgrey_camera_driver</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>cv_bridge</run_depend>
+  <run_depend>OpenCV</run_depend>
 
   <run_depend>message_runtime</run_depend>
   <export>

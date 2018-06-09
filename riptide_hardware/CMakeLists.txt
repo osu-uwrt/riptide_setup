@@ -12,6 +12,8 @@ find_package(catkin REQUIRED
     message_filters
     tf
     message_generation
+    sensor_msgs
+    cv_bridge
 )
 
 add_service_files(FILES Pneumatics.srv)
@@ -20,7 +22,8 @@ generate_messages()
 
 catkin_package(INCLUDE_DIRS include)
 
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS} $(OpenCV_INCLUDE_DIRS))
+find_package(OpenCV REQUIRED)
 
 roslint_cpp()
 
@@ -41,3 +44,7 @@ add_dependencies(imu_processor ${catkin_EXPORTED_TARGETS})
 add_executable(depth_processor src/depth_processor.cpp)
 target_link_libraries(depth_processor ${catkin_LIBRARIES})
 add_dependencies(depth_processor riptide_msgs_gencpp)
+
+add_executable(calibrate_camera src/calibrate_camera.cpp)
+target_link_libraries(calibrate_camera ${catkin_LIBRARIES})
+add_dependencies(calibrate_camera ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
