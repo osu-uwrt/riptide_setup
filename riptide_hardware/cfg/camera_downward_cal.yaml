@@ -1,5 +1,5 @@
-# Calibration for Downward Camera Fisheye Lens
-intrinsic:
+# Calibration for Downward Camera with "down" Fisheye Lens
+cameraMatrix:
   R0: # Row 0
     C0: 1017.435702078276
     C1: 0.0
@@ -12,7 +12,7 @@ intrinsic:
     C0: 0.0
     C1: 0.0
     C2: 1.0
-distCoeffs:
+distortionCoeffs:
   C0: -0.4437322504322723
   C1: 0.3428271653745262
   C2: -0.0004523911600893588

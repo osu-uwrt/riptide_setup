@@ -1,5 +1,5 @@
-# Calibration for Forward Camera Fisheye Lens
-intrinsic:
+# Calibration for Forward Camera with "fwd" Fisheye Lens
+cameraMatrix:
   R0: # Row 0
     C0: 1037.983055002182
     C1: 0.0
@@ -12,7 +12,7 @@ intrinsic:
     C0: 0.0
     C1: 0.0
     C2: 1.0
-distCoeffs:
+distortionCoeffs:
   C0: -0.4225295805300275
   C1: 0.1874464390729469
   C2: -0.0004534269635919557
