@@ -1,5 +1,5 @@
-#ifndef CALIBRATE_CAMERA_H
-#define CALIBRATE_CAMERA_H
+#ifndef UNDISTORT_CAMERA_H
+#define UNDISTORT_CAMERA_H
 
 #include "ros/ros.h"
 #include "cv_bridge/cv_bridge.h"
@@ -11,11 +11,12 @@
 using namespace std;
 using namespace cv;
 
-class CalibrateCamera
+class UndistortCamera
 {
 private:
   ros::NodeHandle nh;
   ros::Subscriber raw_image_sub;
+  ros::Publisher undistorted_pub;
 
   // Create pointer to image
   // Class CvImage contains three variables:
@@ -23,28 +24,16 @@ private:
   //  2. A std::string encoding
   //  3. An image of type cv::Mat - this is the actual image object in c++
   cv_bridge::CvImagePtr cv_ptr;
-  string camera_name, sub_topic;
-  bool calculated;
-
-  int numBoards, numCornersHor, numCornersVer, numSquares, successes, pauses;
+  string camera_name, sub_topic, pub_topic, video_mode;
   double frame_rate;
-  bool done;
+  Size img_size;
 
-  // Variables to collect data
-  Mat gray_image;
-  Size board_sz;
-  vector<vector<Point3f> > object_points;
-  vector<vector<Point2f> > image_points;
-  vector<Point2f> corners;
-  vector<Point3f> obj;
-
-  // Variables to calculate calibraton
-  Mat cameraMatrix, distortionCoeffs;
-  vector<Mat> rvecs;
-  vector<Mat> tvecs;
+  // Variables to undistort image
+  Mat cameraMatrix, distortionCoeffs, map1, map2;
 
 public:
-  CalibrateCamera();
+  UndistortCamera();
+  void LoadProperty(std::string name, double &param);
   void ImageCB(const sensor_msgs::ImageConstPtr& msg); // Image callback
   void Loop();
 };

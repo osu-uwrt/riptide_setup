@@ -48,3 +48,7 @@ add_dependencies(depth_processor riptide_msgs_gencpp)
 add_executable(calibrate_camera src/calibrate_camera.cpp)
 target_link_libraries(calibrate_camera ${catkin_LIBRARIES})
 add_dependencies(calibrate_camera ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+
+add_executable(undistort_camera src/undistort_camera.cpp)
+target_link_libraries(undistort_camera ${catkin_LIBRARIES})
+add_dependencies(undistort_camera ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})

@@ -1,5 +1,10 @@
 #include "riptide_hardware/calibrate_camera.h"
 //using namespace cv;
+static const int WIDTH = 960;
+static const int HEIGHT = 600;
+static const std::string WIN_ORIGINAL = "Original Image";
+static const std::string WIN_CHECKERBOARD = "Checkerboard Image";
+static const std::string WIN_UNDISTORTED = "Undistorted Image";
 
 int main(int argc, char** argv) {
   ros::init(argc, argv, "calibrate_camera");
@@ -8,27 +13,34 @@ int main(int argc, char** argv) {
 }
 
 CalibrateCamera::CalibrateCamera() : nh("calibrate_camera") {
-  nh.getParam("numBoards", numBoards);
+  nh.getParam("numBoards", numBoards); // Number of snapshots to take from video feed
   nh.getParam("numCornersHor", numCornersHor);
   nh.getParam("numCornersVer", numCornersVer);
   nh.getParam("frame_rate", frame_rate);
-  nh.getParam("camera", camera);
+  nh.getParam("camera_name", camera_name);
 
-  sub_topic = "/" + camera + "/image_raw";
-  pub_topic = "/" + camera + "/undistored";
+  sub_topic = "/" + camera_name + "/image_raw";
   raw_image_sub = nh.subscribe<sensor_msgs::Image>(sub_topic, 1, &CalibrateCamera::ImageCB, this);
 
   numSquares = numCornersHor * numCornersVer;
   board_sz = Size(numCornersHor, numCornersVer);
 
+  // Populate obj vector
+  // NOTE: Units do not really matter for camera calibration - they can be arbitrary and work just fine
   for(int j=0;j<numSquares;j++)
     obj.push_back(Point3f(j/numCornersHor, j%numCornersHor, 0.0f));
 
-  // Intrinsic camera matrix
+  // Camera Matrix
   // Aspect ratio is 4:3
-  intrinsic = Mat(3, 3, CV_32FC1);
-  intrinsic.ptr<float>(0)[0] = 4; // Focal length along x-axis
-  intrinsic.ptr<float>(1)[1] = 3; // Focal length along y-axis
+  cameraMatrix = Mat(3, 3, CV_32FC1);
+  cameraMatrix.ptr<float>(0)[0] = 4; // Focal length along x-axis
+  cameraMatrix.ptr<float>(1)[1] = 3; // Focal length along y-axis
+
+  namedWindow(WIN_ORIGINAL, WINDOW_NORMAL);
+  namedWindow(WIN_CHECKERBOARD, WINDOW_NORMAL);
+  resizeWindow(WIN_ORIGINAL, WIDTH, HEIGHT);
+  resizeWindow(WIN_CHECKERBOARD, WIDTH, HEIGHT);
+
   calculated = false;
   pauses = 0;
 }
@@ -46,7 +58,7 @@ void CalibrateCamera::ImageCB(const sensor_msgs::Image::ConstPtr &msg) {
   // Detect at rate slower than actual fps so user can move camera around
   if(!calculated) {
     pauses++;
-    if(pauses > frame_rate/2)
+    if(pauses > frame_rate)
       pauses = 0;
   }
 
@@ -62,14 +74,14 @@ void CalibrateCamera::ImageCB(const sensor_msgs::Image::ConstPtr &msg) {
       drawChessboardCorners(gray_image, board_sz, corners, found);
     }
 
-    imshow("win1", cv_ptr->image);
-    imshow("win2", gray_image);
+    imshow(WIN_ORIGINAL, cv_ptr->image);
+    imshow(WIN_CHECKERBOARD, gray_image);
     waitKey(1);
 
     if(pauses == 0) {
       image_points.push_back(corners);
       object_points.push_back(obj);
-      ROS_INFO("Number Successes: %i", successes);
+      ROS_INFO("Number of Snapshots/Successes: %i", successes);
       successes++;
     }
   }
@@ -77,24 +89,46 @@ void CalibrateCamera::ImageCB(const sensor_msgs::Image::ConstPtr &msg) {
   // Calculate coefficients from chessboard data
   if(successes > numBoards && !calculated) {
     ROS_INFO("Calibrating Camera...");
-    calibrateCamera(object_points, image_points, cv_ptr->image.size(), intrinsic, distCoeffs, rvecs, tvecs);
+    calibrateCamera(object_points, image_points, cv_ptr->image.size(), cameraMatrix, distortionCoeffs, rvecs, tvecs);
     ROS_INFO("Camera calibrated!");
-    ROS_INFO("Intrinsic and Distortion Coefficients displayed below");
+    ROS_INFO("Camera Matrix and Distortion Coefficients displayed below");
 
-    std::cout << "Intrinsic:" << endl << intrinsic << endl << endl;
-    std::cout << "Distortion Coeff:" << endl << distCoeffs << endl << endl;
+    std::cout << "cameraMatrix:" << endl << cameraMatrix << endl << endl;
+    std::cout << "Distortion Coeffs:" << endl << distortionCoeffs << endl << endl;
+
+    ROS_INFO("cameraMatrix [0][0] %.8f", cameraMatrix.ptr<double>(0)[0]);
+    ROS_INFO("cameraMatrix [0][1] %.8f", cameraMatrix.ptr<double>(0)[1]);
+    ROS_INFO("cameraMatrix [0][2] %.8f", cameraMatrix.ptr<double>(0)[2]);
+    ROS_INFO("cameraMatrix [1][0] %.8f", cameraMatrix.ptr<double>(1)[0]);
+    ROS_INFO("cameraMatrix [1][1] %.8f", cameraMatrix.ptr<double>(1)[1]);
+    ROS_INFO("cameraMatrix [1][2] %.8f", cameraMatrix.ptr<double>(1)[2]);
+    ROS_INFO("cameraMatrix [2][0] %.8f", cameraMatrix.ptr<double>(2)[0]);
+    ROS_INFO("cameraMatrix [2][1] %.8f", cameraMatrix.ptr<double>(2)[1]);
+    ROS_INFO("cameraMatrix [2][2] %.8f", cameraMatrix.ptr<double>(2)[2]);
+
+    ROS_INFO("Distortion. coef [0][0] %.8f", distortionCoeffs.ptr<double>(0)[0]);
+    ROS_INFO("Distortion. coef [0][1] %.8f", distortionCoeffs.ptr<double>(0)[1]);
+    ROS_INFO("Distortion. coef [0][2] %.8f", distortionCoeffs.ptr<double>(0)[2]);
+    ROS_INFO("Distortion. coef [0][3] %.8f", distortionCoeffs.ptr<double>(0)[3]);
+    ROS_INFO("Distortion. coef [0][4] %.8f", distortionCoeffs.ptr<double>(0)[4]);
+
     calculated = true;
+    destroyWindow(WIN_CHECKERBOARD);
+    namedWindow(WIN_UNDISTORTED, WINDOW_NORMAL);
+    resizeWindow(WIN_UNDISTORTED, WIDTH, HEIGHT);
   }
 
   // Publish undistorted image
   if(calculated) {
     Mat imageUndistorted;
-    undistort(cv_ptr->image, imageUndistorted, intrinsic, distCoeffs);
+    ros::Time time_start = ros::Time::now();
+    undistort(cv_ptr->image, imageUndistorted, cameraMatrix, distortionCoeffs);
+    ROS_INFO("undistorted image in %f s", (ros::Time::now() - time_start).toSec());
 
     sensor_msgs::ImagePtr out_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", imageUndistorted).toImageMsg();
 
-    imshow("win1", cv_ptr->image);
-    imshow("win3", imageUndistorted);
+    imshow(WIN_ORIGINAL, cv_ptr->image);
+    imshow(WIN_UNDISTORTED, imageUndistorted);
     waitKey(1);
   }
 
