@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
 }
 
 // Constructor: AlignmentController()
-AlignmentController::AlignmentController() {
+AlignmentController::AlignmentController() : nh("alignment_controller") {
     ros::NodeHandle surge("surge_controller");
     ros::NodeHandle sway("sway_controller");
     ros::NodeHandle heave("heave_controller");
@@ -22,13 +22,13 @@ AlignmentController::AlignmentController() {
     z_pid.init(heave, false);
 
     // Default to gate alignment
-    alignment_sub = nh.subscribe<riptide_msgs::TaskAlignment>("task/gate/alignment", 1, &AlignmentController::AlignmentCB, this);
-    command_sub = nh.subscribe<riptide_msgs::AlignmentCommand>("command/alignment", 1, &AlignmentController::CommandCB, this);
-    reset_sub = nh.subscribe<riptide_msgs::ResetControls>("controls/reset", 1, &AlignmentController::ResetController, this);
+    alignment_sub = nh.subscribe<riptide_msgs::TaskAlignment>("/task/gate/alignment", 1, &AlignmentController::AlignmentCB, this);
+    command_sub = nh.subscribe<riptide_msgs::AlignmentCommand>("/command/alignment", 1, &AlignmentController::CommandCB, this);
+    reset_sub = nh.subscribe<riptide_msgs::ResetControls>("/controls/reset", 1, &AlignmentController::ResetController, this);
 
-    xy_pub = nh.advertise<geometry_msgs::Vector3>("command/auto/accel/linear", 1); // auto -> published by controller
-    z_pub = nh.advertise<riptide_msgs::DepthCommand>("command/auto/depth", 1); // auto -> published by controller
-    status_pub = nh.advertise<riptide_msgs::ControlStatusLinear>("controls/status/linear", 1);
+    xy_pub = nh.advertise<geometry_msgs::Vector3>("/command/auto/accel/linear", 1); // auto -> published by controller
+    z_pub = nh.advertise<riptide_msgs::DepthCommand>("/command/auto/depth", 1); // auto -> published by controller
+    status_pub = nh.advertise<riptide_msgs::ControlStatusLinear>("/controls/status/linear", 1);
 
     AlignmentController::LoadProperty("max_x_error", MAX_X_ERROR);
     AlignmentController::LoadProperty("max_y_error", MAX_Y_ERROR);
@@ -57,7 +57,7 @@ void AlignmentController::LoadProperty(std::string name, double &param)
 {
   try
   {
-    if (!nh.getParam("/alignment_controller/" + name, param))
+    if(!nh.getParam(name, param))
     {
       throw 0;
     }

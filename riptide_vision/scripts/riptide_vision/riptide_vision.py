@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import math
+import time
 
 """
 Helper functions
@@ -234,23 +235,24 @@ class RiptideVision:
             cam_center_x = int(img.shape[1] / 2)
 
         packet = []
-        packet.append(left_pole_visible)
-        packet.append(right_pole_visible)
-        packet.append(roll_correction)
-        packet.append(x_min)
-        packet.append(y_min)
-        packet.append(x_max)
-        packet.append(y_max)
-        packet.append(x_mid)
-        packet.append(y_mid)
-        packet.append(x_center)
-        packet.append(y_center)
+        packet.append(left_pole_visible) #0
+        packet.append(right_pole_visible) #1
+        packet.append(roll_correction) #2
+        packet.append(x_min) #3
+        packet.append(y_min) #4
+        packet.append(x_max) #5
+        packet.append(y_max) #6
+        packet.append(x_mid) #7
+        packet.append(y_mid) #8
+        packet.append(x_center) #9
+        packet.append(y_center) #10
+        packet.append(cam_center_x) #11
+        packet.append(cam_center_y) #12
 
         if None in [x_mid, y_mid, x_center, y_center]:
             return []
 
         return packet
-
 
     # This function draws on an image with information from the detect_gate packet,
     # this can be improved but it is not a priority
@@ -409,10 +411,26 @@ class RiptideVision:
         cam_center_y = int(img.shape[0] / 2)
         cam_center_x = int(img.shape[1] / 2)
 
-        return [roll_correction, beam_thickness, x_mid, y_mid, x_min, x_max, y_min, y_max, cam_center_x, cam_center_y]  # NOQA
+
+        packet = []
+        packet.append(roll_correction) #0
+        packet.append(beam_thickness) #1
+        packet.append(x_min) #2
+        packet.append(y_min) #3
+        packet.append(x_max) #4
+        packet.append(y_max) #5
+        packet.append(x_mid) #6
+        packet.append(y_mid) #7
+        packet.append(cam_center_x) #8
+        packet.append(cam_center_y) #9
+
+        if None in [x_mid, y_mid]:
+            return []
+
+        return packet  # NOQA
 
     def detect_pole_vis(self, img, packet):
         if packet != []:
-            cv2.rectangle(img, (packet[4], packet[6]), (int(packet[4]+packet[1]), packet[7]), (0, 255, 0), 3)  # NOQA
+            cv2.rectangle(img, (packet[2], packet[3]), (int(packet[2]+packet[1]), packet[5]), (0, 255, 0), 3)  # NOQA
 
         return img

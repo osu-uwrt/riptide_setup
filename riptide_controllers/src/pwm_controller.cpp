@@ -22,61 +22,77 @@ int main(int argc, char** argv)
   pwm_controller.Loop();
 }
 
-PWMController::PWMController() : nh()
+PWMController::PWMController() : nh("pwm_controller")
 {
-  cmd_sub = nh.subscribe<riptide_msgs::ThrustStamped>("command/thrust", 1, &PWMController::ThrustCB, this);
-  kill_sub = nh.subscribe<riptide_msgs::SwitchState>("state/switches", 1, &PWMController::SwitchCB, this);
-  reset_sub = nh.subscribe<riptide_msgs::ResetControls>("controls/reset", 1, &PWMController::ResetController, this);
-  pwm_pub = nh.advertise<riptide_msgs::PwmStamped>("command/pwm", 1);
+  cmd_sub = nh.subscribe<riptide_msgs::ThrustStamped>("/command/thrust", 1, &PWMController::ThrustCB, this);
+  kill_sub = nh.subscribe<riptide_msgs::SwitchState>("/state/switches", 1, &PWMController::SwitchCB, this);
+  reset_sub = nh.subscribe<riptide_msgs::ResetControls>("/controls/reset", 1, &PWMController::ResetController, this);
+  pwm_pub = nh.advertise<riptide_msgs::PwmStamped>("/command/pwm", 1);
 
   //Initialization of the two trust/pwm slope arrays
   //The first column is for negative forces, second column is positive force
 
   // Surge Port Low
-  load_calibration(thrust_config[SPL][NEG_SLOPE], "/SPL/NEG/SLOPE");
-  load_calibration(thrust_config[SPL][POS_SLOPE], "/SPL/POS/SLOPE");
-  load_calibration(thrust_config[SPL][NEG_XINT], "/SPL/NEG/XINT");
-  load_calibration(thrust_config[SPL][POS_XINT], "/SPL/POS/XINT");
+  LoadCalibration("SPL/NEG/SLOPE", thrust_config[SPL][NEG_SLOPE]);
+  LoadCalibration("SPL/POS/SLOPE", thrust_config[SPL][POS_SLOPE]);
+  LoadCalibration("SPL/NEG/XINT", thrust_config[SPL][NEG_XINT]);
+  LoadCalibration("SPL/POS/XINT", thrust_config[SPL][POS_XINT]);
   // Surge Starboard Low
-  load_calibration(thrust_config[SSL][NEG_SLOPE], "/SSL/NEG/SLOPE");
-  load_calibration(thrust_config[SSL][POS_SLOPE], "/SSL/POS/SLOPE");
-  load_calibration(thrust_config[SSL][NEG_XINT], "/SSL/NEG/XINT");
-  load_calibration(thrust_config[SSL][POS_XINT], "/SSL/POS/XINT");
+  LoadCalibration("SSL/NEG/SLOPE", thrust_config[SSL][NEG_SLOPE]);
+  LoadCalibration("SSL/POS/SLOPE", thrust_config[SSL][POS_SLOPE]);
+  LoadCalibration("SSL/NEG/XINT", thrust_config[SSL][NEG_XINT]);
+  LoadCalibration("SSL/POS/XINT", thrust_config[SSL][POS_XINT]);
   // Heave Port Aft
-  load_calibration(thrust_config[HPA][NEG_SLOPE], "/HPA/NEG/SLOPE");
-  load_calibration(thrust_config[HPA][POS_SLOPE], "/HPA/POS/SLOPE");
-  load_calibration(thrust_config[HPA][NEG_XINT], "/HPA/NEG/XINT");
-  load_calibration(thrust_config[HPA][POS_XINT], "/HPA/POS/XINT");
+  LoadCalibration("HPA/NEG/SLOPE", thrust_config[HPA][NEG_SLOPE]);
+  LoadCalibration("HPA/POS/SLOPE", thrust_config[HPA][POS_SLOPE]);
+  LoadCalibration("HPA/NEG/XINT", thrust_config[HPA][NEG_XINT]);
+  LoadCalibration("HPA/POS/XINT", thrust_config[HPA][POS_XINT]);
   // heave Port Forward
-  load_calibration(thrust_config[HPF][NEG_SLOPE], "/HPF/NEG/SLOPE");
-  load_calibration(thrust_config[HPF][POS_SLOPE], "/HPF/POS/SLOPE");
-  load_calibration(thrust_config[HPF][NEG_XINT], "/HPF/NEG/XINT");
-  load_calibration(thrust_config[HPF][POS_XINT], "/HPF/POS/XINT");
+  LoadCalibration("HPF/NEG/SLOPE", thrust_config[HPF][NEG_SLOPE]);
+  LoadCalibration("HPF/POS/SLOPE", thrust_config[HPF][POS_SLOPE]);
+  LoadCalibration("HPF/NEG/XINT", thrust_config[HPF][NEG_XINT]);
+  LoadCalibration("HPF/POS/XINT", thrust_config[HPF][POS_XINT]);
   // Heave Starboard Aft
-  load_calibration(thrust_config[HSA][NEG_SLOPE], "/HSA/NEG/SLOPE");
-  load_calibration(thrust_config[HSA][POS_SLOPE], "/HSA/POS/SLOPE");
-  load_calibration(thrust_config[HSA][NEG_XINT], "/HSA/NEG/XINT");
-  load_calibration(thrust_config[HSA][POS_XINT], "/HSA/POS/XINT");
+  LoadCalibration("HSA/NEG/SLOPE", thrust_config[HSA][NEG_SLOPE]);
+  LoadCalibration("HSA/POS/SLOPE", thrust_config[HSA][POS_SLOPE]);
+  LoadCalibration("HSA/NEG/XINT", thrust_config[HSA][NEG_XINT]);
+  LoadCalibration("HSA/POS/XINT", thrust_config[HSA][POS_XINT]);
   // Heave Starboard Forward
-  load_calibration(thrust_config[HSF][NEG_SLOPE], "/HSF/NEG/SLOPE");
-  load_calibration(thrust_config[HSF][POS_SLOPE], "/HSF/POS/SLOPE");
-  load_calibration(thrust_config[HSF][NEG_XINT], "/HSF/NEG/XINT");
-  load_calibration(thrust_config[HSF][POS_XINT], "/HSF/POS/XINT");
+  LoadCalibration("HSF/NEG/SLOPE", thrust_config[HSF][NEG_SLOPE]);
+  LoadCalibration("HSF/POS/SLOPE", thrust_config[HSF][POS_SLOPE]);
+  LoadCalibration("HSF/NEG/XINT", thrust_config[HSF][NEG_XINT]);
+  LoadCalibration("HSF/POS/XINT", thrust_config[HSF][POS_XINT]);
   // Sway Forward
-  load_calibration(thrust_config[SWF][NEG_SLOPE], "/SWF/NEG/SLOPE");
-  load_calibration(thrust_config[SWF][POS_SLOPE], "/SWF/POS/SLOPE");
-  load_calibration(thrust_config[SWF][NEG_XINT], "/SWF/NEG/XINT");
-  load_calibration(thrust_config[SWF][POS_XINT], "/SWF/POS/XINT");
+  LoadCalibration("SWF/NEG/SLOPE", thrust_config[SWF][NEG_SLOPE]);
+  LoadCalibration("SWF/POS/SLOPE", thrust_config[SWF][POS_SLOPE]);
+  LoadCalibration("SWF/NEG/XINT", thrust_config[SWF][NEG_XINT]);
+  LoadCalibration("SWF/POS/XINT", thrust_config[SWF][POS_XINT]);
   // Sway Aft
-  load_calibration(thrust_config[SWA][NEG_SLOPE], "/SWA/NEG/SLOPE");
-  load_calibration(thrust_config[SWA][POS_SLOPE], "/SWA/POS/SLOPE");
-  load_calibration(thrust_config[SWA][NEG_XINT], "/SWA/NEG/XINT");
-  load_calibration(thrust_config[SWA][POS_XINT], "/SWA/POS/XINT");
+  LoadCalibration("SWA/NEG/SLOPE", thrust_config[SWA][NEG_SLOPE]);
+  LoadCalibration("SWA/POS/SLOPE", thrust_config[SWA][POS_SLOPE]);
+  LoadCalibration("SWA/NEG/XINT", thrust_config[SWA][NEG_XINT]);
+  LoadCalibration("SWA/POS/XINT", thrust_config[SWA][POS_XINT]);
 
   alive_timeout = ros::Duration(2);
   last_alive_time = ros::Time::now();
   silent = true; // Silent refers to not receiving commands from the control stack
   dead = true; // Dead refers to the kill switch being pulled
+}
+
+void PWMController::LoadCalibration(std::string name, float &param)
+{
+  try
+  {
+    if (!nh.getParam(name, param))
+    {
+      throw 0;
+    }
+  }
+  catch(int e)
+  {
+    ROS_ERROR("Critical! PWM Controler has no calibration set for %s. Shutting down...", name.c_str());
+    ros::shutdown();
+  }
 }
 
 void PWMController::ThrustCB(const riptide_msgs::ThrustStamped::ConstPtr& thrust)
@@ -85,17 +101,17 @@ void PWMController::ThrustCB(const riptide_msgs::ThrustStamped::ConstPtr& thrust
   {
     msg.header.stamp = thrust->header.stamp;
 
-    msg.pwm.surge_port_lo = thrust2pwm(thrust->force.surge_port_lo, SPL);
-    msg.pwm.surge_stbd_lo = thrust2pwm(thrust->force.surge_stbd_lo, SSL);
+    msg.pwm.surge_port_lo = Thrust2pwm(thrust->force.surge_port_lo, SPL);
+    msg.pwm.surge_stbd_lo = Thrust2pwm(thrust->force.surge_stbd_lo, SSL);
 
-    msg.pwm.sway_fwd = thrust2pwm(thrust->force.sway_fwd, SWF);
-    msg.pwm.sway_aft = thrust2pwm(thrust->force.sway_aft, SWA);
+    msg.pwm.sway_fwd = Thrust2pwm(thrust->force.sway_fwd, SWF);
+    msg.pwm.sway_aft = Thrust2pwm(thrust->force.sway_aft, SWA);
 
-    msg.pwm.heave_stbd_fwd = thrust2pwm(thrust->force.heave_stbd_fwd, HSF);
-    msg.pwm.heave_stbd_aft = thrust2pwm(thrust->force.heave_stbd_aft, HSA);
+    msg.pwm.heave_stbd_fwd = Thrust2pwm(thrust->force.heave_stbd_fwd, HSF);
+    msg.pwm.heave_stbd_aft = Thrust2pwm(thrust->force.heave_stbd_aft, HSA);
 
-    msg.pwm.heave_port_aft = thrust2pwm(thrust->force.heave_port_aft, HPA);
-    msg.pwm.heave_port_fwd = thrust2pwm(thrust->force.heave_port_fwd, HPF);
+    msg.pwm.heave_port_aft = Thrust2pwm(thrust->force.heave_port_aft, HPA);
+    msg.pwm.heave_port_fwd = Thrust2pwm(thrust->force.heave_port_fwd, HPF);
     pwm_pub.publish(msg);
     last_alive_time = ros::Time::now();
     silent = false;
@@ -114,29 +130,8 @@ void PWMController::ResetController(const riptide_msgs::ResetControls::ConstPtr 
     silent = false;
 }
 
-void PWMController::Loop()
-{
-  // IMPORTANT: You MUST have a delay in publishing pwm msgs because copro
-  // can only process data so fast
-  ros::Rate rate(100);
-  while (ros::ok())
-  {
-    ros::spinOnce();
-    ros::Duration quiet_time = ros::Time::now() - last_alive_time;
-    if (quiet_time >= alive_timeout)
-    {
-      silent = true;
-    }
 
-    if (silent || dead)
-    {
-      PWMController::PublishZeroPWM();
-    }
-    rate.sleep();
-  }
-}
-
-int PWMController::thrust2pwm(double raw_force, int thruster)
+int PWMController::Thrust2pwm(double raw_force, int thruster)
 {
   int pwm = 1500;
   // If force is negative, use negative calibration.
@@ -179,18 +174,24 @@ void PWMController::PublishZeroPWM()
   pwm_pub.publish(msg);
 }
 
-void PWMController::load_calibration(float &param, std::string name)
+void PWMController::Loop()
 {
-  try
+  // IMPORTANT: You MUST have a delay in publishing pwm msgs because copro
+  // can only process data so fast
+  ros::Rate rate(100);
+  while (ros::ok())
   {
-    if (!nh.getParam("/pwm_controller/" + name, param))
+    ros::spinOnce();
+    ros::Duration quiet_time = ros::Time::now() - last_alive_time;
+    if (quiet_time >= alive_timeout)
     {
-      throw 0;
+      silent = true;
     }
-  }
-  catch(int e)
-  {
-    ROS_ERROR("Critical! No calibration set for %s. Shutting down...", name.c_str());
-    ros::shutdown();
+
+    if (silent || dead)
+    {
+      PWMController::PublishZeroPWM();
+    }
+    rate.sleep();
   }
 }

@@ -6,14 +6,14 @@ int main(int argc, char **argv) {
   cc.Loop();
 }
 
-CommandCombinator::CommandCombinator() {
-  auto_linear_sub = nh.subscribe<geometry_msgs::Vector3>("command/auto/accel/linear", 1, &CommandCombinator::AutoLinearCB, this);
-  manual_linear_sub = nh.subscribe<geometry_msgs::Vector3>("command/manual/accel/linear", 1, &CommandCombinator::ManualLinearCB, this);
-  depth_sub = nh.subscribe<geometry_msgs::Vector3>("command/auto/accel/depth", 1, &CommandCombinator::DepthCB, this);
-  auto_angular_sub = nh.subscribe<geometry_msgs::Vector3>("command/auto/accel/angular", 1, &CommandCombinator::AutoAngularCB, this);
-  manual_angular_sub = nh.subscribe<geometry_msgs::Vector3>("command/manual/accel/angular", 1, &CommandCombinator::ManualAngularCB, this);
+CommandCombinator::CommandCombinator() : nh("command_combinator") {
+  auto_linear_sub = nh.subscribe<geometry_msgs::Vector3>("/command/auto/accel/linear", 1, &CommandCombinator::AutoLinearCB, this);
+  manual_linear_sub = nh.subscribe<geometry_msgs::Vector3>("/command/manual/accel/linear", 1, &CommandCombinator::ManualLinearCB, this);
+  depth_sub = nh.subscribe<geometry_msgs::Vector3>("/command/auto/accel/depth", 1, &CommandCombinator::DepthCB, this);
+  auto_angular_sub = nh.subscribe<geometry_msgs::Vector3>("/command/auto/accel/angular", 1, &CommandCombinator::AutoAngularCB, this);
+  manual_angular_sub = nh.subscribe<geometry_msgs::Vector3>("/command/manual/accel/angular", 1, &CommandCombinator::ManualAngularCB, this);
 
-  cmd_pub = nh.advertise<geometry_msgs::Accel>("command/accel", 1); // The final accel output
+  cmd_pub = nh.advertise<geometry_msgs::Accel>("/command/accel", 1); // The final accel output
 
   CommandCombinator::LoadProperty("max_x_accel", MAX_X_ACCEL);
   CommandCombinator::LoadProperty("max_y_accel", MAX_Y_ACCEL);
@@ -30,7 +30,7 @@ void CommandCombinator::LoadProperty(std::string name, double &param)
 {
   try
   {
-    if (!nh.getParam("/command_combinator/" + name, param))
+    if(!nh.getParam(name, param))
     {
       throw 0;
     }

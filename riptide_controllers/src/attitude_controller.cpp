@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
   ac.Loop();
 }
 
-AttitudeController::AttitudeController() {
+AttitudeController::AttitudeController() : nh("attitude_controller") {
     ros::NodeHandle rcpid("roll_controller");
     ros::NodeHandle ycpid("yaw_controller");
     ros::NodeHandle pcpid("pitch_controller");
@@ -34,12 +34,12 @@ AttitudeController::AttitudeController() {
     tf.setValue(0, 0, 0);
     ang_vel.setValue(0, 0, 0);
 
-    cmd_sub = nh.subscribe<geometry_msgs::Vector3>("command/manual/attitude", 1, &AttitudeController::ManualCommandCB, this);
-    imu_sub = nh.subscribe<riptide_msgs::Imu>("state/imu", 1, &AttitudeController::ImuCB, this);
-    reset_sub = nh.subscribe<riptide_msgs::ResetControls>("controls/reset", 1, &AttitudeController::ResetController, this);
+    cmd_sub = nh.subscribe<geometry_msgs::Vector3>("/command/manual/attitude", 1, &AttitudeController::ManualCommandCB, this);
+    imu_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &AttitudeController::ImuCB, this);
+    reset_sub = nh.subscribe<riptide_msgs::ResetControls>("/controls/reset", 1, &AttitudeController::ResetController, this);
 
-    cmd_pub = nh.advertise<geometry_msgs::Vector3>("command/auto/accel/angular", 1);
-    status_pub = nh.advertise<riptide_msgs::ControlStatusAngular>("controls/status/angular", 1);
+    cmd_pub = nh.advertise<geometry_msgs::Vector3>("/command/auto/accel/angular", 1);
+    status_pub = nh.advertise<riptide_msgs::ControlStatusAngular>("/controls/status/angular", 1);
 
     AttitudeController::LoadProperty("max_roll_error", MAX_ROLL_ERROR);
     AttitudeController::LoadProperty("max_pitch_error", MAX_PITCH_ERROR);
@@ -85,7 +85,7 @@ void AttitudeController::LoadProperty(std::string name, double &param)
 {
   try
   {
-    if (!nh.getParam("/attitude_controller/" + name, param))
+    if(!nh.getParam(name, param))
     {
       throw 0;
     }
