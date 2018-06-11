@@ -5,7 +5,8 @@ project(riptide_controllers)
 # There is no need to add mention the specific dependency, such as
 # <package_name>_gencpp, or <package_name>_gencfg
 
-# NOTE: OpenCV by default is included by ROS
+# NOTE: To include OpenCV, must do find_package(OpenCV REQUIRED), followed by
+# include_directories(...)
 
 find_package(catkin REQUIRED
     COMPONENTS

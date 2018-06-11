@@ -5,7 +5,8 @@ project(riptide_hardware)
 # There is no need to add mention the specific dependency, such as
 # <package_name>_gencpp, or <package_name>_gencfg
 
-# NOTE: OpenCV by default is included by ROS
+# NOTE: To include OpenCV, must do find_package(OpenCV REQUIRED), followed by
+# include_directories(...)
 
 find_package(catkin REQUIRED
     COMPONENTS
@@ -27,7 +28,9 @@ add_service_files(FILES Pneumatics.srv)
 generate_messages()
 
 catkin_package(INCLUDE_DIRS include)
+find_package(OpenCV REQUIRED) # To include, OpenCV, this MUST go BEFORE include_directories()
 include_directories(include ${catkin_INCLUDE_DIRS} $(OpenCV_INCLUDE_DIRS))
+
 
 roslint_cpp()
 
