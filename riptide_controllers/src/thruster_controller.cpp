@@ -61,13 +61,14 @@ double sway_fwd, sway_aft;
 double heave_port_aft, heave_stbd_aft, heave_stbd_fwd, heave_port_fwd;
 
 // Buoyancy Variables
-bool isBuoyant;
+bool isBuoyant, enableHeaveFwd, enableHeaveAft;
 double pos_buoyancy_x, pos_buoyancy_y, pos_buoyancy_z;
+double buoyancy_depth_thresh, buoyancy_pitch_thresh;
 
 // Rotation Matrices: world to body, and body to world
 // Angular Velocity
 tf::Matrix3x3 R_w2b, R_b2w;
-tf::Vector3 ang_v;
+tf::Vector3 euler_rpy, ang_v;
 
 // Debug variables
 geometry_msgs::Vector3Stamped buoyancy_pos;
@@ -130,7 +131,8 @@ struct heave
                   const T *const heave_port_aft, const T *const heave_stbd_aft, T *residual) const
   {
 
-      residual[0] = (heave_port_fwd[0] + heave_port_aft[0] + heave_stbd_fwd[0] + heave_stbd_aft[0] +
+      residual[0] = ((heave_port_fwd[0] + heave_stbd_fwd[0]) * T(enableHeaveFwd) +
+                    (heave_port_aft[0] + heave_stbd_aft[0]) * T(enableHeaveAft) +
                     (T(R_w2b.getRow(2).z()) * (T(buoyancy) - T(weight))*T(isBuoyant))) / T(mass) -
                     T(cmdHeave);
     return true;
@@ -153,9 +155,9 @@ struct roll
     residual[0] = ((T(R_w2b.getRow(1).z()) * T(buoyancy) * T(-pos_buoyancy.z) +
                   T(R_w2b.getRow(2).z()) * T(buoyancy) * T(pos_buoyancy.y))*T(isBuoyant) +
                   sway_fwd[0] * T(-pos_sway_fwd.z) + sway_aft[0] * T(-pos_sway_aft.z) +
-                  heave_port_fwd[0] * T(pos_heave_port_fwd.y) + heave_port_aft[0] * T(pos_heave_port_aft.y) +
-                  heave_stbd_fwd[0] * T(pos_heave_stbd_fwd.y) + heave_stbd_aft[0] * T(pos_heave_stbd_aft.y) -
-                  (T(ang_v.z()) * T(ang_v.y())) * (T(Izz) - T(Iyy))) / T(Ixx) -
+                  (heave_port_fwd[0] * T(pos_heave_port_fwd.y) + heave_stbd_fwd[0] * T(pos_heave_stbd_fwd.y)) * T(enableHeaveFwd) +
+                  (heave_port_aft[0] * T(pos_heave_port_aft.y) + heave_stbd_aft[0] * T(pos_heave_stbd_aft.y)) * T(enableHeaveAft) -
+                  ((T(ang_v.z()) * T(ang_v.y())) * (T(Izz) - T(Iyy)))) / T(Ixx) -
                   T(cmdRoll);
     return true;
   }
@@ -175,9 +177,9 @@ struct pitch
     residual[0] = ((T(R_w2b.getRow(0).z()) * T(buoyancy) * T(pos_buoyancy.z) +
                   T(R_w2b.getRow(2).z()) * T(buoyancy) * T(-pos_buoyancy.x))*T(isBuoyant) +
                   surge_port_lo[0] * T(pos_surge_port_lo.z) + surge_stbd_lo[0] * T(pos_surge_stbd_lo.z) +
-                  heave_port_aft[0] * T(-pos_heave_port_aft.x) + heave_stbd_aft[0] * T(-pos_heave_stbd_aft.x) +
-                  heave_port_fwd[0] * T(-pos_heave_port_fwd.x) + heave_stbd_fwd[0] * T(-pos_heave_stbd_fwd.x) -
-                  (T(ang_v.x()) * T(ang_v.z())) * (T(Ixx) - T(Izz))) / T(Iyy) -
+                  (heave_port_fwd[0] * T(-pos_heave_port_fwd.x) + heave_stbd_fwd[0] * T(-pos_heave_stbd_fwd.x)) * T(enableHeaveFwd) +
+                  (heave_port_aft[0] * T(-pos_heave_port_aft.x) + heave_stbd_aft[0] * T(-pos_heave_stbd_aft.x)) * T(enableHeaveAft) -
+                  ((T(ang_v.x()) * T(ang_v.z())) * (T(Ixx) - T(Izz)))) / T(Iyy) -
                   T(cmdPitch);
     return true;
   }
@@ -197,7 +199,7 @@ struct yaw
                   T(R_w2b.getRow(1).z()) * T(buoyancy) * T(pos_buoyancy.x))*T(isBuoyant) +
                   surge_port_lo[0] * T(-pos_surge_port_lo.y) + surge_stbd_lo[0] * T(-pos_surge_stbd_lo.y) +
                   sway_fwd[0] * T(pos_sway_fwd.x) + sway_aft[0] * T(pos_sway_aft.x) -
-                  (T(ang_v.y()) * T(ang_v.x())) * (T(Iyy) - T(Ixx))) / T(Izz) -
+                  ((T(ang_v.y()) * T(ang_v.x())) * (T(Iyy) - T(Ixx)))) / T(Izz) -
                   T(cmdYaw);
     return true;
   }
@@ -282,6 +284,8 @@ int main(int argc, char **argv)
 ThrusterController::ThrusterController(char **argv) : nh("thruster_controller") {
   // Load parameters from .yaml files or launch files
   nh.getParam("debug", debug_controller);
+  ThrusterController::LoadProperty("Buoyancy_Depth_Thresh", buoyancy_depth_thresh); // Depth threshold to include buoyancy
+  ThrusterController::LoadProperty("Buoyancy_Pitch_Thresh", buoyancy_pitch_thresh); // Pitch threshold to enable/disable heave thrusters
 
   // Load postions of each thruster relative to CoM
   ThrusterController::LoadProperty("HPF/X", pos_heave_port_fwd.x);
@@ -328,9 +332,12 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller") 
 
   R_b2w.setIdentity();
   R_w2b.setIdentity();
+  euler_rpy.setZero();
   ang_v.setZero();
 
   isBuoyant = false;
+  enableHeaveFwd = true;
+  enableHeaveAft = true;
   weight = mass*GRAVITY;
   buoyancy = volume*WATER_DENSITY*GRAVITY;
 
@@ -339,10 +346,12 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller") 
   cmd_sub = nh.subscribe<geometry_msgs::Accel>("/command/accel", 1, &ThrusterController::AccelCB, this);
   cmd_pub = nh.advertise<riptide_msgs::ThrustStamped>("/command/thrust", 1);
 
+  // Dynamic Reconfigure Variables
+  cb = boost::bind(&ThrusterController::DynamicReconfigCallback, this, _1, _2);
+  server.setCallback(cb);
+
   // Debug variables
   if(debug_controller) {
-    cb = boost::bind(&ThrusterController::DynamicReconfigCallback, this, _1, _2);
-    server.setCallback(cb);
     buoyancy_pub = nh.advertise<geometry_msgs::Vector3Stamped>("/debug/pos_buoyancy", 1);
 
     // Published in a message
@@ -416,24 +425,25 @@ void ThrusterController::LoadProperty(std::string name, double &param)
 
 // Callback for dynamic reconfigure
 void ThrusterController::DynamicReconfigCallback(riptide_controllers::VehiclePropertiesConfig &config, uint32_t levels) {
-  mass = config.Mass;
-  volume = config.Volume;
-  pos_buoyancy.x = config.Buoyancy_X_POS;
-  pos_buoyancy.y = config.Buoyancy_Y_POS;
-  pos_buoyancy.z = config.Buoyancy_Z_POS;
+  if(debug_controller) {
+    mass = config.Mass;
+    volume = config.Volume;
+    pos_buoyancy.x = config.Buoyancy_X_POS;
+    pos_buoyancy.y = config.Buoyancy_Y_POS;
+    pos_buoyancy.z = config.Buoyancy_Z_POS;
 
-  weight = mass*GRAVITY;
-  buoyancy = volume*WATER_DENSITY*GRAVITY;
+    weight = mass*GRAVITY;
+    buoyancy = volume*WATER_DENSITY*GRAVITY;
+  }
 }
 
 //Get orientation from IMU
 void ThrusterController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
 {
   //Get euler angles, convert to radians, and make two rotation matrices
-  tf::Vector3 tf;
-  vector3MsgToTF(imu_msg->euler_rpy, tf);
-  tf.setValue(tf.x()*PI/180, tf.y()*PI/180, tf.z()*PI/180);
-  R_b2w.setRPY(tf.x(), tf.y(), tf.z()); //Body to world rotations --> world_vector =  R_b2w * body_vector
+  vector3MsgToTF(imu_msg->euler_rpy, euler_rpy);
+  euler_rpy.setValue(euler_rpy.x()*PI/180, euler_rpy.y()*PI/180, euler_rpy.z()*PI/180);
+  R_b2w.setRPY(euler_rpy.x(), euler_rpy.y(), euler_rpy.z()); //Body to world rotations --> world_vector =  R_b2w * body_vector
   R_w2b = R_b2w.transpose(); //World to body rotations --> body_vector = R_w2b * world_vector
 
   //Get angular velocity and convert to [rad/s]
@@ -444,10 +454,22 @@ void ThrusterController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
 //Get depth and determine if buoyancy should be included
 void ThrusterController::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg)
 {
-  if(depth_msg->depth > 0.2){
+  if(depth_msg->depth > buoyancy_depth_thresh){
     isBuoyant = true;
+    enableHeaveFwd = true;
+    enableHeaveAft = true;
   } else {
     isBuoyant = false;
+
+    // Enable/Disable Apprpriate Heave Thrusters
+    if(euler_rpy.y()*180/PI > buoyancy_pitch_thresh) // Aft is too high -> disable heave aft
+      enableHeaveAft = false;
+    else if(euler_rpy.y()*180/PI < -buoyancy_pitch_thresh) // Nose is too high -> disable heave fwd
+      enableHeaveFwd = false;
+    else { // Pitch within reasonable angle of operation
+      enableHeaveFwd = true;
+      enableHeaveAft = true;
+    }
   }
 }
 

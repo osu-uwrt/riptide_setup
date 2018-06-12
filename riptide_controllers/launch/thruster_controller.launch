@@ -4,6 +4,7 @@
   <node pkg="riptide_controllers" type="thruster_controller" name="thruster_controller" output="screen" >
     <param name="debug" type="bool" value="$(arg debug)" />
     <rosparam file="$(find riptide_controllers)/cfg/vehicle_properties.yaml" command="load"/>
+    <rosparam file="$(find riptide_controllers)/cfg/controller_properties_thruster.yaml" command="load"/>
     <rosparam file="$(find riptide_controllers)/cfg/thruster2com.yaml" command="load"/>
   </node>
 </launch>

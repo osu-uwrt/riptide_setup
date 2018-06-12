@@ -7,7 +7,7 @@
   <rosparam command="load" ns="yaw_controller" file="$(find riptide_controllers)/cfg/pid_config_yaw.yaml" />
 
   <node pkg="riptide_controllers" type="attitude_controller" name="attitude_controller" output="screen" >
-    <rosparam file="$(find riptide_controllers)/cfg/attitude_controller_properties.yaml" command="load" />
+    <rosparam file="$(find riptide_controllers)/cfg/controller_properties_attitude.yaml" command="load" />
     <param name="PID_IIR_LPF_bandwidth" type="double" value="$(arg PID_IIR_LPF_bandwidth)" />
     <param name="imu_filter_rate" type="double" value="$(arg imu_filter_rate)" />
   </node>

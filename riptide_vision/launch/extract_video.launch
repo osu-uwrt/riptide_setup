@@ -1,5 +1,5 @@
 <launch>
-  <arg name="topic" default="/forward/image_raw" />
+  <arg name="topic" default="/forward/image_undistorted" />
   <arg name="username" default="tsender" />
   <arg name="file_name" default="pool_test" />
   <arg name="ext" default=".avi" /> <!--Leave as .avi-->

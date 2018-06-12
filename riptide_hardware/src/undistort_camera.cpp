@@ -37,21 +37,22 @@ UndistortCamera::UndistortCamera() : nh("undistort_camera") {
   UndistortCamera::LoadProperty("distortionCoeffs/C4", distortionCoeffs.ptr<double>(0)[4]);
 
   // Display to screen to verify config parameters read properly
-  ROS_INFO("Intrincic [0][0] %f", cameraMatrix.ptr<double>(0)[0]);
-  ROS_INFO("cameraMatrix [0][1] %f", cameraMatrix.ptr<double>(0)[1]);
-  ROS_INFO("cameraMatrix [0][2] %f", cameraMatrix.ptr<double>(0)[2]);
-  ROS_INFO("cameraMatrix [1][0] %f", cameraMatrix.ptr<double>(1)[0]);
-  ROS_INFO("cameraMatrix [1][1] %f", cameraMatrix.ptr<double>(1)[1]);
-  ROS_INFO("cameraMatrix [1][2] %f", cameraMatrix.ptr<double>(1)[2]);
-  ROS_INFO("cameraMatrix [2][0] %f", cameraMatrix.ptr<double>(2)[0]);
-  ROS_INFO("cameraMatrix [2][1] %f", cameraMatrix.ptr<double>(2)[1]);
-  ROS_INFO("cameraMatrix [2][2] %f", cameraMatrix.ptr<double>(2)[2]);
+  ROS_INFO("Camera Name: %s", camera_name.c_str());
+  ROS_INFO("\tcameraMatrix [0][0] %f", cameraMatrix.ptr<double>(0)[0]);
+  ROS_INFO("\tcameraMatrix [0][1] %f", cameraMatrix.ptr<double>(0)[1]);
+  ROS_INFO("\tcameraMatrix [0][2] %f", cameraMatrix.ptr<double>(0)[2]);
+  ROS_INFO("\tcameraMatrix [1][0] %f", cameraMatrix.ptr<double>(1)[0]);
+  ROS_INFO("\tcameraMatrix [1][1] %f", cameraMatrix.ptr<double>(1)[1]);
+  ROS_INFO("\tcameraMatrix [1][2] %f", cameraMatrix.ptr<double>(1)[2]);
+  ROS_INFO("\tcameraMatrix [2][0] %f", cameraMatrix.ptr<double>(2)[0]);
+  ROS_INFO("\tcameraMatrix [2][1] %f", cameraMatrix.ptr<double>(2)[1]);
+  ROS_INFO("\tcameraMatrix [2][2] %f", cameraMatrix.ptr<double>(2)[2]);
 
-  ROS_INFO("Dist. coef [0][0] %f", distortionCoeffs.ptr<double>(0)[0]);
-  ROS_INFO("Dist. coef [0][1] %f", distortionCoeffs.ptr<double>(0)[1]);
-  ROS_INFO("Dist. coef [0][2] %f", distortionCoeffs.ptr<double>(0)[2]);
-  ROS_INFO("Dist. coef [0][3] %f", distortionCoeffs.ptr<double>(0)[3]);
-  ROS_INFO("Dist. coef [0][4] %f", distortionCoeffs.ptr<double>(0)[4]);
+  ROS_INFO("\tDist. coef [0][0] %f", distortionCoeffs.ptr<double>(0)[0]);
+  ROS_INFO("\tDist. coef [0][1] %f", distortionCoeffs.ptr<double>(0)[1]);
+  ROS_INFO("\tDist. coef [0][2] %f", distortionCoeffs.ptr<double>(0)[2]);
+  ROS_INFO("\tDist. coef [0][3] %f", distortionCoeffs.ptr<double>(0)[3]);
+  ROS_INFO("\tDist. coef [0][4] %f", distortionCoeffs.ptr<double>(0)[4]);
 
   // Create subscriber and publisher topics
   sub_topic = "/" + camera_name + "/image_raw";

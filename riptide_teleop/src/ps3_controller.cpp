@@ -16,13 +16,15 @@ int main(int argc, char** argv)
 
 PS3Controller::PS3Controller() : nh("ps3_controller") {
   joy_sub = nh.subscribe<sensor_msgs::Joy>("/joy", 1, &PS3Controller::JoyCB, this);
+  depth_sub = nh.subscribe<riptide_msgs::Depth>("/state/depth", 1, &PS3Controller::DepthCB, this);
   attitude_pub = nh.advertise<geometry_msgs::Vector3>("/command/manual/attitude", 1);
   lin_accel_pub = nh.advertise<geometry_msgs::Vector3>("/command/manual/accel/linear", 1);
   depth_pub = nh.advertise<riptide_msgs::DepthCommand>("/command/manual/depth", 1);
   reset_pub = nh.advertise<riptide_msgs::ResetControls>("/controls/reset", 1);
 
-  nh.getParam("rate", rt); // [Hz]
   nh.getParam("is_depth_working", isDepthWorking); // Is depth sensor working?
+  PS3Controller::LoadProperty("rate", rt); // [Hz]
+  PS3Controller::LoadProperty("Buoyancy_Thresh", buoyancy_thresh); // [m]
   PS3Controller::LoadProperty("Mass", mass); // [kg]
   PS3Controller::LoadProperty("Volume", volume); // [m^3]
   PS3Controller::LoadProperty("max_roll_limit", MAX_ROLL); // [m/s^2]
@@ -40,6 +42,8 @@ PS3Controller::PS3Controller() : nh("ps3_controller") {
   isInit = false;
   isR2Init = false;
   isL2Init = false;
+  current_depth = 0;
+  euler_rpy.setZero();
 
   roll_factor = CMD_ROLL_RATE/rt;
   pitch_factor = CMD_PITCH_RATE/rt;
@@ -75,8 +79,17 @@ void PS3Controller::LoadProperty(std::string name, double &param)
   }
 }
 
+void PS3Controller::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg) {
+  current_depth = depth_msg->depth;
+}
+
+// Create rotation matrix from IMU orientation
+void PS3Controller::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg) {
+  vector3MsgToTF(imu_msg->euler_rpy, euler_rpy);
+}
+
 void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr& joy) {
-  if(joy->buttons[BUTTON_SHAPE_X]) { // Reset button (The "X") pressed
+  if(joy->buttons[BUTTON_SHAPE_X]) { // Reset Vehicle (The "X" button)
     isReset = true;
     isStarted = false;
     isInit = false;
@@ -92,13 +105,12 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr& joy) {
   else if(isStarted) {
     if(!isInit) { // Initialize to roll and pitch of 0 [deg], and set yaw to current heading
       isInit = true;
-      cmd_attitude.x = 0;
-      cmd_attitude.y = 0;
-      cmd_attitude.z = round(tf.z());
-      cmd_depth.absolute = 0.2;
-      cmd_accel.x = 0;
-      cmd_accel.y = 0;
-      cmd_accel.z = stable_z_accel;
+      cmd_attitude.z = round(euler_rpy.z());
+
+      if(isDepthWorking)
+        cmd_depth.absolute = current_depth;
+      else
+        cmd_accel.z = 0;
     }
     else if(isInit) {
       // Update Roll and Pitch
@@ -203,11 +215,6 @@ double PS3Controller::Constrain(double current, double max) {
   else if(current < -1*max)
     return -1*max;
   return current;
-}
-
-// Create rotation matrix from IMU orientation
-void PS3Controller::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg) {
-  vector3MsgToTF(imu_msg->euler_rpy, tf);
 }
 
 void PS3Controller::UpdateCommands() {
