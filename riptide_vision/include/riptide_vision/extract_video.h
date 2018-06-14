@@ -1,16 +1,22 @@
-#ifndef ROSBAG_TO_MP4_H
-#define ROSBAG_TO_MP4_H
+#ifndef EXTRACT_VIDEO_H
+#define EXTRACT_VIDEO_H
 
 #include "ros/ros.h"
 #include "cv_bridge/cv_bridge.h"
 #include "sensor_msgs/image_encodings.h"
 //#include "opencv2/imgproc/imgproc.hpp"
-//#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/highgui/highgui.hpp"
 #include "std_msgs/Header.h"
 #include "opencv2/opencv.hpp"
 #include <string>
 
-class RosbagToMP4
+/*extern "C" {
+#include <libavutil/imgutils.h>
+#include <libavcodec/avcodec.h>
+#include <libswscale/swscale.h>
+}*/
+
+class ExtractVideo
 {
 private:
   ros::NodeHandle nh;
@@ -28,8 +34,8 @@ private:
   int width, height, frame_rate, frames;
 
 public:
-  RosbagToMP4();
-  ~RosbagToMP4();
+  ExtractVideo();
+  ~ExtractVideo();
   void WriteVideo(const sensor_msgs::ImageConstPtr& msg); // Image callback
   void Loop();
 };

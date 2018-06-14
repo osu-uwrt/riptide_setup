@@ -1,12 +1,15 @@
 <launch>
-  <!--<include file="$(find riptide_hardware)/launch/camera.launch">
-    <arg name="camera_name" value="upward" />
-    <arg name="serial_number" value="14490542" />
-  </include>-->
+  <arg name="frame_rate" default="30" />
 
   <include file="$(find riptide_hardware)/launch/camera.launch">
     <arg name="camera_name" value="forward" />
     <arg name="serial_number" value="14490573" />
-    <!--<arg name="serial_number" value="15662023"/>-->
+    <arg name="frame_rate" value="$(arg frame_rate)" />
+  </include>
+
+  <include file="$(find riptide_hardware)/launch/camera.launch">
+    <arg name="camera_name" value="downward" />
+    <arg name="serial_number" value="15662023" />
+    <arg name="frame_rate" value="$(arg frame_rate)" />
   </include>
 </launch>

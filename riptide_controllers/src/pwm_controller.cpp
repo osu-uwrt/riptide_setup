@@ -33,45 +33,45 @@ PWMController::PWMController() : nh("pwm_controller")
   //The first column is for negative forces, second column is positive force
 
   // Surge Port Low
-  LoadCalibration("SPL/NEG/SLOPE", thrust_config[SPL][NEG_SLOPE]);
-  LoadCalibration("SPL/POS/SLOPE", thrust_config[SPL][POS_SLOPE]);
-  LoadCalibration("SPL/NEG/XINT", thrust_config[SPL][NEG_XINT]);
-  LoadCalibration("SPL/POS/XINT", thrust_config[SPL][POS_XINT]);
+  PWMController::LoadParam<float>("SPL/NEG/SLOPE", thrust_config[SPL][NEG_SLOPE]);
+  PWMController::LoadParam<float>("SPL/POS/SLOPE", thrust_config[SPL][POS_SLOPE]);
+  PWMController::LoadParam<float>("SPL/NEG/XINT", thrust_config[SPL][NEG_XINT]);
+  PWMController::LoadParam<float>("SPL/POS/XINT", thrust_config[SPL][POS_XINT]);
   // Surge Starboard Low
-  LoadCalibration("SSL/NEG/SLOPE", thrust_config[SSL][NEG_SLOPE]);
-  LoadCalibration("SSL/POS/SLOPE", thrust_config[SSL][POS_SLOPE]);
-  LoadCalibration("SSL/NEG/XINT", thrust_config[SSL][NEG_XINT]);
-  LoadCalibration("SSL/POS/XINT", thrust_config[SSL][POS_XINT]);
+  PWMController::LoadParam<float>("SSL/NEG/SLOPE", thrust_config[SSL][NEG_SLOPE]);
+  PWMController::LoadParam<float>("SSL/POS/SLOPE", thrust_config[SSL][POS_SLOPE]);
+  PWMController::LoadParam<float>("SSL/NEG/XINT", thrust_config[SSL][NEG_XINT]);
+  PWMController::LoadParam<float>("SSL/POS/XINT", thrust_config[SSL][POS_XINT]);
   // Heave Port Aft
-  LoadCalibration("HPA/NEG/SLOPE", thrust_config[HPA][NEG_SLOPE]);
-  LoadCalibration("HPA/POS/SLOPE", thrust_config[HPA][POS_SLOPE]);
-  LoadCalibration("HPA/NEG/XINT", thrust_config[HPA][NEG_XINT]);
-  LoadCalibration("HPA/POS/XINT", thrust_config[HPA][POS_XINT]);
+  PWMController::LoadParam<float>("HPA/NEG/SLOPE", thrust_config[HPA][NEG_SLOPE]);
+  PWMController::LoadParam<float>("HPA/POS/SLOPE", thrust_config[HPA][POS_SLOPE]);
+  PWMController::LoadParam<float>("HPA/NEG/XINT", thrust_config[HPA][NEG_XINT]);
+  PWMController::LoadParam<float>("HPA/POS/XINT", thrust_config[HPA][POS_XINT]);
   // heave Port Forward
-  LoadCalibration("HPF/NEG/SLOPE", thrust_config[HPF][NEG_SLOPE]);
-  LoadCalibration("HPF/POS/SLOPE", thrust_config[HPF][POS_SLOPE]);
-  LoadCalibration("HPF/NEG/XINT", thrust_config[HPF][NEG_XINT]);
-  LoadCalibration("HPF/POS/XINT", thrust_config[HPF][POS_XINT]);
+  PWMController::LoadParam<float>("HPF/NEG/SLOPE", thrust_config[HPF][NEG_SLOPE]);
+  PWMController::LoadParam<float>("HPF/POS/SLOPE", thrust_config[HPF][POS_SLOPE]);
+  PWMController::LoadParam<float>("HPF/NEG/XINT", thrust_config[HPF][NEG_XINT]);
+  PWMController::LoadParam<float>("HPF/POS/XINT", thrust_config[HPF][POS_XINT]);
   // Heave Starboard Aft
-  LoadCalibration("HSA/NEG/SLOPE", thrust_config[HSA][NEG_SLOPE]);
-  LoadCalibration("HSA/POS/SLOPE", thrust_config[HSA][POS_SLOPE]);
-  LoadCalibration("HSA/NEG/XINT", thrust_config[HSA][NEG_XINT]);
-  LoadCalibration("HSA/POS/XINT", thrust_config[HSA][POS_XINT]);
+  PWMController::LoadParam<float>("HSA/NEG/SLOPE", thrust_config[HSA][NEG_SLOPE]);
+  PWMController::LoadParam<float>("HSA/POS/SLOPE", thrust_config[HSA][POS_SLOPE]);
+  PWMController::LoadParam<float>("HSA/NEG/XINT", thrust_config[HSA][NEG_XINT]);
+  PWMController::LoadParam<float>("HSA/POS/XINT", thrust_config[HSA][POS_XINT]);
   // Heave Starboard Forward
-  LoadCalibration("HSF/NEG/SLOPE", thrust_config[HSF][NEG_SLOPE]);
-  LoadCalibration("HSF/POS/SLOPE", thrust_config[HSF][POS_SLOPE]);
-  LoadCalibration("HSF/NEG/XINT", thrust_config[HSF][NEG_XINT]);
-  LoadCalibration("HSF/POS/XINT", thrust_config[HSF][POS_XINT]);
+  PWMController::LoadParam<float>("HSF/NEG/SLOPE", thrust_config[HSF][NEG_SLOPE]);
+  PWMController::LoadParam<float>("HSF/POS/SLOPE", thrust_config[HSF][POS_SLOPE]);
+  PWMController::LoadParam<float>("HSF/NEG/XINT", thrust_config[HSF][NEG_XINT]);
+  PWMController::LoadParam<float>("HSF/POS/XINT", thrust_config[HSF][POS_XINT]);
   // Sway Forward
-  LoadCalibration("SWF/NEG/SLOPE", thrust_config[SWF][NEG_SLOPE]);
-  LoadCalibration("SWF/POS/SLOPE", thrust_config[SWF][POS_SLOPE]);
-  LoadCalibration("SWF/NEG/XINT", thrust_config[SWF][NEG_XINT]);
-  LoadCalibration("SWF/POS/XINT", thrust_config[SWF][POS_XINT]);
+  PWMController::LoadParam<float>("SWF/NEG/SLOPE", thrust_config[SWF][NEG_SLOPE]);
+  PWMController::LoadParam<float>("SWF/POS/SLOPE", thrust_config[SWF][POS_SLOPE]);
+  PWMController::LoadParam<float>("SWF/NEG/XINT", thrust_config[SWF][NEG_XINT]);
+  PWMController::LoadParam<float>("SWF/POS/XINT", thrust_config[SWF][POS_XINT]);
   // Sway Aft
-  LoadCalibration("SWA/NEG/SLOPE", thrust_config[SWA][NEG_SLOPE]);
-  LoadCalibration("SWA/POS/SLOPE", thrust_config[SWA][POS_SLOPE]);
-  LoadCalibration("SWA/NEG/XINT", thrust_config[SWA][NEG_XINT]);
-  LoadCalibration("SWA/POS/XINT", thrust_config[SWA][POS_XINT]);
+  PWMController::LoadParam<float>("SWA/NEG/SLOPE", thrust_config[SWA][NEG_SLOPE]);
+  PWMController::LoadParam<float>("SWA/POS/SLOPE", thrust_config[SWA][POS_SLOPE]);
+  PWMController::LoadParam<float>("SWA/NEG/XINT", thrust_config[SWA][NEG_XINT]);
+  PWMController::LoadParam<float>("SWA/POS/XINT", thrust_config[SWA][POS_XINT]);
 
   alive_timeout = ros::Duration(2);
   last_alive_time = ros::Time::now();
@@ -79,18 +79,22 @@ PWMController::PWMController() : nh("pwm_controller")
   dead = true; // Dead refers to the kill switch being pulled
 }
 
-void PWMController::LoadCalibration(std::string name, float &param)
+// Load parameter from namespace
+template <typename T>
+void PWMController::LoadParam(string param, T &var)
 {
   try
   {
-    if (!nh.getParam(name, param))
+    if (!nh.getParam(param, var))
     {
       throw 0;
     }
   }
   catch(int e)
   {
-    ROS_ERROR("Critical! PWM Controler has no calibration set for %s. Shutting down...", name.c_str());
+    string ns = nh.getNamespace();
+    ROS_INFO("PWM Controller Namespace: %s", ns.c_str());
+    ROS_ERROR("Critical! Param \"%s/%s\" does not exist or is not accessed correctly. Shutting down.", ns.c_str(), param.c_str());
     ros::shutdown();
   }
 }

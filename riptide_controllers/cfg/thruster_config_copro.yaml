@@ -27,7 +27,7 @@ SSL:
   NEG:
     SLOPE: 7.829684
     XINT: 1517
-HSA:
+HPF: # Previously HSA on old Riptide
   POS:
     SLOPE: -7.954310
     XINT: 1465
@@ -41,7 +41,7 @@ HPA:
   NEG:
     SLOPE: 8.067786
     XINT: 1460
-HPF:
+HSA: # Previously HPF on old Riptide
   POS:
     SLOPE: -7.900563
     XINT: 1465

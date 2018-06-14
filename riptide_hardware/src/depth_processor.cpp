@@ -13,8 +13,8 @@ int main(int argc, char** argv)
 DepthProcessor::DepthProcessor() : nh("depth_processor") {
  depth_sub = nh.subscribe<riptide_msgs::Depth>("/depth/raw", 1, &DepthProcessor::DepthCB, this);
  depth_state_pub = nh.advertise<riptide_msgs::Depth>("/state/depth", 1);
- DepthProcessor::LoadProperty("post_IIR_LPF_bandwidth", post_IIR_LPF_bandwidth);
- DepthProcessor::LoadProperty("sensor_rate", sensor_rate);
+ DepthProcessor::LoadParam<double>("post_IIR_LPF_bandwidth", post_IIR_LPF_bandwidth);
+ DepthProcessor::LoadParam<double>("sensor_rate", sensor_rate);
 
  // IIR LPF Variables
  double fc = post_IIR_LPF_bandwidth; // Shorthand variable for IIR bandwidth
@@ -22,19 +22,22 @@ DepthProcessor::DepthProcessor() : nh("depth_processor") {
  alpha = 2*PI*dt*fc / (2*PI*dt*fc + 1); // Multiplier
 }
 
-// Load property from namespace
-void DepthProcessor::LoadProperty(std::string name, double &param)
+// Load parameter from namespace
+template <typename T>
+void DepthProcessor::LoadParam(string param, T &var)
 {
   try
   {
-    if (!nh.getParam(name, param))
+    if (!nh.getParam(param, var))
     {
       throw 0;
     }
   }
   catch(int e)
   {
-    ROS_ERROR("Critical! Depth Processor has no property set for %s. Shutting down...", name.c_str());
+    string ns = nh.getNamespace();
+    ROS_ERROR("Depth Processor Namespace: %s", ns.c_str());
+    ROS_ERROR("Critical! Param \"%s/%s\" does not exist or is not accessed correctly. Shutting down.", ns.c_str(), param.c_str());
     ros::shutdown();
   }
 }
