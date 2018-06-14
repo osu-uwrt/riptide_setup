@@ -10,6 +10,7 @@
 #include "riptide_msgs/ResetControls.h"
 #include "riptide_msgs/ControlStatus.h"
 #include "riptide_msgs/ControlStatusAngular.h"
+using namespace std;
 
 class AttitudeController
 {
@@ -58,7 +59,8 @@ class AttitudeController
 
   public:
     AttitudeController();
-    void LoadProperty(std::string name, double &param);
+    template <typename T>
+    void LoadParam(string param, T &var);
     void ManualCommandCB(const geometry_msgs::Vector3::ConstPtr &cmd);
     void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
     void Loop();

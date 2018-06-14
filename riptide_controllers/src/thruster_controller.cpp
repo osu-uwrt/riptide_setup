@@ -73,14 +73,14 @@ tf::Vector3 euler_rpy, ang_v;
 // Debug variables
 geometry_msgs::Vector3Stamped buoyancy_pos;
 
-void GetTransform(vector *v, tf::StampedTransform *tform)
+/*void GetTransform(vector *v, tf::StampedTransform *tform)
 {
   v->x = tform->getOrigin().x();
   v->y = tform->getOrigin().y();
   v->z = tform->getOrigin().z();
 
   return;
-}
+}*/
 
 /*** Thruster Positions ***/
 // Positions are in meters relative to the center of mass (can be neg. or pos.)
@@ -284,51 +284,51 @@ int main(int argc, char **argv)
 ThrusterController::ThrusterController(char **argv) : nh("thruster_controller") {
   // Load parameters from .yaml files or launch files
   nh.getParam("debug", debug_controller);
-  ThrusterController::LoadProperty("Buoyancy_Depth_Thresh", buoyancy_depth_thresh); // Depth threshold to include buoyancy
-  ThrusterController::LoadProperty("Buoyancy_Pitch_Thresh", buoyancy_pitch_thresh); // Pitch threshold to enable/disable heave thrusters
+  ThrusterController::LoadParam("Buoyancy_Depth_Thresh", buoyancy_depth_thresh); // Depth threshold to include buoyancy
+  ThrusterController::LoadParam("Buoyancy_Pitch_Thresh", buoyancy_pitch_thresh); // Pitch threshold to enable/disable heave thrusters
 
   // Load postions of each thruster relative to CoM
-  ThrusterController::LoadProperty("HPF/X", pos_heave_port_fwd.x);
-  ThrusterController::LoadProperty("HPF/Y", pos_heave_port_fwd.y);
-  ThrusterController::LoadProperty("HPF/Z", pos_heave_port_fwd.z);
+  ThrusterController::LoadParam<double>("HPF/X", pos_heave_port_fwd.x);
+  ThrusterController::LoadParam<double>("HPF/Y", pos_heave_port_fwd.y);
+  ThrusterController::LoadParam<double>("HPF/Z", pos_heave_port_fwd.z);
 
-  ThrusterController::LoadProperty("HPA/X", pos_heave_port_aft.x);
-  ThrusterController::LoadProperty("HPA/Y", pos_heave_port_aft.y);
-  ThrusterController::LoadProperty("HPA/Z", pos_heave_port_aft.z);
+  ThrusterController::LoadParam<double>("HPA/X", pos_heave_port_aft.x);
+  ThrusterController::LoadParam<double>("HPA/Y", pos_heave_port_aft.y);
+  ThrusterController::LoadParam<double>("HPA/Z", pos_heave_port_aft.z);
 
-  ThrusterController::LoadProperty("HSF/X", pos_heave_stbd_fwd.x);
-  ThrusterController::LoadProperty("HSF/Y", pos_heave_stbd_fwd.y);
-  ThrusterController::LoadProperty("HSF/Z", pos_heave_stbd_fwd.z);
+  ThrusterController::LoadParam<double>("HSF/X", pos_heave_stbd_fwd.x);
+  ThrusterController::LoadParam<double>("HSF/Y", pos_heave_stbd_fwd.y);
+  ThrusterController::LoadParam<double>("HSF/Z", pos_heave_stbd_fwd.z);
 
-  ThrusterController::LoadProperty("HSA/X", pos_heave_stbd_aft.x);
-  ThrusterController::LoadProperty("HSA/Y", pos_heave_stbd_aft.y);
-  ThrusterController::LoadProperty("HSA/Z", pos_heave_stbd_aft.z);
+  ThrusterController::LoadParam<double>("HSA/X", pos_heave_stbd_aft.x);
+  ThrusterController::LoadParam<double>("HSA/Y", pos_heave_stbd_aft.y);
+  ThrusterController::LoadParam<double>("HSA/Z", pos_heave_stbd_aft.z);
 
-  ThrusterController::LoadProperty("SWF/X", pos_sway_fwd.x);
-  ThrusterController::LoadProperty("SWF/Y", pos_sway_fwd.y);
-  ThrusterController::LoadProperty("SWF/Z", pos_sway_fwd.z);
+  ThrusterController::LoadParam<double>("SWF/X", pos_sway_fwd.x);
+  ThrusterController::LoadParam<double>("SWF/Y", pos_sway_fwd.y);
+  ThrusterController::LoadParam<double>("SWF/Z", pos_sway_fwd.z);
 
-  ThrusterController::LoadProperty("SWA/X", pos_sway_aft.x);
-  ThrusterController::LoadProperty("SWA/Y", pos_sway_aft.y);
-  ThrusterController::LoadProperty("SWA/Z", pos_sway_aft.z);
+  ThrusterController::LoadParam<double>("SWA/X", pos_sway_aft.x);
+  ThrusterController::LoadParam<double>("SWA/Y", pos_sway_aft.y);
+  ThrusterController::LoadParam<double>("SWA/Z", pos_sway_aft.z);
 
-  ThrusterController::LoadProperty("SPL/X", pos_surge_port_lo.x);
-  ThrusterController::LoadProperty("SPL/Y", pos_surge_port_lo.y);
-  ThrusterController::LoadProperty("SPL/Z", pos_surge_port_lo.z);
+  ThrusterController::LoadParam<double>("SPL/X", pos_surge_port_lo.x);
+  ThrusterController::LoadParam<double>("SPL/Y", pos_surge_port_lo.y);
+  ThrusterController::LoadParam<double>("SPL/Z", pos_surge_port_lo.z);
 
-  ThrusterController::LoadProperty("SSL/X", pos_surge_stbd_lo.x);
-  ThrusterController::LoadProperty("SSL/Y", pos_surge_stbd_lo.y);
-  ThrusterController::LoadProperty("SSL/Z", pos_surge_stbd_lo.z);
+  ThrusterController::LoadParam<double>("SSL/X", pos_surge_stbd_lo.x);
+  ThrusterController::LoadParam<double>("SSL/Y", pos_surge_stbd_lo.y);
+  ThrusterController::LoadParam<double>("SSL/Z", pos_surge_stbd_lo.z);
 
   // Load vehicle properties
-  ThrusterController::LoadProperty("Mass", mass);
-  ThrusterController::LoadProperty("Volume", volume);
-  ThrusterController::LoadProperty("Ixx", Ixx);
-  ThrusterController::LoadProperty("Iyy", Iyy);
-  ThrusterController::LoadProperty("Izz", Izz);
-  ThrusterController::LoadProperty("Buoyancy_X_POS", pos_buoyancy.x);
-  ThrusterController::LoadProperty("Buoyancy_Y_POS", pos_buoyancy.y);
-  ThrusterController::LoadProperty("Buoyancy_Z_POS", pos_buoyancy.z);
+  ThrusterController::LoadParam<double>("Mass", mass);
+  ThrusterController::LoadParam<double>("Volume", volume);
+  ThrusterController::LoadParam<double>("Ixx", Ixx);
+  ThrusterController::LoadParam<double>("Iyy", Iyy);
+  ThrusterController::LoadParam<double>("Izz", Izz);
+  ThrusterController::LoadParam<double>("Buoyancy_X_POS", pos_buoyancy.x);
+  ThrusterController::LoadParam<double>("Buoyancy_Y_POS", pos_buoyancy.y);
+  ThrusterController::LoadParam<double>("Buoyancy_Z_POS", pos_buoyancy.z);
 
   R_b2w.setIdentity();
   R_w2b.setIdentity();
@@ -407,18 +407,23 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller") 
 #endif
 }
 
-void ThrusterController::LoadProperty(std::string name, double &param)
+// Load parameter from namespace
+template <typename T>
+void ThrusterController::LoadParam(std::string param, T &var)
 {
   try
   {
-    if (!nh.getParam(name, param))
+    if (!nh.getParam(param, var))
     {
       throw 0;
     }
   }
   catch(int e)
   {
-    ROS_ERROR("Critical! Thruster Controller has no property set for %s. Shutting down...", name.c_str());
+    std::string ns = nh.getNamespace();
+    ROS_INFO("Thruster Controller namespace: %s", ns.c_str());
+    ROS_ERROR("\tCritical! Param ""%s""/%s does not exist or is not accessed correctly.", ns.c_str(), param.c_str());
+    ROS_ERROR("\tVerify namespace has param %s, or if the parameter exists. Shutting down.", param.c_str());
     ros::shutdown();
   }
 }

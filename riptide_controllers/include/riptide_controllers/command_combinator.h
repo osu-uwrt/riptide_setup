@@ -4,6 +4,7 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Accel.h"
 #include "geometry_msgs/Vector3.h"
+using namespace std;
 
 class CommandCombinator
 {
@@ -23,7 +24,8 @@ class CommandCombinator
 
   public:
     CommandCombinator();
-    void LoadProperty(std::string name, double &param);
+    template <typename T>
+    void LoadParam(string param, T &var);
     void InitMsgs();
     void AutoLinearCB(const geometry_msgs::Vector3::ConstPtr &lin_accel);
     void ManualLinearCB(const geometry_msgs::Vector3::ConstPtr &lin_accel);

@@ -10,6 +10,7 @@
 #include "riptide_msgs/Imu.h"
 #include "riptide_msgs/ResetControls.h"
 #include "riptide_msgs/ControlStatus.h"
+using namespace std;
 
 class DepthController
 {
@@ -51,7 +52,8 @@ class DepthController
 
   public:
     DepthController();
-    void LoadProperty(std::string name, double &param);
+    template <typename T>
+    void LoadParam(string param, T &var);
     void ManualCommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd);
     void AutoCommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd);
     void DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg);

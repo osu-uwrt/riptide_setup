@@ -9,35 +9,77 @@ int main(int argc, char** argv) {
   uc.Loop();
 }
 
-UndistortCamera::UndistortCamera() : nh("undistort_camera") {
+UndistortCamera::UndistortCamera() : nh("undistort_camera") { // NOTE: there is no namespace declared in nh()
   // Initialize size and type for Mat objects
   // NOTE: Mat type MUST be CV_64FC1 (cannot be CV_32FC1)
   cameraMatrix = Mat(3, 3, CV_64FC1);
   distortionCoeffs = Mat(1, 5, CV_64FC1);
 
-  nh.getParam("camera_name", camera_name);
-  UndistortCamera::LoadProperty("frame_rate", frame_rate);
-  nh.getParam("video_mode", video_mode);
+  //nh.getParam("camera_name", camera_name);
+  UndistortCamera::LoadParam<string>("camera_name", camera_name);
+  UndistortCamera::LoadParam<double>("frame_rate", frame_rate);
+  //nh.getParam("video_mode", video_mode);
+  UndistortCamera::LoadParam<string>("video_mode", video_mode);
+
+  // Get image size based on video mode chosen, and set scale factor
+  double scale_factor;
+  if(strcmp(video_mode.c_str(), "format7_mode0") == 0) {
+    img_size = Size(MAX_WIDTH, MAX_HEIGHT);
+    scale_factor = 1.0;
+  }
+  else if(strcmp(video_mode.c_str(), "format7_mode1") == 0) {
+    img_size = Size(MAX_WIDTH/2, MAX_HEIGHT/2);
+    scale_factor = 0.5;
+  }
+  else {
+    ROS_ERROR("Video mode must be one of 'format7_mode0' or 'format7_mode1'");
+    ros::shutdown();
+  }
 
   // Populate Mat objects from camera calibration file
-  UndistortCamera::LoadProperty("cameraMatrix/R0/C0", cameraMatrix.ptr<double>(0)[0]);
-  UndistortCamera::LoadProperty("cameraMatrix/R0/C1", cameraMatrix.ptr<double>(0)[1]);
-  UndistortCamera::LoadProperty("cameraMatrix/R0/C2", cameraMatrix.ptr<double>(0)[2]);
-  UndistortCamera::LoadProperty("cameraMatrix/R1/C0", cameraMatrix.ptr<double>(1)[0]);
-  UndistortCamera::LoadProperty("cameraMatrix/R1/C1", cameraMatrix.ptr<double>(1)[1]);
-  UndistortCamera::LoadProperty("cameraMatrix/R1/C2", cameraMatrix.ptr<double>(1)[2]);
-  UndistortCamera::LoadProperty("cameraMatrix/R2/C0", cameraMatrix.ptr<double>(2)[0]);
-  UndistortCamera::LoadProperty("cameraMatrix/R2/C1", cameraMatrix.ptr<double>(2)[1]);
-  UndistortCamera::LoadProperty("cameraMatrix/R2/C2", cameraMatrix.ptr<double>(2)[2]);
+  UndistortCamera::LoadParam<double>("cameraMatrix/R0/C0", cameraMatrix.ptr<double>(0)[0]);
+  UndistortCamera::LoadParam<double>("cameraMatrix/R0/C1", cameraMatrix.ptr<double>(0)[1]);
+  UndistortCamera::LoadParam<double>("cameraMatrix/R0/C2", cameraMatrix.ptr<double>(0)[2]);
+  UndistortCamera::LoadParam<double>("cameraMatrix/R1/C0", cameraMatrix.ptr<double>(1)[0]);
+  UndistortCamera::LoadParam<double>("cameraMatrix/R1/C1", cameraMatrix.ptr<double>(1)[1]);
+  UndistortCamera::LoadParam<double>("cameraMatrix/R1/C2", cameraMatrix.ptr<double>(1)[2]);
+  UndistortCamera::LoadParam<double>("cameraMatrix/R2/C0", cameraMatrix.ptr<double>(2)[0]);
+  UndistortCamera::LoadParam<double>("cameraMatrix/R2/C1", cameraMatrix.ptr<double>(2)[1]);
+  UndistortCamera::LoadParam<double>("cameraMatrix/R2/C2", cameraMatrix.ptr<double>(2)[2]);
 
-  UndistortCamera::LoadProperty("distortionCoeffs/C0", distortionCoeffs.ptr<double>(0)[0]);
-  UndistortCamera::LoadProperty("distortionCoeffs/C1", distortionCoeffs.ptr<double>(0)[1]);
-  UndistortCamera::LoadProperty("distortionCoeffs/C2", distortionCoeffs.ptr<double>(0)[2]);
-  UndistortCamera::LoadProperty("distortionCoeffs/C3", distortionCoeffs.ptr<double>(0)[3]);
-  UndistortCamera::LoadProperty("distortionCoeffs/C4", distortionCoeffs.ptr<double>(0)[4]);
+  UndistortCamera::LoadParam<double>("distortionCoeffs/C0", distortionCoeffs.ptr<double>(0)[0]);
+  UndistortCamera::LoadParam<double>("distortionCoeffs/C1", distortionCoeffs.ptr<double>(0)[1]);
+  UndistortCamera::LoadParam<double>("distortionCoeffs/C2", distortionCoeffs.ptr<double>(0)[2]);
+  UndistortCamera::LoadParam<double>("distortionCoeffs/C3", distortionCoeffs.ptr<double>(0)[3]);
+  UndistortCamera::LoadParam<double>("distortionCoeffs/C4", distortionCoeffs.ptr<double>(0)[4]);
+
+  /*ROS_INFO("\tBefore values changed. Camera Name: %s", camera_name.c_str());
+  ROS_INFO("\tAddress cameraMatrix [0][0] %d", cameraMatrix.at<uchar>(0));
+  ROS_INFO("\tAddress cameraMatrix [0][1] %d", cameraMatrix.at<uchar>(1));
+  ROS_INFO("\tAddress cameraMatrix [0][2] %d", cameraMatrix.at<uchar>(2));*/
+
+  cameraMatrix.ptr<double>(0)[0] *= scale_factor;
+  cameraMatrix.ptr<double>(0)[1] *= scale_factor;
+  cameraMatrix.ptr<double>(0)[2] *= scale_factor;
+  cameraMatrix.ptr<double>(0)[3] *= scale_factor;
+  cameraMatrix.ptr<double>(0)[4] *= scale_factor;
+  cameraMatrix.ptr<double>(0)[5] *= scale_factor;
+
+  // Scale fx, fy, cx, and cy in cameraMatrix by scale factor (based on video mode)
+  /*double* p = cameraMatrix.ptr<double>(0); // Get pointer to first row
+  p[0] = p[0] * scale_factor;
+  p[1] = p[1] * scale_factor;
+  p[2] = p[2] * scale_factor;
+  p[3] = p[3] * scale_factor; // Can keep going b/c this mat object is continuous, so treat matrix like large 1-D array
+  p[4] = p[4] * scale_factor;
+  p[5] = p[5] * scale_factor;*/
 
   // Display to screen to verify config parameters read properly
+  string t = "true", f = "false"; // Use with '<expression>?a:b' --> if expression is 'true' return a, else return b
   ROS_INFO("Camera Name: %s", camera_name.c_str());
+  ROS_INFO("\tIs cameraMatrix continuous: %s", cameraMatrix.isContinuous()?t.c_str():f.c_str());
+  ROS_INFO("\tIs distortionCoeffs continuous: %s", distortionCoeffs.isContinuous()?t.c_str():f.c_str());
+
   ROS_INFO("\tcameraMatrix [0][0] %f", cameraMatrix.ptr<double>(0)[0]);
   ROS_INFO("\tcameraMatrix [0][1] %f", cameraMatrix.ptr<double>(0)[1]);
   ROS_INFO("\tcameraMatrix [0][2] %f", cameraMatrix.ptr<double>(0)[2]);
@@ -61,35 +103,29 @@ UndistortCamera::UndistortCamera() : nh("undistort_camera") {
   raw_image_sub = nh.subscribe<sensor_msgs::Image>(sub_topic, 1, &UndistortCamera::ImageCB, this);
   undistorted_pub = nh.advertise<sensor_msgs::Image>(pub_topic, 1);
 
-  // Get image size based on video mode chosen
-  if(strcmp(video_mode.c_str(), "format7_mode0") == 0)
-    img_size = Size(MAX_WIDTH, MAX_HEIGHT);
-  else if(strcmp(video_mode.c_str(), "format7_mode1") == 0)
-    img_size = Size(MAX_WIDTH/2, MAX_HEIGHT/2);
-  else {
-    ROS_ERROR("Video mode must be one of 'format7_mode0' or 'format7_mode1'");
-    ros::shutdown();
-  }
-
   // Speed up undistort process by calculting the map1 and map2 variables once:
   // This function is called within the cv::undistort function, yet it takes about 90% of the computation time (about 90 ms).
   // Just do it once and speed up the process by a lot!
   initUndistortRectifyMap(cameraMatrix, distortionCoeffs, Mat(), cameraMatrix, img_size, CV_16SC2, map1, map2);
 }
 
-// Load property from namespace
-void UndistortCamera::LoadProperty(std::string name, double &param)
+// Load parameter from namespace
+template <typename T>
+void UndistortCamera::LoadParam(string param, T &var)
 {
   try
   {
-    if (!nh.getParam(name, param))
+    if (!nh.getParam(param, var))
     {
       throw 0;
     }
   }
   catch(int e)
   {
-    ROS_ERROR("Critical! Undistort Camera (camera %s) has no property set for %s. Shutting down...", camera_name.c_str(), name.c_str());
+    string ns = nh.getNamespace();
+    ROS_INFO("Undistort Camera namespace: %s", ns.c_str());
+    ROS_ERROR("\tCritical! Param ""%s""/%s does not exist or is not accessed correctly.", ns.c_str(), param.c_str());
+    ROS_ERROR("\tVerify namespace has param %s, or if the parameter exists. Shutting down.", param.c_str());
     ros::shutdown();
   }
 }

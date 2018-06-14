@@ -15,29 +15,33 @@ CommandCombinator::CommandCombinator() : nh("command_combinator") {
 
   cmd_pub = nh.advertise<geometry_msgs::Accel>("/command/accel", 1); // The final accel output
 
-  CommandCombinator::LoadProperty("max_x_accel", MAX_X_ACCEL);
-  CommandCombinator::LoadProperty("max_y_accel", MAX_Y_ACCEL);
-  CommandCombinator::LoadProperty("max_z_accel", MAX_Z_ACCEL);
-  CommandCombinator::LoadProperty("max_roll_accel", MAX_ROLL_ACCEL);
-  CommandCombinator::LoadProperty("max_pitch_accel", MAX_PITCH_ACCEL);
-  CommandCombinator::LoadProperty("max_yaw_accel", MAX_YAW_ACCEL);
+  CommandCombinator::LoadParam<double>("max_x_accel", MAX_X_ACCEL);
+  CommandCombinator::LoadParam<double>("max_y_accel", MAX_Y_ACCEL);
+  CommandCombinator::LoadParam<double>("max_z_accel", MAX_Z_ACCEL);
+  CommandCombinator::LoadParam<double>("max_roll_accel", MAX_ROLL_ACCEL);
+  CommandCombinator::LoadParam<double>("max_pitch_accel", MAX_PITCH_ACCEL);
+  CommandCombinator::LoadParam<double>("max_yaw_accel", MAX_YAW_ACCEL);
 
   CommandCombinator::InitMsgs();
 }
 
-// Load property from namespace
-void CommandCombinator::LoadProperty(std::string name, double &param)
+// Load parameter from namespace
+template <typename T>
+void CommandCombinator::LoadParam(string param, T &var)
 {
   try
   {
-    if(!nh.getParam(name, param))
+    if (!nh.getParam(param, var))
     {
       throw 0;
     }
   }
   catch(int e)
   {
-    ROS_ERROR("Critical! Command Combinator has no property set for %s. Shutting down...", name.c_str());
+    string ns = nh.getNamespace();
+    ROS_INFO("Command Combinator namespace: %s", ns.c_str());
+    ROS_ERROR("\tCritical! Param ""%s""/%s does not exist or is not accessed correctly.", ns.c_str(), param.c_str());
+    ROS_ERROR("\tVerify namespace has param %s, or if the parameter exists. Shutting down.", param.c_str());
     ros::shutdown();
   }
 }

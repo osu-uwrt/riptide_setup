@@ -7,6 +7,7 @@
 #include "riptide_msgs/ThrustStamped.h"
 #include "riptide_msgs/SwitchState.h"
 #include "riptide_msgs/ResetControls.h"
+using namespace std;
 
 class PWMController
 {
@@ -22,12 +23,13 @@ class PWMController
   ros::Time last_alive_time;
   ros::Duration alive_timeout;
 
-  void LoadCalibration(std::string name, float &param);
   void PublishZeroPWM();
   int Thrust2pwm(double raw_force, int thruster);
 
  public:
   PWMController();
+  template <typename T>
+  void LoadParam(string param, T &var);
   void ThrustCB(const riptide_msgs::ThrustStamped::ConstPtr &thrust);
   void SwitchCB(const riptide_msgs::SwitchState::ConstPtr &state);
   void ResetController(const riptide_msgs::ResetControls::ConstPtr &reset_msg);

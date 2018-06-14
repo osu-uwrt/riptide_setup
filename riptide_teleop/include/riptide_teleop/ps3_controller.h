@@ -24,7 +24,7 @@ class PS3Controller
   riptide_msgs::ResetControls reset_msg;
   bool isReset, isStarted, isInit, isDepthWorking, isR2Init, isL2Init;
   tf::Vector3 euler_rpy;
-  double rt, current_depth, buoyancy_thresh, delta_depth, mass, volume, stable_z_accel;
+  double rt, current_depth, buoyancy_depth_thresh, delta_depth;
 
   // Max values, and command ates
   double MAX_ROLL, MAX_PITCH, MAX_DEPTH, MAX_XY_ACCEL, MAX_Z_ACCEL;

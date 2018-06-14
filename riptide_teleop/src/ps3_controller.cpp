@@ -24,9 +24,7 @@ PS3Controller::PS3Controller() : nh("ps3_controller") {
 
   nh.getParam("is_depth_working", isDepthWorking); // Is depth sensor working?
   PS3Controller::LoadProperty("rate", rt); // [Hz]
-  PS3Controller::LoadProperty("Buoyancy_Thresh", buoyancy_thresh); // [m]
-  PS3Controller::LoadProperty("Mass", mass); // [kg]
-  PS3Controller::LoadProperty("Volume", volume); // [m^3]
+  PS3Controller::LoadProperty("buoyancy_depth_thresh", buoyancy_depth_thresh); // [m]
   PS3Controller::LoadProperty("max_roll_limit", MAX_ROLL); // [m/s^2]
   PS3Controller::LoadProperty("max_pitch_limit", MAX_PITCH); // [m/s^2]
   PS3Controller::LoadProperty("max_x_accel", MAX_XY_ACCEL); // [m/s^2]
@@ -49,8 +47,6 @@ PS3Controller::PS3Controller() : nh("ps3_controller") {
   pitch_factor = CMD_PITCH_RATE/rt;
   yaw_factor = CMD_YAW_RATE/rt;
   depth_factor = CMD_DEPTH_RATE/rt;
-
-  stable_z_accel = (mass - volume*WATER_DENSITY) * GRAVITY / mass;
 
   PS3Controller::InitMsgs();
 }
@@ -154,8 +150,6 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr& joy) {
           delta_depth = 0;
         }
       else { // Depth sensor not working properly
-        cmd_accel.z = stable_z_accel;
-
         // For some reason, R2 and L2 are initialized to 0
         if(!isR2Init && (joy->axes[AXES_REAR_R2] != 0))
           isR2Init = true;
@@ -163,9 +157,9 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr& joy) {
           isL2Init = true;
 
         if(isR2Init && (1 - joy->axes[AXES_REAR_R2] != 0)) // If pressed at all, inc z-accel
-          cmd_accel.z += 0.5*(1 - joy->axes[AXES_REAR_R2])*MAX_Z_ACCEL; // Multiplied by 0.5 to scale axes value from 0 to 1
+          cmd_accel.z = 0.5*(1 - joy->axes[AXES_REAR_R2])*MAX_Z_ACCEL; // Multiplied by 0.5 to scale axes value from 0 to 1
         else if(isL2Init && (1 - joy->axes[AXES_REAR_L2] != 0)) // If pressed at all, dec z-accel
-          cmd_accel.z -= 0.5*(1 - joy->axes[AXES_REAR_L2])*MAX_Z_ACCEL; // Multiplied by 0.5 to scale axes value from 0 to 1
+          cmd_accel.z = 0.5*(1 - joy->axes[AXES_REAR_L2])*MAX_Z_ACCEL; // Multiplied by 0.5 to scale axes value from 0 to 1
       }
 
       // Update Linear XY Accel

@@ -41,13 +41,13 @@ AttitudeController::AttitudeController() : nh("attitude_controller") {
     cmd_pub = nh.advertise<geometry_msgs::Vector3>("/command/auto/accel/angular", 1);
     status_pub = nh.advertise<riptide_msgs::ControlStatusAngular>("/controls/status/angular", 1);
 
-    AttitudeController::LoadProperty("max_roll_error", MAX_ROLL_ERROR);
-    AttitudeController::LoadProperty("max_pitch_error", MAX_PITCH_ERROR);
-    AttitudeController::LoadProperty("max_yaw_error", MAX_YAW_ERROR);
-    AttitudeController::LoadProperty("max_roll_limit", MAX_ROLL_LIMIT);
-    AttitudeController::LoadProperty("max_pitch_limit", MAX_PITCH_LIMIT);
-    AttitudeController::LoadProperty("PID_IIR_LPF_bandwidth", PID_IIR_LPF_bandwidth);
-    AttitudeController::LoadProperty("imu_filter_rate", imu_filter_rate);
+    AttitudeController::LoadParam<double>("max_roll_error", MAX_ROLL_ERROR);
+    AttitudeController::LoadParam<double>("max_pitch_error", MAX_PITCH_ERROR);
+    AttitudeController::LoadParam<double>("max_yaw_error", MAX_YAW_ERROR);
+    AttitudeController::LoadParam<double>("max_roll_limit", MAX_ROLL_LIMIT);
+    AttitudeController::LoadParam<double>("max_pitch_limit", MAX_PITCH_LIMIT);
+    AttitudeController::LoadParam<double>("PID_IIR_LPF_bandwidth", PID_IIR_LPF_bandwidth);
+    AttitudeController::LoadParam<double>("imu_filter_rate", imu_filter_rate);
 
     // IIR LPF Variables
     double fc = PID_IIR_LPF_bandwidth; // Shorthand variable for IIR bandwidth
@@ -80,19 +80,23 @@ void AttitudeController::InitMsgs() {
   ang_accel_cmd.z = 0;
 }
 
-// Load property from namespace
-void AttitudeController::LoadProperty(std::string name, double &param)
+// Load parameter from namespace
+template <typename T>
+void AttitudeController::LoadParam(string param, T &var)
 {
   try
   {
-    if(!nh.getParam(name, param))
+    if (!nh.getParam(param, var))
     {
       throw 0;
     }
   }
   catch(int e)
   {
-    ROS_ERROR("Critical! Attitude Controller has no property set for %s. Shutting down...", name.c_str());
+    string ns = nh.getNamespace();
+    ROS_INFO("Attitude Controller namespace: %s", ns.c_str());
+    ROS_ERROR("\tCritical! Param ""%s""/%s does not exist or is not accessed correctly.", ns.c_str(), param.c_str());
+    ROS_ERROR("\tVerify namespace has param %s, or if the parameter exists. Shutting down.", param.c_str());
     ros::shutdown();
   }
 }

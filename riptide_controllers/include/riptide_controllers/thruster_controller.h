@@ -2,7 +2,6 @@
 #define THRUSTER_CONTROLLER_H
 
 #include <math.h>
-#include <vector>
 
 #include "ceres/ceres.h"
 #include "glog/logging.h"
@@ -44,7 +43,8 @@ class ThrusterController
 
  public:
   ThrusterController(char **argv);
-  void LoadProperty(std::string name, double &param);
+  template <typename T>
+  void LoadParam(std::string param, T &var);
   void DynamicReconfigCallback(riptide_controllers::VehiclePropertiesConfig &config, uint32_t levels);
   void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
   void DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg);

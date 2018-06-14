@@ -32,10 +32,10 @@ DepthController::DepthController() : nh("depth_controller") {
     cmd_pub = nh.advertise<geometry_msgs::Vector3>("/command/auto/accel/depth", 1);
     status_pub = nh.advertise<riptide_msgs::ControlStatus>("/controls/status/depth", 1);
 
-    DepthController::LoadProperty("max_depth", MAX_DEPTH);
-    DepthController::LoadProperty("max_depth_error", MAX_DEPTH_ERROR);
-    DepthController::LoadProperty("PID_IIR_LPF_bandwidth", PID_IIR_LPF_bandwidth);
-    DepthController::LoadProperty("sensor_rate", sensor_rate);
+    DepthController::LoadParam<double>("max_depth", MAX_DEPTH);
+    DepthController::LoadParam<double>("max_depth_error", MAX_DEPTH_ERROR);
+    DepthController::LoadParam<double>("PID_IIR_LPF_bandwidth", PID_IIR_LPF_bandwidth);
+    DepthController::LoadParam<double>("sensor_rate", sensor_rate);
 
     // IIR LPF Variables
     double fc = PID_IIR_LPF_bandwidth; // Shorthand variable for IIR bandwidth
@@ -53,19 +53,23 @@ DepthController::DepthController() : nh("depth_controller") {
     DepthController::ResetDepth();
 }
 
-// Load property from namespace
-void DepthController::LoadProperty(std::string name, double &param)
+// Load parameter from namespace
+template <typename T>
+void DepthController::LoadParam(string param, T &var)
 {
   try
   {
-    if(!nh.getParam(name, param))
+    if (!nh.getParam(param, var))
     {
       throw 0;
     }
   }
   catch(int e)
   {
-    ROS_ERROR("Critical! Depth Controller has no property set for %s. Shutting down...", name.c_str());
+    string ns = nh.getNamespace();
+    ROS_INFO("Depth Controller namespace: %s", ns.c_str());
+    ROS_ERROR("\tCritical! Param ""%s""/%s does not exist or is not accessed correctly.", ns.c_str(), param.c_str());
+    ROS_ERROR("\tVerify namespace has param %s, or if the parameter exists. Shutting down.", param.c_str());
     ros::shutdown();
   }
 }
