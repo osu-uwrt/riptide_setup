@@ -39,10 +39,10 @@ class DepthController
     double last_error, last_error_dot;
     double dt;
 
-    bool pid_depth_init;
+    bool pid_depth_init, auto_enabled;
 
-    ros::Time sample_start;
-    ros::Duration sample_duration;
+    ros::Time sample_start, auto_time;
+    ros::Duration sample_duration, auto_disable_duration;
 
     void UpdateError();
     double Constrain(double current, double max);

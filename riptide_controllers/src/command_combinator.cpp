@@ -39,9 +39,8 @@ void CommandCombinator::LoadParam(string param, T &var)
   catch(int e)
   {
     string ns = nh.getNamespace();
-    ROS_INFO("Command Combinator namespace: %s", ns.c_str());
-    ROS_ERROR("\tCritical! Param ""%s""/%s does not exist or is not accessed correctly.", ns.c_str(), param.c_str());
-    ROS_ERROR("\tVerify namespace has param %s, or if the parameter exists. Shutting down.", param.c_str());
+    ROS_ERROR("Command Combinator Namespace: %s", ns.c_str());
+    ROS_ERROR("Critical! Param \"%s/%s\" does not exist or is not accessed correctly. Shutting down.", ns.c_str(), param.c_str());
     ros::shutdown();
   }
 }

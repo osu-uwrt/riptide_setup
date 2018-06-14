@@ -58,13 +58,6 @@ UndistortCamera::UndistortCamera() : nh("undistort_camera") { // NOTE: there is 
   ROS_INFO("\tAddress cameraMatrix [0][1] %d", cameraMatrix.at<uchar>(1));
   ROS_INFO("\tAddress cameraMatrix [0][2] %d", cameraMatrix.at<uchar>(2));*/
 
-  cameraMatrix.ptr<double>(0)[0] *= scale_factor;
-  cameraMatrix.ptr<double>(0)[1] *= scale_factor;
-  cameraMatrix.ptr<double>(0)[2] *= scale_factor;
-  cameraMatrix.ptr<double>(0)[3] *= scale_factor;
-  cameraMatrix.ptr<double>(0)[4] *= scale_factor;
-  cameraMatrix.ptr<double>(0)[5] *= scale_factor;
-
   // Scale fx, fy, cx, and cy in cameraMatrix by scale factor (based on video mode)
   /*double* p = cameraMatrix.ptr<double>(0); // Get pointer to first row
   p[0] = p[0] * scale_factor;
@@ -73,6 +66,12 @@ UndistortCamera::UndistortCamera() : nh("undistort_camera") { // NOTE: there is 
   p[3] = p[3] * scale_factor; // Can keep going b/c this mat object is continuous, so treat matrix like large 1-D array
   p[4] = p[4] * scale_factor;
   p[5] = p[5] * scale_factor;*/
+  cameraMatrix.ptr<double>(0)[0] *= scale_factor;
+  cameraMatrix.ptr<double>(0)[1] *= scale_factor;
+  cameraMatrix.ptr<double>(0)[2] *= scale_factor;
+  cameraMatrix.ptr<double>(0)[3] *= scale_factor;
+  cameraMatrix.ptr<double>(0)[4] *= scale_factor;
+  cameraMatrix.ptr<double>(0)[5] *= scale_factor;
 
   // Display to screen to verify config parameters read properly
   string t = "true", f = "false"; // Use with '<expression>?a:b' --> if expression is 'true' return a, else return b
@@ -123,9 +122,8 @@ void UndistortCamera::LoadParam(string param, T &var)
   catch(int e)
   {
     string ns = nh.getNamespace();
-    ROS_INFO("Undistort Camera namespace: %s", ns.c_str());
-    ROS_ERROR("\tCritical! Param ""%s""/%s does not exist or is not accessed correctly.", ns.c_str(), param.c_str());
-    ROS_ERROR("\tVerify namespace has param %s, or if the parameter exists. Shutting down.", param.c_str());
+    ROS_ERROR("Undistort Camera Namespace: %s", ns.c_str());
+    ROS_ERROR("Critical! Param \"%s/%s\" does not exist or is not accessed correctly. Shutting down.", ns.c_str(), param.c_str());
     ros::shutdown();
   }
 }

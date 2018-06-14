@@ -284,8 +284,8 @@ int main(int argc, char **argv)
 ThrusterController::ThrusterController(char **argv) : nh("thruster_controller") {
   // Load parameters from .yaml files or launch files
   nh.getParam("debug", debug_controller);
-  ThrusterController::LoadParam("Buoyancy_Depth_Thresh", buoyancy_depth_thresh); // Depth threshold to include buoyancy
-  ThrusterController::LoadParam("Buoyancy_Pitch_Thresh", buoyancy_pitch_thresh); // Pitch threshold to enable/disable heave thrusters
+  ThrusterController::LoadParam("buoyancy_depth_thresh", buoyancy_depth_thresh); // Depth threshold to include buoyancy
+  ThrusterController::LoadParam("buoyancy_pitch_thresh", buoyancy_pitch_thresh); // Pitch threshold to enable/disable heave thrusters
 
   // Load postions of each thruster relative to CoM
   ThrusterController::LoadParam<double>("HPF/X", pos_heave_port_fwd.x);
@@ -421,9 +421,8 @@ void ThrusterController::LoadParam(std::string param, T &var)
   catch(int e)
   {
     std::string ns = nh.getNamespace();
-    ROS_INFO("Thruster Controller namespace: %s", ns.c_str());
-    ROS_ERROR("\tCritical! Param ""%s""/%s does not exist or is not accessed correctly.", ns.c_str(), param.c_str());
-    ROS_ERROR("\tVerify namespace has param %s, or if the parameter exists. Shutting down.", param.c_str());
+    ROS_ERROR("Thruster Controller Namespace: %s", ns.c_str());
+    ROS_ERROR("Critical! Param \"%s/%s\" does not exist or is not accessed correctly. Shutting down.", ns.c_str(), param.c_str());
     ros::shutdown();
   }
 }
@@ -467,10 +466,14 @@ void ThrusterController::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg)
     isBuoyant = false;
 
     // Enable/Disable Apprpriate Heave Thrusters
-    if(euler_rpy.y()*180/PI > buoyancy_pitch_thresh) // Aft is too high -> disable heave aft
+    if(euler_rpy.y()*180/PI > buoyancy_pitch_thresh) { // Aft is too high -> disable heave aft
+      enableHeaveFwd = true;
       enableHeaveAft = false;
-    else if(euler_rpy.y()*180/PI < -buoyancy_pitch_thresh) // Nose is too high -> disable heave fwd
+    }
+    else if(euler_rpy.y()*180/PI < -buoyancy_pitch_thresh) { // Nose is too high -> disable heave fwd
       enableHeaveFwd = false;
+      enableHeaveAft = true;
+    }
     else { // Pitch within reasonable angle of operation
       enableHeaveFwd = true;
       enableHeaveAft = true;

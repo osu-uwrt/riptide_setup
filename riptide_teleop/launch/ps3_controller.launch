@@ -3,9 +3,9 @@
   <arg name="rate" default="100" />
   <arg name="is_depth_working" default="true" />
 
-  <!--<node pkg="joy" type="joy_node" name="joystick_driver">
+  <node pkg="joy" type="joy_node" name="joystick_driver">
     <param name="dev" value="/dev/input/js$(arg port)" />
-  </node>-->
+  </node>
 
   <node pkg="riptide_teleop" type="ps3_controller" name="ps3_controller" output="screen" >
     <rosparam command="load" file="$(find riptide_teleop)/cfg/ps3_command_rates.yaml" />
