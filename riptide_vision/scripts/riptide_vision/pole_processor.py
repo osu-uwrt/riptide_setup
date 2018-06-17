@@ -23,7 +23,7 @@ class PoleProcessor(TaskProcessor):
         response = RiptideVision().detect_pole(image)
 
         # Package data (if there is any)
-        if (len(response) > 0):
+        if (len(response) > 2):
             x_min = response[2]
             y_min = response[3]
             x_max = response[4]
@@ -55,6 +55,10 @@ class PoleProcessor(TaskProcessor):
 
             pole_msg.roll_correction = response[0]
             pole_msg.beam_thickness = response[1]
+            image = response[10]
+        else:
+            pole_msg.roll_correction = response[0]
+            image = response[1]
 
         if debug_pub is not None:
             # Compress debug image

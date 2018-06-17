@@ -40,6 +40,7 @@ PS3Controller::PS3Controller() : nh("ps3_controller") {
   isInit = false;
   isR2Init = false;
   isL2Init = false;
+  isDepthInit = false;
   current_depth = 0;
   euler_rpy.setZero();
 
@@ -133,7 +134,7 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr& joy) {
       }
 
       // Update Yaw
-      if(abs(joy->axes[AXES_STICK_LEFT_UD]) < 0.5) // Try to avoid yaw and depth simultaneously
+      if(abs(joy->axes[AXES_STICK_LEFT_UD]) < 0.7) // Try to avoid yaw and depth simultaneously
         delta_attitude.z = joy->axes[AXES_STICK_LEFT_LR]*yaw_factor;
       else
         delta_attitude.z = 0;
@@ -144,7 +145,7 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr& joy) {
           cmd_depth.absolute = 0.5;
           delta_depth = 0;
         }
-        else if(abs(joy->axes[AXES_STICK_LEFT_LR]) < 0.5) // Try to avoid yaw and depth simultaneously
+        else if(abs(joy->axes[AXES_STICK_LEFT_LR]) < 0.7) // Try to avoid yaw and depth simultaneously
           delta_depth = -joy->axes[AXES_STICK_LEFT_UD]*depth_factor; // Up -> dec depth, Down -> inc depth
         else
           delta_depth = 0;
@@ -196,7 +197,6 @@ void PS3Controller::ResetControllers() {
 
 // Run when Start button is pressed
 void PS3Controller::EnableControllers() {
-  reset_msg.reset_depth = false;
   reset_msg.reset_roll = false;
   reset_msg.reset_pitch = false;
   reset_msg.reset_yaw = false;

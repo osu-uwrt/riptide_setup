@@ -23,6 +23,7 @@ class PS3Controller
   riptide_msgs::DepthCommand cmd_depth;
   riptide_msgs::ResetControls reset_msg;
   bool isReset, isStarted, isInit, isDepthWorking, isR2Init, isL2Init;
+  bool isDepthInit;
   tf::Vector3 euler_rpy;
   double rt, current_depth, buoyancy_depth_thresh, delta_depth;
 
