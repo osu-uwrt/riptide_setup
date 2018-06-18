@@ -13,11 +13,11 @@ int main(int argc, char** argv) {
 }
 
 CalibrateCamera::CalibrateCamera() : nh("calibrate_camera") {
-  nh.getParam("numBoards", numBoards); // Number of snapshots to take from video feed
-  nh.getParam("numCornersHor", numCornersHor);
-  nh.getParam("numCornersVer", numCornersVer);
-  nh.getParam("frame_rate", frame_rate);
-  nh.getParam("camera_name", camera_name);
+  CalibrateCamera::LoadParam<int>("numBoards", numBoards); // Number of snapshots to take from video feed
+  CalibrateCamera::LoadParam<int>("numCornersHor", numCornersHor);
+  CalibrateCamera::LoadParam<int>("numCornersVer", numCornersVer);
+  CalibrateCamera::LoadParam<double>("frame_rate", frame_rate);
+  CalibrateCamera::LoadParam<string>("camera_name", camera_name);
 
   sub_topic = "/" + camera_name + "/image_raw";
   raw_image_sub = nh.subscribe<sensor_msgs::Image>(sub_topic, 1, &CalibrateCamera::ImageCB, this);
@@ -43,6 +43,26 @@ CalibrateCamera::CalibrateCamera() : nh("calibrate_camera") {
 
   calculated = false;
   pauses = 0;
+}
+
+// Load parameter from namespace
+template <typename T>
+void CalibrateCamera::LoadParam(string param, T &var)
+{
+  try
+  {
+    if (!nh.getParam(param, var))
+    {
+      throw 0;
+    }
+  }
+  catch(int e)
+  {
+    string ns = nh.getNamespace();
+    ROS_ERROR("Calibrate Camera Namespace: %s", ns.c_str());
+    ROS_ERROR("Critical! Param \"%s/%s\" does not exist or is not accessed correctly. Shutting down.", ns.c_str(), param.c_str());
+    ros::shutdown();
+  }
 }
 
 void CalibrateCamera::ImageCB(const sensor_msgs::Image::ConstPtr &msg) {

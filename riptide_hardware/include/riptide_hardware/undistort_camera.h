@@ -6,7 +6,6 @@
 #include "sensor_msgs/image_encodings.h"
 #include "std_msgs/Header.h"
 #include "opencv2/opencv.hpp"
-#include <string>
 #include <vector>
 using namespace std;
 using namespace cv;
@@ -33,7 +32,8 @@ private:
 
 public:
   UndistortCamera();
-  void LoadProperty(std::string name, double &param);
+  template <typename T>
+  void LoadParam(string param, T &var);
   void ImageCB(const sensor_msgs::ImageConstPtr& msg); // Image callback
   void Loop();
 };

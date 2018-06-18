@@ -18,6 +18,7 @@
   <build_depend>riptide_msgs</build_depend>
   <build_depend>rospy</build_depend>
   <build_depend>roscpp</build_depend>
+  <build_depend>roslint</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>cv_bridge</build_depend>
   <build_depend>OpenCV</build_depend>
@@ -25,6 +26,7 @@
   <run_depend>riptide_msgs</run_depend>
   <run_depend>rospy</run_depend>
   <run_depend>roscpp</run_depend>
+  <run_depend>roslaunch</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>cv_bridge</run_depend>
   <run_depend>OpenCV</run_depend>

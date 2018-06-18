@@ -32,10 +32,10 @@ DepthController::DepthController() : nh("depth_controller") {
     cmd_pub = nh.advertise<geometry_msgs::Vector3>("/command/auto/accel/depth", 1);
     status_pub = nh.advertise<riptide_msgs::ControlStatus>("/controls/status/depth", 1);
 
-    DepthController::LoadProperty("max_depth", MAX_DEPTH);
-    DepthController::LoadProperty("max_depth_error", MAX_DEPTH_ERROR);
-    DepthController::LoadProperty("PID_IIR_LPF_bandwidth", PID_IIR_LPF_bandwidth);
-    DepthController::LoadProperty("sensor_rate", sensor_rate);
+    DepthController::LoadParam<double>("max_depth", MAX_DEPTH);
+    DepthController::LoadParam<double>("max_depth_error", MAX_DEPTH_ERROR);
+    DepthController::LoadParam<double>("PID_IIR_LPF_bandwidth", PID_IIR_LPF_bandwidth);
+    DepthController::LoadParam<double>("sensor_rate", sensor_rate);
 
     // IIR LPF Variables
     double fc = PID_IIR_LPF_bandwidth; // Shorthand variable for IIR bandwidth
@@ -43,6 +43,7 @@ DepthController::DepthController() : nh("depth_controller") {
     alpha = 2*PI*dt_iir*fc / (2*PI*dt_iir*fc + 1); // Multiplier
 
     sample_start = ros::Time::now();
+    auto_enabled = true;
 
     status_msg.reference = 0;
     status_msg.current = 0;
@@ -53,19 +54,22 @@ DepthController::DepthController() : nh("depth_controller") {
     DepthController::ResetDepth();
 }
 
-// Load property from namespace
-void DepthController::LoadProperty(std::string name, double &param)
+// Load parameter from namespace
+template <typename T>
+void DepthController::LoadParam(string param, T &var)
 {
   try
   {
-    if(!nh.getParam(name, param))
+    if (!nh.getParam(param, var))
     {
       throw 0;
     }
   }
   catch(int e)
   {
-    ROS_ERROR("Critical! Depth Controller has no property set for %s. Shutting down...", name.c_str());
+    string ns = nh.getNamespace();
+    ROS_ERROR("Depth Controller Namespace: %s", ns.c_str());
+    ROS_ERROR("Critical! Param \"%s/%s\" does not exist or is not accessed correctly. Shutting down.", ns.c_str(), param.c_str());
     ros::shutdown();
   }
 }
@@ -126,29 +130,43 @@ void DepthController::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg) {
 // Subscribe to manual depth command
 void DepthController::ManualCommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd) {
   // Reset controller if absolute target value has changed
-  if(cmd->isManual && pid_depth_init && (cmd->absolute != last_depth_cmd_absolute))
-    depth_controller_pid.reset();
+  if(!auto_enabled && pid_depth_init && cmd->isManual) {
+    if(cmd->absolute != last_depth_cmd_absolute)
+      depth_controller_pid.reset();
 
-  depth_cmd = cmd->absolute;
-  depth_cmd = DepthController::Constrain(depth_cmd, MAX_DEPTH);
-  if(depth_cmd < 0) // Min. depth is zero
-    depth_cmd = 0;
-  status_msg.reference = depth_cmd;
-  last_depth_cmd_absolute = cmd->absolute;
+    depth_cmd = cmd->absolute;
+    depth_cmd = DepthController::Constrain(depth_cmd, MAX_DEPTH);
+    if(depth_cmd < 0) // Min. depth is zero
+      depth_cmd = 0;
+    status_msg.reference = depth_cmd;
+    last_depth_cmd_absolute = cmd->absolute;
+  }
 }
 
 // Subscribe to automatic depth command
 void DepthController::AutoCommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd) {
   // Do NOT reset controller if using auto commands - this will only waste time
   // in having the controller reset itself with every callback
-  if(!cmd->isManual && pid_depth_init)
-    depth_controller_pid.reset();
-    depth_cmd = current_depth + cmd->relative;
+  if(pid_depth_init && !cmd->isManual) { // Auto commands take priority
+    if(cmd->relative != 0) {
+      auto_enabled = true;
+      auto_disable_duration = ros::Duration(0.0);
+      auto_time = ros::Time::now();
+    }
+    else {
+      auto_disable_duration = ros::Time::now() - auto_time;
+      if(auto_disable_duration.toSec() > 0.1)
+        auto_enabled = false;
+    }
 
-  depth_cmd = DepthController::Constrain(depth_cmd, MAX_DEPTH);
-  if(depth_cmd < 0) // Min. depth is zero
-    depth_cmd = 0;
-  status_msg.reference = depth_cmd;
+    if(auto_enabled) {
+      depth_cmd = current_depth + cmd->relative;
+      depth_cmd = DepthController::Constrain(depth_cmd, MAX_DEPTH);
+      if(depth_cmd < 0) // Min. depth is zero
+        depth_cmd = 0;
+      status_msg.reference = depth_cmd;
+    }
+  }
 }
 
 // Create rotation matrix from IMU orientation
@@ -183,11 +201,15 @@ void DepthController::ResetDepth() {
   accel.x = 0;
   accel.y = 0;
   accel.z = 0;
+
+  auto_disable_duration = ros::Duration(0.0);
 }
 
 void DepthController::Loop() {
+  ros::Rate rate(200);
   while(!ros::isShuttingDown()) {
     DepthController::UpdateError(); // ALWAYS update error, regardless of circumstance
     ros::spinOnce();
+    rate.sleep();
   }
 }

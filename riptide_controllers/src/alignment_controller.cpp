@@ -30,9 +30,9 @@ AlignmentController::AlignmentController() : nh("alignment_controller") {
     z_pub = nh.advertise<riptide_msgs::DepthCommand>("/command/auto/depth", 1); // auto -> published by controller
     status_pub = nh.advertise<riptide_msgs::ControlStatusLinear>("/controls/status/linear", 1);
 
-    AlignmentController::LoadProperty("max_x_error", MAX_X_ERROR);
-    AlignmentController::LoadProperty("max_y_error", MAX_Y_ERROR);
-    AlignmentController::LoadProperty("max_z_error", MAX_Z_ERROR);
+    AlignmentController::LoadParam<double>("max_x_error", MAX_X_ERROR);
+    AlignmentController::LoadParam<double>("max_y_error", MAX_Y_ERROR);
+    AlignmentController::LoadParam<double>("max_z_error", MAX_Z_ERROR);
 
     sample_start = ros::Time::now();
     AlignmentController::InitMsgs();
@@ -52,19 +52,22 @@ void AlignmentController::InitMsgs() {
   status_msg.z.error = 0;
 }
 
-// Load property from namespace
-void AlignmentController::LoadProperty(std::string name, double &param)
+// Load parameter from namespace
+template <typename T>
+void AlignmentController::LoadParam(string param, T &var)
 {
   try
   {
-    if(!nh.getParam(name, param))
+    if (!nh.getParam(param, var))
     {
       throw 0;
     }
   }
   catch(int e)
   {
-    ROS_ERROR("Critical! Alignment Controller has no property set for %s. Shutting down...", name.c_str());
+    string ns = nh.getNamespace();
+    ROS_ERROR("Alignment Controller Namespace: %s", ns.c_str());
+    ROS_ERROR("Critical! Param \"%s/%s\" does not exist or is not accessed correctly. Shutting down", ns.c_str(), param.c_str());
     ros::shutdown();
   }
 }
@@ -286,8 +289,10 @@ void AlignmentController::ResetHeave() {
 }
 
 void AlignmentController::Loop() {
+  ros::Rate rate(200);
   while(!ros::isShuttingDown()) {
     AlignmentController::UpdateError(); // ALWAYS update error, regardless of circumstance
     ros::spinOnce();
+    rate.sleep();
   }
 }

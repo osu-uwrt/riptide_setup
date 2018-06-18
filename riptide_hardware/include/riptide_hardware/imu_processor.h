@@ -10,6 +10,7 @@
 #include "imu_3dm_gx4/FilterOutput.h"
 #include "imu_3dm_gx4/MagFieldCF.h"
 #include "math.h"
+using namespace std;
 
 class IMUProcessor
 {
@@ -37,8 +38,8 @@ private:
 
 public:
   IMUProcessor();
-  void LoadProperty(std::string name, double &param);
-  void LoadProperty(std::string name, int &param);
+  template <typename T>
+  void LoadParam(string param, T &var);
   void MagCallback(const imu_3dm_gx4::MagFieldCF::ConstPtr& mag_msg);
   void Norm(float v1, float v2, float v3, float *x, float *y, float *z);
   void FilterCallback(const imu_3dm_gx4::FilterOutput::ConstPtr& filter_msg);
