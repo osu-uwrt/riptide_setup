@@ -10,9 +10,9 @@
     <arg name="frame_rate" value="$(arg frame_rate)" />
   </include>
 
-  <include file="$(find riptide_hardware)/launch/camera.launch">
+  <!--<include file="$(find riptide_hardware)/launch/camera.launch">
     <arg name="camera_name" value="downward" />
     <arg name="serial_number" value="15662023" />
     <arg name="frame_rate" value="$(arg frame_rate)" />
-  </include>
+  </include>-->
 </launch>
