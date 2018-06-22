@@ -56,6 +56,7 @@ find_package(catkin REQUIRED
     actionlib
     darknet_ros_msgs
     image_transport
+    riptide_msgs
 )
 
 # Enable OPENCV in darknet
@@ -259,7 +260,7 @@ endif()
 if(CATKIN_ENABLE_TESTING)
   # Download yolov2-tiny.weights
   set(PATH "${CMAKE_CURRENT_SOURCE_DIR}/yolo_network_config/weights")
-  set(FILE "${PATH}/yolov2.weights")
+  set(FILE "${PATH}/yolov2-tiny.weights")
   message(STATUS "Checking and downloading yolov2-tiny.weights if needed ...")
   if (NOT EXISTS "${FILE}")
     message(STATUS "... file does not exist. Downloading now ...")

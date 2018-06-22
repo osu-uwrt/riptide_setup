@@ -41,6 +41,7 @@ YoloObjectDetector::YoloObjectDetector(ros::NodeHandle nh)
   }
 
   init();
+  alignment_plane = riptide_msgs::AlignmentCommand::YZ;
 }
 
 YoloObjectDetector::~YoloObjectDetector()
@@ -126,7 +127,7 @@ void YoloObjectDetector::init()
                 0, 0, 1, 0.5, 0, 0, 0, 0);
   yoloThread_ = std::thread(&YoloObjectDetector::yolo, this);
 
-  // Initialize publisher and subscriber.
+  /*// Initialize publisher and subscriber.
   std::string cameraTopicName;
   int cameraQueueSize;
   std::string objectDetectorTopicName;
@@ -137,7 +138,7 @@ void YoloObjectDetector::init()
   bool boundingBoxesLatch;
   std::string detectionImageTopicName;
   int detectionImageQueueSize;
-  bool detectionImageLatch;
+  bool detectionImageLatch;*/
 
   nodeHandle_.param("subscribers/camera_reading/topic", cameraTopicName,
                     std::string("/camera/image_raw"));
@@ -268,6 +269,18 @@ bool YoloObjectDetector::publishDetectionImage(const cv::Mat& detectionImage)
   detectionImagePublisher_.publish(*cvImage.toImageMsg());
   ROS_DEBUG("Detection image has been published.");
   return true;
+}
+
+void YoloObjectDetector::AlignmentCommandCB(const riptide_msgs::AlignmentCommand::ConstPtr &cmd) {
+  // Adjust alignemnt plane so Yolo can subscribe to correct camera topic
+  alignment_plane = cmd->alignment_plane;
+  if(alignment_plane != riptide_msgs::AlignmentCommand::YZ && alignment_plane != riptide_msgs::AlignmentCommand::YX)
+    alignment_plane = riptide_msgs::AlignmentCommand::YZ; // Default to YZ-plane (fwd cam)
+
+  imageSubscriber_.shutdown(); // Unsubscribe from old camera topic
+  cameraTopicName = camera_topics[alignment_plane]; // 0 -> (fwd) YZ plane, 1 -> (dwn) XY plane
+  imageSubscriber_ = imageTransport_.subscribe(cameraTopicName, cameraQueueSize,
+                                               &YoloObjectDetector::cameraCallback, this);
 }
 
 // double YoloObjectDetector::getWallTime()

@@ -1,7 +1,7 @@
 subscribers:
 
   camera_reading:
-    topic: /forward/image_raw
+    topic: /forward/image_undistorted
     queue_size: 1
 
 actions:

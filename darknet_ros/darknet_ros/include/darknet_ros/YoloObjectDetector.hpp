@@ -38,6 +38,9 @@
 #include <darknet_ros_msgs/BoundingBox.h>
 #include <darknet_ros_msgs/CheckForObjectsAction.h>
 
+// riptide_msgs
+#include "riptide_msgs/AlignmentCommand.h"
+
 // Darknet.
 #ifdef GPU
 #include "cuda_runtime.h"
@@ -123,6 +126,11 @@ class YoloObjectDetector
    */
   bool publishDetectionImage(const cv::Mat& detectionImage);
 
+  /*
+   * Subscribes to alignment command callback and calls UpdateTaskID() if needed
+   */
+  void AlignmentCommandCB(const riptide_msgs::AlignmentCommand::ConstPtr &cmd);
+
   //! Typedefs.
   typedef actionlib::SimpleActionServer<darknet_ros_msgs::CheckForObjectsAction> CheckForObjectsActionServer;
   typedef std::shared_ptr<CheckForObjectsActionServer> CheckForObjectsActionServerPtr;
@@ -144,6 +152,21 @@ class YoloObjectDetector
   image_transport::Subscriber imageSubscriber_;
   ros::Publisher objectPublisher_;
   ros::Publisher boundingBoxesPublisher_;
+  std::string camera_topics[2] = {"/forward/image_undistorted", "/downward/image_undistorted"};
+  int alignment_plane;
+
+  // Initialize publisher and subscriber variables
+  std::string cameraTopicName;
+  int cameraQueueSize;
+  std::string objectDetectorTopicName;
+  int objectDetectorQueueSize;
+  bool objectDetectorLatch;
+  std::string boundingBoxesTopicName;
+  int boundingBoxesQueueSize;
+  bool boundingBoxesLatch;
+  std::string detectionImageTopicName;
+  int detectionImageQueueSize;
+  bool detectionImageLatch;
 
   //! Detected objects.
   std::vector<std::vector<RosBox_> > rosBoxes_;

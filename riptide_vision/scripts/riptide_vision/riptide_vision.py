@@ -271,18 +271,19 @@ class RiptideVision:
         beam_thickness = None
 
         img = cv2.resize(img, (0,0), fx=0.4, fy=0.4)
-        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
 
         h,s,v = cv2.split(hsv)
+        r,g,b = cv2.split(img)
 
-        values = h - (v * .3)
+        values = b - r - g
 
         height, width = values.shape
-        values = cv2.blur(values,(width / 100,width / 100))
+        #values = cv2.blur(values,(width / 100,width / 100))
 
         mean, std = cv2.meanStdDev(values)
 
-        ret,blobs = cv2.threshold(values,mean - std * 2,255,cv2.THRESH_BINARY_INV)
+        ret,blobs = cv2.threshold(values,mean + std * 1.5,255,cv2.THRESH_BINARY)
 
         blobs = np.uint8(blobs)
 
@@ -302,22 +303,23 @@ class RiptideVision:
             if score > maxVal:
                 maxVal = score
                 poleContour = c
-
-        if maxVal > 200:
+        
+        if maxVal > 300:
             x,y,w,h = cv2.boundingRect(poleContour)
             area = cv2.contourArea(poleContour)
+            thickness = 1.0 * area / h
             packet = []
             packet.append(maxVal) #0
-            packet.append(area / h) #1
-            packet.append(x) #2
+            packet.append(thickness) #1
+            packet.append(x + w / 2 - thickness / 2) #2
             packet.append(y) #3
-            packet.append(x + w) #4
+            packet.append(x + w / 2 + thickness / 2) #4
             packet.append(y + h) #5
             packet.append(x + w / 2) #6
             packet.append(y + h / 2) #7
             packet.append(width / 2) #8
             packet.append(height / 2) #9
-            packet.append(values)
+            packet.append(img)
             return packet
 
         return [maxVal, values]
