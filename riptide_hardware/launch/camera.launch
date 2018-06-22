@@ -1,8 +1,16 @@
 <launch>
-  <arg name="serial_number" />
   <arg name="camera_name" />
+  <arg name="serial_number" />
+  <arg name="frame_rate" default="30" />
+  <arg name="video_mode" default="format7_mode1" /> <!--mode0: Max res 1288 x 964 -->
 
   <group ns="$(arg camera_name)">
+
+    <include file="$(find riptide_hardware)/launch/undistort_camera.launch" >
+      <arg name="camera_name" value="$(arg camera_name)" />
+      <arg name="frame_rate" value="$(arg frame_rate)" />
+      <arg name="video_mode" value="$(arg video_mode)" />
+    </include>
 
     <node pkg="nodelet" type="nodelet" name="camera_nodelet_manager" args="manager" />
     <node pkg="nodelet" type="nodelet" name="camera_nodelet"
@@ -10,6 +18,8 @@
 
       <param name="frame_id" value="$(arg camera_name)" />
       <param name="serial" value="$(arg serial_number)" />
+      <param name="frame_rate" value="$(arg frame_rate)" />
+      <param name="video_mode" value="$(arg video_mode)" />
     </node>
 
   </group>

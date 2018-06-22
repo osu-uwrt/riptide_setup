@@ -1,3 +1,4 @@
-ssh ros@riptide 'rm -rf /home/ros/osu-uwrt/src'
-scp -r ~/osu-uwrt/src ros@riptide:/home/ros/osu-uwrt/
-ssh ros@riptide 'cd /home/ros/osu-uwrt && source /opt/ros/kinetic/setup.bash && catkin_make'
+#ssh ros@riptide 'rm -rf ~/osu-uwrt/riptide_software/src'
+rsync -tvrz ~/osu-uwrt/riptide_software/src ros@riptide:~/osu-uwrt/riptide_software
+ssh ros@riptide 'cd ~/osu-uwrt/riptide_software && source /opt/ros/kinetic/setup.bash && catkin_make && source ~/osu-uwrt/riptide_software/devel/setup.bash'
+ssh ros@riptide 'chmod 700 ~/osu-uwrt/riptide_software/src/riptide_utilities/*.sh'

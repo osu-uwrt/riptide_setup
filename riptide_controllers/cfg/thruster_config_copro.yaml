@@ -1,0 +1,57 @@
+# All SLOPE's in [pwm/N], all XINT's in [pwm]
+SWA:
+  POS:
+    SLOPE: -8.721485
+    XINT: 1458
+  NEG:
+    SLOPE: -8.004653
+    XINT: 1519
+SWF:
+  POS:
+    SLOPE: 7.132864
+    XINT: 1517
+  NEG:
+    SLOPE: 8.081880
+    XINT: 1465
+SPL:
+  POS:
+    SLOPE: -8.191769
+    XINT: 1466
+  NEG:
+    SLOPE: -7.039311
+    XINT: 1517
+SSL:
+  POS:
+    SLOPE: 7.982523
+    XINT: 1466
+  NEG:
+    SLOPE: 7.829684
+    XINT: 1517
+HPF: # Previously HSA on old Riptide
+  POS:
+    SLOPE: -7.954310
+    XINT: 1465
+  NEG:
+    SLOPE: -6.814752
+    XINT: 1519
+HPA:
+  POS:
+    SLOPE: 7.334681
+    XINT: 1516
+  NEG:
+    SLOPE: 8.067786
+    XINT: 1460
+HSA: # Previously HPF on old Riptide
+  POS:
+    SLOPE: -7.900563
+    XINT: 1465
+  NEG:
+    SLOPE: -7.168297
+    XINT: 1519
+HSF:
+  POS:
+    SLOPE: 7.372538
+    XINT: 1516
+  NEG:
+    SLOPE: 8.461324
+    XINT: 1463

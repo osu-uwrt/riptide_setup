@@ -1,0 +1,71 @@
+<launch>
+    <!-- Node Settings -->
+    <arg name="output" default="screen"/>
+    <arg name="imu" default="imu"/>
+
+    <!-- IMU Settings -->
+    <arg name="device" default="/dev/imu_front" />
+
+    <!-- Verbose logging -->
+    <arg name="verbose" default="false"/>
+
+    <!-- Frame ID for messages -->
+    <arg name="frame_id" default="$(arg imu)"/>
+
+    <!-- Baudrate of serial comms (see manual for allowed values) -->
+    <arg name="baudrate" default="115200"/>
+
+    <!-- Data rate in Hz -->
+    <arg name="imu_rate" default="100"/>
+    <arg name="filter_rate" default="100"/>
+
+    <!-- Enable/Disable filter updates -->
+    <arg name="enable_accel_update" default="true"/>
+    <arg name="enable_mag_update" default="true"/>
+
+    <!-- Reference Location -->
+    <arg name="name" default="imu_front" />
+    <arg name="city" default="columbus"/>
+    <arg name="location" default="CAR"/>
+
+    <!-- Heading Update Source (none, magnetometer, external)-->
+    <arg name="heading_update_source" default="magnetometer" />
+
+    <!-- Declination Source (none, wmm, manual)-->
+    <arg name="declination_source" default="wmm" />
+
+    <!-- Change Sensor LPF bandwidths -->
+    <arg name="mag_LPF_bandwidth" default="1" />
+    <arg name="accel_LPF_bandwidth" default="25" />
+    <arg name="gyro_LPF_bandwidth" default="25" />
+
+    <!-- Enable auto-config for Hard and Soft Iron Offset -->
+    <arg name="enable_iron_offset" default="false" />
+
+    <node pkg="imu_3dm_gx4" name="$(arg imu)" type="imu_3dm_gx4" output="$(arg output)">
+        <param name="device" type="string" value="$(arg device)" />
+        <param name="verbose" type="bool" value="$(arg verbose)"/>
+        <param name="baudrate" type="int" value="$(arg baudrate)" />
+        <param name="frame_id" type="string" value="$(arg frame_id)"/>
+        <param name="imu_rate" type="int" value="$(arg imu_rate)" />
+        <param name="filter_rate" type="int" value="$(arg filter_rate)"/>
+        <param name="enable_accel_update" type="bool" value="$(arg enable_accel_update)"/>
+        <param name="enable_mag_update" type="bool" value="$(arg enable_mag_update)"/>
+
+        <param name="name" type="string" value="$(arg name)" />
+        <param name="city" type="string" value="$(arg city)" />
+        <param name="location" type="string" value="$(arg location)" />
+        <param name="heading_update_source" type="string" value="$(arg heading_update_source)"/>
+        <param name="declination_source" type="string" value="$(arg declination_source)"/>
+
+        <param name="mag_LPF_bandwidth" type="int" value="$(arg mag_LPF_bandwidth)" />
+        <param name="accel_LPF_bandwidth" type="int" value="$(arg accel_LPF_bandwidth)" />
+        <param name="gyro_LPF_bandwidth" type="int" value="$(arg gyro_LPF_bandwidth)" />
+
+        <param name="enable_iron_offset" type="bool" value="$(arg enable_iron_offset)" />
+
+        <rosparam file="$(find riptide_hardware)/cfg/$(arg city).yaml" command="load"/>
+        <rosparam file="$(find riptide_hardware)/cfg/sensor_to_vehicle_tf.yaml" command="load"/>
+        <rosparam file="$(find riptide_hardware)/cfg/$(arg name)_$(arg city)_$(arg location).yaml" command="load"/>
+    </node>
+</launch>

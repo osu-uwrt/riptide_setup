@@ -57,8 +57,6 @@
     </joint>
   </xacro:macro>
 
-  <xacro:thruster_joint name="surge_port_hi" p="${chassis_surge_port_hi}" o="${align_surge_port_hi}"/>
-  <xacro:thruster_joint name="surge_stbd_hi" p="${chassis_surge_stbd_hi}" o="${align_surge_stbd_hi}"/>
   <xacro:thruster_joint name="surge_port_lo" p="${chassis_surge_port_lo}" o="${align_surge_port_lo}"/>
   <xacro:thruster_joint name="surge_stbd_lo" p="${chassis_surge_stbd_lo}" o="${align_surge_stbd_lo}"/>
   <xacro:thruster_joint name="sway_fwd" p="${chassis_sway_fwd}" o="${align_sway_fwd}"/>
