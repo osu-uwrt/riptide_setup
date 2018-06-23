@@ -17,14 +17,13 @@ def child_term_cb(outcome_map):
 auv_concurrence = Concurrence(outcomes = ['exit'],
                  default_outcome = 'exit',
                  output_keys=['master_switch_status']
-                 outcome_map = {})
-auv_concurrence.userdata.master_switch_status = 0
-auv_concurrence.userdata.mission_status = 0
-auv_concurrence.userdata.safety_status = 0
+                 outcome_map = {'mission_attempted':{'KILL_SWITCH_MONITOR_SM'}})
+auv_concurrence.userdata.mission_status = STATUS_INIT
+auv_concurrence.userdata.safety_status = STATUS_INIT
 
 with auv_concurrence:
-    Concurrence.add(MASTER_SWITCH_MONITOR_SM', master_switch_monitor_sm,
-                    remapping={'master_switch_status':'master_switch_status'})
+    Concurrence.add('KILL_SWITCH_MONITOR_SM', kill_switch_monitor_sm,
+                    remapping={})
     Concurrence.add('MISSION_CONTROL_SM', mission_control_sm,
                     remapping={'mission_status':'mission_status'})
     #Concurrence.add('SAFETY_SM', safety_sm,
