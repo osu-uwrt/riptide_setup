@@ -54,21 +54,24 @@ class Idle(State):
     def pubRestartControllerMsg():
 
 
-auv_controller_sm = StateMachine(outcomes = ['loop'],
-                            input_keys=['master_switch_status', 'mission_status'],
-                            output_keys=[])
-auv_controller_sm.userdata.master_switch_status = 0
-auv_controller_sm.userdata.mission_status = 0
+def main()
+    auv_controller_sm = StateMachine(outcomes = ['loop'],
+                                input_keys=['master_switch_status', 'mission_status'],
+                                output_keys=[])
+    auv_controller_sm.userdata.master_switch_status = 0
+    auv_controller_sm.userdata.mission_status = 0
 
-with auv_controller_sm:
-    StateMachine.add('AUV_CONCURRENCE_SM', auv_concurrence_sm,
-                    transitions={},
-                    remapping={'master_switch_status':'master_switch_status',
-                                'mission_status':'mission_status'})
-    StateMachine.add('IDLE', Idle(),
-                    transitions={'loop':'AUV_CONCURRENCE_SM',
-                                'limbo':'LIMBO'},
-                    remapping={'master_switch_status':'master_switch_status',
-                                'mission_status':'mission_status'})
+    with auv_controller_sm:
+        StateMachine.add('AUV_CONCURRENCE_SM', auv_concurrence_sm,
+                        transitions={},
+                        remapping={'master_switch_status':'master_switch_status',
+                                    'mission_status':'mission_status'})
+        StateMachine.add('IDLE', Idle(),
+                        transitions={'loop':'AUV_CONCURRENCE_SM',
+                                    'limbo':'LIMBO'},
+                        remapping={'master_switch_status':'master_switch_status',
+                                    'mission_status':'mission_status'})
 
-auv_controller_sm.execute()
+    auv_controller_sm.execute()
+
+main()
