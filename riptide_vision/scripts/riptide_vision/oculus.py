@@ -11,6 +11,7 @@ from gate_processor import GateProcessor
 from pole_processor import PoleProcessor
 from riptide_msgs.msg import TaskAlignment, BoundingBox
 from geometry_msgs.msg import Point
+import time
 
 class Oculus:
     # Class constants
@@ -52,6 +53,7 @@ class Oculus:
         if (self.gate_processor.IsConnected()):
             if (self.mode != self.MODE_GATE):
                 self.update_mode(self.MODE_GATE, "task/gate/alignment")
+            t = time.time()
             pos, bbox = self.gate_processor.Process(cv_image, self.image_pub)
         elif (self.pole_processor.IsConnected()):
             if (self.mode != self.MODE_POLE):

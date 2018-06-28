@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
   ac.Loop();
 }
 
-AttitudeController::AttitudeController() {
+AttitudeController::AttitudeController() : nh("attitude_controller") {
     ros::NodeHandle rcpid("roll_controller");
     ros::NodeHandle ycpid("yaw_controller");
     ros::NodeHandle pcpid("pitch_controller");
@@ -34,20 +34,20 @@ AttitudeController::AttitudeController() {
     tf.setValue(0, 0, 0);
     ang_vel.setValue(0, 0, 0);
 
-    cmd_sub = nh.subscribe<geometry_msgs::Vector3>("command/manual/attitude", 1, &AttitudeController::ManualCommandCB, this);
-    imu_sub = nh.subscribe<riptide_msgs::Imu>("state/imu", 1, &AttitudeController::ImuCB, this);
-    reset_sub = nh.subscribe<riptide_msgs::ResetControls>("controls/reset", 1, &AttitudeController::ResetController, this);
+    cmd_sub = nh.subscribe<geometry_msgs::Vector3>("/command/manual/attitude", 1, &AttitudeController::ManualCommandCB, this);
+    imu_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &AttitudeController::ImuCB, this);
+    reset_sub = nh.subscribe<riptide_msgs::ResetControls>("/controls/reset", 1, &AttitudeController::ResetController, this);
 
-    cmd_pub = nh.advertise<geometry_msgs::Vector3>("command/auto/accel/angular", 1);
-    status_pub = nh.advertise<riptide_msgs::ControlStatusAngular>("controls/status/angular", 1);
+    cmd_pub = nh.advertise<geometry_msgs::Vector3>("/command/auto/accel/angular", 1);
+    status_pub = nh.advertise<riptide_msgs::ControlStatusAngular>("/controls/status/angular", 1);
 
-    AttitudeController::LoadProperty("max_roll_error", MAX_ROLL_ERROR);
-    AttitudeController::LoadProperty("max_pitch_error", MAX_PITCH_ERROR);
-    AttitudeController::LoadProperty("max_yaw_error", MAX_YAW_ERROR);
-    AttitudeController::LoadProperty("max_roll_limit", MAX_ROLL_LIMIT);
-    AttitudeController::LoadProperty("max_pitch_limit", MAX_PITCH_LIMIT);
-    AttitudeController::LoadProperty("PID_IIR_LPF_bandwidth", PID_IIR_LPF_bandwidth);
-    AttitudeController::LoadProperty("imu_filter_rate", imu_filter_rate);
+    AttitudeController::LoadParam<double>("max_roll_error", MAX_ROLL_ERROR);
+    AttitudeController::LoadParam<double>("max_pitch_error", MAX_PITCH_ERROR);
+    AttitudeController::LoadParam<double>("max_yaw_error", MAX_YAW_ERROR);
+    AttitudeController::LoadParam<double>("max_roll_limit", MAX_ROLL_LIMIT);
+    AttitudeController::LoadParam<double>("max_pitch_limit", MAX_PITCH_LIMIT);
+    AttitudeController::LoadParam<double>("PID_IIR_LPF_bandwidth", PID_IIR_LPF_bandwidth);
+    AttitudeController::LoadParam<double>("imu_filter_rate", imu_filter_rate);
 
     // IIR LPF Variables
     double fc = PID_IIR_LPF_bandwidth; // Shorthand variable for IIR bandwidth
@@ -80,19 +80,22 @@ void AttitudeController::InitMsgs() {
   ang_accel_cmd.z = 0;
 }
 
-// Load property from namespace
-void AttitudeController::LoadProperty(std::string name, double &param)
+// Load parameter from namespace
+template <typename T>
+void AttitudeController::LoadParam(string param, T &var)
 {
   try
   {
-    if (!nh.getParam("/attitude_controller/" + name, param))
+    if (!nh.getParam(param, var))
     {
       throw 0;
     }
   }
   catch(int e)
   {
-    ROS_ERROR("Critical! Attitude Controller has no property set for %s. Shutting down...", name.c_str());
+    string ns = nh.getNamespace();
+    ROS_ERROR("Attitude Controller Namespace: %s", ns.c_str());
+    ROS_ERROR("Critical! Param \"%s/%s\" does not exist or is not accessed correctly. Shutting down.", ns.c_str(), param.c_str());
     ros::shutdown();
   }
 }

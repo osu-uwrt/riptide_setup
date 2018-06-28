@@ -5,20 +5,19 @@
 int main(int argc, char** argv)
 {
  ros::init(argc, argv, "imu_processor");
- IMUProcessor imu(argv);
+ IMUProcessor imu;
  imu.Loop();
 }
 
-IMUProcessor::IMUProcessor(char **argv)
-{
- imu_filter_sub = nh.subscribe<imu_3dm_gx4::FilterOutput>("imu/filter", 1, &IMUProcessor::FilterCallback, this);
- imu_mag_sub = nh.subscribe<imu_3dm_gx4::MagFieldCF>("imu/magnetic_field", 1, &IMUProcessor::MagCallback, this);
- imu_verbose_state_pub = nh.advertise<riptide_msgs::ImuVerbose>("state/imu_verbose", 1);
- imu_state_pub = nh.advertise<riptide_msgs::Imu>("state/imu", 1);
+IMUProcessor::IMUProcessor() : nh("imu_processor") {
+ imu_filter_sub = nh.subscribe<imu_3dm_gx4::FilterOutput>("/imu/filter", 1, &IMUProcessor::FilterCallback, this);
+ imu_mag_sub = nh.subscribe<imu_3dm_gx4::MagFieldCF>("/imu/magnetic_field", 1, &IMUProcessor::MagCallback, this);
+ imu_verbose_state_pub = nh.advertise<riptide_msgs::ImuVerbose>("/state/imu_verbose", 1);
+ imu_state_pub = nh.advertise<riptide_msgs::Imu>("/state/imu", 1);
 
- IMUProcessor::LoadProperty("declination", declination);
- IMUProcessor::LoadProperty("post_IIR_LPF_bandwidth", post_IIR_LPF_bandwidth);
- IMUProcessor::LoadProperty("filter_rate", filter_rate); // Filter rate MUST be an integer, decided by manufacturer
+ IMUProcessor::LoadParam<double>("declination", declination);
+ IMUProcessor::LoadParam<double>("post_IIR_LPF_bandwidth", post_IIR_LPF_bandwidth);
+ IMUProcessor::LoadParam<int>("filter_rate", filter_rate); // Filter rate MUST be an integer, decided by manufacturer
 
  // IIR LPF Variables
  double fc = post_IIR_LPF_bandwidth; // Shorthand variable for IIR bandwidth
@@ -33,36 +32,22 @@ IMUProcessor::IMUProcessor(char **argv)
  prev_linear_accel.z = 0;
 }
 
-// Load property from namespace
-void IMUProcessor::LoadProperty(std::string name, double &param)
+// Load parameter from namespace
+template <typename T>
+void IMUProcessor::LoadParam(string param, T &var)
 {
   try
   {
-    if (!nh.getParam("/imu_processor/" + name, param))
+    if (!nh.getParam(param, var))
     {
       throw 0;
     }
   }
   catch(int e)
   {
-    ROS_ERROR("Critical! IMU Processor has no property set for %s. Shutting down...", name.c_str());
-    ros::shutdown();
-  }
-}
-
-// Load property from namespace
-void IMUProcessor::LoadProperty(std::string name, int &param)
-{
-  try
-  {
-    if (!nh.getParam("/imu_processor/" + name, param))
-    {
-      throw 0;
-    }
-  }
-  catch(int e)
-  {
-    ROS_ERROR("Critical! IMU Processor has no property set for %s. Shutting down...", name.c_str());
+    string ns = nh.getNamespace();
+    ROS_ERROR("IMU Processor Namespace: %s", ns.c_str());
+    ROS_ERROR("Critical! Param \"%s/%s\" does not exist or is not accessed correctly. SHutting down.", ns.c_str(), param.c_str());
     ros::shutdown();
   }
 }

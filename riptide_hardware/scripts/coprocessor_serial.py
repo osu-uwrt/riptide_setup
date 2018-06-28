@@ -35,7 +35,7 @@ def main():
     dataRead = True
 
     # Add publishers
-    depthPub = rospy.Publisher('/state/depth_raw', Depth, queue_size=1) #publish raw for the depth processor
+    depthPub = rospy.Publisher('/depth/raw', Depth, queue_size=1) #publish raw for the depth processor
     swPub = rospy.Publisher('/state/switches', SwitchState, queue_size=1)
 
     #Subscribe to Thruster PWMs
@@ -54,7 +54,7 @@ def main():
                 packet = data[5:-4]
 
                 # Check if depth (%) or switch ($)
-                if (data[1] == "%"):
+                if (len(packet) > 0 and data[1] == "%"):
                     depthList = packet.split("!");
                     depth_msg.header.stamp = rospy.Time.now()
                     depth_msg.temp = float(depthList[0].replace("\x00", ""))
@@ -62,7 +62,7 @@ def main():
                     depth_msg.depth = float(depthList[2].replace("\x00",""))
                     depth_msg.altitude = 0.0
                     depthPub.publish(depth_msg)
-                elif (data[1] == "$"):
+                elif (len(packet) > 0 and data[1] == "$"):
                     # Populate switch message. Start at 1 to ignore line break
                     sw_msg.header.stamp = rospy.Time.now()
                     sw_msg.kill = True if packet[0] is '1' else False

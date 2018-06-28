@@ -10,6 +10,7 @@
 #include "riptide_msgs/Imu.h"
 #include "riptide_msgs/ResetControls.h"
 #include "riptide_msgs/ControlStatus.h"
+using namespace std;
 
 class DepthController
 {
@@ -21,7 +22,7 @@ class DepthController
 
     control_toolbox::Pid depth_controller_pid;
     geometry_msgs::Vector3 accel;
-    double output, MAX_DEPTH_ERROR;
+    double output, MAX_DEPTH, MAX_DEPTH_ERROR;
 
     // IIR Filter variables for D-term
     double PID_IIR_LPF_bandwidth, dt_iir, alpha, sensor_rate;
@@ -38,10 +39,10 @@ class DepthController
     double last_error, last_error_dot;
     double dt;
 
-    bool pid_depth_init;
+    bool pid_depth_init, auto_enabled;
 
-    ros::Time sample_start;
-    ros::Duration sample_duration;
+    ros::Time sample_start, auto_time;
+    ros::Duration sample_duration, auto_disable_duration;
 
     void UpdateError();
     double Constrain(double current, double max);
@@ -51,7 +52,8 @@ class DepthController
 
   public:
     DepthController();
-    void LoadProperty(std::string name, double &param);
+    template <typename T>
+    void LoadParam(string param, T &var);
     void ManualCommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd);
     void AutoCommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd);
     void DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg);

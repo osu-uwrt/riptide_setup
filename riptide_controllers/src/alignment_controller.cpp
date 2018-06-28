@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
 }
 
 // Constructor: AlignmentController()
-AlignmentController::AlignmentController() {
+AlignmentController::AlignmentController() : nh("alignment_controller") {
     ros::NodeHandle surge("surge_controller");
     ros::NodeHandle sway("sway_controller");
     ros::NodeHandle heave("heave_controller");
@@ -22,17 +22,17 @@ AlignmentController::AlignmentController() {
     z_pid.init(heave, false);
 
     // Default to gate alignment
-    alignment_sub = nh.subscribe<riptide_msgs::TaskAlignment>("task/gate/alignment", 1, &AlignmentController::AlignmentCB, this);
-    command_sub = nh.subscribe<riptide_msgs::AlignmentCommand>("command/alignment", 1, &AlignmentController::CommandCB, this);
-    reset_sub = nh.subscribe<riptide_msgs::ResetControls>("controls/reset", 1, &AlignmentController::ResetController, this);
+    alignment_sub = nh.subscribe<riptide_msgs::TaskAlignment>("/task/gate/alignment", 1, &AlignmentController::AlignmentCB, this);
+    command_sub = nh.subscribe<riptide_msgs::AlignmentCommand>("/command/alignment", 1, &AlignmentController::CommandCB, this);
+    reset_sub = nh.subscribe<riptide_msgs::ResetControls>("/controls/reset", 1, &AlignmentController::ResetController, this);
 
-    xy_pub = nh.advertise<geometry_msgs::Vector3>("command/auto/accel/linear", 1); // auto -> published by controller
-    z_pub = nh.advertise<riptide_msgs::DepthCommand>("command/auto/depth", 1); // auto -> published by controller
-    status_pub = nh.advertise<riptide_msgs::ControlStatusLinear>("controls/status/linear", 1);
+    xy_pub = nh.advertise<geometry_msgs::Vector3>("/command/auto/accel/linear", 1); // auto -> published by controller
+    z_pub = nh.advertise<riptide_msgs::DepthCommand>("/command/auto/depth", 1); // auto -> published by controller
+    status_pub = nh.advertise<riptide_msgs::ControlStatusLinear>("/controls/status/linear", 1);
 
-    AlignmentController::LoadProperty("max_x_error", MAX_X_ERROR);
-    AlignmentController::LoadProperty("max_y_error", MAX_Y_ERROR);
-    AlignmentController::LoadProperty("max_z_error", MAX_Z_ERROR);
+    AlignmentController::LoadParam<double>("max_x_error", MAX_X_ERROR);
+    AlignmentController::LoadParam<double>("max_y_error", MAX_Y_ERROR);
+    AlignmentController::LoadParam<double>("max_z_error", MAX_Z_ERROR);
 
     sample_start = ros::Time::now();
     AlignmentController::InitMsgs();
@@ -52,19 +52,22 @@ void AlignmentController::InitMsgs() {
   status_msg.z.error = 0;
 }
 
-// Load property from namespace
-void AlignmentController::LoadProperty(std::string name, double &param)
+// Load parameter from namespace
+template <typename T>
+void AlignmentController::LoadParam(string param, T &var)
 {
   try
   {
-    if (!nh.getParam("/alignment_controller/" + name, param))
+    if (!nh.getParam(param, var))
     {
       throw 0;
     }
   }
   catch(int e)
   {
-    ROS_ERROR("Critical! Alignment Controller has no property set for %s. Shutting down...", name.c_str());
+    string ns = nh.getNamespace();
+    ROS_ERROR("Alignment Controller Namespace: %s", ns.c_str());
+    ROS_ERROR("Critical! Param \"%s/%s\" does not exist or is not accessed correctly. Shutting down", ns.c_str(), param.c_str());
     ros::shutdown();
   }
 }

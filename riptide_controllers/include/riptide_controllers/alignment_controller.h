@@ -9,8 +9,7 @@
 #include "riptide_msgs/ResetControls.h"
 #include "riptide_msgs/ControlStatusLinear.h"
 #include "geometry_msgs/Vector3.h"
-#include <string>
-
+using namespace std;
 
 class AlignmentController
 {
@@ -35,7 +34,7 @@ class AlignmentController
 
     bool pid_surge_init, pid_sway_init, pid_heave_init;
 
-    std::string topics[2] = {"/task/gate/alignment", "/task/pole/alignment"};
+    string topics[2] = {"/task/gate/alignment", "/task/pole/alignment"};
     int current_task_id;
 
     ros::Time sample_start;
@@ -52,7 +51,8 @@ class AlignmentController
 
   public:
     AlignmentController();
-    void LoadProperty(std::string name, double &param);
+    template <typename T>
+    void LoadParam(string param, T &var);
     void AlignmentCB(const riptide_msgs::TaskAlignment::ConstPtr &msg);
     void CommandCB(const riptide_msgs::AlignmentCommand::ConstPtr &msg);
     void Loop();
