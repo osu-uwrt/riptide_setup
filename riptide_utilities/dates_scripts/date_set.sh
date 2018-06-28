@@ -1,5 +1,5 @@
 date_seconds=$(date +"%s")
-date_string=$(date --date=@$date_seconds)
+date_string=$(date -u --date=@$date_seconds)
 echo "$date_string"
 ssh ros@riptide "sudo date --set=\"$date_string\""
 ssh ros@riptide "sudo hwclock --systohc"
