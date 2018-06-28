@@ -20,4 +20,4 @@ mv /tmp/sshkey_jetson.pub ~/.ssh/sshkey_jetson.pub
 ssh-add -D
 ssh-add sshkey_jetson
 
-ssh-keyscan jetson >> ~/.ssh/known_hosts 
+ssh-keyscan jetson >> ~/.ssh/known_hosts

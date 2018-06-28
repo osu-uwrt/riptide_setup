@@ -23,6 +23,7 @@ class PS3Controller
   riptide_msgs::DepthCommand cmd_depth;
   riptide_msgs::ResetControls reset_msg;
   bool isReset, isStarted, isInit, isDepthWorking, isR2Init, isL2Init;
+  bool isDepthInit;
   tf::Vector3 euler_rpy;
   double rt, current_depth, buoyancy_depth_thresh, delta_depth;
 
@@ -31,7 +32,7 @@ class PS3Controller
   double CMD_ROLL_RATE, CMD_PITCH_RATE, CMD_YAW_RATE, CMD_DEPTH_RATE;
 
   // Multiplication Factors (based on command rates)
-  double roll_factor, pitch_factor, yaw_factor, depth_factor;
+  double roll_factor, pitch_factor, yaw_factor, depth_factor, boost;
 
   void InitMsgs();
   double Constrain(double current, double max);

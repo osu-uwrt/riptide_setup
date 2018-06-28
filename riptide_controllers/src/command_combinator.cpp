@@ -127,9 +127,11 @@ double CommandCombinator::Constrain(double current, double max) {
 }
 
 void CommandCombinator::Loop() {
+  ros::Rate rate(200);
   while(!ros::isShuttingDown()) {
     CommandCombinator::Combine();
     cmd_pub.publish(cmd_accel); // ALWAYS publish a message, regardless of circumstance
     ros::spinOnce();
+    rate.sleep();
   }
 }

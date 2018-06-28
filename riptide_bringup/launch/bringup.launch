@@ -5,4 +5,6 @@
   <include file="$(find riptide_controllers)/launch/controllers.launch" >
     <arg name="debug" value="$(arg debug)" />
   </include>
+
+  <include file="$(find riptide_vision)/launch/qualification_vision.launch" />
 </launch>
