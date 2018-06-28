@@ -32,7 +32,7 @@ class PS3Controller
   double CMD_ROLL_RATE, CMD_PITCH_RATE, CMD_YAW_RATE, CMD_DEPTH_RATE;
 
   // Multiplication Factors (based on command rates)
-  double roll_factor, pitch_factor, yaw_factor, depth_factor;
+  double roll_factor, pitch_factor, yaw_factor, depth_factor, boost;
 
   void InitMsgs();
   double Constrain(double current, double max);

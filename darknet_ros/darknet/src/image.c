@@ -571,8 +571,8 @@ void show_image_cv(image p, const char *name, IplImage *disp, bool displayDetect
         cvReleaseImage(&buffer);
     }
     if(displayDetectedImage) {
-      cvNamedWindow(buff, CV_WINDOW_NORMAL);
-      cvMoveWindow(buff, 100*(windows%10) + 200*(windows/10), 100*(windows%10));
+      //cvNamedWindow(buff, CV_WINDOW_NORMAL);
+      //cvMoveWindow(buff, 100*(windows%10) + 200*(windows/10), 100*(windows%10));
       cvShowImage(buff, disp);
     }
 }

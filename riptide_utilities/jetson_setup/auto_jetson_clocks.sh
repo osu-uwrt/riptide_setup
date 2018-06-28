@@ -9,7 +9,7 @@ while [ 1 ]; do
   target_fan_pwm=`cat /sys/kernel/debug/tegra_fan/target_pwm`
 
   if [ -e "/proc/uptime" ]; then
-  	uptime=`cat /proc/uptime | cut -d '.' -f1`
+    uptime=`cat /proc/uptime | cut -d '.' -f1`
     echo "Current Fan pwm: $cur_fan_pwm\nTarget Fan pwm: $target_fan_pwm\nUptime: $((uptime))\nNum. times jetson_clocks ran: $count" > "/home/ros/ssd/fan_stats"
 
   	if [ $((uptime)) -gt 90 ]; then

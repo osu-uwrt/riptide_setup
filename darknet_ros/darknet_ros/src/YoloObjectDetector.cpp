@@ -57,7 +57,7 @@ bool YoloObjectDetector::readParameters()
   // Load common parameters.
   nodeHandle_.param("image_view/display_detected_image", displayDetectedImage_, true);
   nodeHandle_.param("image_view/wait_key_delay", waitKeyDelay_, 3);
-  nodeHandle_.param("image_view/enable_console_output", enableConsoleOutput_, false);
+  nodeHandle_.param("image_view/enable_console_output", enableConsoleOutput_, true);
 
   // Check if Xserver is running on Linux.
   if (XOpenDisplay(NULL)) { // XOpenDisplay(jetson:0)
@@ -265,16 +265,14 @@ bool YoloObjectDetector::publishDetectionImage(const cv::Mat& detectionImage)
 {
   //if (detectionImagePublisher_.getNumSubscribers() < 1)
   //  return false;
-  ROS_INFO("About to publish detection image");
   cv_bridge::CvImage cvImage;
   cvImage.header.stamp = ros::Time::now();
   cvImage.header.frame_id = "detection_image";
   cvImage.encoding = sensor_msgs::image_encodings::BGR8;
   cvImage.image = detectionImage;
-  sensor_msgs::ImagePtr out_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", detectionImage).toImageMsg();
-  detectionImagePublisher_.publish(out_msg); //publish(cvImage.toImageMsg());
-  //ROS_DEBUG("Detection image has been published.");
-  ROS_INFO("\nDetection image has been published.\n");
+  //sensor_msgs::ImagePtr out_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", detectionImage).toImageMsg();
+  detectionImagePublisher_.publish(cvImage.toImageMsg());
+  ROS_DEBUG("Detection image has been published.");
   return true;
 }
 

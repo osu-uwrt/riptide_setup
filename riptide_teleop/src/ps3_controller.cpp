@@ -34,6 +34,9 @@ PS3Controller::PS3Controller() : nh("ps3_controller") {
   PS3Controller::LoadProperty("cmd_pitch_rate", CMD_PITCH_RATE); // [deg/s]
   PS3Controller::LoadProperty("cmd_yaw_rate", CMD_YAW_RATE); // [deg/s]
   PS3Controller::LoadProperty("cmd_depth_rate", CMD_DEPTH_RATE); // [deg/s]
+  PS3Controller::LoadProperty("boost", boost); // Factor to multiply pressed button/axis for faster rate
+  // When using the boost factor, you must subtract one from its value for it
+  // to have the desired effect. See below for implementation
 
   isReset = true;
   isStarted = false;
@@ -120,23 +123,23 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr& joy) {
       }
       else {
         if(joy->buttons[BUTTON_CROSS_RIGHT])
-          delta_attitude.x = roll_factor; // Right -> inc roll
+          delta_attitude.x = roll_factor * (1 + (boost-1)*joy->buttons[BUTTON_SHAPE_SQUARE]); // Right -> inc roll
         else if(joy->buttons[BUTTON_CROSS_LEFT])
-          delta_attitude.x = -roll_factor; // Left -> dec roll
+          delta_attitude.x = -roll_factor * (1+ (boost-1)*joy->buttons[BUTTON_SHAPE_SQUARE]); // Left -> dec roll
         else
           delta_attitude.x = 0;
 
         if(joy->buttons[BUTTON_CROSS_UP])
-          delta_attitude.y = pitch_factor; // Up -> inc pitch (Front points downward)
+          delta_attitude.y = -pitch_factor * (1+ (boost-1)*joy->buttons[BUTTON_SHAPE_SQUARE]); // Up -> dec pitch (Front points upward)
         else if(joy->buttons[BUTTON_CROSS_DOWN])
-            delta_attitude.y = -pitch_factor; //Down -> dec pitch (Front points upward)
+            delta_attitude.y = pitch_factor * (1+ (boost-1)*joy->buttons[BUTTON_SHAPE_SQUARE]); //Down -> inc pitch (Front points downward)
         else
           delta_attitude.y = 0;
       }
 
       // Update Yaw
       if(abs(joy->axes[AXES_STICK_LEFT_UD]) < 0.7) // Try to avoid yaw and depth simultaneously
-        delta_attitude.z = joy->axes[AXES_STICK_LEFT_LR]*yaw_factor;
+        delta_attitude.z = joy->axes[AXES_STICK_LEFT_LR]*yaw_factor * (1+ (boost-1)*joy->buttons[BUTTON_SHAPE_SQUARE]);
       else
         delta_attitude.z = 0;
 
@@ -147,8 +150,8 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr& joy) {
           //delta_depth = 0;
           isDepthInit = true;
         }
-        else if(abs(joy->axes[AXES_STICK_LEFT_LR]) < 0.7) // Try to avoid yaw and depth simultaneously
-          delta_depth = -joy->axes[AXES_STICK_LEFT_UD]*depth_factor; // Up -> dec depth, Down -> inc depth
+        else if(isDepthInit && abs(joy->axes[AXES_STICK_LEFT_LR]) < 0.7) // Try to avoid yaw and depth simultaneously
+          delta_depth = -joy->axes[AXES_STICK_LEFT_UD]*depth_factor * (1+ (boost-1)*joy->buttons[BUTTON_SHAPE_SQUARE]); // Up -> dec depth, Down -> inc depth
         else
           delta_depth = 0;
         }
