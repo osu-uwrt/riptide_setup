@@ -14,7 +14,7 @@
   <author email="justice.251@osu.edu">Benji Justice</author>
   <author email="cary.42@osu.edu">Conor Cary</author>
   <author email="mahaffey.60@osu.edu">Sara Mahaffey</author>
-  
+
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>libceres-dev</build_depend>
@@ -31,6 +31,7 @@
   <run_depend>riptide_msgs</run_depend>
   <run_depend>roslaunch</run_depend>
   <run_depend>sensor_msgs</run_depend>
+  <run_depend>dynamic_reconfigure</run_depend>
 
   <export>
   </export>

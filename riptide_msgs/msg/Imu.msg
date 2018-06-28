@@ -1,9 +1,7 @@
-std_msgs/Header header
-geometry_msgs/Vector3 euler_rpy
-geometry_msgs/Vector3 linear_acceleration
-geometry_msgs/Vector3 angular_velocity
-geometry_msgs/Vector3 angular_acceleration
+#NOTE: All angles in [deg], all distances in [m]
 
-float64 euler_rpy_status
-float64 angular_velocity_status
-float64 linear_acceleration_status
+std_msgs/Header header
+geometry_msgs/Vector3 euler_rpy #[deg]
+geometry_msgs/Vector3 linear_accel #[m/s^2]
+geometry_msgs/Vector3 ang_vel #[deg/s]
+geometry_msgs/Vector3 ang_accel #[deg/s^2]

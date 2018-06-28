@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find riptide_vision)/launch/qualification_vision.launch" />
+  <include file="$(find riptide_controllers)/launch/alignment_controller.launch" />
+</launch>

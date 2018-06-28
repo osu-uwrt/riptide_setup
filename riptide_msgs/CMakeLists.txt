@@ -13,14 +13,21 @@ add_message_files(
     Depth.msg
     Thrust.msg
     ThrustStamped.msg
-    OdomWithAccel.msg
     Pwm.msg
     PwmStamped.msg
-    Esc.msg
-    Thrusters.msg
-    Bat.msg
-    BatStamped.msg
     Imu.msg
+    ImuVerbose.msg
+    SwitchState.msg
+    TaskAlignment.msg
+    GateData.msg
+    PoleData.msg
+    BoundingBox.msg
+    ResetControls.msg
+    ControlStatus.msg
+    ControlStatusAngular.msg
+    ControlStatusLinear.msg
+    AlignmentCommand.msg
+    DepthCommand.msg
 )
 
 generate_messages(DEPENDENCIES std_msgs geometry_msgs)

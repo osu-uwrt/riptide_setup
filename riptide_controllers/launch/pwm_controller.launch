@@ -1,3 +1,5 @@
 <launch>
-  <node pkg="riptide_controllers" type="pwm_controller" name="pwm_controller" output="screen" />
+  <node pkg="riptide_controllers" type="pwm_controller" name="pwm_controller" output="screen" >
+    <rosparam command="load" file="$(find riptide_controllers)/cfg/thruster_config_copro.yaml" />
+  </node>
 </launch>

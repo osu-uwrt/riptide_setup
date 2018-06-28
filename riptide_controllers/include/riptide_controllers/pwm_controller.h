@@ -1,33 +1,39 @@
-#ifndef THRUST_CAL_H
-#define THRUST_CAL_H
+#ifndef PWM_CONTROLLER_H
+#define PWM_CONTROLLER_H
 
 #include "ros/ros.h"
-#include "std_msgs/Empty.h"
 
-#include "riptide_msgs/Bat.h"
 #include "riptide_msgs/PwmStamped.h"
 #include "riptide_msgs/ThrustStamped.h"
+#include "riptide_msgs/SwitchState.h"
+#include "riptide_msgs/ResetControls.h"
+using namespace std;
 
-class ThrustCal
+class PWMController
 {
  private:
   ros::NodeHandle nh;
-  ros::Subscriber kill_it_with_fire;
-  ros::Subscriber thrust, outta_juice;
-  ros::Publisher pwm;
-  riptide_msgs::PwmStamped us;
-  ros::Time alive;
-  bool dead, low;
-  double min_voltage;
-  int counterclockwise(double raw_force);
-  int clockwise(double raw_force);
+  ros::Subscriber cmd_sub, kill_sub, reset_sub;
+  ros::Publisher pwm_pub;
+  riptide_msgs::PwmStamped msg;
+
+  float thrust_config[8][4]; // thrust slopes
+  bool dead;
+  bool silent;
+  ros::Time last_alive_time;
+  ros::Duration alive_timeout;
+
+  void PublishZeroPWM();
+  int Thrust2pwm(double raw_force, int thruster);
 
  public:
-  ThrustCal();
-  void callback(const riptide_msgs::ThrustStamped::ConstPtr& thrust);
-  void killback(const std_msgs::Empty::ConstPtr& thrust);
-  void voltsbacken(const riptide_msgs::Bat::ConstPtr& bat_stat);
-  void loop();
+  PWMController();
+  template <typename T>
+  void LoadParam(string param, T &var);
+  void ThrustCB(const riptide_msgs::ThrustStamped::ConstPtr &thrust);
+  void SwitchCB(const riptide_msgs::SwitchState::ConstPtr &state);
+  void ResetController(const riptide_msgs::ResetControls::ConstPtr &reset_msg);
+  void Loop(); //A loop fxn is needed b/c copro can only read msgs so quickly
 };
 
 #endif

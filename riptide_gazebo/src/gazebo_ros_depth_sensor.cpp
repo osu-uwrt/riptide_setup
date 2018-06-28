@@ -53,5 +53,6 @@ void DepthSensor::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     this->depth_.depth = this->sea_level_ - z_pos;
     this->depth_.pressure = this->fluid_density_ * this->gravity_ * this->depth_.depth;
     this->depth_pub_.publish(this->depth_);
+    this->depth_.header.stamp = ros::Time::now();
   }
 }
