@@ -1,4 +1,0 @@
-<launch>
-  <include file="$(find riptide_hardware)/launch/ttyACM1.launch" /> <!--Establish serial link with thruster control board-->
-  <include file="$(find riptide_hardware)/launch/thrust_cal.launch"/> <!-- Thrust to PWM -->
-</launch>

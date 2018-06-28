@@ -1,5 +1,3 @@
-int16 surge_port_hi
-int16 surge_stbd_hi
 int16 surge_port_lo
 int16 surge_stbd_lo
 int16 sway_fwd

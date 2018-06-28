@@ -1,28 +1,19 @@
 <launch>
-  <arg name="forward_serial_number" value="15662023" />
-  <arg name="downward_serial_number" value="14490542" />
+  <arg name="frame_rate" default="30" />
+  <arg name="fwd_serial_number" value="14490542 " />
+  <arg name="down_serial_number" value="15662023" />
+  <arg name="spare_serial_number" value="14490573" />
+  <arg name="flir_serial_number" value="14432788" />
 
-  <group ns="downward">
-    <node pkg="nodelet" type="nodelet" name="camera_nodelet_manager" args="manager" />
-    <node pkg="nodelet" type="nodelet" name="camera_nodelet"
-          args="load pointgrey_camera_driver/PointGreyCameraNodelet camera_nodelet_manager" >
+  <include file="$(find riptide_hardware)/launch/camera.launch">
+    <arg name="camera_name" value="forward" />
+    <arg name="serial_number" value="$(arg fwd_serial_number)" />
+    <arg name="frame_rate" value="$(arg frame_rate)" />
+  </include>
 
-      <param name="frame_id" value="camera_forward" />
-      <param name="serial" value="$(arg forward_serial_number)" />
-    </node>
-
-  </group>
-
-  <group ns="forward">
-
-    <node pkg="nodelet" type="nodelet" name="camera_nodelet_manager" args="manager" />
-    <node pkg="nodelet" type="nodelet" name="camera_nodelet"
-          args="load pointgrey_camera_driver/PointGreyCameraNodelet camera_nodelet_manager" >
-
-      <param name="frame_id" value="camera_down" />
-      <param name="serial" value="$(arg downward_serial_number)" />
-    </node>
-
-  </group>
-
+  <include file="$(find riptide_hardware)/launch/camera.launch">
+    <arg name="camera_name" value="downward" />
+    <arg name="serial_number" value="$(arg down_serial_number)" />
+    <arg name="frame_rate" value="$(arg frame_rate)" />
+  </include>
 </launch>
