@@ -28,6 +28,6 @@ publishers:
 
 image_view:
 
-  enable_opencv: true
+  display_detected_image: true
   wait_key_delay: 1
   enable_console_output: true

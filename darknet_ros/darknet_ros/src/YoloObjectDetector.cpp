@@ -55,17 +55,17 @@ YoloObjectDetector::~YoloObjectDetector()
 bool YoloObjectDetector::readParameters()
 {
   // Load common parameters.
-  nodeHandle_.param("image_view/enable_opencv", viewImage_, true);
+  nodeHandle_.param("image_view/display_detected_image", displayDetectedImage_, true);
   nodeHandle_.param("image_view/wait_key_delay", waitKeyDelay_, 3);
   nodeHandle_.param("image_view/enable_console_output", enableConsoleOutput_, false);
 
   // Check if Xserver is running on Linux.
-  if (XOpenDisplay(NULL)) {
+  if (XOpenDisplay(NULL)) { // XOpenDisplay(jetson:0)
     // Do nothing!
     ROS_INFO("[YoloObjectDetector] Xserver is running.");
   } else {
     ROS_INFO("[YoloObjectDetector] Xserver is not running.");
-    viewImage_ = false;
+    displayDetectedImage_ = false;
   }
 
   // Set vector sizes.
@@ -127,8 +127,8 @@ void YoloObjectDetector::init()
   yoloThread_ = std::thread(&YoloObjectDetector::yolo, this);
 
   // Initialize publisher and subscriber.
-  std::string cameraTopicName;
-  int cameraQueueSize;
+  //std::string cameraTopicName;
+  //int cameraQueueSize;
   std::string objectDetectorTopicName;
   int objectDetectorQueueSize;
   bool objectDetectorLatch;
@@ -179,7 +179,7 @@ void YoloObjectDetector::init()
   checkForObjectsActionServer_->start();
 
   // Subscribe to alignment command so yolo can switch between appropriate camera
-  //alignmentSubscriber_ = nodeHandle_.subscribe<riptide_msgs::AlignmentCommand>("/command/alignment", 1, &YoloObjectDetector::AlignmentCommandCB, this);
+  alignmentSubscriber_ = nodeHandle_.subscribe<riptide_msgs::AlignmentCommand>("/command/alignment", 1, &YoloObjectDetector::AlignmentCommandCB, this);
   alignment_plane = riptide_msgs::AlignmentCommand::YZ;
   prev_alignment_plane = alignment_plane;
 }
@@ -263,19 +263,22 @@ bool YoloObjectDetector::isCheckingForObjects() const
 
 bool YoloObjectDetector::publishDetectionImage(const cv::Mat& detectionImage)
 {
-  if (detectionImagePublisher_.getNumSubscribers() < 1)
-    return false;
+  //if (detectionImagePublisher_.getNumSubscribers() < 1)
+  //  return false;
+  ROS_INFO("About to publish detection image");
   cv_bridge::CvImage cvImage;
   cvImage.header.stamp = ros::Time::now();
   cvImage.header.frame_id = "detection_image";
   cvImage.encoding = sensor_msgs::image_encodings::BGR8;
   cvImage.image = detectionImage;
-  detectionImagePublisher_.publish(*cvImage.toImageMsg());
-  ROS_DEBUG("Detection image has been published.");
+  sensor_msgs::ImagePtr out_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", detectionImage).toImageMsg();
+  detectionImagePublisher_.publish(out_msg); //publish(cvImage.toImageMsg());
+  //ROS_DEBUG("Detection image has been published.");
+  ROS_INFO("\nDetection image has been published.\n");
   return true;
 }
 
-/*void YoloObjectDetector::AlignmentCommandCB(const riptide_msgs::AlignmentCommand::ConstPtr &cmd) {
+void YoloObjectDetector::AlignmentCommandCB(const riptide_msgs::AlignmentCommand::ConstPtr &cmd) {
   // Adjust alignemnt plane so Yolo can subscribe to correct camera topic
   alignment_plane = cmd->alignment_plane;
   if(alignment_plane != riptide_msgs::AlignmentCommand::YZ && alignment_plane != riptide_msgs::AlignmentCommand::YX)
@@ -289,7 +292,7 @@ bool YoloObjectDetector::publishDetectionImage(const cv::Mat& detectionImage)
     ROS_INFO("Subscribed to new camera topic: %s", cameraTopicName.c_str());
   }
   prev_alignment_plane = alignment_plane;
-}*/
+}
 
 // double YoloObjectDetector::getWallTime()
 // {
@@ -440,7 +443,9 @@ void *YoloObjectDetector::fetchInThread()
 
 void *YoloObjectDetector::displayInThread(void *ptr)
 {
-  show_image_cv(buff_[(buffIndex_ + 1)%3], "YOLO V3", ipl_);
+  // This function will now ALWAYS publish the detected image, but will only display in
+  // an OpenCV window if displayDetectedImage_ is true
+  show_image_cv(buff_[(buffIndex_ + 1)%3], "YOLO V3", ipl_, displayDetectedImage_);
   int c = cvWaitKey(waitKeyDelay_);
   if (c != -1) c = c%256;
   if (c == 27) {
@@ -528,11 +533,11 @@ void YoloObjectDetector::yolo()
   buffLetter_[0] = letterbox_image(buff_[0], net_->w, net_->h);
   buffLetter_[1] = letterbox_image(buff_[0], net_->w, net_->h);
   buffLetter_[2] = letterbox_image(buff_[0], net_->w, net_->h);
-  ipl_ = cvCreateImage(cvSize(buff_[0].w, buff_[0].h), IPL_DEPTH_8U, buff_[0].c);
+  ipl_ = cvCreateImage(cvSize(buff_[0].w, buff_[0].h), IPL_DEPTH_8U, buff_[0].c); // Initializes image
 
   int count = 0;
 
-  if (!demoPrefix_ && viewImage_) {
+  if (!demoPrefix_ && displayDetectedImage_) {
     cvNamedWindow("YOLO V3", CV_WINDOW_NORMAL);
     if (fullScreen_) {
       cvSetWindowProperty("YOLO V3", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
@@ -551,9 +556,7 @@ void YoloObjectDetector::yolo()
     if (!demoPrefix_) {
       fps_ = 1./(what_time_is_it_now() - demoTime_);
       demoTime_ = what_time_is_it_now();
-      if (viewImage_) {
-        displayInThread(0);
-      }
+      displayInThread(0); // ALWAYS run this function (previously inside if-loop)
       publishInThread();
     } else {
       char name[256];

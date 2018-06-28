@@ -62,7 +62,7 @@ extern "C" {
 
 extern "C" void ipl_into_image(IplImage* src, image im);
 extern "C" image ipl_to_image(IplImage* src);
-extern "C" void show_image_cv(image p, const char *name, IplImage *disp);
+extern "C" void show_image_cv(image p, const char *name, IplImage *disp, bool displayDetectedImage); // Added bool displayDetectedImage
 
 namespace darknet_ros {
 
@@ -129,7 +129,7 @@ class YoloObjectDetector
   /*
    * Subscribes to alignment command callback and calls UpdateTaskID() if needed
    */
-  //void AlignmentCommandCB(const riptide_msgs::AlignmentCommand::ConstPtr &cmd);
+  void AlignmentCommandCB(const riptide_msgs::AlignmentCommand::ConstPtr &cmd);
 
   //! Typedefs.
   typedef actionlib::SimpleActionServer<darknet_ros_msgs::CheckForObjectsAction> CheckForObjectsActionServer;
@@ -156,8 +156,9 @@ class YoloObjectDetector
   std::string camera_topics[2] = {"/forward/image_undistorted", "/downward/image_undistorted"};
   int alignment_plane, prev_alignment_plane;
 
-  //std::string cameraTopicName;
-  //int cameraQueueSize;
+  std::string cameraTopicName;
+  int cameraQueueSize;
+  int count;
 
   //! Detected objects.
   std::vector<std::vector<RosBox_> > rosBoxes_;
@@ -202,7 +203,7 @@ class YoloObjectDetector
   double demoTime_;
 
   RosBox_ *roiBoxes_;
-  bool viewImage_;
+  bool displayDetectedImage_;
   bool enableConsoleOutput_;
   int waitKeyDelay_;
   int fullScreen_;

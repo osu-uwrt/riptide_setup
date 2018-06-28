@@ -90,6 +90,7 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr& joy) {
     isReset = true;
     isStarted = false;
     isInit = false;
+    isDepthInit = false;
     PS3Controller::ResetControllers();
   }
   else if(isReset) { // If reset, must wait for Start button to be pressed
@@ -142,8 +143,9 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr& joy) {
       // Update Depth/Z-accel
       if(isDepthWorking) { // Depth sensor working properly
         if(joy->buttons[BUTTON_SHAPE_TRIANGLE]) { // Automatic set depth to 0.5 m
-          cmd_depth.absolute = 0.5;
-          delta_depth = 0;
+          //cmd_depth.absolute = 0.5;
+          //delta_depth = 0;
+          isDepthInit = true;
         }
         else if(abs(joy->axes[AXES_STICK_LEFT_LR]) < 0.7) // Try to avoid yaw and depth simultaneously
           delta_depth = -joy->axes[AXES_STICK_LEFT_UD]*depth_factor; // Up -> dec depth, Down -> inc depth

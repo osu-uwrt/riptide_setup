@@ -2,7 +2,9 @@
   <arg name="camera_name" />
   <arg name="serial_number" />
   <arg name="frame_rate" default="30" />
-  <arg name="video_mode" default="format7_mode1" /> <!--mode0: Max res 1288 x 964 -->
+  <arg name="video_mode" default="format7_mode1" />
+  <!--mode0: Max res at 1288 x 964-->
+  <!--mode1: Half res at 644 x 482-->
 
   <group ns="$(arg camera_name)">
 
