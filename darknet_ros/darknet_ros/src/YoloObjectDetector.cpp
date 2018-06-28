@@ -473,7 +473,7 @@ void *YoloObjectDetector::displayLoop(void *ptr)
 void *YoloObjectDetector::detectLoop(void *ptr)
 {
   while (1) {
-    detectInThread();
+    detectInThread(0);
   }
 }
 
