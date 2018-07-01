@@ -5,15 +5,15 @@
   <arg name="spare_serial_number" value="14490573" />
   <arg name="flir_serial_number" value="14432788" />
 
-  <!--<include file="$(find riptide_hardware)/launch/camera.launch">
-    <arg name="camera_name" value="forward" />
-    <arg name="serial_number" value="$(arg fwd_serial_number)" />
-    <arg name="frame_rate" value="$(arg frame_rate)" />
-  </include>-->
-
   <include file="$(find riptide_hardware)/launch/camera.launch">
-    <arg name="camera_name" value="downward" />
+    <arg name="camera_name" value="forward" />
     <arg name="serial_number" value="$(arg spare_serial_number)" />
     <arg name="frame_rate" value="$(arg frame_rate)" />
   </include>
+
+  <!--<include file="$(find riptide_hardware)/launch/camera.launch">
+    <arg name="camera_name" value="downward" />
+    <arg name="serial_number" value="$(arg spare_serial_number)" />
+    <arg name="frame_rate" value="$(arg frame_rate)" />
+  </include>-->
 </launch>
