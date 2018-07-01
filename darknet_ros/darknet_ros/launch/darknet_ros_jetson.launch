@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <launch>
+  <machine address="jetson" name="jetson" user="ros" env-loader="~/osu-uwrt/riptide_software/src/riptide_utilities/riptide_master.sh"/>
+	<arg name="machine" value="jetson"/>
+
   <!--<include file="$(find riptide_hardware)/launch/cameras.launch"/>-->
 
   <!-- Console launch prefix -->
@@ -15,7 +18,7 @@
   <rosparam command="load" ns="darknet_ros" file="$(find darknet_ros)/config/yolov3-tiny_dice5.yaml"/>
 
   <!-- Start darknet and ros wrapper -->
-  <node pkg="darknet_ros" type="darknet_ros" name="darknet_ros" output="screen" launch-prefix="$(arg launch_prefix)">
+  <node machine="$(arg machine)" pkg="darknet_ros" type="darknet_ros" name="darknet_ros" output="screen" launch-prefix="$(arg launch_prefix)">
     <param name="weights_path"          value="$(arg yolo_weights_path)" />
     <param name="config_path"           value="$(arg yolo_config_path)" />
   </node>

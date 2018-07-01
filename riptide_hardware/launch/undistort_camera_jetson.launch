@@ -1,11 +1,14 @@
 <launch>
+  <machine address="jetson" name="jetson" user="ros" env-loader="~/osu-uwrt/riptide_software/src/riptide_utilities/robot_master.sh"/>
+  <arg name="machine" value="jetson" />
+
   <arg name="camera_name" default="forward"/>
   <arg name="frame_rate" default="30" />
   <arg name="video_mode" default="format7_mode1" />
   <!--mode0: Max res at 1288 x 964-->
   <!--mode1: Half res at 644 x 482-->
 
-    <node pkg="riptide_hardware" type="undistort_camera" name="undistort_camera" output="screen" >
+    <node machine="$(arg machine)" pkg="riptide_hardware" type="undistort_camera" name="undistort_camera" output="screen" >
       <rosparam command="load" file="$(find riptide_hardware)/cfg/camera_$(arg camera_name)_cal.yaml" />
       <param name="camera_name" type="string" value="$(arg camera_name)" />
       <param name="frame_rate" type="double" value="$(arg frame_rate)" />
