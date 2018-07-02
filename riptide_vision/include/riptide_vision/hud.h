@@ -1,5 +1,5 @@
-#ifndef HUD_IMAGE_H
-#define HUD_IMAGE_H
+#ifndef HUD_H
+#define HUD_H
 
 #include "ros/ros.h"
 #include "cmath"
@@ -13,8 +13,9 @@
 #include "opencv2/opencv.hpp"
 #include "cv_bridge/cv_bridge.h"
 using namespace cv;
+using namespace std;
 
-class HUDImage
+class HUD
 {
  private:
   ros::NodeHandle nh;
@@ -24,14 +25,18 @@ class HUDImage
 
   geometry_msgs::Vector3 euler_rpy, cmd_euler_rpy, linear_accel, cmd_linear_accel;
   double depth, cmd_depth;
-  double width, height, topMarger, botMargin;
+
+  int width, height, top_margin, num_rows, offset, text_start[4];
+  Scalar margin_color, text_color;
 
  public:
-  HUDImage();
+  HUD();
   void InitMsgs();
   void ForwardImgCB(const sensor_msgs::ImageConstPtr& msg);
   void DownwardImgCB(const sensor_msgs::ImageConstPtr& msg);
   void DarknetImgCB(const sensor_msgs::ImageConstPtr& msg);
+  Mat CreateHUD(Mat &img);
+
   void ImuCB(const riptide_msgs::Imu::ConstPtr& imu_msg);
   void DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg);
   void CmdAttitudeCB(const geometry_msgs::Vector3::ConstPtr& cmd_msg);

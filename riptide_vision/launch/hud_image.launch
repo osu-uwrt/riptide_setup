@@ -1,3 +1,0 @@
-<launch>
-  <node pkg="riptide_vision" type="hud_image" name="hud_image" output="screen" />
-</launch>
