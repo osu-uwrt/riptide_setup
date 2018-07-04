@@ -22,8 +22,9 @@ uint8 MASTER_SWITCH_KILL = 0
 uint8 MASTER_SWITCH_RESTART = 1
 uint8 MASTER_SWITCH_SHUTDOWN = 2
 
-# Request Codes
-uint8 REQUEST_RESET_CONTROLLERS = 40
+# Alignment plane
+uint8 ALIGNMENT_PLANE_YZ = 0
+uint8 ALIGNMENT_PLANE_XY = 1
 
 # Qualification Task Codes
 uint8 TASK_QUALIFY_GATE = 0
