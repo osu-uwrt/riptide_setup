@@ -1,0 +1,9 @@
+float32 PFfreq
+float32 PAfreq
+float32 SFfreq
+float32 SAfreq
+float32 PFphase
+float32 PAphase
+float32 SFphase
+float32 SAphase
+float32 angle

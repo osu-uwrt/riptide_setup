@@ -28,6 +28,8 @@ add_message_files(
     ControlStatusLinear.msg
     AlignmentCommand.msg
     DepthCommand.msg
+    Acoustics.msg
+    Pneumatics.msg
 )
 
 generate_messages(DEPENDENCIES std_msgs geometry_msgs)
