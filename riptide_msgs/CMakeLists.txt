@@ -31,6 +31,7 @@ add_message_files(
     Acoustics.msg
     Pneumatics.msg
     PS3Plane.msg
+    Constants.msg
 )
 
 generate_messages(DEPENDENCIES std_msgs geometry_msgs)
