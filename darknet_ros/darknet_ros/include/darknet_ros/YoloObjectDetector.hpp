@@ -39,7 +39,8 @@
 #include <darknet_ros_msgs/CheckForObjectsAction.h>
 
 // riptide_msgs
-#include "riptide_msgs/AlignmentCommand.h"
+#include "riptide_msgs/TaskID.h"
+#include "riptide_msgs/Constants.h"
 
 // Darknet.
 #ifdef GPU
@@ -129,7 +130,7 @@ class YoloObjectDetector
   /*
    * Subscribes to alignment command callback and calls UpdateTaskID() if needed
    */
-  void AlignmentCommandCB(const riptide_msgs::AlignmentCommand::ConstPtr &cmd);
+  void TaskIDCB(const riptide_msgs::TaskID::ConstPtr &cmd);
 
   //! Typedefs.
   typedef actionlib::SimpleActionServer<darknet_ros_msgs::CheckForObjectsAction> CheckForObjectsActionServer;
@@ -152,7 +153,7 @@ class YoloObjectDetector
   image_transport::Subscriber imageSubscriber_;
   ros::Publisher objectPublisher_;
   ros::Publisher boundingBoxesPublisher_;
-  ros::Subscriber alignmentSubscriber_;
+  ros::Subscriber taskIDSubscriber_;
   std::string camera_topics[2] = {"/forward/image_undistorted", "/downward/image_undistorted"};
   int alignment_plane, prev_alignment_plane;
 

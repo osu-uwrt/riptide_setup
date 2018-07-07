@@ -3,10 +3,6 @@
 #define GRAVITY 9.81 // [m/s^2]
 #define WATER_DENSITY 1000 // [kg/m^3]
 
-float round(float d) {
-  return floor(d + 0.5);
-}
-
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "ps3_controller");
@@ -22,19 +18,19 @@ PS3Controller::PS3Controller() : nh("ps3_controller") {
   depth_pub = nh.advertise<riptide_msgs::DepthCommand>("/command/manual/depth", 1);
   reset_pub = nh.advertise<riptide_msgs::ResetControls>("/controls/reset", 1);
 
-  nh.getParam("is_depth_working", isDepthWorking); // Is depth sensor working?
-  PS3Controller::LoadProperty("rate", rt); // [Hz]
-  PS3Controller::LoadProperty("buoyancy_depth_thresh", buoyancy_depth_thresh); // [m]
-  PS3Controller::LoadProperty("max_roll_limit", MAX_ROLL); // [m/s^2]
-  PS3Controller::LoadProperty("max_pitch_limit", MAX_PITCH); // [m/s^2]
-  PS3Controller::LoadProperty("max_x_accel", MAX_XY_ACCEL); // [m/s^2]
-  PS3Controller::LoadProperty("max_z_accel", MAX_Z_ACCEL); // [m/s^2]
-  PS3Controller::LoadProperty("max_depth", MAX_DEPTH); // [m]
-  PS3Controller::LoadProperty("cmd_roll_rate", CMD_ROLL_RATE); // [deg/s]
-  PS3Controller::LoadProperty("cmd_pitch_rate", CMD_PITCH_RATE); // [deg/s]
-  PS3Controller::LoadProperty("cmd_yaw_rate", CMD_YAW_RATE); // [deg/s]
-  PS3Controller::LoadProperty("cmd_depth_rate", CMD_DEPTH_RATE); // [deg/s]
-  PS3Controller::LoadProperty("boost", boost); // Factor to multiply pressed button/axis for faster rate
+  PS3Controller::LoadParam<bool>("is_depth_working", isDepthWorking); // Is depth sensor working?
+  PS3Controller::LoadParam<double>("rate", rt); // [Hz]
+  PS3Controller::LoadParam<double>("buoyancy_depth_thresh", buoyancy_depth_thresh); // [m]
+  PS3Controller::LoadParam<double>("max_roll_limit", MAX_ROLL); // [m/s^2]
+  PS3Controller::LoadParam<double>("max_pitch_limit", MAX_PITCH); // [m/s^2]
+  PS3Controller::LoadParam<double>("max_x_accel", MAX_XY_ACCEL); // [m/s^2]
+  PS3Controller::LoadParam<double>("max_z_accel", MAX_Z_ACCEL); // [m/s^2]
+  PS3Controller::LoadParam<double>("max_depth", MAX_DEPTH); // [m]
+  PS3Controller::LoadParam<double>("cmd_roll_rate", CMD_ROLL_RATE); // [deg/s]
+  PS3Controller::LoadParam<double>("cmd_pitch_rate", CMD_PITCH_RATE); // [deg/s]
+  PS3Controller::LoadParam<double>("cmd_yaw_rate", CMD_YAW_RATE); // [deg/s]
+  PS3Controller::LoadParam<double>("cmd_depth_rate", CMD_DEPTH_RATE); // [deg/s]
+  PS3Controller::LoadParam<double>("boost", boost); // Factor to multiply pressed button/axis for faster rate
   // When using the boost factor, you must subtract one from its value for it
   // to have the desired effect. See below for implementation
 
@@ -62,19 +58,22 @@ void PS3Controller::InitMsgs() {
   PS3Controller::ResetControllers();
 }
 
-// Load property from namespace
-void PS3Controller::LoadProperty(std::string name, double &param)
+// Load parameter from namespace
+template <typename T>
+void PS3Controller::LoadParam(string param, T &var)
 {
   try
   {
-    if (!nh.getParam(name, param))
+    if (!nh.getParam(param, var))
     {
       throw 0;
     }
   }
   catch(int e)
   {
-    ROS_ERROR("Critical! PS3 Controller has no property set for %s. Shutting down...", name.c_str());
+    string ns = nh.getNamespace();
+    ROS_ERROR("PS3 Controller Namespace: %s", ns.c_str());
+    ROS_ERROR("Critical! Param \"%s/%s\" does not exist or is not accessed correctly. Shutting down.", ns.c_str(), param.c_str());
     ros::shutdown();
   }
 }
@@ -145,10 +144,9 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr& joy) {
 
       // Update Depth/Z-accel
       if(isDepthWorking) { // Depth sensor working properly
-        if(joy->buttons[BUTTON_SHAPE_TRIANGLE]) { // Automatic set depth to 0.5 m
-          //cmd_depth.absolute = 0.5;
-          //delta_depth = 0;
+        if(joy->buttons[BUTTON_SHAPE_TRIANGLE]) { // Enable depth controller
           isDepthInit = true;
+          reset_msg.reset_depth = false;
         }
         else if(isDepthInit && abs(joy->axes[AXES_STICK_LEFT_LR]) < 0.7) // Try to avoid yaw and depth simultaneously
           delta_depth = -joy->axes[AXES_STICK_LEFT_UD]*depth_factor * (1+ (boost-1)*joy->buttons[BUTTON_SHAPE_SQUARE]); // Up -> dec depth, Down -> inc depth

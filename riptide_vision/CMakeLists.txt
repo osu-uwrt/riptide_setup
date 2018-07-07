@@ -27,3 +27,7 @@ roslint_cpp()
 add_executable(extract_video src/extract_video.cpp)
 target_link_libraries(extract_video ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 add_dependencies(extract_video ${catkin_EXPORTED_TARGETS})
+
+add_executable(hud src/hud.cpp)
+target_link_libraries(hud ${catkin_LIBRARIES})
+add_dependencies(hud ${catkin_EXPORTED_TARGETS} ${OpenCV_LIBRARIES})
