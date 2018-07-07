@@ -29,7 +29,7 @@ generate_messages()
 
 catkin_package(INCLUDE_DIRS include)
 find_package(OpenCV REQUIRED) # To include, OpenCV, this MUST go BEFORE include_directories()
-include_directories(include ${catkin_INCLUDE_DIRS} $(OpenCV_INCLUDE_DIRS))
+include_directories(include ${catkin_INCLUDE_DIRS} $(OpenCV_INCLUDE_DIRS) resources/acoustics/include)
 
 
 roslint_cpp()
@@ -45,6 +45,14 @@ add_dependencies(imu_processor ${catkin_EXPORTED_TARGETS})
 add_executable(imu_logger src/imu_logger.cpp)
 target_link_libraries(imu_logger ${catkin_LIBRARIES})
 add_dependencies(imu_logger ${catkin_EXPORTED_TARGETS})
+
+file(GLOB ACOUSTICS_REFERENCES
+    resources/acoustics/src/*.cpp
+)
+
+add_executable(acoustics src/acoustics.cpp ${ACOUSTICS_REFERENCES})
+target_link_libraries(acoustics ${catkin_LIBRARIES} okFrontPanel)
+add_dependencies(acoustics ${catkin_EXPORTED_TARGETS})
 
 add_executable(depth_processor src/depth_processor.cpp)
 target_link_libraries(depth_processor ${catkin_LIBRARIES})
