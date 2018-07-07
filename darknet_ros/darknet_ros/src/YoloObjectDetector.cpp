@@ -178,9 +178,9 @@ void YoloObjectDetector::init()
       boost::bind(&YoloObjectDetector::checkForObjectsActionPreemptCB, this));
   checkForObjectsActionServer_->start();
 
-  // Subscribe to alignment command so yolo can switch between appropriate camera
-  alignmentSubscriber_ = nodeHandle_.subscribe<riptide_msgs::AlignmentCommand>("/command/alignment", 1, &YoloObjectDetector::AlignmentCommandCB, this);
-  alignment_plane = riptide_msgs::AlignmentCommand::YZ;
+  // Subscribe to taskID command so yolo can switch between appropriate camera
+  taskIDSubscriber_ = nodeHandle_.subscribe<riptide_msgs::TaskID>("/command/task", 1, &YoloObjectDetector::TaskIDCB, this);
+  alignment_plane = riptide_msgs::Constants::PLANE_YZ;
   prev_alignment_plane = alignment_plane;
 }
 
@@ -276,11 +276,11 @@ bool YoloObjectDetector::publishDetectionImage(const cv::Mat& detectionImage)
   return true;
 }
 
-void YoloObjectDetector::AlignmentCommandCB(const riptide_msgs::AlignmentCommand::ConstPtr &cmd) {
+void YoloObjectDetector::TaskIDCB(const riptide_msgs::TaskID::ConstPtr &cmd) {
   // Adjust alignemnt plane so Yolo can subscribe to correct camera topic
   alignment_plane = cmd->alignment_plane;
-  if(alignment_plane != riptide_msgs::AlignmentCommand::YZ && alignment_plane != riptide_msgs::AlignmentCommand::YX)
-    alignment_plane = riptide_msgs::AlignmentCommand::YZ; // Default to YZ-plane (fwd cam)
+  if(alignment_plane != riptide_msgs::Constants::PLANE_YZ && alignment_plane != riptide_msgs::Constants::PLANE_XY)
+    alignment_plane = riptide_msgs::Constants::PLANE_YZ; // Default to YZ-plane (fwd cam)
 
   if(alignment_plane != prev_alignment_plane) {
     imageSubscriber_.shutdown(); // Unsubscribe from old camera topic
@@ -614,6 +614,9 @@ void *YoloObjectDetector::publishInThread()
     msg.data = num;
     objectPublisher_.publish(msg);
 
+    // Added field for number of objects within bounding box message
+    boundingBoxesResults_.num_objects = num;
+    
     for (int i = 0; i < numClasses_; i++) {
       if (rosBoxCounter_[i] > 0) {
         darknet_ros_msgs::BoundingBox boundingBox;

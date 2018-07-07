@@ -1,9 +1,0 @@
-<launch>
-  <machine address="riptide" name="riptide" user="ros" env-loader="~/osu-uwrt/riptide_software/src/riptide_utilities/riptide_master.sh"/>
-  <include file="$(find riptide_hardware)/launch/coprocessor.launch">
-  	<arg name="machine" value="riptide"/>
-  </include>
-  <node machine="riptide" pkg="riptide_utilities" type="ps3_control.py" name="ps3"/>
-  <node pkg="joy" type="joy_node" name="joy_node"/>
-
-</launch>
