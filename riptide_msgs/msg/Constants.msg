@@ -23,8 +23,8 @@ uint8 MASTER_SWITCH_RESTART = 1
 uint8 MASTER_SWITCH_SHUTDOWN = 2
 
 # Alignment plane
-uint8 ALIGNMENT_PLANE_YZ = 0
-uint8 ALIGNMENT_PLANE_XY = 1
+uint8 PLANE_YZ = 0
+uint8 PLANE_XY = 1
 
 # Qualification Task Codes
 uint8 TASK_QUALIFY_GATE = 0

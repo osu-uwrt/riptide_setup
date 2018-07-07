@@ -17,6 +17,7 @@ PS3Controller::PS3Controller() : nh("ps3_controller") {
   lin_accel_pub = nh.advertise<geometry_msgs::Vector3>("/command/manual/accel/linear", 1);
   depth_pub = nh.advertise<riptide_msgs::DepthCommand>("/command/manual/depth", 1);
   reset_pub = nh.advertise<riptide_msgs::ResetControls>("/controls/reset", 1);
+  plane_pub = nh.advertise<riptide_msgs::PS3Plane>("/command/ps3_plane", 1);
 
   PS3Controller::LoadParam<bool>("is_depth_working", isDepthWorking); // Is depth sensor working?
   PS3Controller::LoadParam<double>("rate", rt); // [Hz]
@@ -42,6 +43,7 @@ PS3Controller::PS3Controller() : nh("ps3_controller") {
   isDepthInit = false;
   current_depth = 0;
   euler_rpy.setZero();
+  alignment_plane = (bool)riptide_msgs::Constants::PLANE_YZ;
 
   roll_factor = CMD_ROLL_RATE/rt;
   pitch_factor = CMD_PITCH_RATE/rt;
@@ -169,6 +171,9 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr& joy) {
       // Update Linear XY Accel
       cmd_accel.x = joy->axes[AXES_STICK_RIGHT_UD]*MAX_XY_ACCEL; // Surge pos. forward
       cmd_accel.y = joy->axes[AXES_STICK_RIGHT_LR]*MAX_XY_ACCEL; // Sway pos. left
+
+      if(joy->buttons[BUTTON_SELECT])
+        alignment_plane = !alignment_plane;
     }
   }
 }
@@ -232,6 +237,8 @@ void PS3Controller::UpdateCommands() {
   cmd_depth.absolute = PS3Controller::Constrain(cmd_depth.absolute, MAX_DEPTH);
   if(cmd_depth.absolute < 0)
     cmd_depth.absolute = 0;
+
+  plane_msg.alignment_plane = (int)alignment_plane;
 }
 
 void PS3Controller::PublishCommands() {
@@ -240,6 +247,7 @@ void PS3Controller::PublishCommands() {
   lin_accel_pub.publish(cmd_accel);
   if(isDepthWorking)
     depth_pub.publish(cmd_depth);
+  plane_pub.publish(plane_msg);
 }
 
 void PS3Controller::Loop()

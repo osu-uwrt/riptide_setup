@@ -3,7 +3,7 @@ yolo_model:
   config_file:
     name: yolov3-tiny_RoboSub18.cfg
   weight_file:
-    name: yolov3-tiny_RoboSub18_20000.weights
+    name: yolov3-tiny_RoboSub18_50000.weights
   threshold:
     value: 0.4
   detection_classes:

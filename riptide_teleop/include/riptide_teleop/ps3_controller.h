@@ -11,20 +11,23 @@
 #include "riptide_msgs/DepthCommand.h"
 #include "riptide_msgs/Depth.h"
 #include "riptide_msgs/ResetControls.h"
+#include "riptide_msgs/PS3Plane.h"
+#include "riptide_msgs/Constants.h"
 using namespace std;
 
 class PS3Controller
 {
  private:
   ros::NodeHandle nh;
-  ros::Publisher attitude_pub, depth_pub, lin_accel_pub, reset_pub;
+  ros::Publisher attitude_pub, depth_pub, lin_accel_pub, reset_pub, plane_pub;
   ros::Subscriber joy_sub, depth_sub;
 
   geometry_msgs::Vector3 cmd_attitude, cmd_accel, delta_attitude;
   riptide_msgs::DepthCommand cmd_depth;
   riptide_msgs::ResetControls reset_msg;
+  riptide_msgs::PS3Plane plane_msg;
   bool isReset, isStarted, isInit, isDepthWorking, isR2Init, isL2Init;
-  bool isDepthInit;
+  bool isDepthInit, alignment_plane;
   tf::Vector3 euler_rpy;
   double rt, current_depth, buoyancy_depth_thresh, delta_depth;
 

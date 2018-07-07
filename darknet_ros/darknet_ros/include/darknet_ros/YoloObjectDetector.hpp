@@ -39,7 +39,8 @@
 #include <darknet_ros_msgs/CheckForObjectsAction.h>
 
 // riptide_msgs
-#include "riptide_msgs/TaskID.h"
+#include "riptide_msgs/PS3Plane.h"
+//#include "riptide_msgs/TaskID.h"
 #include "riptide_msgs/Constants.h"
 
 // Darknet.
@@ -128,9 +129,15 @@ class YoloObjectDetector
   bool publishDetectionImage(const cv::Mat& detectionImage);
 
   /*
-   * Subscribes to alignment command callback and calls UpdateTaskID() if needed
+   * Subscribes to Task and updates alignment plane
    */
-  void TaskIDCB(const riptide_msgs::TaskID::ConstPtr &cmd);
+  //void TaskCB(const riptide_msgs::TaskID::ConstPtr &cmd);
+
+  /*
+   * Subscribes to PS3 Alignment Plane and updates alignment plane
+   * SHould never run at at the same time as SMACH is running
+   */
+  void PS3CB(const riptide_msgs::PS3Plane::ConstPtr &cmd);
 
   //! Typedefs.
   typedef actionlib::SimpleActionServer<darknet_ros_msgs::CheckForObjectsAction> CheckForObjectsActionServer;
@@ -153,7 +160,7 @@ class YoloObjectDetector
   image_transport::Subscriber imageSubscriber_;
   ros::Publisher objectPublisher_;
   ros::Publisher boundingBoxesPublisher_;
-  ros::Subscriber taskIDSubscriber_;
+  ros::Subscriber taskSubscriber_, ps3Subscriber_;
   std::string camera_topics[2] = {"/forward/image_undistorted", "/downward/image_undistorted"};
   int alignment_plane, prev_alignment_plane;
 

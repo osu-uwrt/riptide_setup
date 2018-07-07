@@ -178,8 +178,9 @@ void YoloObjectDetector::init()
       boost::bind(&YoloObjectDetector::checkForObjectsActionPreemptCB, this));
   checkForObjectsActionServer_->start();
 
-  // Subscribe to taskID command so yolo can switch between appropriate camera
-  taskIDSubscriber_ = nodeHandle_.subscribe<riptide_msgs::TaskID>("/command/task", 1, &YoloObjectDetector::TaskIDCB, this);
+  // Subscribe to PS3 Plane command so yolo can switch between appropriate camera
+  ps3Subscriber_ = nodeHandle_.subscribe<riptide_msgs::PS3Plane>("/command/ps3_plane", 1, &YoloObjectDetector::PS3CB, this);
+  //taskSubscriber_ = nodeHandle.subscribe<riptide_msgs::Task>("/command/task", 1, &&YoloObjectDetector::TaskCB, this);
   alignment_plane = riptide_msgs::Constants::PLANE_YZ;
   prev_alignment_plane = alignment_plane;
 }
@@ -276,7 +277,23 @@ bool YoloObjectDetector::publishDetectionImage(const cv::Mat& detectionImage)
   return true;
 }
 
-void YoloObjectDetector::TaskIDCB(const riptide_msgs::TaskID::ConstPtr &cmd) {
+/*void YoloObjectDetector::TaskCB(const riptide_msgs::TaskID::ConstPtr &cmd) {
+  // Adjust alignemnt plane so Yolo can subscribe to correct camera topic
+  alignment_plane = cmd->alignment_plane;
+  if(alignment_plane != riptide_msgs::Constants::PLANE_YZ && alignment_plane != riptide_msgs::Constants::PLANE_XY)
+    alignment_plane = riptide_msgs::Constants::PLANE_YZ; // Default to YZ-plane (fwd cam)
+
+  if(alignment_plane != prev_alignment_plane) {
+    imageSubscriber_.shutdown(); // Unsubscribe from old camera topic
+    cameraTopicName = camera_topics[alignment_plane]; // 0 -> (fwd) YZ plane, 1 -> (dwn) XY plane
+    imageSubscriber_ = imageTransport_.subscribe(cameraTopicName, cameraQueueSize,
+                                                 &YoloObjectDetector::cameraCallback, this);
+    ROS_INFO("Subscribed to new camera topic: %s", cameraTopicName.c_str());
+  }
+  prev_alignment_plane = alignment_plane;
+}*/
+
+void YoloObjectDetector::PS3CB(const riptide_msgs::PS3Plane::ConstPtr &cmd) {
   // Adjust alignemnt plane so Yolo can subscribe to correct camera topic
   alignment_plane = cmd->alignment_plane;
   if(alignment_plane != riptide_msgs::Constants::PLANE_YZ && alignment_plane != riptide_msgs::Constants::PLANE_XY)
@@ -616,7 +633,7 @@ void *YoloObjectDetector::publishInThread()
 
     // Added field for number of objects within bounding box message
     boundingBoxesResults_.num_objects = num;
-    
+
     for (int i = 0; i < numClasses_; i++) {
       if (rosBoxCounter_[i] > 0) {
         darknet_ros_msgs::BoundingBox boundingBox;
