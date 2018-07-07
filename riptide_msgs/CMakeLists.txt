@@ -30,6 +30,7 @@ add_message_files(
     DepthCommand.msg
     Acoustics.msg
     Pneumatics.msg
+    PS3Plane.msg
 )
 
 generate_messages(DEPENDENCIES std_msgs geometry_msgs)
