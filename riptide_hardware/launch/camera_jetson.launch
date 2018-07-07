@@ -1,6 +1,6 @@
 <launch>
   <machine address="jetson" name="jetson" user="ros" env-loader="~/osu-uwrt/riptide_software/src/riptide_utilities/riptide_master.sh"/>
-	<arg name="machine" value="jetson"/>
+	<arg name="machine_name" default="jetson"/>
 
   <arg name="camera_name" />
   <arg name="serial_number" />
@@ -15,11 +15,10 @@
       <arg name="camera_name" value="$(arg camera_name)" />
       <arg name="frame_rate" value="$(arg frame_rate)" />
       <arg name="video_mode" value="$(arg video_mode)" />
-      <arg name="machine" value="$(arg machine)"/>
     </include>
 
-    <node machine="$(arg machine)" pkg="nodelet" type="nodelet" name="camera_nodelet_manager" args="manager" />
-    <node machine="$(arg machine)" pkg="nodelet" type="nodelet" name="camera_nodelet"
+    <node machine="$(arg machine_name)" pkg="nodelet" type="nodelet" name="camera_nodelet_manager" args="manager" />
+    <node machine="$(arg machine_name)" pkg="nodelet" type="nodelet" name="camera_nodelet"
           args="load pointgrey_camera_driver/PointGreyCameraNodelet camera_nodelet_manager" >
 
       <param name="frame_id" value="$(arg camera_name)" />
