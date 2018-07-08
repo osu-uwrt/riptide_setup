@@ -20,8 +20,9 @@ Acoustics::Acoustics() : nh("acoustics") { // NOTE: there is no namespace declar
 bool Acoustics::InitializeFPGA()
 {
 	// Open the first XEM - try all board types.
+	ROS_INFO("Attempting to open okCFrontPanel.");
 	device = new okCFrontPanel;
-
+	ROS_INFO("Attempting to open FPGA.");
 	if (okCFrontPanel::NoError != device->OpenBySerial()) {
 		ROS_ERROR("Device could not be opened.  Is one connected");
 		return false;
@@ -36,11 +37,13 @@ bool Acoustics::InitializeFPGA()
 
 bool Acoustics::ConfigureFPGA()
 {
+	ROS_INFO("Configuring");
 	int error = device->ConfigureFPGA("../osu-uwrt/riptide_software/src/riptide_hardware/resources/acoustics/output_file.rbf");
 	if (error != okCFrontPanel::NoError) {
 		ROS_ERROR("FPGA configuration failed: %s", okCFrontPanel::GetErrorString(error).c_str());
 		return false;
 	}
+	ROS_INFO("FPGA configured successfully!");
 	return true;
 }
 
@@ -148,7 +151,7 @@ void Acoustics::Collect() {
 
 void Acoustics::Loop()
 {
-  ros::Rate rate(4);
+  ros::Rate rate(1);
   while(!ros::isShuttingDown()) {
 	Collect();
     ros::spinOnce();
