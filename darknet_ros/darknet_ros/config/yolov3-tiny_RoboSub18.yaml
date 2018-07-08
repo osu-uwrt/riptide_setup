@@ -1,0 +1,18 @@
+yolo_model:
+
+  config_file:
+    name: yolov3-tiny_RoboSub18.cfg
+  weight_file:
+    name: yolov3-tiny_RoboSub18_50000.weights
+  threshold:
+    value: 0.4
+  detection_classes:
+    names:
+      - Casino_Gate_Black
+      - Casino_Gate_Red
+      - Dice1
+      - Dice2
+      - Dice5
+      - Dice6
+      - Path_Marker
+      - Roulette

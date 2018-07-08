@@ -1,10 +1,10 @@
 #include "riptide_hardware/acoustics.h"
 
 
-//!!!!!!!!!!!!!!!!!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!!!!!!!!!!!//
-// Must extract /resources/FrontPanel. Run install.sh, and 	 //
-// copy API/okFrontPanel.so file to /usr/lib				 //
-///////////////////////////////////////////////////////////////
+//!!!!!!!!!!!!!!!!!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!!!!!!!!!!!///
+// Must extract /resources/FrontPanel. Run install.sh as sudo,//
+// and sudo copy API/okFrontPanel.so file to /usr/lib				  //
+////////////////////////////////////////////////////////////////
 
 int main(int argc, char** argv) {
   ros::init(argc, argv, "acoustics");
@@ -27,7 +27,7 @@ bool Acoustics::InitializeFPGA()
 		ROS_ERROR("Device could not be opened.  Is one connected");
 		return false;
 	}
-	
+
 	device->LoadDefaultPLLConfiguration();
 
 	device->SetTimeout(100);
@@ -101,7 +101,7 @@ void Acoustics::Collect() {
 		}
 		else if (i < NUM_OF_COLLECTIONS * 2) {
 			PAdata[i - NUM_OF_COLLECTIONS] = val;
-		} 
+		}
 		else if (i < NUM_OF_COLLECTIONS * 3) {
 			SFdata[i - NUM_OF_COLLECTIONS * 2] = val;
 		}
@@ -158,6 +158,3 @@ void Acoustics::Loop()
     rate.sleep();
   }
 }
-
-
-

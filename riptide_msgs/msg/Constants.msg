@@ -1,0 +1,36 @@
+# Colors Codes
+uint8 COLOR_RED = 0
+uint8 COLOR_BLACK = 1
+
+# Safety Measure Codes
+uint8 SAFETY_BAT_VOLT_LOW = 0
+uint8 SAFETY_BAT_CUR_SPIKE = 1
+uint8 SAFETY_CVTR_VOLT_LOW = 2
+uint8 SAFETY_CVTR_CUR_SPIKE = 3
+
+# Status Codes
+uint8 STATUS_INIT = 0
+uint8 STATUS_ACTIVATED = 1
+uint8 STATUS_DEACTIVATED = 2
+uint8 STATUS_MISSION_ATTEMPTED = 3
+uint8 STATUS_MISSION_NOT_ATTEMPTED = 4
+uint8 STATUS_SAFE = 5
+uint8 STATUS_EMERGENCY = 6
+
+# Master Switch Codes
+uint8 MASTER_SWITCH_KILL = 0
+uint8 MASTER_SWITCH_RESTART = 1
+uint8 MASTER_SWITCH_SHUTDOWN = 2
+
+# Alignment plane
+uint8 PLANE_YZ = 0
+uint8 PLANE_XY = 1
+
+# Qualification Task Codes
+uint8 TASK_QUALIFY_GATE = 0
+uint8 TASK_QUALIFY_MARKER = 1
+
+# Competition Task Codes
+uint8 TASK_CASINO_GATE = 0
+uint8 TASK_PATH_MARKER = 1
+uint8 TASK_DICE = 2
