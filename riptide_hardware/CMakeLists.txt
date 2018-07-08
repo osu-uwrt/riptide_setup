@@ -38,30 +38,45 @@ roslint_cpp()
 find_package(Boost REQUIRED)
 include_directories(${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIR})
 
-add_executable(imu_processor src/imu_processor.cpp)
-target_link_libraries(imu_processor ${catkin_LIBRARIES})
-add_dependencies(imu_processor ${catkin_EXPORTED_TARGETS})
+cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)
+message("-- Computer name: " ${_host_name})
 
-add_executable(imu_logger src/imu_logger.cpp)
-target_link_libraries(imu_logger ${catkin_LIBRARIES})
-add_dependencies(imu_logger ${catkin_EXPORTED_TARGETS})
+if(NOT _host_name MATCHES "jetson")
 
-file(GLOB ACOUSTICS_REFERENCES
-    resources/acoustics/src/*.cpp
-)
+    add_executable(imu_processor src/imu_processor.cpp)
+    target_link_libraries(imu_processor ${catkin_LIBRARIES})
+    add_dependencies(imu_processor ${catkin_EXPORTED_TARGETS})
 
-add_executable(acoustics src/acoustics.cpp ${ACOUSTICS_REFERENCES})
-target_link_libraries(acoustics ${catkin_LIBRARIES} okFrontPanel)
-add_dependencies(acoustics ${catkin_EXPORTED_TARGETS})
+    add_executable(imu_logger src/imu_logger.cpp)
+    target_link_libraries(imu_logger ${catkin_LIBRARIES})
+    add_dependencies(imu_logger ${catkin_EXPORTED_TARGETS})
 
-add_executable(depth_processor src/depth_processor.cpp)
-target_link_libraries(depth_processor ${catkin_LIBRARIES})
-add_dependencies(depth_processor ${catkin_EXPORTED_TARGETS})
+    file(GLOB ACOUSTICS_REFERENCES
+        resources/acoustics/src/*.cpp
+    )
 
-add_executable(calibrate_camera src/calibrate_camera.cpp)
-target_link_libraries(calibrate_camera ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
-add_dependencies(calibrate_camera ${catkin_EXPORTED_TARGETS})
+    add_executable(acoustics src/acoustics.cpp ${ACOUSTICS_REFERENCES})
+    target_link_libraries(acoustics ${catkin_LIBRARIES} okFrontPanel)
+    add_dependencies(acoustics ${catkin_EXPORTED_TARGETS})
 
-add_executable(undistort_camera src/undistort_camera.cpp)
-target_link_libraries(undistort_camera ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
-add_dependencies(undistort_camera ${catkin_EXPORTED_TARGETS})
+    add_executable(depth_processor src/depth_processor.cpp)
+    target_link_libraries(depth_processor ${catkin_LIBRARIES})
+    add_dependencies(depth_processor ${catkin_EXPORTED_TARGETS})
+else()
+    message("-- Skipping riptide code on jetson")
+endif()
+
+if(NOT _host_name MATCHES "riptide")
+
+    add_executable(calibrate_camera src/calibrate_camera.cpp)
+    target_link_libraries(calibrate_camera ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+    add_dependencies(calibrate_camera ${catkin_EXPORTED_TARGETS})
+
+    add_executable(undistort_camera src/undistort_camera.cpp)
+    target_link_libraries(undistort_camera ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+    add_dependencies(undistort_camera ${catkin_EXPORTED_TARGETS})
+else()
+    message("-- Skipping jetson code on riptide")
+endif()
+
+

@@ -5,7 +5,7 @@ import rospy
 from riptide_msgs.msg import Pneumatics
 #set up the symlink
 COM_PORT = '/dev/ttyS0'
-ser = serial.Serial(COM_PORT, baudrate=9600, parity=serial.PARITY_EVEN, stopbits=serial.STOPBITS_ONE, bytesize=serial.EIGHTBITS)
+ser = serial.Serial(COM_PORT, baudrate=9600, parity=serial.PARITY_EVEN, stopbits=serial.STOPBITS_ONE, bytesize=serial.EIGHTBITS, timeout=0.1)
 def pneuCB(pneuMsg):
     pneuStart = "++++"
     pneuEnd = "@@@@\n"
@@ -33,11 +33,13 @@ def main():
     rospy.init_node('pneumatics')
     print "starting node"
     pneuPub = rospy.Subscriber("/command/pneumatics", Pneumatics, pneuCB, queue_size=1)
-    rate = rospy.Rate(100)
+    rate = rospy.Rate(0.5)
     pneuMsg = Pneumatics()
     while not rospy.is_shutdown():
         if ser.inWaiting() != 0:
-            print ser.readline()
+            ser.readline()
+        else:
+            print "No pneumatics message"
         rate.sleep()
 
 if __name__ == "__main__": main()
