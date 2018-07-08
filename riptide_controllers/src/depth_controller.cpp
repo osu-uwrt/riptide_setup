@@ -30,7 +30,7 @@ DepthController::DepthController() : nh("depth_controller") {
     reset_sub = nh.subscribe<riptide_msgs::ResetControls>("/controls/reset", 1, &DepthController::ResetController, this);
 
     cmd_pub = nh.advertise<geometry_msgs::Vector3>("/command/auto/accel/depth", 1);
-    status_pub = nh.advertise<riptide_msgs::ControlStatus>("/controls/status/depth", 1);
+    status_pub = nh.advertise<riptide_msgs::ControlStatus>("/status/controls/depth", 1);
 
     DepthController::LoadParam<double>("max_depth", MAX_DEPTH);
     DepthController::LoadParam<double>("max_depth_error", MAX_DEPTH_ERROR);

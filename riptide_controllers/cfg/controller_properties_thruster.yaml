@@ -1,2 +1,1 @@
-buoyancy_depth_thresh: 0.15 # [m]
-buoyancy_pitch_thresh: 5 # [deg]
+buoyancy_depth_thresh: 0.15

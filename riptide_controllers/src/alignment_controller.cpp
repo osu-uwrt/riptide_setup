@@ -28,7 +28,7 @@ AlignmentController::AlignmentController() : nh("alignment_controller") {
 
     xy_pub = nh.advertise<geometry_msgs::Vector3>("/command/auto/accel/linear", 1); // auto -> published by controller
     z_pub = nh.advertise<riptide_msgs::DepthCommand>("/command/auto/depth", 1); // auto -> published by controller
-    status_pub = nh.advertise<riptide_msgs::ControlStatusLinear>("/controls/status/linear", 1);
+    status_pub = nh.advertise<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1);
 
     AlignmentController::LoadParam<double>("max_x_error", MAX_X_ERROR);
     AlignmentController::LoadParam<double>("max_y_error", MAX_Y_ERROR);

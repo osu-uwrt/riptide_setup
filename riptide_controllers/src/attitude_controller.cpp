@@ -39,7 +39,7 @@ AttitudeController::AttitudeController() : nh("attitude_controller") {
     reset_sub = nh.subscribe<riptide_msgs::ResetControls>("/controls/reset", 1, &AttitudeController::ResetController, this);
 
     cmd_pub = nh.advertise<geometry_msgs::Vector3>("/command/auto/accel/angular", 1);
-    status_pub = nh.advertise<riptide_msgs::ControlStatusAngular>("/controls/status/angular", 1);
+    status_pub = nh.advertise<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1);
 
     AttitudeController::LoadParam<double>("max_roll_error", MAX_ROLL_ERROR);
     AttitudeController::LoadParam<double>("max_pitch_error", MAX_PITCH_ERROR);
