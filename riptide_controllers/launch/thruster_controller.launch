@@ -6,5 +6,6 @@
     <rosparam file="$(find riptide_controllers)/cfg/vehicle_properties.yaml" command="load"/>
     <rosparam file="$(find riptide_controllers)/cfg/controller_properties_thruster.yaml" command="load"/>
     <rosparam file="$(find riptide_controllers)/cfg/thruster2com.yaml" command="load"/>
+    <rosparam file="$(find riptide_controllers)/cfg/thruster_config_copro.yaml" command="load"/>
   </node>
 </launch>

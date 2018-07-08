@@ -18,6 +18,7 @@
 #include "imu_3dm_gx4/FilterOutput.h"
 #include "riptide_msgs/Depth.h"
 #include "riptide_msgs/ThrustStamped.h"
+#include "riptide_controllers/thrusters.h"
 
 class ThrusterController
 {

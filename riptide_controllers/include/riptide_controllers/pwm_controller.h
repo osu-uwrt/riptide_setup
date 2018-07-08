@@ -7,6 +7,7 @@
 #include "riptide_msgs/ThrustStamped.h"
 #include "riptide_msgs/SwitchState.h"
 #include "riptide_msgs/ResetControls.h"
+#include "riptide_controllers/thrusters.h"
 using namespace std;
 
 class PWMController

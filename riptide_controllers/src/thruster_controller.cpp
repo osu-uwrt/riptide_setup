@@ -37,15 +37,8 @@ double mass;
 double weight = mass*GRAVITY;
 
 // Vehcile volume (m^3)
-// TODO: Get this value from model
-// Updated on 5/11/18
 double volume;
 double buoyancy = volume * WATER_DENSITY * GRAVITY;
-
-/*// Moments of inertia (kg*m^2)
-double Ixx = 0.52607145;
-double Iyy = 1.50451601;
-double Izz = 1.62450600;*/
 
 // Acceleration commands (m/s^):
 double cmdSurge = 0.0;
@@ -59,6 +52,7 @@ double cmdYaw = 0.0;
 double surge_port_lo, surge_stbd_lo;
 double sway_fwd, sway_aft;
 double heave_port_aft, heave_stbd_aft, heave_stbd_fwd, heave_port_fwd;
+bool isActive[8];
 
 // Buoyancy Variables
 bool isBuoyant, enableHeaveFwd, enableHeaveAft;
@@ -105,7 +99,7 @@ struct surge
   template <typename T>
   bool operator()(const T *const surge_port_lo, const T *const surge_stbd_lo, T *residual) const
   {
-    residual[0] = (surge_port_lo[0] + surge_stbd_lo[0] +
+    residual[0] = (surge_port_lo[0]*T(isActive[SPL]) + surge_stbd_lo[0]*T(isActive[SSL]) +
                   (T(R_w2b.getRow(0).z()) * (T(buoyancy) - T(weight))*T(isBuoyant))) / T(mass) -
                   T(cmdSurge);
     return true;
@@ -117,7 +111,7 @@ struct sway
   template <typename T>
   bool operator()(const T *const sway_fwd, const T *const sway_aft, T *residual) const
   {
-    residual[0] = (sway_fwd[0] + sway_aft[0] +
+    residual[0] = (sway_fwd[0]*T(isActive[SWF]) + sway_aft[0]*T(isActive[SWA]) +
                   (T(R_w2b.getRow(1).z()) * (T(buoyancy) - T(weight))*T(isBuoyant))) / T(mass) -
                   T(cmdSway);
     return true;
@@ -131,7 +125,8 @@ struct heave
                   const T *const heave_port_aft, const T *const heave_stbd_aft, T *residual) const
   {
 
-      residual[0] = (heave_port_fwd[0] + heave_stbd_fwd[0] + heave_port_aft[0] + heave_stbd_aft[0] +
+      residual[0] = (heave_port_fwd[0]*T(isActive[HPF]) + heave_stbd_fwd[0]*T(isActive[HSF]) +
+                    heave_port_aft[0]*T(isActive[HPA]) + heave_stbd_aft[0]*T(isActive[HSA]) +
                     (T(R_w2b.getRow(2).z()) * (T(buoyancy) - T(weight))*T(isBuoyant))) / T(mass) -
                     T(cmdHeave);
     return true;
@@ -153,9 +148,9 @@ struct roll
   {
     residual[0] = ((T(R_w2b.getRow(1).z()) * T(buoyancy) * T(-pos_buoyancy.z) +
                   T(R_w2b.getRow(2).z()) * T(buoyancy) * T(pos_buoyancy.y))*T(isBuoyant) +
-                  sway_fwd[0] * T(-pos_sway_fwd.z) + sway_aft[0] * T(-pos_sway_aft.z) +
-                  heave_port_fwd[0] * T(pos_heave_port_fwd.y) + heave_stbd_fwd[0] * T(pos_heave_stbd_fwd.y) +
-                  heave_port_aft[0] * T(pos_heave_port_aft.y) + heave_stbd_aft[0] * T(pos_heave_stbd_aft.y) -
+                  sway_fwd[0] * T(-pos_sway_fwd.z) * T(isActive[SWF]) + sway_aft[0] * T(-pos_sway_aft.z) * T(isActive[SWA]) +
+                  heave_port_fwd[0] * T(pos_heave_port_fwd.y) * T(isActive[HPF]) + heave_stbd_fwd[0] * T(pos_heave_stbd_fwd.y) * T(isActive[HSF]) +
+                  heave_port_aft[0] * T(pos_heave_port_aft.y) * T(isActive[HPA]) + heave_stbd_aft[0] * T(pos_heave_stbd_aft.y) * T(isActive[HSA]) -
                   ((T(ang_v.z()) * T(ang_v.y())) * (T(Izz) - T(Iyy)))) / T(Ixx) -
                   T(cmdRoll);
     return true;
@@ -175,9 +170,9 @@ struct pitch
   {
     residual[0] = ((T(R_w2b.getRow(0).z()) * T(buoyancy) * T(pos_buoyancy.z) +
                   T(R_w2b.getRow(2).z()) * T(buoyancy) * T(-pos_buoyancy.x))*T(isBuoyant) +
-                  surge_port_lo[0] * T(pos_surge_port_lo.z) + surge_stbd_lo[0] * T(pos_surge_stbd_lo.z) +
-                  heave_port_fwd[0] * T(-pos_heave_port_fwd.x) + heave_stbd_fwd[0] * T(-pos_heave_stbd_fwd.x) +
-                  heave_port_aft[0] * T(-pos_heave_port_aft.x) + heave_stbd_aft[0] * T(-pos_heave_stbd_aft.x) -
+                  surge_port_lo[0] * T(pos_surge_port_lo.z) * T(isActive[SPL]) + surge_stbd_lo[0] * T(pos_surge_stbd_lo.z) * T(isActive[SSL]) +
+                  heave_port_fwd[0] * T(-pos_heave_port_fwd.x) * T(isActive[HPF]) + heave_stbd_fwd[0] * T(-pos_heave_stbd_fwd.x) * T(isActive[HSF])+
+                  heave_port_aft[0] * T(-pos_heave_port_aft.x) * T(isActive[HPA])+ heave_stbd_aft[0] * T(-pos_heave_stbd_aft.x) * T(isActive[HSA]) -
                   ((T(ang_v.x()) * T(ang_v.z())) * (T(Ixx) - T(Izz)))) / T(Iyy) -
                   T(cmdPitch);
     return true;
@@ -196,8 +191,8 @@ struct yaw
   {
     residual[0] = ((T(R_w2b.getRow(0).z()) * T(buoyancy) * T(-pos_buoyancy.y) +
                   T(R_w2b.getRow(1).z()) * T(buoyancy) * T(pos_buoyancy.x))*T(isBuoyant) +
-                  surge_port_lo[0] * T(-pos_surge_port_lo.y) + surge_stbd_lo[0] * T(-pos_surge_stbd_lo.y) +
-                  sway_fwd[0] * T(pos_sway_fwd.x) + sway_aft[0] * T(pos_sway_aft.x) -
+                  surge_port_lo[0] * T(-pos_surge_port_lo.y) * T(isActive[SPL]) + surge_stbd_lo[0] * T(-pos_surge_stbd_lo.y) * T(isActive[SSL])+
+                  sway_fwd[0] * T(pos_sway_fwd.x) * T(isActive[SWF])+ sway_aft[0] * T(pos_sway_aft.x) * T(isActive[SWA]) -
                   ((T(ang_v.y()) * T(ang_v.x())) * (T(Iyy) - T(Ixx)))) / T(Izz) -
                   T(cmdYaw);
     return true;
@@ -228,8 +223,8 @@ struct tuneRoll
     residual[0] = T(R_w2b.getRow(1).z()) * T(buoyancy) * (-pos_buoyancy_z[0]) +
                   T(R_w2b.getRow(2).z()) * T(buoyancy) * pos_buoyancy_y[0] +
                   T(sway_fwd) * T(-pos_sway_fwd.z) + T(sway_aft) * T(-pos_sway_aft.z) +
-                  T(heave_port_fwd) * T(pos_heave_port_fwd.y) + T(heave_port_aft) * T(pos_heave_port_aft.y) +
-                  T(heave_stbd_fwd) * T(pos_heave_stbd_fwd.y) + T(heave_stbd_aft) * T(pos_heave_stbd_aft.y) -
+                  T(heave_port_fwd) * T(pos_heave_port_fwd.y) * T(isActive[HPF]) + T(heave_port_aft) * T(pos_heave_port_aft.y) * T(isActive[HPA]) +
+                  T(heave_stbd_fwd) * T(pos_heave_stbd_fwd.y) * T(isActive[HSF]) + T(heave_stbd_aft) * T(pos_heave_stbd_aft.y) * T(isActive[HSA]) -
                   (T(ang_v.z()) * T(ang_v.y())) * (T(Izz) - T(Iyy));
     return true;
   }
@@ -246,9 +241,9 @@ struct tunePitch
   {
     residual[0] = T(R_w2b.getRow(0).z()) * T(buoyancy) * pos_buoyancy_z[0] +
                   T(R_w2b.getRow(2).z()) * T(buoyancy) * (-pos_buoyancy_x[0]) +
-                  T(surge_port_lo) * T(pos_surge_port_lo.z) + T(surge_stbd_lo) * T(pos_surge_stbd_lo.z) +
-                  T(heave_port_aft) * T(-pos_heave_port_aft.x) + T(heave_stbd_aft) * T(-pos_heave_stbd_aft.x) +
-                  T(heave_port_fwd) * T(-pos_heave_port_fwd.x) + T(heave_stbd_fwd) * T(-pos_heave_stbd_fwd.x) -
+                  T(surge_port_lo) * T(pos_surge_port_lo.z) * T(isActive[SPL]) + T(surge_stbd_lo) * T(pos_surge_stbd_lo.z) * T(isActive[SSL]) +
+                  T(heave_port_aft) * T(-pos_heave_port_aft.x) * T(isActive[HPA]) + T(heave_stbd_aft) * T(-pos_heave_stbd_aft.x) * T(isActive[HSA]) +
+                  T(heave_port_fwd) * T(-pos_heave_port_fwd.x) * T(isActive[HPF]) + T(heave_stbd_fwd) * T(-pos_heave_stbd_fwd.x) * T(isActive[HSF]) -
                   (T(ang_v.x()) * T(ang_v.z())) * (T(Ixx) - T(Izz));
     return true;
   }
@@ -265,8 +260,8 @@ struct tuneYaw
   {
     residual[0] = T(R_w2b.getRow(0).z()) * T(buoyancy) * (-pos_buoyancy_y[0]) +
                   T(R_w2b.getRow(1).z()) * T(buoyancy) * (pos_buoyancy_x[0]) +
-                  T(surge_port_lo) * T(-pos_surge_port_lo.y) + T(surge_stbd_lo) * T(-pos_surge_stbd_lo.y) +
-                  T(sway_fwd) * T(pos_sway_fwd.x) + T(sway_aft) * T(pos_sway_aft.x) -
+                  T(surge_port_lo) * T(-pos_surge_port_lo.y) * T(isActive[SPL]) + T(surge_stbd_lo) * T(-pos_surge_stbd_lo.y) * T(isActive[SSL]) +
+                  T(sway_fwd) * T(pos_sway_fwd.x) * T(isActive[SWF]) + T(sway_aft) * T(pos_sway_aft.x) * T(isActive[SWA]) -
                   (T(ang_v.y()) * T(ang_v.x())) * (T(Iyy) - T(Ixx));
     return true;
   }
@@ -286,6 +281,7 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller") 
   ThrusterController::LoadParam("buoyancy_depth_thresh", buoyancy_depth_thresh); // Depth threshold to include buoyancy
   ThrusterController::LoadParam("buoyancy_pitch_thresh", buoyancy_pitch_thresh); // Pitch threshold to enable/disable heave thrusters
 
+  // TODO: Load from URDF, rather than a YAML file.
   // Load postions of each thruster relative to CoM
   ThrusterController::LoadParam<double>("HPF/X", pos_heave_port_fwd.x);
   ThrusterController::LoadParam<double>("HPF/Y", pos_heave_port_fwd.y);
@@ -319,6 +315,15 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller") 
   ThrusterController::LoadParam<double>("SSL/Y", pos_surge_stbd_lo.y);
   ThrusterController::LoadParam<double>("SSL/Z", pos_surge_stbd_lo.z);
 
+  ThrusterController::LoadParam<bool>("SPL/Active", isActive[SPL]);
+  ThrusterController::LoadParam<bool>("SSL/Active", isActive[SSL]);
+  ThrusterController::LoadParam<bool>("HPF/Active", isActive[HPF]);
+  ThrusterController::LoadParam<bool>("HSF/Active", isActive[HSF]);
+  ThrusterController::LoadParam<bool>("HPA/Active", isActive[HPA]);
+  ThrusterController::LoadParam<bool>("HSA/Active", isActive[HSA]);
+  ThrusterController::LoadParam<bool>("SWF/Active", isActive[SWF]);
+  ThrusterController::LoadParam<bool>("SWA/Active", isActive[SWA]);
+
   // Load vehicle properties
   ThrusterController::LoadParam<double>("Mass", mass);
   ThrusterController::LoadParam<double>("Volume", volume);
@@ -328,6 +333,7 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller") 
   ThrusterController::LoadParam<double>("Buoyancy_X_POS", pos_buoyancy.x);
   ThrusterController::LoadParam<double>("Buoyancy_Y_POS", pos_buoyancy.y);
   ThrusterController::LoadParam<double>("Buoyancy_Z_POS", pos_buoyancy.z);
+
 
   R_b2w.setIdentity();
   R_w2b.setIdentity();
@@ -442,6 +448,15 @@ void ThrusterController::DynamicReconfigCallback(riptide_controllers::VehiclePro
 
     weight = mass*GRAVITY;
     buoyancy = volume*WATER_DENSITY*GRAVITY;
+
+    isActive[SPL] = config.SPL_active;
+    isActive[SSL] = config.SSL_active;
+    isActive[HPF] = config.HPF_active;
+    isActive[HSF] = config.HSF_active;
+    isActive[HPA] = config.HPA_active;
+    isActive[HSA] = config.HSA_active;
+    isActive[SWF] = config.SWF_active;
+    isActive[SWA] = config.SWA_active;
   }
 }
 
@@ -496,7 +511,6 @@ void ThrusterController::AccelCB(const geometry_msgs::Accel::ConstPtr &a)
   cmdYaw = a->angular.z;
 
   // These forced initial guesses don't make much of a difference.
-  // We currently experience a sort of gimbal lock w/ or w/o them.
   surge_port_lo = 0.0;
   surge_stbd_lo = 0.0;
   sway_fwd = 0.0;
