@@ -32,6 +32,7 @@ add_message_files(
     Pneumatics.msg
     PS3Plane.msg
     Constants.msg
+    ThrusterResiduals.msg
 )
 
 generate_messages(DEPENDENCIES std_msgs geometry_msgs)

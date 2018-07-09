@@ -25,11 +25,11 @@ struct vector {
 // the EOMs and result in additional thrusters turning on to maintain those
 // relationships. Ex. surge and sway will kick in and move the vehicle at a diagonal
 // when the heave thrust is capped at too low of a number. If these limits are
-// laxed, then the solver will not turn on those additional thrusters and the
+// laxed, then the solver will NOT turn on those additional thrusters and the
 // output will be as expected.
 // NOTE: For the time being, the upper/lower bounds have been REMOVED from the solver
-double MIN_THRUST = -20.0;
-double MAX_THRUST = 20.0;
+double MIN_THRUST = -24.0;
+double MAX_THRUST = 24.0;
 
 // Vehicle mass (kg):
 // Updated 5-15-18
@@ -60,10 +60,13 @@ double surge_port_lo, surge_stbd_lo;
 double sway_fwd, sway_aft;
 double heave_port_aft, heave_stbd_aft, heave_stbd_fwd, heave_port_fwd;
 
+// Thruster Status
+bool enableSPL, enableSSL, enableSWF, enableSWA, enableHPF, enableHSF, enableHPA, enableHSA;
+
 // Buoyancy Variables
-bool isBuoyant, enableHeaveFwd, enableHeaveAft;
+bool isBuoyant;
 double pos_buoyancy_x, pos_buoyancy_y, pos_buoyancy_z;
-double buoyancy_depth_thresh, buoyancy_pitch_thresh;
+double buoyancy_depth_thresh;
 
 // Rotation Matrices: world to body, and body to world
 // Angular Velocity
@@ -72,15 +75,6 @@ tf::Vector3 euler_deg, euler_rpy, ang_v;
 
 // Debug variables
 geometry_msgs::Vector3Stamped buoyancy_pos;
-
-/*void GetTransform(vector *v, tf::StampedTransform *tform)
-{
-  v->x = tform->getOrigin().x();
-  v->y = tform->getOrigin().y();
-  v->z = tform->getOrigin().z();
-
-  return;
-}*/
 
 /*** Thruster Positions ***/
 // Positions are in meters relative to the center of mass (can be neg. or pos.)
@@ -208,7 +202,7 @@ struct yaw
 // Hence, it seems unnecessary to add two more equations to create a
 // SLE (system of linear eqns) composed of 8 equations and 8 unknowns)
 
-/*** Tune Buoyancy ***/
+/******************************* Tune Buoyancy ********************************/
 // Purpose: Find the Center of Buoyancy (CoB)
 // These equations ASSUME the vehicle is stationary in the water, attempting to
 // reach a target orientation, but is unable to reach the said target because
@@ -271,6 +265,100 @@ struct tuneYaw
     return true;
   }
 };
+
+/************************** Reconfigure Active Thrusters **********************/
+// These structs are used only if a thruster is down (problem with the copro,
+// thruster itself, etc.). They will force ceres to set their thrust output to
+// zero, forcing it to change how it uses the other active thrusters to provide
+// the desired acceleration.
+
+// Disable Surge Port Lo
+struct disableSPL
+{
+  template <typename T>
+  bool operator()(const T *const surge_port_lo, T *residual) const
+  {
+    residual[0] = surge_port_lo[0];
+    return true;
+  }
+};
+
+// Disable Surge Stbd Lo
+struct disableSSL
+{
+  template <typename T>
+  bool operator()(const T *const surge_stbd_lo, T *residual) const
+  {
+    residual[0] = surge_stbd_lo[0];
+    return true;
+  }
+};
+
+// Disable Sway Fwd
+struct disableSWF
+{
+  template <typename T>
+  bool operator()(const T *const sway_fwd, T *residual) const
+  {
+    residual[0] = sway_fwd[0];
+    return true;
+  }
+};
+
+// Disable Sway Aft
+struct disableSWA
+{
+  template <typename T>
+  bool operator()(const T *const sway_aft, T *residual) const
+  {
+    residual[0] = sway_aft[0];
+    return true;
+  }
+};
+
+// Disable Heave Port Fwd
+struct disableHPF
+{
+  template <typename T>
+  bool operator()(const T *const heave_port_fwd, T *residual) const
+  {
+    residual[0] = heave_port_fwd[0];
+    return true;
+  }
+};
+
+// Disable Heave Stbd Fwd
+struct disableHSF
+{
+  template <typename T>
+  bool operator()(const T *const heave_stbd_fwd, T *residual) const
+  {
+    residual[0] = heave_stbd_fwd[0];
+    return true;
+  }
+};
+
+// Disable Heave Port Aft
+struct disableHPA
+{
+  template <typename T>
+  bool operator()(const T *const heave_port_aft, T *residual) const
+  {
+    residual[0] = heave_port_aft[0];
+    return true;
+  }
+};
+
+// Disable Heave Stbd Aft
+struct disableHSA
+{
+  template <typename T>
+  bool operator()(const T *const heave_stbd_aft, T *residual) const
+  {
+    residual[0] = heave_stbd_aft[0];
+    return true;
+  }
+};
 ///////////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char **argv)
@@ -284,40 +372,47 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller") 
   // Load parameters from .yaml files or launch files
   nh.getParam("debug", debug_controller);
   ThrusterController::LoadParam("buoyancy_depth_thresh", buoyancy_depth_thresh); // Depth threshold to include buoyancy
-  ThrusterController::LoadParam("buoyancy_pitch_thresh", buoyancy_pitch_thresh); // Pitch threshold to enable/disable heave thrusters
 
   // Load postions of each thruster relative to CoM
   ThrusterController::LoadParam<double>("HPF/X", pos_heave_port_fwd.x);
   ThrusterController::LoadParam<double>("HPF/Y", pos_heave_port_fwd.y);
   ThrusterController::LoadParam<double>("HPF/Z", pos_heave_port_fwd.z);
+  ThrusterController::LoadParam<bool>("HPF/ENABLE", enableHPF);
 
   ThrusterController::LoadParam<double>("HPA/X", pos_heave_port_aft.x);
   ThrusterController::LoadParam<double>("HPA/Y", pos_heave_port_aft.y);
   ThrusterController::LoadParam<double>("HPA/Z", pos_heave_port_aft.z);
+  ThrusterController::LoadParam<bool>("HPA/ENABLE", enableHPA);
 
   ThrusterController::LoadParam<double>("HSF/X", pos_heave_stbd_fwd.x);
   ThrusterController::LoadParam<double>("HSF/Y", pos_heave_stbd_fwd.y);
   ThrusterController::LoadParam<double>("HSF/Z", pos_heave_stbd_fwd.z);
+  ThrusterController::LoadParam<bool>("HSF/ENABLE", enableHSF);
 
   ThrusterController::LoadParam<double>("HSA/X", pos_heave_stbd_aft.x);
   ThrusterController::LoadParam<double>("HSA/Y", pos_heave_stbd_aft.y);
   ThrusterController::LoadParam<double>("HSA/Z", pos_heave_stbd_aft.z);
+  ThrusterController::LoadParam<bool>("HSA/ENABLE", enableHSA);
 
   ThrusterController::LoadParam<double>("SWF/X", pos_sway_fwd.x);
   ThrusterController::LoadParam<double>("SWF/Y", pos_sway_fwd.y);
   ThrusterController::LoadParam<double>("SWF/Z", pos_sway_fwd.z);
+  ThrusterController::LoadParam<bool>("SWF/ENABLE", enableSWF);
 
   ThrusterController::LoadParam<double>("SWA/X", pos_sway_aft.x);
   ThrusterController::LoadParam<double>("SWA/Y", pos_sway_aft.y);
   ThrusterController::LoadParam<double>("SWA/Z", pos_sway_aft.z);
+  ThrusterController::LoadParam<bool>("SWA/ENABLE", enableSWA);
 
   ThrusterController::LoadParam<double>("SPL/X", pos_surge_port_lo.x);
   ThrusterController::LoadParam<double>("SPL/Y", pos_surge_port_lo.y);
   ThrusterController::LoadParam<double>("SPL/Z", pos_surge_port_lo.z);
+  ThrusterController::LoadParam<bool>("SPL/ENABLE", enableSPL);
 
   ThrusterController::LoadParam<double>("SSL/X", pos_surge_stbd_lo.x);
   ThrusterController::LoadParam<double>("SSL/Y", pos_surge_stbd_lo.y);
   ThrusterController::LoadParam<double>("SSL/Z", pos_surge_stbd_lo.z);
+  ThrusterController::LoadParam<bool>("SSL/ENABLE", enableSSL);
 
   // Load vehicle properties
   ThrusterController::LoadParam<double>("Mass", mass);
@@ -329,6 +424,17 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller") 
   ThrusterController::LoadParam<double>("Buoyancy_Y_POS", pos_buoyancy.y);
   ThrusterController::LoadParam<double>("Buoyancy_Z_POS", pos_buoyancy.z);
 
+  std::string t = "true", f = "false"; // Use with '<expression>?a:b' --> if expression is 'true' return a, else return b
+  ROS_INFO("Thruster Status:");
+  ROS_INFO("\tSPL enabled: %s", enableSPL?t.c_str():f.c_str());
+  ROS_INFO("\tSSL enabled: %s", enableSSL?t.c_str():f.c_str());
+  ROS_INFO("\tSWF enabled: %s", enableSWF?t.c_str():f.c_str());
+  ROS_INFO("\tSWA enabled: %s", enableSWA?t.c_str():f.c_str());
+  ROS_INFO("\tHPF enabled: %s", enableHPF?t.c_str():f.c_str());
+  ROS_INFO("\tHSF enabled: %s", enableHSF?t.c_str():f.c_str());
+  ROS_INFO("\tHPA enabled: %s", enableHPA?t.c_str():f.c_str());
+  ROS_INFO("\tHSA enabled: %s", enableHSA?t.c_str():f.c_str());
+
   R_b2w.setIdentity();
   R_w2b.setIdentity();
   euler_deg.setZero();
@@ -336,8 +442,6 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller") 
   ang_v.setZero();
 
   isBuoyant = false;
-  enableHeaveFwd = true;
-  enableHeaveAft = true;
   weight = mass*GRAVITY;
   buoyancy = volume*WATER_DENSITY*GRAVITY;
 
@@ -345,6 +449,7 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller") 
   depth_sub = nh.subscribe<riptide_msgs::Depth>("/state/depth", 1, &ThrusterController::DepthCB, this);
   cmd_sub = nh.subscribe<geometry_msgs::Accel>("/command/accel", 1, &ThrusterController::AccelCB, this);
   cmd_pub = nh.advertise<riptide_msgs::ThrustStamped>("/command/thrust", 1);
+  residual_pub = nh.advertise<riptide_msgs::ThrusterResiduals>("/status/controls/thruster", 1);
 
   // Dynamic Reconfigure Variables
   cb = boost::bind(&ThrusterController::DynamicReconfigCallback, this, _1, _2);
@@ -387,6 +492,32 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller") 
   problem.SetParameterUpperBound(&surge_port_lo, 0, MAX_THRUST);
   problem.SetParameterLowerBound(&surge_stbd_lo, 0, MIN_THRUST);
   problem.SetParameterUpperBound(&surge_stbd_lo, 0, MAX_THRUST);*/
+
+  if(!enableSPL) {
+    problem.AddResidualBlock(new ceres::AutoDiffCostFunction<disableSPL, 1, 1>(new disableSPL), NULL, &surge_port_lo);
+  }
+  if(!enableSSL) {
+    problem.AddResidualBlock(new ceres::AutoDiffCostFunction<disableSSL, 1, 1>(new disableSSL), NULL, &surge_stbd_lo);
+  }
+  if(!enableSWF) {
+    problem.AddResidualBlock(new ceres::AutoDiffCostFunction<disableSWF, 1, 1>(new disableSWF), NULL, &sway_fwd);
+  }
+  if(!enableSWA) {
+    problem.AddResidualBlock(new ceres::AutoDiffCostFunction<disableSWA, 1, 1>(new disableSWA), NULL, &sway_aft);
+  }
+  if(!enableHPF) {
+    problem.AddResidualBlock(new ceres::AutoDiffCostFunction<disableHPF, 1, 1>(new disableHPF), NULL, &heave_port_fwd);
+  }
+  if(!enableHSF) {
+    problem.AddResidualBlock(new ceres::AutoDiffCostFunction<disableHSF, 1, 1>(new disableHSF), NULL, &heave_stbd_fwd);
+  }
+  if(!enableHPA) {
+    problem.AddResidualBlock(new ceres::AutoDiffCostFunction<disableHPA, 1, 1>(new disableHPA), NULL, &heave_port_aft);
+  }
+  if(!enableHSA) {
+    problem.AddResidualBlock(new ceres::AutoDiffCostFunction<disableHSA, 1, 1>(new disableHSA), NULL, &heave_stbd_aft);
+  }
+
   // Configure solver
   options.max_num_iterations = 100;
   options.linear_solver_type = ceres::DENSE_QR;
@@ -464,25 +595,9 @@ void ThrusterController::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg)
 {
   if(depth_msg->depth > buoyancy_depth_thresh){
     isBuoyant = true;
-    enableHeaveFwd = true;
-    enableHeaveAft = true;
   }
   else {
     isBuoyant = false;
-
-    // Enable/Disable Apprpriate Heave Thrusters
-    if(euler_deg.y() > buoyancy_pitch_thresh) { // Aft is too high -> disable heave aft
-      enableHeaveFwd = true;
-      enableHeaveAft = false;
-    }
-    else if(euler_deg.y() < -buoyancy_pitch_thresh) { // Nose is too high -> disable heave fwd
-      enableHeaveFwd = false;
-      enableHeaveAft = true;
-    }
-    else { // Pitch within reasonable angle of operation
-      enableHeaveFwd = true;
-      enableHeaveAft = true;
-    }
   }
 }
 
@@ -540,6 +655,38 @@ void ThrusterController::AccelCB(const geometry_msgs::Accel::ConstPtr &a)
   thrust.force.heave_port_fwd = -heave_port_fwd;
 
   cmd_pub.publish(thrust);
+
+  // Calculate residuals from EOMs
+  residuals.res_surge = (surge_port_lo + surge_stbd_lo +
+                        (R_w2b.getRow(0).z() * (buoyancy - weight) * isBuoyant)) / mass - cmdSurge;
+
+  residuals.res_sway = (sway_fwd + sway_aft +
+                (R_w2b.getRow(1).z() * (buoyancy - weight) * isBuoyant)) / mass - cmdSway;
+
+  residuals.res_heave = (heave_port_fwd + heave_stbd_fwd + heave_port_aft + heave_stbd_aft +
+                (R_w2b.getRow(2).z() * (buoyancy - weight) * isBuoyant)) / mass - cmdHeave;
+
+  residuals.res_roll = ((R_w2b.getRow(1).z() * buoyancy * (-pos_buoyancy.z) +
+                R_w2b.getRow(2).z() * buoyancy * pos_buoyancy.y) * isBuoyant +
+                sway_fwd * (-pos_sway_fwd.z) + sway_aft * (-pos_sway_aft.z) +
+                heave_port_fwd * pos_heave_port_fwd.y + heave_stbd_fwd * pos_heave_stbd_fwd.y +
+                heave_port_aft * pos_heave_port_aft.y + heave_stbd_aft * pos_heave_stbd_aft.y -
+                ((ang_v.z() * ang_v.y()) * (Izz - Iyy))) / Ixx - cmdRoll;
+
+  residuals.res_pitch = ((R_w2b.getRow(0).z() * buoyancy * pos_buoyancy.z +
+                R_w2b.getRow(2).z() * buoyancy * (-pos_buoyancy.x)) * isBuoyant +
+                surge_port_lo * pos_surge_port_lo.z + surge_stbd_lo * pos_surge_stbd_lo.z +
+                heave_port_fwd * (-pos_heave_port_fwd.x) + heave_stbd_fwd * (-pos_heave_stbd_fwd.x) +
+                heave_port_aft * (-pos_heave_port_aft.x) + heave_stbd_aft * (-pos_heave_stbd_aft.x) -
+                ((ang_v.x() * ang_v.z()) * (Ixx - Izz))) / Iyy - cmdPitch;
+
+  residuals.res_yaw = ((R_w2b.getRow(0).z() * buoyancy * (-pos_buoyancy.y) +
+                R_w2b.getRow(1).z() * buoyancy * pos_buoyancy.x) * isBuoyant +
+                surge_port_lo * (-pos_surge_port_lo.y) + surge_stbd_lo * (-pos_surge_stbd_lo.y) +
+                sway_fwd * pos_sway_fwd.x + sway_aft * pos_sway_aft.x -
+                ((ang_v.y() * ang_v.x()) * (Iyy - Ixx))) / Izz - cmdYaw;
+
+  residual_pub.publish(residuals);
 
   // Tune Buoyancy - locate the center of buoyancy
   // The output will only make sense if the depth, roll, and pitch controllers
