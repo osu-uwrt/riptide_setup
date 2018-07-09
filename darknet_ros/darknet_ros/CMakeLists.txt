@@ -80,6 +80,7 @@ if(NOT _host_name MATCHES "riptide")
       actionlib
       rospy
       std_msgs
+      riptide_msgs
       darknet_ros_msgs
       image_transport
     DEPENDS

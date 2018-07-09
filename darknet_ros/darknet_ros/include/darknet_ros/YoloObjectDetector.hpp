@@ -39,8 +39,7 @@
 #include <darknet_ros_msgs/CheckForObjectsAction.h>
 
 // riptide_msgs
-#include "riptide_msgs/PS3Plane.h"
-//#include "riptide_msgs/TaskID.h"
+//#include "riptide_msgs/TaskInfo.h"
 #include "riptide_msgs/Constants.h"
 
 // Darknet.
@@ -137,7 +136,7 @@ class YoloObjectDetector
    * Subscribes to PS3 Alignment Plane and updates alignment plane
    * SHould never run at at the same time as SMACH is running
    */
-  void PS3CB(const riptide_msgs::PS3Plane::ConstPtr &cmd);
+  void PS3CB(const std_msgs::Int8::ConstPtr& cmd);
 
   //! Typedefs.
   typedef actionlib::SimpleActionServer<darknet_ros_msgs::CheckForObjectsAction> CheckForObjectsActionServer;

@@ -1,0 +1,10 @@
+<launch>
+  <arg name="task_name" default="Casino_Gate" />
+  <arg name="alignment_plane" default="0" />
+  <arg name="thresh" default="0.5" />
+
+  <node pkg="riptide_vision" type="yolo_processor" name="yolo_processor" output="screen" >
+    <param name="task_name" type="string" value="$(arg task_name)" />
+    <param name="alignment_plane" type="int" value="$(arg plane)" />
+    <param name="thresh" type="double" value="$(arg thresh)" />
+</launch>

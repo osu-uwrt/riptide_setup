@@ -12,7 +12,7 @@
     <param name="username" type="string" value="$(arg username)" />
     <param name="file_name" type="string" value="$(arg file_name)" />
     <param name="ext" type="string" value="$(arg ext)" />
-    <param name="frame_rate" type="int" value="$(arg frame_rate)" />
+    <param name="frame_rate" type="int" value="$(arg frame_rate)" /> <!-- Required to be an int -->
     <param name="height" type="int" value="$(arg height)" />
     <param name="width" type="int" value="$(arg width)" />
   </node>

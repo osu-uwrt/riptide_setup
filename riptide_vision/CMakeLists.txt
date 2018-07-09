@@ -14,6 +14,7 @@ find_package(catkin REQUIRED
     roscpp
     roslint
     riptide_msgs
+    darknet_ros_msgs
     sensor_msgs
     cv_bridge
 )
@@ -31,3 +32,11 @@ add_dependencies(extract_video ${catkin_EXPORTED_TARGETS})
 add_executable(hud src/hud.cpp)
 target_link_libraries(hud ${catkin_LIBRARIES})
 add_dependencies(hud ${catkin_EXPORTED_TARGETS} ${OpenCV_LIBRARIES})
+
+add_executable(yolo_processor src/yolo_processor.cpp)
+target_link_libraries(yolo_processor ${catkin_LIBRARIES})
+add_dependencies(yolo_processor ${catkin_EXPORTED_TARGETS})
+
+add_executable(yolo_proc_sim src/yolo_proc_sim.cpp)
+target_link_libraries(yolo_proc_sim ${catkin_LIBRARIES})
+add_dependencies(yolo_proc_sim ${catkin_EXPORTED_TARGETS})

@@ -3,9 +3,10 @@ project(riptide_msgs)
 
 find_package(catkin REQUIRED
     COMPONENTS
-    geometry_msgs
     message_generation
     std_msgs
+    geometry_msgs
+    darknet_ros_msgs
 )
 
 add_message_files(
@@ -30,12 +31,14 @@ add_message_files(
     DepthCommand.msg
     Acoustics.msg
     Pneumatics.msg
-    PS3Plane.msg
     Constants.msg
     ThrusterResiduals.msg
+    TaskInfo.msg
+    TaskBBoxes.msg
+    Alignment.msg
 )
 
-generate_messages(DEPENDENCIES std_msgs geometry_msgs)
+generate_messages(DEPENDENCIES std_msgs geometry_msgs darknet_ros_msgs)
 
 catkin_package(CATKIN_DEPENDS message_runtime)
 

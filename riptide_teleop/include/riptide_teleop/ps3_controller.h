@@ -4,6 +4,7 @@
 #include "ros/ros.h"
 #include "cmath"
 #include "sensor_msgs/Joy.h"
+#include "std_msgs/Int8.h"
 #include "geometry_msgs/Vector3.h"
 #include "tf/transform_listener.h"
 #include "riptide_teleop/ps3_button_mapping.h"
@@ -11,7 +12,6 @@
 #include "riptide_msgs/DepthCommand.h"
 #include "riptide_msgs/Depth.h"
 #include "riptide_msgs/ResetControls.h"
-#include "riptide_msgs/PS3Plane.h"
 #include "riptide_msgs/Constants.h"
 using namespace std;
 
@@ -25,7 +25,7 @@ class PS3Controller
   geometry_msgs::Vector3 cmd_attitude, cmd_accel, delta_attitude;
   riptide_msgs::DepthCommand cmd_depth;
   riptide_msgs::ResetControls reset_msg;
-  riptide_msgs::PS3Plane plane_msg;
+  std_msgs::Int8 plane_msg;
   bool isReset, isStarted, isInit, isDepthWorking, isR2Init, isL2Init;
   bool isDepthInit, alignment_plane;
   tf::Vector3 euler_rpy;
