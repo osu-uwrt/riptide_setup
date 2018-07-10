@@ -34,7 +34,6 @@ add_message_files(
     Constants.msg
     ThrusterResiduals.msg
     TaskInfo.msg
-    TaskBBoxes.msg
     Alignment.msg
 )
 

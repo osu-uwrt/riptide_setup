@@ -277,9 +277,9 @@ bool YoloObjectDetector::publishDetectionImage(const cv::Mat& detectionImage)
   return true;
 }
 
-/*void YoloObjectDetector::TaskCB(const riptide_msgs::TaskID::ConstPtr &cmd) {
+void YoloObjectDetector::TaskInfoCB(const riptide_msgs::TaskInfo::ConstPtr &task_msg) {
   // Adjust alignemnt plane so Yolo can subscribe to correct camera topic
-  alignment_plane = cmd->alignment_plane;
+  alignment_plane = task_msg->alignment_plane;
   if(alignment_plane != riptide_msgs::Constants::PLANE_YZ && alignment_plane != riptide_msgs::Constants::PLANE_XY)
     alignment_plane = riptide_msgs::Constants::PLANE_YZ; // Default to YZ-plane (fwd cam)
 
@@ -291,7 +291,7 @@ bool YoloObjectDetector::publishDetectionImage(const cv::Mat& detectionImage)
     ROS_INFO("Subscribed to new camera topic: %s", cameraTopicName.c_str());
   }
   prev_alignment_plane = alignment_plane;
-}*/
+}
 
 void YoloObjectDetector::PS3CB(const std_msgs::Int8::ConstPtr& cmd) {
   // Adjust alignemnt plane so Yolo can subscribe to correct camera topic

@@ -29,7 +29,7 @@ generate_messages()
 
 catkin_package(INCLUDE_DIRS include)
 find_package(OpenCV REQUIRED) # To include, OpenCV, this MUST go BEFORE include_directories()
-include_directories(include ${catkin_INCLUDE_DIRS} $(OpenCV_INCLUDE_DIRS) resources/acoustics/include)
+include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS} resources/acoustics/include)
 
 
 roslint_cpp()
@@ -78,5 +78,3 @@ if(NOT _host_name MATCHES "riptide")
 else()
     message("-- Skipping jetson code on riptide")
 endif()
-
-

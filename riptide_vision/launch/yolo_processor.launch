@@ -1,10 +1,7 @@
 <launch>
-  <arg name="task_name" default="Casino_Gate" />
-  <arg name="alignment_plane" default="0" />
-  <arg name="thresh" default="0.5" />
+  <arg name="task_file" default="../osu-uwrt/riptide_software/src/riptide_autonomy/cfg/tasks.json" />
 
   <node pkg="riptide_vision" type="yolo_processor" name="yolo_processor" output="screen" >
-    <param name="task_name" type="string" value="$(arg task_name)" />
-    <param name="alignment_plane" type="int" value="$(arg plane)" />
-    <param name="thresh" type="double" value="$(arg thresh)" />
+    <param name="task_file" type="string" value="$(arg task_file)" />
+  </node>
 </launch>

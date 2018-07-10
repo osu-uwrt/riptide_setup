@@ -224,7 +224,7 @@ if(NOT _host_name MATCHES "riptide")
   )
 
   add_dependencies(${PROJECT_NAME}_lib
-    darknet_ros_msgs_generate_messages_cpp
+    darknet_ros_msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS}
   )
 
   install(TARGETS ${PROJECT_NAME}_lib

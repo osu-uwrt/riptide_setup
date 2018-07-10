@@ -39,7 +39,7 @@
 #include <darknet_ros_msgs/CheckForObjectsAction.h>
 
 // riptide_msgs
-//#include "riptide_msgs/TaskInfo.h"
+#include "riptide_msgs/TaskInfo.h"
 #include "riptide_msgs/Constants.h"
 
 // Darknet.
@@ -130,7 +130,7 @@ class YoloObjectDetector
   /*
    * Subscribes to Task and updates alignment plane
    */
-  //void TaskCB(const riptide_msgs::TaskID::ConstPtr &cmd);
+  void TaskInfoCB(const riptide_msgs::TaskInfo::ConstPtr &task_msg);
 
   /*
    * Subscribes to PS3 Alignment Plane and updates alignment plane
