@@ -14,20 +14,37 @@ find_package(catkin REQUIRED
     roscpp
     roslint
     riptide_msgs
+    darknet_ros_msgs
     sensor_msgs
     cv_bridge
 )
 
 catkin_package(INCLUDE_DIRS include)
 find_package(OpenCV REQUIRED) # To include, OpenCV, this MUST go BEFORE include_directories()
-include_directories(include ${catkin_INCLUDE_DIRS} $(OpenCV_INCLUDE_DIRS))
-
+include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
 roslint_cpp()
+
+cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)
+message("-- Computer name: " ${_host_name})
 
 add_executable(extract_video src/extract_video.cpp)
 target_link_libraries(extract_video ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 add_dependencies(extract_video ${catkin_EXPORTED_TARGETS})
 
-add_executable(hud src/hud.cpp)
-target_link_libraries(hud ${catkin_LIBRARIES})
-add_dependencies(hud ${catkin_EXPORTED_TARGETS} ${OpenCV_LIBRARIES})
+if(NOT _host_name MATCHES "riptide")
+
+  add_executable(hud src/hud.cpp)
+  target_link_libraries(hud ${catkin_LIBRARIES})
+  add_dependencies(hud ${catkin_EXPORTED_TARGETS} ${OpenCV_LIBRARIES})
+
+  add_executable(darknet_sim src/darknet_sim.cpp)
+  target_link_libraries(darknet_sim ${catkin_LIBRARIES})
+  add_dependencies(darknet_sim ${catkin_EXPORTED_TARGETS})
+
+  add_executable(yolo_processor src/yolo_processor.cpp)
+  target_link_libraries(yolo_processor ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} jsoncpp)
+  add_dependencies(yolo_processor ${catkin_EXPORTED_TARGETS})
+
+else()
+    message("-- Skipping jetson code on riptide")
+endif()

@@ -1,0 +1,7 @@
+<launch>
+  <arg name="task_file" default="../osu-uwrt/riptide_software/src/riptide_autonomy/cfg/tasks.json" />
+
+  <node pkg="riptide_vision" type="yolo_processor" name="yolo_processor" output="screen" >
+    <param name="task_file" type="string" value="$(arg task_file)" />
+  </node>
+</launch>

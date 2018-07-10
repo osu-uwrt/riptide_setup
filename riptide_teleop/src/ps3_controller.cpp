@@ -17,7 +17,7 @@ PS3Controller::PS3Controller() : nh("ps3_controller") {
   lin_accel_pub = nh.advertise<geometry_msgs::Vector3>("/command/manual/accel/linear", 1);
   depth_pub = nh.advertise<riptide_msgs::DepthCommand>("/command/manual/depth", 1);
   reset_pub = nh.advertise<riptide_msgs::ResetControls>("/controls/reset", 1);
-  plane_pub = nh.advertise<riptide_msgs::PS3Plane>("/command/ps3_plane", 1);
+  plane_pub = nh.advertise<std_msgs::Int8>("/command/ps3_plane", 1);
 
   PS3Controller::LoadParam<bool>("is_depth_working", isDepthWorking); // Is depth sensor working?
   PS3Controller::LoadParam<double>("rate", rt); // [Hz]
@@ -238,7 +238,7 @@ void PS3Controller::UpdateCommands() {
   if(cmd_depth.absolute < 0)
     cmd_depth.absolute = 0;
 
-  plane_msg.alignment_plane = (int)alignment_plane;
+  plane_msg.data = (int)alignment_plane;
 }
 
 void PS3Controller::PublishCommands() {

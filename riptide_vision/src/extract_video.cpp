@@ -1,5 +1,4 @@
 #include "riptide_vision/extract_video.h"
-using namespace cv;
 
 int main(int argc, char** argv) {
   ros::init(argc, argv, "extract_video");
@@ -8,13 +7,13 @@ int main(int argc, char** argv) {
 }
 
 ExtractVideo::ExtractVideo() : nh("extract_video") {
-  nh.getParam("topic", topic);
-  nh.getParam("username", username);
-  nh.getParam("file_name", file_name);
-  nh.getParam("ext", ext);
-  nh.getParam("frame_rate", frame_rate);
-  nh.getParam("width", width); // Max 1288
-  nh.getParam("height", height); // Max 964
+  ExtractVideo::LoadParam<string>("topic", topic);
+  ExtractVideo::LoadParam<string>("username", username);
+  ExtractVideo::LoadParam<string>("file_name", file_name);
+  ExtractVideo::LoadParam<string>("ext", ext);
+  ExtractVideo::LoadParam<int>("frame_rate", frame_rate);
+  ExtractVideo::LoadParam<int>("width", width); // Max 1288
+  ExtractVideo::LoadParam<int>("height", height); // Max 964
 
   Size frame_size(width, height);
   file_path = "/home/" + username + "/rosbags/" + file_name + ext;
@@ -35,6 +34,26 @@ ExtractVideo::~ExtractVideo() {
   int min = total_sec / 60;
   double sec = total_sec - min*60.0;
   printf("\nVideo duration: %.3f sec (%i min and %.3f sec)\n\n", total_sec, min, sec);
+}
+
+// Load parameter from namespace
+template <typename T>
+void ExtractVideo::LoadParam(string param, T &var)
+{
+  try
+  {
+    if (!nh.getParam(param, var))
+    {
+      throw 0;
+    }
+  }
+  catch(int e)
+  {
+    string ns = nh.getNamespace();
+    ROS_ERROR("Extract Video Namespace: %s", ns.c_str());
+    ROS_ERROR("Critical! Param \"%s/%s\" does not exist or is not accessed correctly. Shutting down.", ns.c_str(), param.c_str());
+    ros::shutdown();
+  }
 }
 
 void ExtractVideo::WriteVideo(const sensor_msgs::Image::ConstPtr &msg) {
