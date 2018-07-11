@@ -10,7 +10,7 @@ int main(int argc, char** argv)
 YoloProcessor::YoloProcessor() : nh("yolo_processor") {
   darknet_bbox_sub = nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/darknet_ros/bounding_boxes", 1, &YoloProcessor::DarknetBBoxCB, this);
   image_sub = nh.subscribe<sensor_msgs::Image>("/forward/image_undistorted", 1, &YoloProcessor::ImageCB, this);
-  task_sub = nh.subscribe<riptide_msgs::TaskInfo>("/task/info", 1, &YoloProcessor::TaskCB, this);
+  task_info_sub = nh.subscribe<riptide_msgs::TaskInfo>("/task/info", 1, &YoloProcessor::TaskInfoCB, this);
 
   task_bbox_pub = nh.advertise<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1);
   low_detections_pub = nh.advertise<darknet_ros_msgs::BoundingBoxes>("/task/low_detections", 1);
@@ -28,37 +28,29 @@ YoloProcessor::YoloProcessor() : nh("yolo_processor") {
     text_start[i] = (i+1.0)/num_rows*top_margin - offset;
 
   YoloProcessor::LoadParam<string>("task_file", task_file);
-  ifstream fileTasks(task_file.c_str());
 
   // Initialize task info to Casino gate
   task_id = 0;
-  last_id = task_id;
   task_name = "Casino_Gate";
   alignment_plane = riptide_msgs::Constants::PLANE_YZ;
 
-  //Parse tasks.json file
-  if(!reader.parse(fileTasks, root, true)) {
-    ROS_INFO("Could not parse JSON file: %s", task_file.c_str());
-    ROS_INFO("Shutting Down");
-    ros::shutdown();
-  }
-  else {
-    // Verify number of objects and thresholds match
-    num_tasks = root["tasks"].size();
-    for(int i=0; i<num_tasks; i++) {
-      num_objects = root["tasks"][i]["objects"].size();
-      num_thresholds = root["tasks"][i]["thresholds"].size();
-      string task = root["tasks"][i]["name"].asString();
-      if(num_objects != num_thresholds) {
-        ROS_INFO("Task ID %i (%s): %i objects and %i thresholds. Quantities must match", i, task.c_str(), num_objects, num_thresholds);
-        ROS_INFO("Shutting Down");
-        ros::shutdown();
-      }
+  tasks = YAML::LoadFile(task_file);
+
+  // Verify number of objects and thresholds match
+  num_tasks = (int)tasks["tasks"].size();
+  for(int i=0; i<num_tasks; i++) {
+    num_objects = (int)tasks["tasks"][i]["objects"].size();
+    num_thresholds = (int)tasks["tasks"][i]["thresholds"].size();
+    task_name = tasks["tasks"][i]["name"].as<string>();
+    if(num_objects != num_thresholds) {
+      ROS_INFO("Task ID %i (%s): %i objects and %i thresholds. Quantities must match", i, task_name.c_str(), num_objects, num_thresholds);
+      ROS_INFO("Shutting Down");
+      ros::shutdown();
     }
+  }
 
     // Update task info
     YoloProcessor::UpdateTaskInfo();
-  }
 }
 
 // Load parameter from namespace
@@ -82,18 +74,18 @@ void YoloProcessor::LoadParam(string param, T &var)
 }
 
 void YoloProcessor::UpdateTaskInfo() {
-  task_name = root["tasks"][task_id]["name"].asString();
-  num_objects = root["tasks"][task_id]["objects"].size();
+  task_name = tasks["tasks"][task_id]["name"].as<string>();
+  num_objects = (int)tasks["tasks"][task_id]["objects"].size();
 
-  alignment_plane = root["tasks"][task_id]["plane"].asInt();
+  alignment_plane = tasks["tasks"][task_id]["plane"].as<int>();
   if(alignment_plane != riptide_msgs::Constants::PLANE_YZ && alignment_plane != riptide_msgs::Constants::PLANE_XY)
     alignment_plane = riptide_msgs::Constants::PLANE_YZ; // Default to YZ-plane (fwd cam)
 
   objects.clear();
   thresholds.clear();
   for(int i=0; i < num_objects; i++) {
-    objects.push_back(root["tasks"][task_id]["objects"][i].asString());
-    thresholds.push_back(root["tasks"][task_id]["thresholds"][i].asDouble());
+    objects.push_back(tasks["tasks"][task_id]["objects"][i].as<string>());
+    thresholds.push_back(tasks["tasks"][task_id]["thresholds"][i].as<double>());
   }
 }
 
@@ -117,7 +109,7 @@ void YoloProcessor::ImageCB(const sensor_msgs::Image::ConstPtr &msg) {
     darknet_ros_msgs::BoundingBox bbox = task_bboxes.bounding_boxes[i];
     rectangle(task_image, Point(bbox.xmin, bbox.ymin), Point(bbox.xmax, bbox.ymax), colors.at(i), thickness);
     char text[100];
-    sprintf(text, "%s: %f%%", bbox.Class.c_str(), bbox.probability);
+    sprintf(text, "%s: %.5f%%", bbox.Class.c_str(), bbox.probability);
     putText(task_image, string(text), Point(5, text_start[i]), FONT_HERSHEY_COMPLEX_SMALL, font_scale, colors.at(i), thickness);
   }
 
@@ -167,11 +159,10 @@ void YoloProcessor::DarknetBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPt
   low_detections.bounding_boxes.clear();
 }
 
-
 // Get task info
-void YoloProcessor::TaskCB(const riptide_msgs::TaskInfo::ConstPtr& task_msg) {
-  if(task_msg->id != last_id) {
-    task_id = task_msg->id;
+void YoloProcessor::TaskInfoCB(const riptide_msgs::TaskInfo::ConstPtr& task_msg) {
+  if(task_msg->task_id != task_id) {
+    task_id = task_msg->task_id;
     YoloProcessor::UpdateTaskInfo();
 
     // Subscribe to appropriate camera topic
@@ -181,7 +172,6 @@ void YoloProcessor::TaskCB(const riptide_msgs::TaskInfo::ConstPtr& task_msg) {
     }
   }
 
-  last_id = task_id;
   last_alignment_plane = alignment_plane;
 }
 

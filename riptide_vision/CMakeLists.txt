@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(riptide_vision)
+#set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+add_compile_options(-std=c++11)
 
 # NOTE: Most dependencies can be taken care of with $(catkin_EXPORTED_TARGETS).
 # There is no need to add mention the specific dependency, such as
@@ -42,7 +44,7 @@ if(NOT _host_name MATCHES "riptide")
   add_dependencies(darknet_sim ${catkin_EXPORTED_TARGETS})
 
   add_executable(yolo_processor src/yolo_processor.cpp)
-  target_link_libraries(yolo_processor ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} jsoncpp)
+  target_link_libraries(yolo_processor ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} yaml-cpp)
   add_dependencies(yolo_processor ${catkin_EXPORTED_TARGETS})
 
 else()

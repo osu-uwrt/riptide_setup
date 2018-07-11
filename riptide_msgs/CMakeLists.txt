@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(riptide_msgs)
+add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED
     COMPONENTS
@@ -34,7 +35,7 @@ add_message_files(
     Constants.msg
     ThrusterResiduals.msg
     TaskInfo.msg
-    Alignment.msg
+    Object.msg
 )
 
 generate_messages(DEPENDENCIES std_msgs geometry_msgs darknet_ros_msgs)

@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(riptide_controllers)
+add_compile_options(-std=c++11)
 
 # NOTE: Most dependencies can be taken care of with $(catkin_EXPORTED_TARGETS).
 # There is no need to add mention the specific dependency, such as

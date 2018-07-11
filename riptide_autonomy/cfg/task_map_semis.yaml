@@ -1,0 +1,59 @@
+task_map: [
+    {
+      id: 0,
+      quad: "A",
+      freq: 30,
+      locations: [
+        {
+          id: 0,
+          name: "Casino_Gate",
+          start_x: 0,
+          start_y: 0,
+          y: 0
+        },
+        {
+          id: 1,
+          name: "Path_Marker1",
+          heading: 0,
+          x: 0,
+          y: 0
+        },
+        {
+          id: 2,
+          name: "Dice",
+          x: 0,
+          y: 0
+        },
+        {
+          id: 3,
+          name: "Path_Marke2",
+          x: 0,
+          y: 0
+        },
+        {
+          id: 4,
+          name: "Slots",
+          x: 0,
+          y: 0
+        },
+        {
+          id: 5,
+          name: "Buy_Gold_Chip",
+          x: 0,
+          y: 0
+        },
+        {
+          id: 6,
+          name: "Roulette",
+          x: 0,
+          y: 0
+        },
+        {
+          id: 7,
+          name: "Cash_In",
+          x: 0,
+          y: 0
+        }
+      ]
+    }
+    ]
