@@ -46,6 +46,11 @@ ObjectProcessor::ObjectProcessor() : nh("object_processor") {
 
     // Update task info
     ObjectProcessor::UpdateTaskInfo();
+
+    current_attitude.x = 0;
+    current_attitude.y = 0;
+    current_attitude.z = 0;
+    object.object_headings.clear();
 }
 
 // Load parameter from namespace
@@ -76,10 +81,10 @@ void ObjectProcessor::UpdateTaskInfo() {
   if(alignment_plane != riptide_msgs::Constants::PLANE_YZ && alignment_plane != riptide_msgs::Constants::PLANE_XY)
     alignment_plane = riptide_msgs::Constants::PLANE_YZ; // Default to YZ-plane (fwd cam)
 
-  objects.clear();
+  object_names.clear();
   thresholds.clear();
   for(int i=0; i < num_objects; i++) {
-    objects.push_back(tasks["tasks"][task_id]["objects"][i].as<string>());
+    object_names.push_back(tasks["tasks"][task_id]["objects"][i].as<string>());
     thresholds.push_back(tasks["tasks"][task_id]["thresholds"][i].as<double>());
   }
 }
@@ -100,22 +105,37 @@ void ObjectProcessor::ImageCB(const sensor_msgs::Image::ConstPtr &msg) {
   cam_center_y = height/2;
 
   // Process image depending on task requirements
-  // Publish object image
+  // Append any headings to object_headings vector
+  if(task_id == riptide_msgs::Constants::TASK_PATH_MARKER1 || task_id == riptide_msgs::Constants::TASK_PATH_MARKER2) {
+    // Process Path Marker (seg1_heading followed by seg2_heading)
 
+  }
+  else if(task_id == riptide_msgs::Constants::TASK_Roulette) {
+    // Process Roulette Wheel
+
+  }
+  else {
+    object_headings.clear();
+  }
+
+  // Uncomment when ready
   //sensor_msgs::ImagePtr out_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", object_image).toImageMsg();
   //object_image_pub.publish(out_msg);
 }
 
 // Get task bboxes and locate bbox for desired object
 void ObjectProcessor::TaskBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg) {
+  bool found = false;
+
   // Search for bbox with object name
   for(int i=0; i<bbox_msg->bounding_boxes.size(); i++) {
     if(strcmp(objects_name.c_str(), bbox_msg->bounding_boxes[i].Class.c_str()) == 0 ) {
+      found = true;
       object_bbox = bbox_msg->bounding_boxes[i];
 
       object.object_name = object_name;
-      object.bbox_width = object.xmax - object.xmin;
-      object.bbox_height = object.ymax - object.ymin;
+      object.bbox_width = abs(object.xmax - object.xmin);
+      object.bbox_height = abs(object.ymax - object.ymin);
 
       // Centers are relative to the CAMERA's center using standard frame axes
       // Cam x-axis is pos. right; Cam y-axis is pos. down
@@ -124,17 +144,29 @@ void ObjectProcessor::TaskBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPtr
 
       if(alignment_plane == riptide_msgs::Constants::PLANE_YZ) {
         object.pos.x = 0; // AUV x-axis is pos. fwd
-        object.pos.y = -xcenter; // AUV y-axis is pos. left
+        object.pos.y = -xcenter; // AUV y-axis is pos. port-side
         object.pos.z = -ycenter; // AUV z-axi is pos. up
       }
       else if(alignment_plane == riptide_msgs::Constants::PLANE_XY) {
         object.pos.x = -ycenter; // AUV x-axis is pos. fwd
-        object.pos.y = -xcenter; // AUV y-axis is pos. left
+        object.pos.y = -xcenter; // AUV y-axis is pos. port-side
         object.pos.z = 0; // AUV z-axi is pos. up
       }
-      object_pub.publish(object);
       break;
     }
+  }
+
+  if(found) {
+    if(task_id == riptide_msgs::Constants::TASK_PATH_MARKER1 || task_id == riptide_msgs::Constants::TASK_PATH_MARKER2) {
+      // Append heading of each path segment to object msg (seg1 then seg2)
+    }
+    else if(task_id == riptide_msgs::Constants::TASK_Roulette) {
+      // Append heading of roulette wheel to object msg
+    }
+    else {
+      object_headings.clear();
+    }
+    object_pub.publish(object);
   }
 }
 
@@ -154,9 +186,15 @@ void ObjectProcessor::TaskInfoCB(const riptide_msgs::TaskInfo::ConstPtr& task_ms
   last_alignment_plane = alignment_plane;
 }
 
-void ObjectProcessor::AlignmentCmdCB(const riptide_msgs::Object::ConstPtr& cmd) {
-  if(strcmp(cmd->object_name.c_str(), object_name.c_str() != 0 ) // If name does not match, then update
+
+void ObjectProcessor::AlignmentCmdCB(const riptide_msgs::AlignmentCommand::ConstPtr& cmd) {
+  if(strcmp(cmd->object_name.c_str(), object_name.c_str() != 0 )) // If name does not match, then update
     object_name = cmd->object_name;
+}
+
+// Subscribe to state/imu
+void ObjectProcessor::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg) {
+  current_attitude = imu_msg->euler_rpy;
 }
 
 void ObjectProcessor::Loop()

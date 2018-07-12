@@ -22,8 +22,8 @@ AlignmentController::AlignmentController() : nh("alignment_controller") {
     z_pid.init(heave, false);
 
     // Default to gate alignment
-    alignment_sub = nh.subscribe<riptide_msgs::TaskAlignment>("/task/gate/alignment", 1, &AlignmentController::AlignmentCB, this);
-    command_sub = nh.subscribe<riptide_msgs::AlignmentCommand>("/command/alignment", 1, &AlignmentController::CommandCB, this);
+    object_sub = nh.subscribe<riptide_msgs::Object>("/state/object", 1, &AlignmentController::ObjectCB, this);
+    alignment_cmd_sub = nh.subscribe<riptide_msgs::AlignmentCommand>("/command/alignment", 1, &AlignmentController::CommandCB, this);
     reset_sub = nh.subscribe<riptide_msgs::ResetControls>("/controls/reset", 1, &AlignmentController::ResetController, this);
 
     xy_pub = nh.advertise<geometry_msgs::Vector3>("/command/auto/accel/linear", 1); // auto -> published by controller
@@ -35,6 +35,8 @@ AlignmentController::AlignmentController() : nh("alignment_controller") {
     AlignmentController::LoadParam<double>("max_z_error", MAX_Z_ERROR);
 
     sample_start = ros::Time::now();
+    bbox_control = riptide_msgs::Constants::CONTROL_BBOX_WIDTH;
+    alignment_plane = riptide_msgs::Constants::PLANE_YZ;
     AlignmentController::InitMsgs();
 }
 
@@ -81,7 +83,7 @@ void AlignmentController::UpdateError() {
   dt = sample_duration.toSec();
 
   if(pid_sway_init) {
-    error.y = (target.y - task.y);
+    error.y = (target_pos.y - obj_pos.y);
     error.y = AlignmentController::Constrain(error.y, MAX_Y_ERROR);
     error_dot.y = (error.y - last_error.y) / dt;
     last_error.y = error.y;
@@ -96,10 +98,15 @@ void AlignmentController::UpdateError() {
   // dependent on boudning box width, while X acceleration is determined by offset
   // in the X axis.
   if(pid_surge_init) {
-    if (alignment_plane == riptide_msgs::AlignmentCommand::YZ) // Using fwd cam
-      error.x = (target_bbox_width - task_bbox_width);
-    else if (alignment_plane == riptide_msgs::AlignmentCommand::YX) // Using dwn cam
-      error.x = (target.x - task.x);
+    if (alignment_plane == riptide_msgs::Constants::PLANE_YZ) { // Using fwd cam
+      if(bbox_control == riptide_msgs::Constants::CONTROL_BBOX_WIDTH)
+        error.x = (target_bbox_width - obj_bbox_width);
+      else if(bbox_control == riptide_msgs::Constants::CONTROL_BBOX_HEIGHT)
+        error.x = (target_bbox_height - obj_bbox_height);
+    }
+    else if (alignment_plane == riptide_msgs::Constants::PLANE_XY) { // Using dwn cam
+      error.x = (target_pos.x - obj_pos.x);
+    }
 
     error.x = AlignmentController::Constrain(error.x, MAX_X_ERROR);
     error_dot.x = (error.x - last_error.x) / dt;
@@ -109,10 +116,15 @@ void AlignmentController::UpdateError() {
   }
 
   if(pid_heave_init) {
-    if (alignment_plane == riptide_msgs::AlignmentCommand::YZ) // Using fwd cam
-      error.z = (target.z - task.z);
-    else if (alignment_plane == riptide_msgs::AlignmentCommand::YX) // Using dwn cam
-      error.z = (target_bbox_width - task_bbox_width);
+    if (alignment_plane == riptide_msgs::Constants::PLANE_YZ) // Using fwd cam
+      error.z = (target_pos.z - obj_pos.z);
+    else if (alignment_plane == riptide_msgs::Constants::PLANE_XY) { // Using dwn cam
+      error.z = (target_bbox_width - obj_bbox_width);
+      if(bbox_control == riptide_msgs::Constants::CONTROL_BBOX_WIDTH)
+        error.x = (target_bbox_width - obj_bbox_width);
+      else if(bbox_control == riptide_msgs::Constants::CONTROL_BBOX_HEIGHT)
+        error.x = (target_bbox_height - obj_bbox_height);
+    }
 
     error.z = AlignmentController::Constrain(error.z, MAX_Z_ERROR);
     error_dot.z = (error.z - last_error.z) / dt;
@@ -143,89 +155,87 @@ double AlignmentController::Constrain(double current, double max) {
   return current;
 }
 
-// Function: UpdateTaskID
-// Parameters: id - ID of the new task to subscribe to
-//
-void AlignmentController::UpdateTaskID(int id) {
-  // Validate id
-  if (id >= 0 && id <= MAX_TASK_ID) {
-    alignment_sub.shutdown(); // Unsubscribe from old task topic
-    current_task_id = id;
-    alignment_sub = nh.subscribe<riptide_msgs::TaskAlignment>(topics[current_task_id], 1, &AlignmentController::AlignmentCB, this);
+void AlignmentController::ObjectCB(const riptide_msgs::Object::ConstPtr &obj_msg) {
+  obj_pos.x = obj_msg->pos.x;
+  obj_pos.y = obj_msg->pos.y;
+  obj_pos.z = obj_msg->pos.z;
+
+  obj_bbox_width = obj_msg->bbox_width;
+  obj_bbox_height = obj_msg->bbox_height;
+
+  status_msg.y.current = obj_pos.y;
+  if (alignment_plane == riptide_msgs::Constants::PLANE_YZ) { // Using fwd cam
+    status_msg.z.current = obj_pos.z;
+    if(bbox_control == riptide_msgs::Constants::CONTROL_BBOX_WIDTH)
+      status_msg.x.current = obj_bbox_width;
+    else
+      status_msg.x.current = obj_bbox_height;
+  }
+  else if (alignment_plane == riptide_msgs::Constants::PLANE_XY) { // Using dwn cam
+    status_msg.x.current = obj_pos.x;
+    if(bbox_control == riptide_msgs::Constants::CONTROL_BBOX_WIDTH)
+      status_msg.z.current = obj_bbox_width;
+    else
+      status_msg.z.current = obj_bbox_height;
   }
 }
 
-// Function: AlignmentCB
-// Parameters: TaskAlignment msg
-// Subscribe to state/vision/<task>/object_data to get relative position of task.
-void AlignmentController::AlignmentCB(const riptide_msgs::TaskAlignment::ConstPtr &msg) {
-  task.x = msg->relative_pos.x;
-  task.y = msg->relative_pos.y;
-  task.z = msg->relative_pos.z;
-
-  // Bounding box width is always captured by the Y coordinate of the bounding box vertices.
-  // This is because we only care about the YZ (forward cam) and YX (downward cam)
-  // planes
-  task_bbox_width = abs(msg->bbox.top_left.y - msg->bbox.bottom_right.y);
-
-  status_msg.y.current = task.y;
-  if (alignment_plane == riptide_msgs::AlignmentCommand::YZ) { // Using fwd cam
-    status_msg.z.current = task.z;
-    status_msg.x.current = task_bbox_width;
-  }
-  else if (alignment_plane == riptide_msgs::AlignmentCommand::YX) { // Using dwn cam
-    status_msg.z.current = task_bbox_width;
-    status_msg.x.current = task.x;
-  }
-}
-
-// Function: CommandCB
-// Parameters: AlignmentCommand msg
-// Subscribe to /command/alignment to get target alignment relative to task
 void AlignmentController::CommandCB(const riptide_msgs::AlignmentCommand::ConstPtr &cmd) {
   alignment_plane = cmd->alignment_plane;
-  if(alignment_plane != riptide_msgs::AlignmentCommand::YZ && alignment_plane != riptide_msgs::AlignmentCommand::YX)
-    alignment_plane = riptide_msgs::AlignmentCommand::YZ; // Default to YZ-plane (fwd cam)
-
-  if(cmd->task_id != current_task_id) {
-    AlignmentController::UpdateTaskID(cmd->task_id);
-  }
+  if(alignment_plane != riptide_msgs::Constants::PLANE_YZ && alignment_plane != riptide_msgs::Constants::PLANE_XY)
+    alignment_plane = riptide_msgs::Constants::PLANE_YZ; // Default to YZ-plane (fwd cam)
 
   // Reset conroller if target value has changed
   // Also update commands and status_msg
   target_bbox_width = cmd->bbox_width;
-  if(pid_sway_init && (cmd->target_pos.y != last_target.y)) {
+  target_bbox_height = cmd->bbox_height;
+  bbox_control = cmd->bbox_control;
+
+  if(pid_sway_init && (cmd->target_pos.y != last_target_pos.y)) {
     y_pid.reset();
-    target.y = cmd->target_pos.y;
-    last_target.y = target.y;
-    status_msg.y.reference = target.y;
+    target_pos.y = cmd->target_pos.y;
+    last_target_pos.y = target_pos.y;
+    status_msg.y.reference = target_pos.y;
   }
-  if(alignment_plane == riptide_msgs::AlignmentCommand::YZ) { // Using fwd cam
-    if(pid_surge_init && (cmd->bbox_width != last_target_bbox_width)) {
-      x_pid.reset();
-      status_msg.x.reference = target_bbox_width;
+  if(alignment_plane == riptide_msgs::Constants::PLANE_YZ) { // Using fwd cam
+    if(pid_surge_init) {
+      if((bbox_control == riptide_msgs::Constants::CONTROL_BBOX_WIDTH) && (cmd->bbox_width != last_target_bbox_width)) {
+        x_pid.reset();
+        status_msg.x.reference = target_bbox_width;
+      }
+      else if((bbox_control == riptide_msgs::Constants::CONTROL_BBOX_HEIGHT) && (cmd->bbox_height != last_target_bbox_height)){
+        x_pid.reset();
+        status_msg.x.reference = target_bbox_height;
+      }
     }
-    if(pid_heave_init && (cmd->target_pos.z != last_target.z)) {
+    if(pid_heave_init && (cmd->target_pos.z != last_target_pos.z)) {
       z_pid.reset();
-      target.z = cmd->target_pos.z;
-      last_target.z = target.z;
-      status_msg.z.reference = target.z;
+      target_pos.z = cmd->target_pos.z;
+      last_target_pos.z = target_pos.z;
+      status_msg.z.reference = target_pos.z;
     }
   }
-  else if(alignment_plane == riptide_msgs::AlignmentCommand::YX) { // Using dwn cam
-    if(pid_heave_init && (cmd->bbox_width != last_target_bbox_width)) {
-      z_pid.reset();
-      status_msg.z.reference = target_bbox_width;
+  else if(alignment_plane == riptide_msgs::Constants::PLANE_XY) { // Using dwn cam
+    if(pid_heave_init) {
+      if((bbox_control == riptide_msgs::Constants::CONTROL_BBOX_WIDTH) && (cmd->bbox_width != last_target_bbox_width)) {
+        z_pid.reset();
+        status_msg.z.reference = target_bbox_width;
+      }
+      else if((bbox_control == riptide_msgs::Constants::CONTROL_BBOX_HEIGHT) && (cmd->bbox_height != last_target_bbox_height)){
+        z_pid.reset();
+        status_msg.z.reference = target_bbox_height;
+      }
     }
-    if(pid_surge_init && (cmd->target_pos.x != last_target.x)) {
+    if(pid_surge_init && (cmd->target_pos.x != last_target_pos.x)) {
       x_pid.reset();
-      target.x = cmd->target_pos.x;
-      last_target.x = target.x;
-      status_msg.x.reference = target.x;
+      target_pos.x = cmd->target_pos.x;
+      last_target_pos.x = target_pos.x;
+      status_msg.x.reference = target_pos.x;
     }
   }
 
   last_target_bbox_width = target_bbox_width;
+  last_target_bbox_height = target_bbox_height;
 }
 
 void AlignmentController::ResetController(const riptide_msgs::ResetControls::ConstPtr& reset_msg) {
@@ -245,10 +255,10 @@ void AlignmentController::ResetController(const riptide_msgs::ResetControls::Con
 
 void AlignmentController::ResetSurge() {
   x_pid.reset();
-  target.x = 0;
+  target_pos.x = 0;
   error.x = 0;
   error_dot.x = 0;
-  last_target.x = 0;
+  last_target_pos.x = 0;
   last_error.x = 0;
 
   status_msg.x.reference = 0;
@@ -260,10 +270,10 @@ void AlignmentController::ResetSurge() {
 
 void AlignmentController::ResetSway() {
   y_pid.reset();
-  target.y = 0;
+  target_pos.y = 0;
   error.y = 0;
   error_dot.y = 0;
-  last_target.y = 0;
+  last_target_pos.y = 0;
   last_error.y = 0;
 
   status_msg.y.reference = 0;
@@ -275,10 +285,10 @@ void AlignmentController::ResetSway() {
 
 void AlignmentController::ResetHeave() {
   z_pid.reset();
-  target.z = 0;
+  target_pos.z = 0;
   error.z = 0;
   error_dot.z = 0;
-  last_target.z = 0;
+  last_target_pos.z = 0;
   last_error.z = 0;
 
   status_msg.z.reference = 0;

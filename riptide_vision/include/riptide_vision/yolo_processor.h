@@ -11,6 +11,7 @@ To install jsoncpp, do: sudo apt-get install libjsoncpp-dev
 #include "riptide_msgs/Constants.h"
 #include "darknet_ros_msgs/BoundingBoxes.h"
 #include "darknet_ros_msgs/BoundingBox.h"
+
 #include <yaml-cpp/yaml.h>
 #include "sensor_msgs/image_encodings.h"
 #include "opencv2/opencv.hpp"
@@ -36,7 +37,7 @@ class YoloProcessor
   YAML::Node tasks;
   string task_file, task_name;
   int task_id, num_tasks, alignment_plane, last_alignment_plane, num_objects, num_thresholds;
-  vector<string> objects;
+  vector<string> object_names;
   vector<double> thresholds;
 
  public:

@@ -81,10 +81,10 @@ void YoloProcessor::UpdateTaskInfo() {
   if(alignment_plane != riptide_msgs::Constants::PLANE_YZ && alignment_plane != riptide_msgs::Constants::PLANE_XY)
     alignment_plane = riptide_msgs::Constants::PLANE_YZ; // Default to YZ-plane (fwd cam)
 
-  objects.clear();
+  object_names.clear();
   thresholds.clear();
   for(int i=0; i < num_objects; i++) {
-    objects.push_back(tasks["tasks"][task_id]["objects"][i].as<string>());
+    object_names.push_back(tasks["tasks"][task_id]["objects"][i].as<string>());
     thresholds.push_back(tasks["tasks"][task_id]["thresholds"][i].as<double>());
   }
 }
@@ -130,6 +130,9 @@ void YoloProcessor::DarknetBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPt
   low_detections.image_header.stamp = ros::Time::now();
   low_detections.image_header.frame_id = "yolo_processed_image";
 
+  task_bboxes.bounding_boxes.clear();
+  low_detections.bounding_boxes.clear();
+
   // Extract task bboxes witin specified threshold
   // Only append objects with highest probability (if multiple instances exist)
   // If any objects are below the threshold, then append to low_detections
@@ -138,7 +141,7 @@ void YoloProcessor::DarknetBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPt
     darknet_ros_msgs::BoundingBox max_detection;
 
     for(int j=0; j<bbox_msg->bounding_boxes.size(); j++) {
-      if(strcmp(objects.at(i).c_str(), bbox_msg->bounding_boxes[j].Class.c_str()) == 0 ) {
+      if(strcmp(object_names.at(i).c_str(), bbox_msg->bounding_boxes[j].Class.c_str()) == 0 ) {
         if(bbox_msg->bounding_boxes[j].probability > max_prob) {
           max_prob = bbox_msg->bounding_boxes[j].probability;
           max_detection = bbox_msg->bounding_boxes[j];
@@ -155,8 +158,6 @@ void YoloProcessor::DarknetBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPt
 
   task_bbox_pub.publish(task_bboxes);
   low_detections_pub.publish(low_detections);
-  task_bboxes.bounding_boxes.clear();
-  low_detections.bounding_boxes.clear();
 }
 
 // Get task info

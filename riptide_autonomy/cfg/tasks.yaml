@@ -22,34 +22,41 @@ tasks: [
     },
     {
       id: 3,
+      name: "Buy_Gold_Chip1",
+      plane: 0,
+      objects: ["Buy_Gold_Chip"],
+      thresholds: [0.5]
+    },
+    {
+      id: 4,
       name: "Path_Marker2",
       plane: 1,
       objects: ["Path_Marker"],
       thresholds: [0.8]
     },
     {
-      id: 4,
+      id: 5,
       name: "Slots",
       plane: 0,
       objects: ["Slots", "Slots_Lever", "Slots_HoleS", "Slots_HoleL"],
       thresholds: [0.5, 0.5, 0.5, 0.5]
     },
     {
-      id: 5,
-      name: "Buy_Gold_Chip",
+      id: 6,
+      name: "Buy_Gold_Chip2",
       plane: 0,
       objects: ["Buy_Gold_Chip"],
       thresholds: [0.5]
     },
     {
-      id: 6,
+      id: 7,
       name: "Roulette",
       plane: 0,
       objects: ["Roulette"],
       thresholds: [0.9]
     },
     {
-      id: 7,
+      id: 8,
       name: "Cash_In",
       plane: 0,
       objects: ["Cash_In"],
