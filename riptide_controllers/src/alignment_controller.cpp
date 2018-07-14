@@ -3,7 +3,6 @@
 #undef debug
 #undef report
 #undef progress
-#define MAX_TASK_ID 1
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "alignment_controller");
@@ -99,12 +98,9 @@ void AlignmentController::UpdateError() {
   // in the X axis.
   if(pid_surge_init) {
     if (alignment_plane == riptide_msgs::Constants::PLANE_YZ) { // Using fwd cam
-      if(bbox_control == riptide_msgs::Constants::CONTROL_BBOX_WIDTH)
-        error.x = (target_bbox_width - obj_bbox_width);
-      else if(bbox_control == riptide_msgs::Constants::CONTROL_BBOX_HEIGHT)
-        error.x = (target_bbox_height - obj_bbox_height);
+      error.x = (target_bbox_dim - obj_bbox_dim);
     }
-    else if (alignment_plane == riptide_msgs::Constants::PLANE_XY) { // Using dwn cam
+    else if(alignment_plane == riptide_msgs::Constants::PLANE_XY) { // Using dwn cam
       error.x = (target_pos.x - obj_pos.x);
     }
 
@@ -118,12 +114,8 @@ void AlignmentController::UpdateError() {
   if(pid_heave_init) {
     if (alignment_plane == riptide_msgs::Constants::PLANE_YZ) // Using fwd cam
       error.z = (target_pos.z - obj_pos.z);
-    else if (alignment_plane == riptide_msgs::Constants::PLANE_XY) { // Using dwn cam
-      error.z = (target_bbox_width - obj_bbox_width);
-      if(bbox_control == riptide_msgs::Constants::CONTROL_BBOX_WIDTH)
-        error.x = (target_bbox_width - obj_bbox_width);
-      else if(bbox_control == riptide_msgs::Constants::CONTROL_BBOX_HEIGHT)
-        error.x = (target_bbox_height - obj_bbox_height);
+    else if(alignment_plane == riptide_msgs::Constants::PLANE_XY) { // Using dwn cam
+      error.x = (target_bbox_dim - obj_bbox_dim);
     }
 
     error.z = AlignmentController::Constrain(error.z, MAX_Z_ERROR);
@@ -160,23 +152,21 @@ void AlignmentController::ObjectCB(const riptide_msgs::Object::ConstPtr &obj_msg
   obj_pos.y = obj_msg->pos.y;
   obj_pos.z = obj_msg->pos.z;
 
-  obj_bbox_width = obj_msg->bbox_width;
-  obj_bbox_height = obj_msg->bbox_height;
+  // This if-block handles bbox control (width or height)
+  if(bbox_control == riptide_msgs::Constants::CONTROL_BBOX_WIDTH)
+    obj_bbox_dim = obj_msg->bbox_width;
+  else
+    obj_bbox_dim = obj_msg->bbox_height;
 
+  // Update status msg
   status_msg.y.current = obj_pos.y;
-  if (alignment_plane == riptide_msgs::Constants::PLANE_YZ) { // Using fwd cam
+  if(alignment_plane == riptide_msgs::Constants::PLANE_YZ) { // Using fwd cam
     status_msg.z.current = obj_pos.z;
-    if(bbox_control == riptide_msgs::Constants::CONTROL_BBOX_WIDTH)
-      status_msg.x.current = obj_bbox_width;
-    else
-      status_msg.x.current = obj_bbox_height;
+    status_msg.x.current = obj_bbox_dim;
   }
-  else if (alignment_plane == riptide_msgs::Constants::PLANE_XY) { // Using dwn cam
+  else if(alignment_plane == riptide_msgs::Constants::PLANE_XY) { // Using dwn cam
     status_msg.x.current = obj_pos.x;
-    if(bbox_control == riptide_msgs::Constants::CONTROL_BBOX_WIDTH)
-      status_msg.z.current = obj_bbox_width;
-    else
-      status_msg.z.current = obj_bbox_height;
+    status_msg.z.current = obj_bbox_dim;
   }
 }
 
@@ -185,12 +175,14 @@ void AlignmentController::CommandCB(const riptide_msgs::AlignmentCommand::ConstP
   if(alignment_plane != riptide_msgs::Constants::PLANE_YZ && alignment_plane != riptide_msgs::Constants::PLANE_XY)
     alignment_plane = riptide_msgs::Constants::PLANE_YZ; // Default to YZ-plane (fwd cam)
 
+  bbox_control = cmd->bbox_control;
+  if(bbox_control != riptide_msgs::Constants::CONTROL_BBOX_WIDTH && bbox_control != riptide_msgs::Constants::CONTROL_BBOX_HEIGHT)
+    bbox_control = riptide_msgs::Constants::CONTROL_BBOX_WIDTH; // Default to bbox width control
+
+  target_bbox_dim = cmd->bbox_dim;
+
   // Reset conroller if target value has changed
   // Also update commands and status_msg
-  target_bbox_width = cmd->bbox_width;
-  target_bbox_height = cmd->bbox_height;
-  bbox_control = cmd->bbox_control;
-
   if(pid_sway_init && (cmd->target_pos.y != last_target_pos.y)) {
     y_pid.reset();
     target_pos.y = cmd->target_pos.y;
@@ -198,15 +190,9 @@ void AlignmentController::CommandCB(const riptide_msgs::AlignmentCommand::ConstP
     status_msg.y.reference = target_pos.y;
   }
   if(alignment_plane == riptide_msgs::Constants::PLANE_YZ) { // Using fwd cam
-    if(pid_surge_init) {
-      if((bbox_control == riptide_msgs::Constants::CONTROL_BBOX_WIDTH) && (cmd->bbox_width != last_target_bbox_width)) {
-        x_pid.reset();
-        status_msg.x.reference = target_bbox_width;
-      }
-      else if((bbox_control == riptide_msgs::Constants::CONTROL_BBOX_HEIGHT) && (cmd->bbox_height != last_target_bbox_height)){
-        x_pid.reset();
-        status_msg.x.reference = target_bbox_height;
-      }
+    if(pid_surge_init && (target_bbox_dim != last_target_bbox_dim)) {
+      x_pid.reset();
+      status_msg.x.reference = target_bbox_dim;
     }
     if(pid_heave_init && (cmd->target_pos.z != last_target_pos.z)) {
       z_pid.reset();
@@ -216,26 +202,19 @@ void AlignmentController::CommandCB(const riptide_msgs::AlignmentCommand::ConstP
     }
   }
   else if(alignment_plane == riptide_msgs::Constants::PLANE_XY) { // Using dwn cam
-    if(pid_heave_init) {
-      if((bbox_control == riptide_msgs::Constants::CONTROL_BBOX_WIDTH) && (cmd->bbox_width != last_target_bbox_width)) {
-        z_pid.reset();
-        status_msg.z.reference = target_bbox_width;
-      }
-      else if((bbox_control == riptide_msgs::Constants::CONTROL_BBOX_HEIGHT) && (cmd->bbox_height != last_target_bbox_height)){
-        z_pid.reset();
-        status_msg.z.reference = target_bbox_height;
-      }
-    }
     if(pid_surge_init && (cmd->target_pos.x != last_target_pos.x)) {
       x_pid.reset();
       target_pos.x = cmd->target_pos.x;
       last_target_pos.x = target_pos.x;
       status_msg.x.reference = target_pos.x;
     }
+    if(pid_heave_init && (target_bbox_dim != last_target_bbox_dim)) {
+      z_pid.reset();
+      status_msg.z.reference = target_bbox_dim;
+    }
   }
 
-  last_target_bbox_width = target_bbox_width;
-  last_target_bbox_height = target_bbox_height;
+  last_target_bbox_dim = target_bbox_dim;
 }
 
 void AlignmentController::ResetController(const riptide_msgs::ResetControls::ConstPtr& reset_msg) {

@@ -6,6 +6,7 @@
 #include "geometry_msgs/Accel.h"
 #include "geometry_msgs/Vector3.h"
 #include "tf/transform_listener.h"
+#include "riptide_msgs/AlignmentCommand.h"
 #include "riptide_msgs/Imu.h"
 #include "riptide_msgs/ResetControls.h"
 #include "riptide_msgs/ControlStatus.h"
@@ -17,7 +18,7 @@ class AttitudeController
   private:
     // Comms
     ros::NodeHandle nh;
-    ros::Subscriber imu_sub, cmd_sub, reset_sub;
+    ros::Subscriber alignment_sub, imu_sub, cmd_sub, reset_sub;
     ros::Publisher cmd_pub, status_pub;
 
     control_toolbox::Pid roll_controller_pid;
@@ -61,6 +62,7 @@ class AttitudeController
     AttitudeController();
     template <typename T>
     void LoadParam(string param, T &var);
+    void AlignmentCB(const riptide_msgs::AlignmentCommand::ConstPtr &cmd);
     void ManualCommandCB(const geometry_msgs::Vector3::ConstPtr &cmd);
     void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
     void Loop();

@@ -49,8 +49,8 @@ YoloProcessor::YoloProcessor() : nh("yolo_processor") {
     }
   }
 
-    // Update task info
-    YoloProcessor::UpdateTaskInfo();
+  // Update task info
+  YoloProcessor::UpdateTaskInfo();
 }
 
 // Load parameter from namespace
@@ -105,7 +105,8 @@ void YoloProcessor::ImageCB(const sensor_msgs::Image::ConstPtr &msg) {
   double font_scale = 1;
 
   // Should only have at most 4 bboxes (only Dice/Slots have 4 classes)
-  for(int i=0; i<task_bboxes.bounding_boxes.size(); i++) {
+  darknet_ros_msgs::BoundingBoxes last_bboxes = task_bboxes;
+  for(int i=0; i<last_bboxes.bounding_boxes.size(); i++) {
     darknet_ros_msgs::BoundingBox bbox = task_bboxes.bounding_boxes[i];
     rectangle(task_image, Point(bbox.xmin, bbox.ymin), Point(bbox.xmax, bbox.ymax), colors.at(i), thickness);
     char text[100];

@@ -28,9 +28,7 @@ class AlignmentController
     riptide_msgs::ControlStatusLinear status_msg;
     double MAX_X_ERROR, MAX_Y_ERROR, MAX_Z_ERROR;
 
-    int alignment_plane, bbox_control;
-    int obj_bbox_width, target_bbox_width, last_target_bbox_width;
-    int obj_bbox_height, target_bbox_height, last_target_bbox_height;
+    int alignment_plane, bbox_control, obj_bbox_dim, target_bbox_dim, last_target_bbox_dim;
 
     geometry_msgs::Vector3 error, error_dot, last_error;
     geometry_msgs::Vector3 obj_pos, target_pos, last_target_pos;
