@@ -1,4 +1,4 @@
-#include "riptide_vision/yolo_processor.h"
+#include "riptide_vision/object_processor.h"
 
 int main(int argc, char** argv)
 {
@@ -11,10 +11,10 @@ ObjectProcessor::ObjectProcessor() : nh("object_processor") {
   task_bbox_sub = nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &ObjectProcessor::TaskBBoxCB, this);
   image_sub = nh.subscribe<sensor_msgs::Image>("/forward/image_undistorted", 1, &ObjectProcessor::ImageCB, this);
   task_info_sub = nh.subscribe<riptide_msgs::TaskInfo>("/task/info", 1, &ObjectProcessor::TaskInfoCB, this);
-  object_sub = nh.subscribe<riptide_msgs::Object>("/command/alignment", 1, &ObjectProcessor::AlignmentCmdCB, this);
+  alignment_cmd_sub = nh.subscribe<riptide_msgs::AlignmentCommand>("/command/alignment", 1, &ObjectProcessor::AlignmentCmdCB, this);
 
   object_pub = nh.advertise<riptide_msgs::Object>("/state/object", 1);
-  objct_image_pub = nh.advertise<sensor_msgs::Image>("/state/object_image", 1);
+  object_image_pub = nh.advertise<sensor_msgs::Image>("/state/object_image", 1);
 
   colors.push_back(Scalar(255, 0, 0)); // Red
   colors.push_back(Scalar(0, 255, 0)); // Green
@@ -99,8 +99,8 @@ void ObjectProcessor::ImageCB(const sensor_msgs::Image::ConstPtr &msg) {
     return;
   }
 
-  width = cv_ptr->image.size().width();
-  height = cv_ptr->image.size().height();
+  width = cv_ptr->image.size().width;
+  height = cv_ptr->image.size().height;
   cam_center_x = width/2;
   cam_center_y = height/2;
 
@@ -110,7 +110,7 @@ void ObjectProcessor::ImageCB(const sensor_msgs::Image::ConstPtr &msg) {
     // Process Path Marker (seg1_heading followed by seg2_heading)
 
   }
-  else if(task_id == riptide_msgs::Constants::TASK_Roulette) {
+  else if(task_id == riptide_msgs::Constants::TASK_ROULETTE) {
     // Process Roulette Wheel
 
   }
@@ -129,18 +129,18 @@ void ObjectProcessor::TaskBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPtr
 
   // Search for bbox with object name
   for(int i=0; i<bbox_msg->bounding_boxes.size(); i++) {
-    if(strcmp(objects_name.c_str(), bbox_msg->bounding_boxes[i].Class.c_str()) == 0 ) {
+    if(strcmp(object_name.c_str(), bbox_msg->bounding_boxes[i].Class.c_str()) == 0 ) {
       found = true;
       object_bbox = bbox_msg->bounding_boxes[i];
 
       object.object_name = object_name;
-      object.bbox_width = abs(object.xmax - object.xmin);
-      object.bbox_height = abs(object.ymax - object.ymin);
+      object.bbox_width = abs(object_bbox.xmax - object_bbox.xmin);
+      object.bbox_height = abs(object_bbox.ymax - object_bbox.ymin);
 
       // Centers are relative to the CAMERA's center using standard frame axes
       // Cam x-axis is pos. right; Cam y-axis is pos. down
-      int xcenter = (object.xmin + object.xmax)/2 - cam_center_x;
-      int ycenter = (object.ymin + object.ymax)/2 - cam_center_y;
+      int xcenter = (object_bbox.xmin + object_bbox.xmax)/2 - cam_center_x;
+      int ycenter = (object_bbox.ymin + object_bbox.ymax)/2 - cam_center_y;
 
       if(alignment_plane == riptide_msgs::Constants::PLANE_YZ) {
         object.pos.x = 0; // AUV x-axis is pos. fwd
@@ -160,7 +160,7 @@ void ObjectProcessor::TaskBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPtr
     if(task_id == riptide_msgs::Constants::TASK_PATH_MARKER1 || task_id == riptide_msgs::Constants::TASK_PATH_MARKER2) {
       // Append heading of each path segment to object msg (seg1 then seg2)
     }
-    else if(task_id == riptide_msgs::Constants::TASK_Roulette) {
+    else if(task_id == riptide_msgs::Constants::TASK_ROULETTE) {
       // Append heading of roulette wheel to object msg
     }
     else {
@@ -188,7 +188,7 @@ void ObjectProcessor::TaskInfoCB(const riptide_msgs::TaskInfo::ConstPtr& task_ms
 
 
 void ObjectProcessor::AlignmentCmdCB(const riptide_msgs::AlignmentCommand::ConstPtr& cmd) {
-  if(strcmp(cmd->object_name.c_str(), object_name.c_str() != 0 )) // If name does not match, then update
+  if(strcmp(cmd->object_name.c_str(), object_name.c_str()) != 0 ) // If name does not match, then update
     object_name = cmd->object_name;
 }
 

@@ -6,7 +6,7 @@
 #include "geometry_msgs/Accel.h"
 #include "geometry_msgs/Vector3.h"
 #include "tf/transform_listener.h"
-#include "riptide_msgs/AlignmentCommand.h"
+#include "riptide_msgs/AttitudeCommand.h"
 #include "riptide_msgs/Imu.h"
 #include "riptide_msgs/ResetControls.h"
 #include "riptide_msgs/ControlStatus.h"
@@ -18,7 +18,7 @@ class AttitudeController
   private:
     // Comms
     ros::NodeHandle nh;
-    ros::Subscriber alignment_sub, imu_sub, cmd_sub, reset_sub;
+    ros::Subscriber imu_sub, cmd_sub, reset_sub;
     ros::Publisher cmd_pub, status_pub;
 
     control_toolbox::Pid roll_controller_pid;
@@ -41,9 +41,13 @@ class AttitudeController
     double roll_error_dot, pitch_error_dot, yaw_error_dot;
     double roll_cmd, pitch_cmd, yaw_cmd, last_roll_cmd, last_pitch_cmd, last_yaw_cmd;
 
-    geometry_msgs::Vector3 current_attitude, last_error, last_error_dot;;
+    geometry_msgs::Vector3 current_attitude, last_error, last_error_dot;
 
-    bool pid_roll_init, pid_pitch_init, pid_yaw_init;
+    bool pid_attitude_reset, pid_attitude_active;
+    bool pid_roll_reset, pid_pitch_reset, pid_yaw_reset;
+    bool pid_roll_active, pid_pitch_active, pid_yaw_active;
+    bool reset_angX_sent, reset_angY_sent, reset_angZ_sent; // Send 0 accel
+    bool inactive_angX_sent, inactive_angY_sent, inactive_angZ_sent; // Send 0 accel
 
     ros::Time sample_start;
     ros::Duration sample_duration;
@@ -62,8 +66,7 @@ class AttitudeController
     AttitudeController();
     template <typename T>
     void LoadParam(string param, T &var);
-    void AlignmentCB(const riptide_msgs::AlignmentCommand::ConstPtr &cmd);
-    void ManualCommandCB(const geometry_msgs::Vector3::ConstPtr &cmd);
+    void CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr &cmd);
     void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
     void Loop();
  };

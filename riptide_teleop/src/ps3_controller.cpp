@@ -13,9 +13,9 @@ int main(int argc, char** argv)
 PS3Controller::PS3Controller() : nh("ps3_controller") {
   joy_sub = nh.subscribe<sensor_msgs::Joy>("/joy", 1, &PS3Controller::JoyCB, this);
   depth_sub = nh.subscribe<riptide_msgs::Depth>("/state/depth", 1, &PS3Controller::DepthCB, this);
-  attitude_pub = nh.advertise<geometry_msgs::Vector3>("/command/manual/attitude", 1);
-  lin_accel_pub = nh.advertise<geometry_msgs::Vector3>("/command/manual/accel/linear", 1);
-  depth_pub = nh.advertise<riptide_msgs::DepthCommand>("/command/manual/depth", 1);
+  attitude_pub = nh.advertise<riptide_msgs::AttitudeCommand>("/command/attitude", 1);
+  lin_accel_pub = nh.advertise<geometry_msgs::Vector3>("/command/accel_linear", 1);
+  depth_pub = nh.advertise<riptide_msgs::DepthCommand>("/command/depth", 1);
   reset_pub = nh.advertise<riptide_msgs::ResetControls>("/controls/reset", 1);
   plane_pub = nh.advertise<std_msgs::Int8>("/command/ps3_plane", 1);
 
@@ -110,7 +110,7 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr& joy) {
       cmd_attitude.z = round(euler_rpy.z());
 
       if(isDepthWorking)
-        cmd_depth.absolute = current_depth;
+        cmd_depth.depth = current_depth;
       else
         cmd_accel.z = 0;
     }
@@ -197,9 +197,8 @@ void PS3Controller::ResetControllers() {
   cmd_accel.y = 0;
   cmd_accel.z = 0;
 
-  cmd_depth.isManual = true;
-  cmd_depth.absolute = 0;
-  cmd_depth.relative = 0;
+  cmd_depth.active = false;
+  cmd_depth.depth = 0;
   delta_depth = 0;
 }
 
@@ -232,11 +231,11 @@ void PS3Controller::UpdateCommands() {
   if(cmd_attitude.z < -180)
     cmd_attitude.z += 360;
 
-  cmd_depth.relative = delta_depth;
-  cmd_depth.absolute += cmd_depth.relative;
-  cmd_depth.absolute = PS3Controller::Constrain(cmd_depth.absolute, MAX_DEPTH);
-  if(cmd_depth.absolute < 0)
-    cmd_depth.absolute = 0;
+  cmd_depth.active = true;
+  cmd_depth.depth = current_depth;
+  cmd_depth.depth = PS3Controller::Constrain(cmd_depth.depth, MAX_DEPTH);
+  if(cmd_depth.depth < 0)
+    cmd_depth.depth = 0;
 
   plane_msg.data = (int)alignment_plane;
 }
