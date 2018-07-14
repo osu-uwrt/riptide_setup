@@ -22,3 +22,7 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
 add_executable(tslam src/tslam.cpp)
 target_link_libraries(tslam ${catkin_LIBRARIES})
 add_dependencies(tslam ${catkin_EXPORTED_TARGETS})
+
+add_executable(gate src/task.gate.cpp)
+target_link_libraries(gate ${catkin_LIBRARIES})
+add_dependencies(gate ${catkin_EXPORTED_TARGETS})
