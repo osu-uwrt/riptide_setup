@@ -34,6 +34,7 @@ AttitudeController::AttitudeController() : nh("attitude_controller") {
     tf.setValue(0, 0, 0);
     ang_vel.setValue(0, 0, 0);
 
+    alignment_sub = nh.subscribe<riptide_msgs::AlignmentCommand>("/command/alignment", 1, &AttitudeController::AlignmentCB, this);
     cmd_sub = nh.subscribe<geometry_msgs::Vector3>("/command/manual/attitude", 1, &AttitudeController::ManualCommandCB, this);
     imu_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &AttitudeController::ImuCB, this);
     reset_sub = nh.subscribe<riptide_msgs::ResetControls>("/controls/reset", 1, &AttitudeController::ResetController, this);
@@ -179,6 +180,10 @@ void AttitudeController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg) {
 
   //Get angular velocity (leave in [deg/s])
   vector3MsgToTF(imu_msg->ang_vel, ang_vel);
+}
+
+void AttitudeController::AlignmentCB(const riptide_msgs::AlignmentCommand::ConstPtr &cmd) {
+  
 }
 
 // Subscribe to command/attitude
