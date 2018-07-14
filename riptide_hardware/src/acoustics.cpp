@@ -51,10 +51,10 @@ bool Acoustics::ConfigureFPGA()
 double Acoustics::DoubleMod(double c, int divisor) {
 	while (c < 0 || c >= divisor) {
 		if (c < 0) {
-			c += 360;
+			c += divisor;
 		}
 		else {
-			c -= 360;
+			c -= divisor;
 		}
 	}
 	return c;
@@ -119,21 +119,41 @@ void Acoustics::Collect() {
 	double PFphase, PAphase, SFphase, SAphase;
 	double PFfreq, PAfreq, SFfreq, SAfreq;
 
+	double frequency = (PFfreq + PAfreq + SFfreq + SAfreq) / 4;
+
 	detectPhase(PFdata, &PFphase, &PFfreq);
 	detectPhase(PAdata, &PAphase, &PAfreq);
 	detectPhase(SFdata, &SFphase, &SFfreq);
 	detectPhase(SAdata, &SAphase, &SAfreq);
 
-	//double maxPhase = std::max(PFphase, std::max(PAphase, SFphase));
-	//double minPhase = std::min(PFphase, std::min(PAphase, SFphase));
+	double maxPhase = std::max(PFphase, std::max(SAphase, SFphase));
+	double minPhase = std::min(PFphase, std::min(SAphase, SFphase));
 
-	double median = PFphase;// + PAphase + SFphase - maxPhase - minPhase;
+	double median = (PFphase /*+ PAphase*/ + SAphase + SFphase - maxPhase - minPhase);
 
 	PFphase = DoubleMod(PFphase - median + 180, 360);
-	//PAphase = doubleMod(PAphase - median + 180, 360);
+	PAphase = DoubleMod(PAphase - median + 180, 360);
 	SFphase = DoubleMod(SFphase - median + 180, 360);
+	SAphase = DoubleMod(SAphase - median + 180, 360);
 
-	double angle = asin((PFphase-SFphase)/20)*180/3.1415926535897;
+	double angle2 = asin((PFphase-SFphase)/20)*180/3.1415926535897;
+	double angle3 = atan((PFphase-SFphase)/(SFphase-SAphase))*180/3.1415926535897;
+
+	if(SFphase>SAphase)
+		angle3 += 180;
+
+	angle3 = DoubleMod(angle3, 360);
+
+	double distanceBetween = -0.1;
+	double a = PFphase / 360 * 1500 / frequency;
+	double b = PAphase / 360 * 1500 / frequency;
+	double c = SFphase / 360 * 1500 / frequency;
+	double d = SAphase / 360 * 1500 / frequency;
+
+	double w = (d*d+a*a-b*b-c*c)/(-2*(d+a-b-c));
+	double x = (a*(a+2*w)-b*(b+2*w)+distanceBetween*distanceBetween)/(2*distanceBetween);
+	double y = (a*(a+2*w)-c*(c+2*w)+distanceBetween*distanceBetween)/(2*distanceBetween);
+	double z = sqrt(abs((a+w)*(a+w)-x*x-y*y));
 
     acoustics_msg.PFfreq = PFfreq;
 	acoustics_msg.PAfreq = PAfreq;
@@ -143,7 +163,12 @@ void Acoustics::Collect() {
 	acoustics_msg.PAphase = PAphase;
 	acoustics_msg.SFphase = SFphase;
 	acoustics_msg.SAphase = SAphase;
-	acoustics_msg.angle = angle;
+	acoustics_msg.angle2 = angle2;
+	acoustics_msg.angle3 = angle3;
+	acoustics_msg.XPos = x;
+	acoustics_msg.YPos = y;
+	acoustics_msg.ZPos = z;
+
 	acoustics_pub.publish(acoustics_msg);
 
 
