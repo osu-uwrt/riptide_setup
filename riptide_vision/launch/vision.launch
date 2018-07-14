@@ -1,3 +1,5 @@
 <launch>
   <include file="$(find riptide_vision)/launch/hud_jetson.launch" />
+  <include file="$(find riptide_vision)/launch/yolo_processor_jetson.launch" />
+  <include file="$(find riptide_vision)/launch/object_processor_jetson.launch" />
 </launch>

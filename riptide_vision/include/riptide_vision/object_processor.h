@@ -1,5 +1,5 @@
-#ifndef YOLO_PROCESSOR_H
-#define YOLO_PROCESSOR_H
+#ifndef OBJECT_PROCESSOR_H
+#define OBJECT_PROCESSOR_H
 
 /* README
 To install jsoncpp, do: sudo apt-get install libjsoncpp-dev
@@ -36,6 +36,7 @@ class ObjectProcessor
   string camera_topics[2] = {"/forward/image_undistorted", "/downward/image_undistorted"};
   cv_bridge::CvImagePtr cv_ptr;
   int width, height, cam_center_x, cam_center_y;
+  vector<Scalar> colors;
 
   geometry_msgs::Vector3 current_attitude;
   vector<double> object_headings;
@@ -53,7 +54,8 @@ class ObjectProcessor
   void LoadParam(string param, T &var);
   void ImageCB(const sensor_msgs::ImageConstPtr& msg);
   void TaskBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_msg);
-  void AlignmentCmdCB(const riptide_msgs::Object::ConstPtr& cmd);
+  void TaskInfoCB(const riptide_msgs::TaskInfo::ConstPtr& task_msg);
+  void AlignmentCmdCB(const riptide_msgs::AlignmentCommand::ConstPtr& cmd);
   void ImuCB(const riptide_msgs::Imu::ConstPtr& imu_msg);
   void Loop();
 };

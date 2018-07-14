@@ -13,6 +13,7 @@ YoloProcessor::YoloProcessor() : nh("yolo_processor") {
   task_info_sub = nh.subscribe<riptide_msgs::TaskInfo>("/task/info", 1, &YoloProcessor::TaskInfoCB, this);
 
   task_bbox_pub = nh.advertise<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1);
+  task_image_pub = nh.advertise<sensor_msgs::Image>("/task/detection_image", 1);
   low_detections_pub = nh.advertise<darknet_ros_msgs::BoundingBoxes>("/task/low_detections", 1);
 
   colors.push_back(Scalar(255, 0, 0)); // Red

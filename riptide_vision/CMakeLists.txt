@@ -47,6 +47,10 @@ if(NOT _host_name MATCHES "riptide")
   target_link_libraries(yolo_processor ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} yaml-cpp)
   add_dependencies(yolo_processor ${catkin_EXPORTED_TARGETS})
 
+  add_executable(object_processor src/object_processor.cpp)
+  target_link_libraries(object_processor ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} yaml-cpp)
+  add_dependencies(object_processor ${catkin_EXPORTED_TARGETS})
+
 else()
     message("-- Skipping jetson code on riptide")
 endif()

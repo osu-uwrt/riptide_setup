@@ -30,6 +30,7 @@ add_message_files(
     ControlStatusLinear.msg
     AlignmentCommand.msg
     DepthCommand.msg
+    AttitudeCommand.msg
     Acoustics.msg
     Pneumatics.msg
     Constants.msg
