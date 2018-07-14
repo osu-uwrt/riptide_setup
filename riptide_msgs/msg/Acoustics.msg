@@ -6,4 +6,8 @@ float32 PFphase
 float32 PAphase
 float32 SFphase
 float32 SAphase
-float32 angle
+float32 angle2
+float32 angle3
+float32 XPos
+float32 YPos
+float32 ZPos
