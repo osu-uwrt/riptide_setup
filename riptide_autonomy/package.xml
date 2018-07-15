@@ -58,7 +58,6 @@
   <run_depend>geometry_msgs</run_depend>
   <run_depend>riptide_msgs</run_depend>
 
-
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- Other tools can request additional information be placed here -->

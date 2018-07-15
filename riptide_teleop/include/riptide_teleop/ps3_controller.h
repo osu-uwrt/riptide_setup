@@ -9,6 +9,7 @@
 #include "tf/transform_listener.h"
 #include "riptide_teleop/ps3_button_mapping.h"
 #include "riptide_msgs/Imu.h"
+#include "riptide_msgs/AttitudeCommand.h"
 #include "riptide_msgs/DepthCommand.h"
 #include "riptide_msgs/Depth.h"
 #include "riptide_msgs/ResetControls.h"

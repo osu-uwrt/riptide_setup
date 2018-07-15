@@ -17,7 +17,7 @@ class DepthController
   private:
     // Comms
     ros::NodeHandle nh;
-    ros::Subscriber depth_sub, imu_sub, auto_cmd_sub, man_cmd_sub, reset_sub;
+    ros::Subscriber depth_sub, imu_sub, cmd_sub, reset_sub;
     ros::Publisher cmd_pub, status_pub;
 
     control_toolbox::Pid depth_controller_pid;
@@ -34,16 +34,16 @@ class DepthController
 
     //PID
     double depth_error, depth_error_dot;
-    double current_depth;
-    double depth_cmd, last_depth_cmd_absolute;
+    double current_depth, depth_cmd;
     double last_error, last_error_dot;
     double dt;
 
-    bool pid_depth_init, auto_enabled;
+    bool pid_depth_reset, reset_accel_sent, inactive_accel_sent, pid_depth_active;
 
-    ros::Time sample_start, auto_time;
-    ros::Duration sample_duration, auto_disable_duration;
+    ros::Time sample_start;
+    ros::Duration sample_duration;
 
+    void InitMsgs();
     void UpdateError();
     double Constrain(double current, double max);
     double SmoothErrorIIR(double input, double prev);
@@ -54,8 +54,7 @@ class DepthController
     DepthController();
     template <typename T>
     void LoadParam(string param, T &var);
-    void ManualCommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd);
-    void AutoCommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd);
+    void CommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd);
     void DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg);
     void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
     void Loop();

@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="riptide_vision" type="object_processor" name="object_processor" output="screen" />
+</launch>

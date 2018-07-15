@@ -8,6 +8,7 @@
 #include "geometry_msgs/Accel.h"
 #include "sensor_msgs/image_encodings.h"
 #include "riptide_msgs/Imu.h"
+#include "riptide_msgs/AttitudeCommand.h"
 #include "riptide_msgs/DepthCommand.h"
 #include "riptide_msgs/Depth.h"
 #include "opencv2/opencv.hpp"
@@ -39,7 +40,7 @@ class HUD
 
   void ImuCB(const riptide_msgs::Imu::ConstPtr& imu_msg);
   void DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg);
-  void CmdAttitudeCB(const geometry_msgs::Vector3::ConstPtr& cmd_msg);
+  void CmdAttitudeCB(const riptide_msgs::AttitudeCommand::ConstPtr& cmd_msg);
   void CmdDepthCB(const riptide_msgs::DepthCommand::ConstPtr& cmd_msg);
   void CmdAccelCB(const geometry_msgs::Accel::ConstPtr& cmd_msg);
   void Loop();

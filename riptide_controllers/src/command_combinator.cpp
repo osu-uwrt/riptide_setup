@@ -7,11 +7,9 @@ int main(int argc, char **argv) {
 }
 
 CommandCombinator::CommandCombinator() : nh("command_combinator") {
-  auto_linear_sub = nh.subscribe<geometry_msgs::Vector3>("/command/auto/accel/linear", 1, &CommandCombinator::AutoLinearCB, this);
-  manual_linear_sub = nh.subscribe<geometry_msgs::Vector3>("/command/manual/accel/linear", 1, &CommandCombinator::ManualLinearCB, this);
-  depth_sub = nh.subscribe<geometry_msgs::Vector3>("/command/auto/accel/depth", 1, &CommandCombinator::DepthCB, this);
-  auto_angular_sub = nh.subscribe<geometry_msgs::Vector3>("/command/auto/accel/angular", 1, &CommandCombinator::AutoAngularCB, this);
-  manual_angular_sub = nh.subscribe<geometry_msgs::Vector3>("/command/manual/accel/angular", 1, &CommandCombinator::ManualAngularCB, this);
+  linear_sub = nh.subscribe<geometry_msgs::Vector3>("/command/accel_linear", 1, &CommandCombinator::LinearCB, this);
+  depth_sub = nh.subscribe<geometry_msgs::Vector3>("/command/accel_depth", 1, &CommandCombinator::DepthCB, this);
+  angular_sub = nh.subscribe<geometry_msgs::Vector3>("/command/accel_angular", 1, &CommandCombinator::AngularCB, this);
 
   cmd_pub = nh.advertise<geometry_msgs::Accel>("/command/accel", 1); // The final accel output
 
@@ -53,35 +51,22 @@ void CommandCombinator::InitMsgs() {
   cmd_accel.angular.y = 0;
   cmd_accel.angular.z = 0;
 
-  auto_accel.linear.x = 0;
-  auto_accel.linear.y = 0;
-  auto_accel.linear.z = 0;
-  auto_accel.angular.x = 0;
-  auto_accel.angular.y = 0;
-  auto_accel.angular.z = 0;
-
-  manual_accel.linear.x = 0;
-  manual_accel.linear.y = 0;
-  manual_accel.linear.z = 0;
-  manual_accel.angular.x = 0;
-  manual_accel.angular.y = 0;
-  manual_accel.angular.z = 0;
+  accel.linear.x = 0;
+  accel.linear.y = 0;
+  accel.linear.z = 0;
+  accel.angular.x = 0;
+  accel.angular.y = 0;
+  accel.angular.z = 0;
 
   depth_accel.x = 0;
   depth_accel.y = 0;
   depth_accel.z = 0;
 }
 
-void CommandCombinator::AutoLinearCB(const geometry_msgs::Vector3::ConstPtr &lin_accel) {
-  // NOTE: There is no auto_accel.linear.z b/c that goes straight to the depth controller
-  auto_accel.linear.x = lin_accel->x;
-  auto_accel.linear.y = lin_accel->y;
-}
-
-void CommandCombinator::ManualLinearCB(const geometry_msgs::Vector3::ConstPtr &lin_accel) {
-  manual_accel.linear.x = lin_accel->x;
-  manual_accel.linear.y = lin_accel->y;
-  manual_accel.linear.z = lin_accel->z;
+void CommandCombinator::LinearCB(const geometry_msgs::Vector3::ConstPtr &lin_accel) {
+  accel.linear.x = lin_accel->x;
+  accel.linear.y = lin_accel->y;
+  accel.linear.z = lin_accel->z;
 }
 
 void CommandCombinator::DepthCB(const geometry_msgs::Vector3::ConstPtr &d_accel) {
@@ -90,25 +75,19 @@ void CommandCombinator::DepthCB(const geometry_msgs::Vector3::ConstPtr &d_accel)
   depth_accel.z = d_accel->z;
 }
 
-void CommandCombinator::AutoAngularCB(const geometry_msgs::Vector3::ConstPtr &ang_accel) {
-  auto_accel.angular.x = ang_accel->x;
-  auto_accel.angular.y = ang_accel->y;
-  auto_accel.angular.z = ang_accel->z;
-}
-
-void CommandCombinator::ManualAngularCB(const geometry_msgs::Vector3::ConstPtr &ang_accel) {
-  manual_accel.angular.x = ang_accel->x;
-  manual_accel.angular.y = ang_accel->y;
-  manual_accel.angular.z = ang_accel->z;
+void CommandCombinator::AngularCB(const geometry_msgs::Vector3::ConstPtr &ang_accel) {
+  accel.angular.x = ang_accel->x;
+  accel.angular.y = ang_accel->y;
+  accel.angular.z = ang_accel->z;
 }
 
 void CommandCombinator::Combine() {
-  cmd_accel.linear.x = auto_accel.linear.x + manual_accel.linear.x + depth_accel.x;
-  cmd_accel.linear.y = auto_accel.linear.y + manual_accel.linear.y + depth_accel.y;
-  cmd_accel.linear.z = auto_accel.linear.z + manual_accel.linear.z + depth_accel.z;
-  cmd_accel.angular.x = auto_accel.angular.x + manual_accel.angular.x;
-  cmd_accel.angular.y = auto_accel.angular.y + manual_accel.angular.y;
-  cmd_accel.angular.z = auto_accel.angular.z + manual_accel.angular.z;
+  cmd_accel.linear.x = accel.linear.x + depth_accel.x;
+  cmd_accel.linear.y = accel.linear.y + depth_accel.y;
+  cmd_accel.linear.z = accel.linear.z + depth_accel.z;
+  cmd_accel.angular.x = accel.angular.x;
+  cmd_accel.angular.y = accel.angular.y;
+  cmd_accel.angular.z = accel.angular.z;
 
   cmd_accel.linear.x = CommandCombinator::Constrain(cmd_accel.linear.x, MAX_X_ACCEL);
   cmd_accel.linear.y = CommandCombinator::Constrain(cmd_accel.linear.y, MAX_Y_ACCEL);

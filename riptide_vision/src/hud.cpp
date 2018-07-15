@@ -18,8 +18,8 @@ HUD::HUD() : nh("hud") {
   imu_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &HUD::ImuCB, this);
   depth_sub = nh.subscribe<riptide_msgs::Depth>("/state/depth", 1, &HUD::DepthCB, this);
 
-  cmd_attitude_sub = nh.subscribe<geometry_msgs::Vector3>("/command/manual/attitude", 1, &HUD::CmdAttitudeCB, this);
-  cmd_depth_sub = nh.subscribe<riptide_msgs::DepthCommand>("/command/manual/depth", 1, &HUD::CmdDepthCB, this);
+  cmd_attitude_sub = nh.subscribe<riptide_msgs::AttitudeCommand>("/command/attitude", 1, &HUD::CmdAttitudeCB, this);
+  cmd_depth_sub = nh.subscribe<riptide_msgs::DepthCommand>("/command/depth", 1, &HUD::CmdDepthCB, this);
   cmd_accel_sub = nh.subscribe<geometry_msgs::Accel>("/command/accel", 1, &HUD::CmdAccelCB, this);
 
   // Outputs
@@ -153,15 +153,15 @@ void HUD::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg) {
 }
 
 // Get command attitude
-void HUD::CmdAttitudeCB(const geometry_msgs::Vector3::ConstPtr& cmd_msg) {
-  cmd_euler_rpy.x = cmd_msg->x;
-  cmd_euler_rpy.y = cmd_msg->y;
-  cmd_euler_rpy.z = cmd_msg->z;
+void HUD::CmdAttitudeCB(const riptide_msgs::AttitudeCommand::ConstPtr& cmd_msg) {
+  cmd_euler_rpy.x = cmd_msg->euler_rpy.x;
+  cmd_euler_rpy.y = cmd_msg->euler_rpy.y;
+  cmd_euler_rpy.z = cmd_msg->euler_rpy.z;
 }
 
 // Get command depth
 void HUD::CmdDepthCB(const riptide_msgs::DepthCommand::ConstPtr& cmd_msg) {
-  cmd_depth = cmd_msg->absolute;
+  cmd_depth = cmd_msg->depth;
 }
 
 // Get command linear accel
