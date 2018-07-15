@@ -2,7 +2,7 @@
 
 
 //!!!!!!!!!!!!!!!!!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!!!!!!!!!!!///
-// Must extract /resources/FrontPanel. Run install.sh as sudo,//
+// Must extract /resources/FrontPanel. Run install.sh as sudo //
 // and sudo copy API/okFrontPanel.so file to /usr/lib		  //
 ////////////////////////////////////////////////////////////////
 
