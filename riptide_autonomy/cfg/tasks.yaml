@@ -11,14 +11,14 @@ tasks: [
       name: "Path_Marker1",
       plane: 1,
       objects: ["Path_Marker"],
-      thresholds: [0.8]
+      thresholds: [0.6]
     },
     {
       id: 2,
       name: "Dice",
-      plane": 0,
+      plane: 0,
       objects: ["Dice1", "Dice2", "Dice5", "Dice6"],
-      thresholds: [0.8, 0.8, 0.8, 0.8]
+      thresholds: [0.6, 0.6, 0.6, 0.6]
     },
     {
       id: 3,
@@ -32,7 +32,7 @@ tasks: [
       name: "Path_Marker2",
       plane: 1,
       objects: ["Path_Marker"],
-      thresholds: [0.8]
+      thresholds: [0.6]
     },
     {
       id: 5,

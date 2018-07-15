@@ -108,8 +108,8 @@ void YoloProcessor::ImageCB(const sensor_msgs::Image::ConstPtr &msg) {
   // Should only have at most 4 bboxes (only Dice/Slots have 4 classes)
   darknet_ros_msgs::BoundingBoxes last_bboxes = task_bboxes;
   for(int i=0; i<last_bboxes.bounding_boxes.size(); i++) {
-    darknet_ros_msgs::BoundingBox bbox = task_bboxes.bounding_boxes[i];
-    rectangle(task_image, Point(bbox.xmin, bbox.ymin), Point(bbox.xmax, bbox.ymax), colors.at(i), thickness);
+    darknet_ros_msgs::BoundingBox bbox = last_bboxes.bounding_boxes[i];
+    rectangle(task_image, Point(bbox.xmin, bbox.ymin + top_margin), Point(bbox.xmax, bbox.ymax + top_margin), colors.at(i), thickness);
     char text[100];
     sprintf(text, "%s: %.5f%%", bbox.Class.c_str(), bbox.probability);
     putText(task_image, string(text), Point(5, text_start[i]), FONT_HERSHEY_COMPLEX_SMALL, font_scale, colors.at(i), thickness);

@@ -1,3 +1,7 @@
 <launch>
-  <node pkg="riptide_vision" type="object_processor" name="object_processor" output="screen" />
+  <arg name="task_file" default="../osu-uwrt/riptide_software/src/riptide_autonomy/cfg/tasks.yaml" />
+
+  <node pkg="riptide_vision" type="object_processor" name="object_processor" output="screen" >
+    <param name="task_file" type="string" value="$(arg task_file)" />
+  </node>
 </launch>
