@@ -3,7 +3,7 @@
 
 //!!!!!!!!!!!!!!!!!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!!!!!!!!!!!///
 // Must extract /resources/FrontPanel. Run install.sh as sudo,//
-// and sudo copy API/okFrontPanel.so file to /usr/lib				  //
+// and sudo copy API/okFrontPanel.so file to /usr/lib		  //
 ////////////////////////////////////////////////////////////////
 
 int main(int argc, char** argv) {
@@ -118,13 +118,14 @@ void Acoustics::Collect() {
 
 	double PFphase, PAphase, SFphase, SAphase;
 	double PFfreq, PAfreq, SFfreq, SAfreq;
+	double PFamp, PAamp, SFamp, SAamp;
 
 	double frequency = (PFfreq + PAfreq + SFfreq + SAfreq) / 4;
 
-	detectPhase(PFdata, &PFphase, &PFfreq);
-	detectPhase(PAdata, &PAphase, &PAfreq);
-	detectPhase(SFdata, &SFphase, &SFfreq);
-	detectPhase(SAdata, &SAphase, &SAfreq);
+	detectPhase(PFdata, 2000, 2000, &PFphase, &PFfreq, &PFamp);
+	detectPhase(PAdata, 2000, 2000, &PAphase, &PAfreq, &PAamp);
+	detectPhase(SFdata, 2000, 2000, &SFphase, &SFfreq, &SFamp);
+	detectPhase(SAdata, 2000, 2000, &SAphase, &SAfreq, &SAamp);
 
 	double maxPhase = std::max(PFphase, std::max(SAphase, SFphase));
 	double minPhase = std::min(PFphase, std::min(SAphase, SFphase));
@@ -163,6 +164,10 @@ void Acoustics::Collect() {
 	acoustics_msg.PAphase = PAphase;
 	acoustics_msg.SFphase = SFphase;
 	acoustics_msg.SAphase = SAphase;
+	acoustics_msg.PFamp = PFamp;
+	acoustics_msg.PAamp = PAamp;
+	acoustics_msg.SFamp = SFamp;
+	acoustics_msg.SAamp = SAamp;
 	acoustics_msg.angle2 = angle2;
 	acoustics_msg.angle3 = angle3;
 	acoustics_msg.XPos = x;

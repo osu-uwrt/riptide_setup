@@ -24,7 +24,7 @@
 #include "detectPhase_types.h"
 
 /* Function Declarations */
-extern void fft(const int x[1024], creal_T y[1024]);
+extern void fft(const int x[2048], creal_T y[2048]);
 
 #endif
 
