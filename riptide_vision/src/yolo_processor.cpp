@@ -33,7 +33,7 @@ YoloProcessor::YoloProcessor() : nh("yolo_processor") {
   // Initialize task info to Casino gate
   task_id = 0;
   task_name = "Casino_Gate";
-  alignment_plane = riptide_msgs::Constants::PLANE_YZ;
+  alignment_plane = rc::PLANE_YZ;
 
   tasks = YAML::LoadFile(task_file);
 
@@ -79,8 +79,8 @@ void YoloProcessor::UpdateTaskInfo() {
   num_objects = (int)tasks["tasks"][task_id]["objects"].size();
 
   alignment_plane = tasks["tasks"][task_id]["plane"].as<int>();
-  if(alignment_plane != riptide_msgs::Constants::PLANE_YZ && alignment_plane != riptide_msgs::Constants::PLANE_XY)
-    alignment_plane = riptide_msgs::Constants::PLANE_YZ; // Default to YZ-plane (fwd cam)
+  if(alignment_plane != rc::PLANE_YZ && alignment_plane != rc::PLANE_XY)
+    alignment_plane = rc::PLANE_YZ; // Default to YZ-plane (fwd cam)
 
   object_names.clear();
   thresholds.clear();

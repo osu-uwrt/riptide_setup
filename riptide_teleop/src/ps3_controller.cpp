@@ -90,7 +90,7 @@ void PS3Controller::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg) {
 }
 
 void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr& joy) {
-  if(joy->buttons[BUTTON_SHAPE_X]) { // Reset Vehicle (The "X" button)
+  if(!isReset && joy->buttons[BUTTON_SHAPE_X]) { // Reset Vehicle (The "X" button)
     isReset = true;
     isStarted = false;
     isInit = false;
@@ -203,6 +203,8 @@ void PS3Controller::ResetControllers() {
   cmd_depth.active = false;
   cmd_depth.depth = 0;
   delta_depth = 0;
+
+  PS3Controller::PublishCommands();
 }
 
 // Run when Start button is pressed
@@ -266,8 +268,10 @@ void PS3Controller::Loop()
   ros::Rate rate(rt); // MUST have this rate in here, since all factors are based on it
   while(ros::ok())
   {
-    PS3Controller::UpdateCommands();
-    PS3Controller::PublishCommands();
+    if(isStarted) {
+      PS3Controller::UpdateCommands();
+      PS3Controller::PublishCommands();
+    }
     ros::spinOnce();
     rate.sleep();
   }

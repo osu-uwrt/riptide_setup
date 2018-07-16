@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(riptide_autonomy)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
+#add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -19,6 +19,10 @@ roslint_cpp()
 catkin_package(INCLUDE_DIRS include)
 include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
 
+add_executable(be_autonomous src/be_autonomous.cpp)
+target_link_libraries(be_autonomous ${catkin_LIBRARIES} yaml-cpp)
+add_dependencies(be_autonomous ${catkin_EXPORTED_TARGETS})
+
 add_executable(tslam src/tslam.cpp)
-target_link_libraries(tslam ${catkin_LIBRARIES})
+target_link_libraries(tslam ${catkin_LIBRARIES} yaml-cpp)
 add_dependencies(tslam ${catkin_EXPORTED_TARGETS})

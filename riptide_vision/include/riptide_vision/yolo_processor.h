@@ -1,10 +1,6 @@
 #ifndef YOLO_PROCESSOR_H
 #define YOLO_PROCESSOR_H
 
-/* README
-To install jsoncpp, do: sudo apt-get install libjsoncpp-dev
-*/
-
 #include "ros/ros.h"
 #include "cmath"
 #include "riptide_msgs/TaskInfo.h"
@@ -18,6 +14,7 @@ To install jsoncpp, do: sudo apt-get install libjsoncpp-dev
 #include "cv_bridge/cv_bridge.h"
 using namespace cv;
 using namespace std;
+typedef riptide_msgs::Constants rc;
 
 class YoloProcessor
 {
@@ -42,9 +39,9 @@ class YoloProcessor
 
  public:
   YoloProcessor();
-  void UpdateTaskInfo();
   template <typename T>
   void LoadParam(string param, T &var);
+  void UpdateTaskInfo();
   void ImageCB(const sensor_msgs::ImageConstPtr& msg);
   void DarknetBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_msg);
   void TaskInfoCB(const riptide_msgs::TaskInfo::ConstPtr& task_msg);

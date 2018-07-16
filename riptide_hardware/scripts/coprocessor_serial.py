@@ -17,12 +17,12 @@ def pwm_callback(pwm_message):
 
     #Each thruster's pwm value is stored
     spl = str(pwm_message.pwm.surge_port_lo)
-    hsf = str(pwm_message.pwm.surge_stbd_lo) # was ssl
+    ssl = str(pwm_message.pwm.surge_stbd_lo)
     swf = str(pwm_message.pwm.sway_fwd)
     swa = str(pwm_message.pwm.sway_aft)
     hpa = str(pwm_message.pwm.heave_port_aft)
     hsa = str(pwm_message.pwm.heave_stbd_aft)
-    ssl = str(pwm_message.pwm.heave_stbd_fwd) # was hsf
+    hsf = str(pwm_message.pwm.heave_stbd_fwd)
     hpf = str(pwm_message.pwm.heave_port_fwd)
 
     #The pwm values and start and end bytes are added to a String and written

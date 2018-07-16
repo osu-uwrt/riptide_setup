@@ -62,4 +62,4 @@ HSF:
   NEG:
     SLOPE: 8.461324
     XINT: 1463
-  ENABLE: false
+  ENABLE: true
