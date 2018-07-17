@@ -13,7 +13,7 @@ float round(float d) {
 int main(int argc, char **argv) {
   ros::init(argc, argv, "attitude_controller");
   AttitudeController ac;
-  ac.Loop();
+  ros::spin();
 }
 
 AttitudeController::AttitudeController() : nh("attitude_controller") {
@@ -192,6 +192,7 @@ void AttitudeController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg) {
 
   //Get angular velocity (leave in [deg/s])
   vector3MsgToTF(imu_msg->ang_vel, ang_vel);
+  AttitudeController::UpdateError();
 }
 
 void AttitudeController::CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr &cmd) {
@@ -232,6 +233,8 @@ void AttitudeController::CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr
     pid_attitude_active = true; // Only need one to be active
   else
     pid_attitude_active = false;
+
+  AttitudeController::UpdateError();
 }
 
 void AttitudeController::ResetController(const riptide_msgs::ResetControls::ConstPtr& reset_msg) {
@@ -334,16 +337,5 @@ void AttitudeController::ResetYaw() {
       reset_angZ_sent = true;
     if(!inactive_angZ_sent)
       inactive_angZ_sent = true;
-  }
-}
-
-void AttitudeController::Loop() {
-  ros::Rate rate(200);
-  while(!ros::isShuttingDown()) {
-    if(!pid_attitude_reset && pid_attitude_active) {
-      AttitudeController::UpdateError();
-    }
-    ros::spinOnce();
-    rate.sleep();
   }
 }

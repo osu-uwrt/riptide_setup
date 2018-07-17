@@ -12,18 +12,25 @@ find_package(catkin REQUIRED COMPONENTS
   roslint
   riptide_msgs
   geometry_msgs
+  sensor_msgs
+  cv_bridge
 )
 
 roslint_cpp()
 
-set(${PROJECT_NAME}_task_objects
+set(AUTONOMY_OBJECTS
   src/tslam.cpp
+  src/roulette.cpp
 )
 
 catkin_package(INCLUDE_DIRS include)
-
+find_package(OpenCV REQUIRED) # To include, OpenCV, this MUST go BEFORE include_directories()
 include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
 
-add_executable(be_autonomous src/be_autonomous.cpp ${${PROJECT_NAME}_task_objects})
-target_link_libraries(be_autonomous ${catkin_LIBRARIES} yaml-cpp)
-add_dependencies(be_autonomous ${catkin_EXPORTED_TARGETS})
+cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)
+
+if(NOT _host_name MATCHES "jetson")
+  add_executable(be_autonomous src/be_autonomous.cpp ${AUTONOMY_OBJECTS})
+  target_link_libraries(be_autonomous ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} yaml-cpp)
+  add_dependencies(be_autonomous ${catkin_EXPORTED_TARGETS})
+endif()  

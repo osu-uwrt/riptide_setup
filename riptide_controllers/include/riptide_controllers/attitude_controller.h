@@ -68,7 +68,6 @@ class AttitudeController
     void LoadParam(string param, T &var);
     void CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr &cmd);
     void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
-    void Loop();
  };
 
  #endif

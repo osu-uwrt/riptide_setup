@@ -1,5 +1,8 @@
 #include "riptide_autonomy/be_autonomous.h"
 
+#define A2V_SLOPE 0.2546
+#define A2V_INT .1090
+
 int main(int argc, char** argv) {
   ros::init(argc, argv, "be_autonomous");
   BeAutonomous ba;
@@ -10,10 +13,11 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
   switch_sub = nh.subscribe<riptide_msgs::SwitchState>("/state/switches", 1, &BeAutonomous::SwitchCB, this);
   imu_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &BeAutonomous::ImuCB, this);
   depth_sub = nh.subscribe<riptide_msgs::Depth>("/state/depth", 1, &BeAutonomous::DepthCB, this);
-  task_bbox_sub = nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &BeAutonomous::TaskBBoxCB, this);
 
+  reset_pub = nh.advertise<riptide_msgs::ResetControls>("/controls/reset", 1);
   linear_accel_pub = nh.advertise<geometry_msgs::Vector3>("/command/accel_linear", 1);
   attitude_pub = nh.advertise<riptide_msgs::AttitudeCommand>("/command/attitude", 1);
+  alignment_pub = nh.advertise<riptide_msgs::AlignmentCommand>("/command/alignment", 1);
   depth_pub = nh.advertise<riptide_msgs::DepthCommand>("/command/depth", 1);
   task_info_pub = nh.advertise<riptide_msgs::TaskInfo>("/task/info", 1);
   state_mission_pub = nh.advertise<riptide_msgs::MissionState>("/state/mission", 1);
@@ -23,10 +27,23 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
   BeAutonomous::LoadParam<int>("competition_id", competition_id);
   BeAutonomous::LoadParam<double>("loader_watchdog", loader_watchdog);
 
+  // Activate all non-alignment controllers
+  riptide_msgs::ResetControls reset_msg;
+  reset_msg.reset_surge = false;
+  reset_msg.reset_sway = false;
+  reset_msg.reset_heave = false;
+  reset_msg.reset_roll = false;
+  reset_msg.reset_pitch = false;
+  reset_msg.reset_yaw = false;
+  reset_msg.reset_depth = false;
+  reset_msg.reset_pwm = false;
+  reset_pub.publish(reset_msg);
+
   // Load Task Info
   task_file = rc::FILE_TASKS;
   task_id = rc::TASK_ROULETTE;
   last_task_id = -1;
+  search_depth = 1;
   //task_map_file = rc::FILE_MAP_SEMIS;
   if(competition_id == rc::COMPETITION_SEMIS)
     task_map_file = rc::FILE_MAP_SEMIS;
@@ -51,11 +68,13 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
 
   // Verify number of tasks in task.yaml and task_map.yaml agree
   BeAutonomous::UpdateTaskInfo();
-  task_bboxes.clear();
+  BeAutonomous::ReadMap();
 
   // Initialize class objects and pointers
   tslam = new TSlam(this); // "new" creates a pointer to the object
-  tslam_running = false;
+  time_elapsed = 0;
+
+  roulette = new Roulette(this);
 }
 
 // Load parameter from namespace
@@ -88,14 +107,18 @@ void BeAutonomous::Execute() {
     }
   }
   else if(execute_id == rc::EXECUTE_TSLAM) {
-    if(!tslam_running) {
-      tslam_running = true;
-      tslam->Execute();
-    }
+    tslam->Execute();
     execute_id = rc::EXECUTE_MISSION;
   }
   else if(execute_id == rc::EXECUTE_MISSION) {
-
+    cur_time = ros::Time::now();
+    if(tslam->enroute && cur_time.toSec() > eta_start.toSec()) { // Keep track of eta set by tslam
+      if((cur_time.toSec() - eta_start.toSec()) >= eta) {
+        tslam->Abort();
+      }
+    }
+    if(task_id == rc::TASK_ROULETTE && !roulette->active)
+      roulette->Execute();
   }
 }
 
@@ -105,6 +128,14 @@ void BeAutonomous::UpdateTaskInfo() {
   alignment_plane = tasks["tasks"][task_id]["plane"].as<int>();
   if(alignment_plane != rc::PLANE_YZ && alignment_plane != rc::PLANE_XY)
     alignment_plane = rc::PLANE_YZ; // Default to YZ-plane (fwd cam)
+
+  search_depth = tasks["tasks"][task_id]["search_depth"].as<double>();
+
+  riptide_msgs::TaskInfo task_msg;
+  task_msg.task_id = task_id;
+  task_msg.task_name = task_name;
+  task_msg.alignment_plane = alignment_plane;
+  task_info_pub.publish(task_msg);
 }
 
 void BeAutonomous::ReadMap() {
@@ -130,8 +161,12 @@ void BeAutonomous::ReadMap() {
   }
 }
 
-double CalcETA(double dist, double Ax) {
-
+void BeAutonomous::CalcETA(double Ax, double dist) {
+  if(Ax >= 0.6 && Ax <= 1.25) { // Eqn only valid for Ax=[0.6, 1.25] m/s^2
+    double vel = A2V_SLOPE*Ax + A2V_INT;
+    eta = dist/vel;
+  }
+  else eta = -1;
 }
 
 void BeAutonomous::SystemCheck() {
@@ -151,6 +186,8 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr& switch_ms
 
   if(switch_msg->kill == 0 && (quad_sum > 1 || activation_sum == 0)) {
     mission_loaded = false; // Cancel if more than two quads activated, or if no switch is in
+    tslam->Abort();
+    roulette->Abort();
   }
   else if(!mission_loaded && switch_msg->kill == 0 && activation_sum > 0) { // Ready to load new mission
     if(quad_sum > 1) {
@@ -205,8 +242,19 @@ void BeAutonomous::DepthCB(const riptide_msgs::Depth::ConstPtr& depth_msg) {
   depth = depth_msg->depth;
 }
 
-void BeAutonomous::TaskBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_msg) {
-  //task_bboxes = bbox_msg;
+void BeAutonomous::ImageCB(const sensor_msgs::Image::ConstPtr &msg) {
+  cv_bridge::CvImagePtr cv_ptr;
+  try {
+    // Use the BGR8 image_encoding for proper color encoding
+    cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+  }
+  catch (cv_bridge::Exception& e ){
+    ROS_ERROR("cv_bridge exception:  %s", e.what());
+    return;
+  }
+
+  frame_width = cv_ptr->image.size().width;
+  frame_height = cv_ptr->image.size().height;
 }
 
 void BeAutonomous::Loop()
