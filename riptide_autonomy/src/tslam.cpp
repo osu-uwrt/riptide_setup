@@ -1,49 +1,64 @@
 #include "riptide_autonomy/tslam.h"
 
-int main() {
-
-}
-
-TSlam::TSlam(ros::NodeHandle& nh_in) {
-  //nh(nh_in);
-  //nh = nh_in;
-  //ros::Publisher accel_pub = nh_in.advertise<geometry_msgs::Vector3>("/command/accel_linear", 1);
-  level = rc::ROUND_SEMIS;
-  quad = 0;
-  last_task = -1;
-  next_task = rc::TASK_CASINO_GATE;
-
+TSlam::TSlam(BeAutonomous* master) {
+  this->master = master;
+  duration_thresh = 3.0;
+  x_accel = 1.0;
   //go_sub = nh.subscribe<std_msgs::Int8>("/command/tslam/go", 1, &TSlam::Go, this);
 	//abort_sub = nh.subscribe<std_msgs::Empty>("/command/tslam/abort", 1, &TSlam::Abort, this);
-
-  competetion_level = level;
-
-  // Just initialize task_map_file so it will compile
-  task_map_file = "../osu-uwrt/riptide_software/src/riptide_autonomy/cfg/task_map_semis.yaml";
-  if(competetion_level == rc::ROUND_SEMIS)
-    task_map_file = "../osu-uwrt/riptide_software/src/riptide_autonomy/cfg/task_map_semis.yaml";
-  else
-    task_map_file = "../osu-uwrt/riptide_software/src/riptide_autonomy/cfg/task_map_finals.yaml";
-
-  task_id = rc::TASK_CASINO_GATE;
-  task_map = YAML::LoadFile(task_map_file);
-
-  // Verify number of objects and thresholds match
-  num_tasks = (int)task_map["task_map"]["map"].size();
-}
-
-void TSlam::SetQuad(int l, int q) {
-  level = l;
-  quad = q;
-}
-
-void TSlam::SetTask(int l, int n) {
-  last_task = l;
-  next_task = n;
 }
 
 void TSlam::Execute() {
+  // Calculate heading to point towards next task
+  delta_x = master->start_x - master->current_x;
+  delta_y = master->start_y - master->current_y;
+  angle = atan2(delta_y, delta_x);
+  heading = angle - 90;
+  if(heading <= -180)
+    heading += 360;
 
+  riptide_msgs::AttitudeCommand attitude_cmd;
+  attitude_cmd.roll_active = true;
+  attitude_cmd.pitch_active = true;
+  attitude_cmd.yaw_active = true;
+  attitude_cmd.euler_rpy.x = 0;
+  attitude_cmd.euler_rpy.y = 0;
+  attitude_cmd.euler_rpy.z = 0;
+  master->attitude_pub.publish(attitude_cmd);
+
+  // Calculate distance and estimated ETA
+  distance = sqrt(delta_x*delta_x + delta_y*delta_y);
+
+  attitude_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &TSlam::AttitudeStatusCB, this);
+}
+
+void TSlam::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr& status_msg) {
+  if(master->tslam_running) {
+    double error = abs(status_msg->yaw.error);
+
+  	// Once we are at heading
+  	if (error < 5)
+  	{
+      if(duration == 0)
+        acceptable_begin = ros::Time::now();
+      else
+        duration += (ros::Time::now().toSec() - acceptable_begin.toSec());
+
+      if(duration >= duration_thresh) {
+        attitude_status_sub.shutdown();
+
+    		// Drive forward
+    		geometry_msgs::Vector3 msg;
+    		msg.x = x_accel;
+    		msg.y = 0;
+    		msg.z = 0;
+    		master->linear_accel_pub.publish(msg);
+      }
+  	}
+    else {
+      duration = 0;
+    }
+  }
 }
 
 /*void TSlam::UpdateTaskInfo() {
@@ -78,25 +93,7 @@ void TSlam::Execute() {
 	attitude_sub = nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &TSlam::AttitudeStatusCB, this);
 }*/
 
-void TSlam::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr& status_msg)
-{
-	double error = abs(status_msg->yaw.error);
 
-	// Once we are at heading
-	if (error < 5)
-	{
-		attitude_sub.shutdown();
-
-		// Drive forward
-		//ros::Publisher accel_pub = nh->advertise<geometry_msgs::Vector3>("/command/accel_linear", 1);
-		geometry_msgs::Vector3 msg;
-		msg.x = 1;
-		msg.y = 0;
-		msg.z = 0;
-		//accel_pub.publish(msg);
-		//accel_pub.shutdown();
-	}
-}
 
 /*void TSlam::Abort(const std_msgs::Empty::ConstPtr& data)
 {

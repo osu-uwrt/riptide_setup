@@ -16,13 +16,14 @@ find_package(catkin REQUIRED COMPONENTS
 
 roslint_cpp()
 
+set(${PROJECT_NAME}_task_objects
+  src/tslam.cpp
+)
+
 catkin_package(INCLUDE_DIRS include)
+
 include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
 
-add_executable(be_autonomous src/be_autonomous.cpp)
+add_executable(be_autonomous src/be_autonomous.cpp ${${PROJECT_NAME}_task_objects})
 target_link_libraries(be_autonomous ${catkin_LIBRARIES} yaml-cpp)
 add_dependencies(be_autonomous ${catkin_EXPORTED_TARGETS})
-
-add_executable(tslam src/tslam.cpp)
-target_link_libraries(tslam ${catkin_LIBRARIES} yaml-cpp)
-add_dependencies(tslam ${catkin_EXPORTED_TARGETS})

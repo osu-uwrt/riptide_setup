@@ -32,9 +32,9 @@ uint8 CONTROL_BBOX_HEIGHT = 1
 
 # Quadrants
 uint8 QUAD_A = 0
-uint8 QUAD_B = 0
-uint8 QUAD_C = 0
-uint8 QUAD_D = 0
+uint8 QUAD_B = 1
+uint8 QUAD_C = 2
+uint8 QUAD_D = 3
 
 # Mission IDs
 uint8 MISSION_A_BLACK = 0
@@ -47,16 +47,21 @@ uint8 MISSION_D_BLACK = 6
 uint8 MISSION_D_RED = 7
 uint8 MISSION_TEST = 8
 
-# Competition Rounds
-uint8 ROUND_SEMIS = 0 # Practice and semis are the same
-uint8 ROUND_FINALS = 1
+# Competition Round IDs
+uint8 COMPETITION_SEMIS = 0 # Practice and semis are the same
+uint8 COMPETITION_FINALS = 1
+
+# Task and Task Map file paths
+string FILE_TASKS = "../osu-uwrt/riptide_software/src/riptide_autonomy/cfg/tasks.yaml"
+string FILE_MAP_SEMIS = "../osu-uwrt/riptide_software/src/riptide_autonomy/cfg/task_map_semis.yaml"
+string FILE_MAP_FINALS = "../osu-uwrt/riptide_software/src/riptide_autonomy/cfg/task_map_finals.yaml"
 
 # Execute Codes
 uint8 EXECUTE_STANDBY = 0
 uint8 EXECUTE_TSLAM = 1
 uint8 EXECUTE_MISSION = 2
 
-# Competition Task Codes
+# Competition Task IDs
 uint8 TASK_CASINO_GATE = 0
 uint8 TASK_PATH_MARKER1 = 1
 uint8 TASK_DICE = 2

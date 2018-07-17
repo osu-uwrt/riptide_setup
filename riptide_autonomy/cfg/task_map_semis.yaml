@@ -3,6 +3,8 @@ task_map: [
       id: 0,
       quad: "A",
       freq: 30,
+      dock_x: 0,
+      dock_y: 0,
       map: [
         {
           id: 0,
@@ -82,6 +84,8 @@ task_map: [
       id: 1,
       quad: "B",
       freq: 40,
+      dock_x: 0,
+      dock_y: 0,
       map: [
         {
           id: 0,
@@ -161,6 +165,8 @@ task_map: [
       id: 2,
       quad: "C",
       freq: 25,
+      dock_x: 0,
+      dock_y: 0,
       map: [
         {
           id: 0,
@@ -240,6 +246,8 @@ task_map: [
       id: 3,
       quad: "D",
       freq: 35,
+      dock_x: 0,
+      dock_y: 0,
       map: [
         {
           id: 0,

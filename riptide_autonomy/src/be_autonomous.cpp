@@ -8,17 +8,33 @@ int main(int argc, char** argv) {
 
 BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namespace declared in nh()
   switch_sub = nh.subscribe<riptide_msgs::SwitchState>("/state/switches", 1, &BeAutonomous::SwitchCB, this);
-	task_info_pub = nh.advertise<riptide_msgs::TaskInfo>("/task/info", 1);
+  imu_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &BeAutonomous::ImuCB, this);
+  depth_sub = nh.subscribe<riptide_msgs::Depth>("/state/depth", 1, &BeAutonomous::DepthCB, this);
+  task_bbox_sub = nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &BeAutonomous::TaskBBoxCB, this);
+
+  linear_accel_pub = nh.advertise<geometry_msgs::Vector3>("/command/accel_linear", 1);
+  attitude_pub = nh.advertise<riptide_msgs::AttitudeCommand>("/command/attitude", 1);
+  depth_pub = nh.advertise<riptide_msgs::DepthCommand>("/command/depth", 1);
+  task_info_pub = nh.advertise<riptide_msgs::TaskInfo>("/task/info", 1);
   state_mission_pub = nh.advertise<riptide_msgs::MissionState>("/state/mission", 1);
 
   execute_id = rc::EXECUTE_STANDBY;
   mission_loaded = false;
+  BeAutonomous::LoadParam<int>("competition_id", competition_id);
   BeAutonomous::LoadParam<double>("loader_watchdog", loader_watchdog);
 
   // Load Task Info
-  BeAutonomous::LoadParam<string>("task_file", task_file);
+  task_file = rc::FILE_TASKS;
   task_id = rc::TASK_ROULETTE;
+  last_task_id = -1;
+  //task_map_file = rc::FILE_MAP_SEMIS;
+  if(competition_id == rc::COMPETITION_SEMIS)
+    task_map_file = rc::FILE_MAP_SEMIS;
+  else
+    task_map_file = rc::FILE_MAP_FINALS;
+
   tasks = YAML::LoadFile(task_file);
+  task_map = YAML::LoadFile(task_map_file);
 
   // Verify number of objects and thresholds match
   num_tasks = (int)tasks["tasks"].size();
@@ -32,9 +48,14 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
       ros::shutdown();
     }
   }
+
+  // Verify number of tasks in task.yaml and task_map.yaml agree
   BeAutonomous::UpdateTaskInfo();
-  //TSlam ts(&nh);
-  //tslam_ptr = &ts;
+  task_bboxes.clear();
+
+  // Initialize class objects and pointers
+  tslam = new TSlam(this); // "new" creates a pointer to the object
+  tslam_running = false;
 }
 
 // Load parameter from namespace
@@ -59,12 +80,19 @@ void BeAutonomous::LoadParam(string param, T &var)
 
 void BeAutonomous::Execute() {
   if(execute_id == rc::EXECUTE_STANDBY) {
-    if(mission_loaded) {
+    if(mission_loaded && load_id == rc::MISSION_TEST) {
+      execute_id = rc::EXECUTE_STANDBY;
+    }
+    else if(mission_loaded && load_id < rc::MISSION_TEST) {
       execute_id = rc::EXECUTE_TSLAM;
     }
   }
   else if(execute_id == rc::EXECUTE_TSLAM) {
-
+    if(!tslam_running) {
+      tslam_running = true;
+      tslam->Execute();
+    }
+    execute_id = rc::EXECUTE_MISSION;
   }
   else if(execute_id == rc::EXECUTE_MISSION) {
 
@@ -77,6 +105,33 @@ void BeAutonomous::UpdateTaskInfo() {
   alignment_plane = tasks["tasks"][task_id]["plane"].as<int>();
   if(alignment_plane != rc::PLANE_YZ && alignment_plane != rc::PLANE_XY)
     alignment_plane = rc::PLANE_YZ; // Default to YZ-plane (fwd cam)
+}
+
+void BeAutonomous::ReadMap() {
+  int quad = floor(load_id/2.0);
+  if(quad < 4) {
+    if(last_task_id == -1) {
+      current_x = task_map["task_map"][quad]["dock_x"].as<double>();
+      current_x = task_map["task_map"][quad]["dock_y"].as<double>();
+    }
+    else {
+      current_x = task_map["task_map"][quad]["map"][last_task_id]["end_x"].as<double>();
+      current_y = task_map["task_map"][quad]["map"][last_task_id]["end_y"].as<double>();
+    }
+
+    start_x = task_map["task_map"][quad]["map"][task_id]["start_x"].as<double>();
+    start_y = task_map["task_map"][quad]["map"][task_id]["start_y"].as<double>();
+  }
+  else {
+    current_x = 420;
+    current_y = 420;
+    start_x = 420;
+    start_y = 420;
+  }
+}
+
+double CalcETA(double dist, double Ax) {
+
 }
 
 void BeAutonomous::SystemCheck() {
@@ -139,6 +194,19 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr& switch_ms
       }
     }
   }
+}
+
+void BeAutonomous::ImuCB(const riptide_msgs::Imu::ConstPtr & imu_msg) {
+  euler_rpy = imu_msg->euler_rpy;
+  linear_accel = imu_msg->linear_accel;
+}
+
+void BeAutonomous::DepthCB(const riptide_msgs::Depth::ConstPtr& depth_msg) {
+  depth = depth_msg->depth;
+}
+
+void BeAutonomous::TaskBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_msg) {
+  //task_bboxes = bbox_msg;
 }
 
 void BeAutonomous::Loop()
