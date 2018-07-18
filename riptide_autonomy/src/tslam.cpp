@@ -9,7 +9,7 @@ TSlam::TSlam(BeAutonomous* master) {
   depth_stable = false;
 }
 
-void TSlam::Execute() {
+void TSlam::Start() {
   // Calculate heading to point towards next task
   delta_x = master->start_x - master->current_x;
   delta_y = master->start_y - master->current_y;
@@ -81,7 +81,7 @@ void TSlam::DepthStatusCB(const riptide_msgs::ControlStatus::ConstPtr& status_ms
 
     if(duration >= duration_thresh) {
       depth_status_sub.shutdown();
-      active_subs.erase(active_subs.begin()+1);
+      active_subs.erase(active_subs.end());
       depth_stable = true;
       duration = 0;
     }

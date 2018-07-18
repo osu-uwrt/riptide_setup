@@ -1,12 +1,13 @@
 #include "riptide_autonomy/be_autonomous.h"
 
+// Slope and y-int for x-accel to x-velocity
 #define A2V_SLOPE 0.2546
 #define A2V_INT .1090
 
 int main(int argc, char** argv) {
   ros::init(argc, argv, "be_autonomous");
   BeAutonomous ba;
-  ba.Loop();
+  ros::spin();
 }
 
 BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namespace declared in nh()
@@ -15,6 +16,7 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
   depth_sub = nh.subscribe<riptide_msgs::Depth>("/state/depth", 1, &BeAutonomous::DepthCB, this);
 
   reset_pub = nh.advertise<riptide_msgs::ResetControls>("/controls/reset", 1);
+  pwm_pub = nh.advertise<riptide_msgs::PwmStamped>("/command/pwm", 1);
   linear_accel_pub = nh.advertise<geometry_msgs::Vector3>("/command/accel_linear", 1);
   attitude_pub = nh.advertise<riptide_msgs::AttitudeCommand>("/command/attitude", 1);
   alignment_pub = nh.advertise<riptide_msgs::AlignmentCommand>("/command/alignment", 1);
@@ -22,12 +24,48 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
   task_info_pub = nh.advertise<riptide_msgs::TaskInfo>("/task/info", 1);
   state_mission_pub = nh.advertise<riptide_msgs::MissionState>("/state/mission", 1);
 
-  execute_id = rc::EXECUTE_STANDBY;
-  mission_loaded = false;
   BeAutonomous::LoadParam<int>("competition_id", competition_id);
-  BeAutonomous::LoadParam<double>("loader_watchdog", loader_watchdog);
+  BeAutonomous::LoadParam<double>("loader_timer", loader_timer);
+  BeAutonomous::LoadParam<bool>("single_test", single_test);
+  BeAutonomous::LoadParam<double>("relative_current_x", relative_current_x);
+  BeAutonomous::LoadParam<double>("relative_current_y", relative_current_y);
+  mission_loaded = false;
+  vehicle_ready = false;
+  thruster = 0;
 
-  // Activate all non-alignment controllers
+  // Load Task Info
+  task_file = rc::FILE_TASKS;
+  task_id = -1;
+  last_task_id = -1;
+  color = rc::COLOR_BLACK;
+  if(competition_id == rc::COMPETITION_SEMIS)
+    task_map_file = rc::FILE_MAP_SEMIS;
+  else
+    task_map_file = rc::FILE_MAP_FINALS;
+
+  tasks = YAML::LoadFile(task_file);
+  task_map = YAML::LoadFile(task_map_file);
+  nh.param("/task_order", task_order, vector<int>(0));
+  task_order_index = -1;
+  tasks_enqueued = task_order.size();
+
+  // Verify number of objects and thresholds match
+  total_tasks = (int)tasks["tasks"].size();
+  for(int i=0; i<total_tasks; i++) {
+    int num_objects = (int)tasks["tasks"][i]["objects"].size();
+    int num_thresholds = (int)tasks["tasks"][i]["thresholds"].size();
+    task_name = tasks["tasks"][i]["name"].as<string>();
+    if(num_objects != num_thresholds) {
+      ROS_INFO("Task ID %i (%s): %i objects and %i thresholds. Quantities must match", i, task_name.c_str(), num_objects, num_thresholds);
+      ROS_INFO("Shutting Down");
+      ros::shutdown();
+    }
+  }
+
+  BeAutonomous::UpdateTaskInfo();
+  BeAutonomous::ReadMap();
+
+  // Enable all controllers (won't be activated yet until commanded to do so)
   riptide_msgs::ResetControls reset_msg;
   reset_msg.reset_surge = false;
   reset_msg.reset_sway = false;
@@ -39,41 +77,18 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
   reset_msg.reset_pwm = false;
   reset_pub.publish(reset_msg);
 
-  // Load Task Info
-  task_file = rc::FILE_TASKS;
-  task_id = rc::TASK_ROULETTE;
-  last_task_id = -1;
-  search_depth = 1;
-  //task_map_file = rc::FILE_MAP_SEMIS;
-  if(competition_id == rc::COMPETITION_SEMIS)
-    task_map_file = rc::FILE_MAP_SEMIS;
-  else
-    task_map_file = rc::FILE_MAP_FINALS;
-
-  tasks = YAML::LoadFile(task_file);
-  task_map = YAML::LoadFile(task_map_file);
-
-  // Verify number of objects and thresholds match
-  num_tasks = (int)tasks["tasks"].size();
-  for(int i=0; i<num_tasks; i++) {
-    int num_objects = (int)tasks["tasks"][i]["objects"].size();
-    int num_thresholds = (int)tasks["tasks"][i]["thresholds"].size();
-    task_name = tasks["tasks"][i]["name"].as<string>();
-    if(num_objects != num_thresholds) {
-      ROS_INFO("Task ID %i (%s): %i objects and %i thresholds. Quantities must match", i, task_name.c_str(), num_objects, num_thresholds);
-      ROS_INFO("Shutting Down");
-      ros::shutdown();
-    }
-  }
-
-  // Verify number of tasks in task.yaml and task_map.yaml agree
-  BeAutonomous::UpdateTaskInfo();
-  BeAutonomous::ReadMap();
+  // Vehicle State
+  euler_rpy.x = 0;
+  euler_rpy.y = 0;
+  euler_rpy.z = 0;
+  linear_accel.x = 0;
+  linear_accel.y = 0;
+  linear_accel.z = 0;
+  depth = 0;
 
   // Initialize class objects and pointers
-  tslam = new TSlam(this); // "new" creates a pointer to the object
-  time_elapsed = 0;
-
+  // The "new" keyword creates a pointer to the object
+  tslam = new TSlam(this);
   roulette = new Roulette(this);
 }
 
@@ -97,29 +112,73 @@ void BeAutonomous::LoadParam(string param, T &var)
   }
 }
 
-void BeAutonomous::Execute() {
-  if(execute_id == rc::EXECUTE_STANDBY) {
-    if(mission_loaded && load_id == rc::MISSION_TEST) {
-      execute_id = rc::EXECUTE_STANDBY;
-    }
-    else if(mission_loaded && load_id < rc::MISSION_TEST) {
-      execute_id = rc::EXECUTE_TSLAM;
+void BeAutonomous::StartTaskTimer(const ros::TimerEvent& event) {
+  BeAutonomous::StartTask();
+}
+
+void BeAutonomous::StartTask() {
+  task_order_index++;
+  if(task_order_index < task_order.size()) {
+    task_id = task_order.at(task_order_index);
+    BeAutonomous::UpdateTaskInfo();
+    BeAutonomous::ReadMap();
+    tslam->Start();
+    if(eta > 0) { // Kill TSlam if necessary so vehicle does not go too far
+      timer = nh.createTimer(ros::Duration(eta), &BeAutonomous::EndTSlamTimer, this);
     }
   }
-  else if(execute_id == rc::EXECUTE_TSLAM) {
-    tslam->Execute();
-    execute_id = rc::EXECUTE_MISSION;
+  else {
+    BeAutonomous::EndMission();
   }
-  else if(execute_id == rc::EXECUTE_MISSION) {
-    cur_time = ros::Time::now();
-    if(tslam->enroute && cur_time.toSec() > eta_start.toSec()) { // Keep track of eta set by tslam
-      if((cur_time.toSec() - eta_start.toSec()) >= eta) {
-        tslam->Abort();
-      }
-    }
-    if(task_id == rc::TASK_ROULETTE && !roulette->active)
-      roulette->Execute();
+}
+
+void BeAutonomous::EndMission() {
+  task_order_index = -1;
+  task_id = -1;
+  last_task_id = -1;
+  tslam->Abort();
+  roulette->Abort();
+}
+
+void BeAutonomous::SystemCheckTimer(const ros::TimerEvent& event) {
+  BeAutonomous::SystemCheck();
+}
+
+void BeAutonomous::SystemCheck() {
+  riptide_msgs::PwmStamped pwm_msg;
+  pwm_msg.header.stamp = ros::Time::now();
+  pwm_msg.pwm.surge_port_lo = 1500;
+  pwm_msg.pwm.surge_stbd_lo = 1500;
+  pwm_msg.pwm.sway_fwd = 1500;
+  pwm_msg.pwm.sway_aft = 1500;
+  pwm_msg.pwm.heave_port_fwd = 1500;
+  pwm_msg.pwm.heave_stbd_fwd = 1500;
+  pwm_msg.pwm.heave_port_aft = 1500;
+  pwm_msg.pwm.heave_stbd_aft = 1500;
+
+  if(thruster < 8) { // Set thrusters to 1550 one at a time
+    if(thruster == 0)
+      pwm_msg.pwm.surge_port_lo = 1550;
+    else if(thruster == 1)
+      pwm_msg.pwm.surge_stbd_lo = 1550;
+    else if(thruster == 2)
+      pwm_msg.pwm.sway_fwd = 1550;
+    else if(thruster == 3)
+      pwm_msg.pwm.sway_aft = 1550;
+    else if(thruster == 4)
+      pwm_msg.pwm.heave_port_fwd = 1550;
+    else if(thruster == 5)
+      pwm_msg.pwm.heave_stbd_fwd = 1550;
+    else if(thruster == 6)
+      pwm_msg.pwm.heave_port_aft = 1550;
+    else if(thruster == 7)
+      pwm_msg.pwm.heave_stbd_aft = 1550;
+
+    pwm_pub.publish(pwm_msg);
+    thruster++;
+    timer = nh.createTimer(ros::Duration(0.5), &BeAutonomous::SystemCheckTimer, this);
   }
+  else pwm_pub.publish(pwm_msg);
 }
 
 void BeAutonomous::UpdateTaskInfo() {
@@ -139,19 +198,23 @@ void BeAutonomous::UpdateTaskInfo() {
 }
 
 void BeAutonomous::ReadMap() {
-  int quad = floor(load_id/2.0);
-  if(quad < 4) {
-    if(last_task_id == -1) {
-      current_x = task_map["task_map"][quad]["dock_x"].as<double>();
-      current_x = task_map["task_map"][quad]["dock_y"].as<double>();
+  quadrant = floor(load_id/2.0);
+  if(quadrant < 4) {
+    start_x = task_map["task_map"][quadrant]["map"][task_id]["start_x"].as<double>();
+    start_y = task_map["task_map"][quadrant]["map"][task_id]["start_y"].as<double>();
+
+    if(last_task_id == -1 && !single_test) {
+      current_x = task_map["task_map"][quadrant]["dock_x"].as<double>();
+      current_x = task_map["task_map"][quadrant]["dock_y"].as<double>();
+    }
+    else if(single_test && task_order.size() == 1) {
+      current_x = start_x + relative_current_x;
+      current_y = start_y + relative_current_y;
     }
     else {
-      current_x = task_map["task_map"][quad]["map"][last_task_id]["end_x"].as<double>();
-      current_y = task_map["task_map"][quad]["map"][last_task_id]["end_y"].as<double>();
+      current_x = task_map["task_map"][quadrant]["map"][last_task_id]["end_x"].as<double>();
+      current_y = task_map["task_map"][quadrant]["map"][last_task_id]["end_y"].as<double>();
     }
-
-    start_x = task_map["task_map"][quad]["map"][task_id]["start_x"].as<double>();
-    start_y = task_map["task_map"][quad]["map"][task_id]["start_y"].as<double>();
   }
   else {
     current_x = 420;
@@ -161,16 +224,22 @@ void BeAutonomous::ReadMap() {
   }
 }
 
+// Calculate eta for TSlam to bring vehicle to next task
 void BeAutonomous::CalcETA(double Ax, double dist) {
   if(Ax >= 0.6 && Ax <= 1.25) { // Eqn only valid for Ax=[0.6, 1.25] m/s^2
     double vel = A2V_SLOPE*Ax + A2V_INT;
     eta = dist/vel;
   }
-  else eta = -1;
+  else eta = 0;
 }
 
-void BeAutonomous::SystemCheck() {
+void BeAutonomous::EndTSlamTimer(const ros::TimerEvent& event) {
+  BeAutonomous::EndTSlam();
+}
 
+void BeAutonomous::EndTSlam() {
+  tslam->Abort();
+  eta = 0;
 }
 
 void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr& switch_msg) {
@@ -186,12 +255,10 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr& switch_ms
 
   if(switch_msg->kill == 0 && (quad_sum > 1 || activation_sum == 0)) {
     mission_loaded = false; // Cancel if more than two quads activated, or if no switch is in
-    tslam->Abort();
-    roulette->Abort();
+    BeAutonomous::EndMission();
   }
   else if(!mission_loaded && switch_msg->kill == 0 && activation_sum > 0) { // Ready to load new mission
-    if(quad_sum > 1) {
-      // No kill switch and one quadrant selected, ready to prime
+    if(quad_sum > 1) { // No kill switch and one quadrant selected
       if(switch_msg->sw1 && !switch_msg->sw5){
         load_id = rc::MISSION_A_BLACK; //Quad A Black
       }
@@ -217,18 +284,28 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr& switch_ms
         load_id = rc::MISSION_D_RED; //Quad D Red
       }
     }
-    else if(quad_sum == 0 && switch_msg->sw5) {
+    else if(quad_sum == 0 && switch_msg->sw5) { // Only test switch is engaged
       load_id = rc::MISSION_TEST; // Do system check
     }
 
     if(load_id != last_load_id) {
-      load_timer = ros::Time::now().toSec();
+      load_time = ros::Time::now();
     }
     else {
-      load_timer = ros::Time::now().toSec() - load_timer;
-      if(load_timer > loader_watchdog) {
+      load_duration = ros::Time::now().toSec() - load_time.toSec();
+      if(load_duration > loader_timer) {
         mission_loaded = true;
       }
+    }
+  }
+  else if(switch_msg->kill && mission_loaded && !vehicle_ready) {
+    vehicle_ready = true;
+    if(load_id == rc::MISSION_TEST) {
+      // Use a delay for the first time because of initializing thrusters
+      timer = nh.createTimer(ros::Duration(2), &BeAutonomous::SystemCheckTimer, this);
+    }
+    else if(load_id < rc::MISSION_TEST) {
+      timer = nh.createTimer(ros::Duration(5), &BeAutonomous::StartTaskTimer, this);
     }
   }
 }
@@ -255,15 +332,4 @@ void BeAutonomous::ImageCB(const sensor_msgs::Image::ConstPtr &msg) {
 
   frame_width = cv_ptr->image.size().width;
   frame_height = cv_ptr->image.size().height;
-}
-
-void BeAutonomous::Loop()
-{
-  ros::Rate rate(200);
-  while(ros::ok())
-  {
-    ros::spinOnce();
-    BeAutonomous::Execute();
-    rate.sleep();
-  }
 }

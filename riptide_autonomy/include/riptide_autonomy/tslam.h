@@ -38,7 +38,7 @@ public:
   bool enroute;
 
   TSlam(BeAutonomous* master);
-  void Execute();
+  void Start();
   void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr& status_msg);
   void DepthStatusCB(const riptide_msgs::ControlStatus::ConstPtr& status_msg);
   void Abort();

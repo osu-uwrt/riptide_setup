@@ -45,7 +45,6 @@ class YoloProcessor
   void ImageCB(const sensor_msgs::ImageConstPtr& msg);
   void DarknetBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_msg);
   void TaskInfoCB(const riptide_msgs::TaskInfo::ConstPtr& task_msg);
-  void Loop();
 };
 
 #endif

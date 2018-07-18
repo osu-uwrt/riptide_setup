@@ -1,0 +1,4 @@
+task_order: [7]
+single_test: true
+relative_current_x: 0 # Where the vehicle starts relative to task
+relative_current_y: 0 # Where the vehicle starts relative to task

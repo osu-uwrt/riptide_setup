@@ -29,15 +29,7 @@ void Roulette::Execute() {
 }
 
 void Roulette::TaskBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_msg) {
-  darknet_ros_msgs::BoundingBoxes temp;
-  temp.header.stamp = bbox_msg->header.stamp;
-  temp.header.frame_id = bbox_msg->header.frame_id;
-  temp.image_header.stamp = bbox_msg->image_header.stamp;
-  temp.image_header.frame_id = bbox_msg->image_header.frame_id;
-  for(int i=0; i<bbox_msg->bounding_boxes.size(); i++) {
-    temp.bounding_boxes.push_back(bbox_msg->bounding_boxes[i]);
-  }
-  task_bboxes = temp;
+  // Get number of objects and make sure you have 'x' many within 't' seconds
 
   for(int i=0; i<task_bboxes.bounding_boxes.size(); i++) {
     //obj_vis =

@@ -4,7 +4,7 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "yolo_processor");
   YoloProcessor yp;
-  yp.Loop();
+  ros::spin();
 }
 
 YoloProcessor::YoloProcessor() : nh("yolo_processor") {
@@ -106,9 +106,8 @@ void YoloProcessor::ImageCB(const sensor_msgs::Image::ConstPtr &msg) {
   double font_scale = 1;
 
   // Should only have at most 4 bboxes (only Dice/Slots have 4 classes)
-  darknet_ros_msgs::BoundingBoxes last_bboxes = task_bboxes;
-  for(int i=0; i<last_bboxes.bounding_boxes.size(); i++) {
-    darknet_ros_msgs::BoundingBox bbox = last_bboxes.bounding_boxes[i];
+  for(int i=0; i<task_bboxes.bounding_boxes.size(); i++) {
+    darknet_ros_msgs::BoundingBox bbox = task_bboxes.bounding_boxes[i];
     rectangle(task_image, Point(bbox.xmin, bbox.ymin + top_margin), Point(bbox.xmax, bbox.ymax + top_margin), colors.at(i), thickness);
     char text[100];
     sprintf(text, "%s: %.5f%%", bbox.Class.c_str(), bbox.probability);
@@ -176,14 +175,4 @@ void YoloProcessor::TaskInfoCB(const riptide_msgs::TaskInfo::ConstPtr& task_msg)
   }
 
   last_alignment_plane = alignment_plane;
-}
-
-void YoloProcessor::Loop()
-{
-  ros::Rate rate(50);
-  while(ros::ok())
-  {
-    ros::spinOnce();
-    rate.sleep();
-  }
 }
