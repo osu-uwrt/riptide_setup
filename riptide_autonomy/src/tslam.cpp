@@ -1,63 +1,107 @@
 #include "riptide_autonomy/tslam.h"
 
-int main(int argc, char** argv) {
-  ros::init(argc, argv, "tslam");
-  TSlam ts;
-  ros::spin();
+TSlam::TSlam(BeAutonomous* master) {
+  this->master = master;
+  duration_thresh = 3.0;
+  x_accel = 1.0;
+  active_subs.clear();
+  enroute = false;
+  depth_stable = false;
 }
 
-TSlam::TSlam() : nh("tslam") { // NOTE: there is no namespace declared in nh()
-	go_sub = nh.subscribe<std_msgs::Int8>("/command/tslam/go", 1, &TSlam::Go, this);
-	abort_sub = nh.subscribe<std_msgs::Empty>("/command/tslam/abort", 1, &TSlam::Abort, this);
+void TSlam::Execute() {
+  // Calculate heading to point towards next task
+  delta_x = master->start_x - master->current_x;
+  delta_y = master->start_y - master->current_y;
+  angle = atan2(delta_y, delta_x);
+  heading = angle - 90;
+  if(heading <= -180)
+    heading += 360;
+
+  // Publish attitude command
+  riptide_msgs::AttitudeCommand attitude_cmd;
+  attitude_cmd.roll_active = true;
+  attitude_cmd.pitch_active = true;
+  attitude_cmd.yaw_active = true;
+  attitude_cmd.euler_rpy.x = 0;
+  attitude_cmd.euler_rpy.y = 0;
+  attitude_cmd.euler_rpy.z = heading;
+  master->attitude_pub.publish(attitude_cmd);
+
+  // Publish depth command
+  riptide_msgs::DepthCommand depth_cmd;
+  depth_cmd.active = true;
+  depth_cmd.depth = master->search_depth;
+  master->depth_pub.publish(depth_cmd);
+
+  // Calculate distance and ETA
+  distance = sqrt(delta_x*delta_x + delta_y*delta_y);
+  master->CalcETA(x_accel, distance);
+
+  attitude_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &TSlam::AttitudeStatusCB, this);
+  depth_status_sub = master->nh.subscribe<riptide_msgs::ControlStatus>("/status/controls/depth", 1, &TSlam::DepthStatusCB, this);
+  active_subs.push_back(attitude_status_sub);
+  active_subs.push_back(depth_status_sub);
 }
 
-void TSlam::Go(const std_msgs::Int8::ConstPtr& task)
-{
-	// Calculate heading
-	currentTaskHeading = 0;
-	ros::Publisher attitude_pub = nh.advertise<geometry_msgs::Vector3>("/command/attitude", 1);
-	geometry_msgs::Vector3 msg;
-	msg.x = 0;
-	msg.y = 0;
-	msg.z = currentTaskHeading;
-	attitude_pub.publish(msg);
-	attitude_pub.shutdown();
-
-	// Watch to see when the controller gets there
-	attitude_sub = nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &TSlam::AttitudeStatusCB, this);
-}
-
-void TSlam::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr& status_msg)
-{
-	double error = abs(status_msg->yaw.error);
+void TSlam::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr& status_msg) {
+  double yaw_error = abs(status_msg->yaw.error);
 
 	// Once we are at heading
-	if (error < 5)
+	if(yaw_error < 5 && depth_stable)
 	{
-		attitude_sub.shutdown();
+    if(duration == 0)
+      acceptable_begin = ros::Time::now();
+    else
+      duration += (ros::Time::now().toSec() - acceptable_begin.toSec());
 
-		// Drive forward
-		ros::Publisher accel_pub = nh.advertise<geometry_msgs::Vector3>("/command/accel_linear", 1);
-		geometry_msgs::Vector3 msg;
-		msg.x = 1;
-		msg.y = 0;
-		msg.z = 0;
-		accel_pub.publish(msg);
-		accel_pub.shutdown();
+    if(duration >= duration_thresh) {
+      attitude_status_sub.shutdown();
+      active_subs.clear();
+
+  		// Drive forward
+  		geometry_msgs::Vector3 msg;
+  		msg.x = x_accel;
+  		msg.y = 0;
+  		msg.z = 0;
+  		master->linear_accel_pub.publish(msg);
+      master->eta_start = ros::Time::now();
+      enroute = true;
+    }
 	}
+  else duration = 0;
 }
 
-void TSlam::Abort(const std_msgs::Empty::ConstPtr& data)
-{
-	// Stop accelerating
-	ros::Publisher accel_pub = nh.advertise<geometry_msgs::Vector3>("/command/accel_linear", 1);
-	geometry_msgs::Vector3 msg;
-	msg.x = 0;
-	msg.y = 0;
-	msg.z = 0;
-	accel_pub.publish(msg);
-	accel_pub.shutdown();
+void TSlam::DepthStatusCB(const riptide_msgs::ControlStatus::ConstPtr& status_msg) {
+  if(!depth_stable && abs(status_msg->error) < 0.1) {
+    if(duration == 0)
+      acceptable_begin = ros::Time::now();
+    else
+      duration += (ros::Time::now().toSec() - acceptable_begin.toSec());
 
-	// Unsubscribe
-	attitude_sub.shutdown();
+    if(duration >= duration_thresh) {
+      depth_status_sub.shutdown();
+      active_subs.erase(active_subs.begin()+1);
+      depth_stable = true;
+      duration = 0;
+    }
+  }
+  else duration = 0;
+}
+
+// Shutdown all active subscribers
+void TSlam::Abort() {
+  enroute = false;
+
+  if(active_subs.size() > 0) {
+    for(int i=0; i<active_subs.size(); i++) {
+      active_subs.at(i).shutdown();
+    }
+    active_subs.clear();
+  }
+  geometry_msgs::Vector3 msg;
+  msg.x = 0;
+  msg.y = 0;
+  msg.z = 0;
+  master->linear_accel_pub.publish(msg);
 }

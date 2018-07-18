@@ -1,10 +1,6 @@
 #ifndef OBJECT_PROCESSOR_H
 #define OBJECT_PROCESSOR_H
 
-/* README
-To install jsoncpp, do: sudo apt-get install libjsoncpp-dev
-*/
-
 #include "ros/ros.h"
 #include "cmath"
 #include "geometry_msgs/Vector3.h"

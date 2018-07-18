@@ -23,9 +23,10 @@ class PS3Controller
   ros::Publisher attitude_pub, depth_pub, lin_accel_pub, reset_pub, plane_pub;
   ros::Subscriber joy_sub, depth_sub;
 
-  geometry_msgs::Vector3 cmd_attitude, cmd_accel, delta_attitude;
+  geometry_msgs::Vector3 delta_attitude, cmd_accel;
   riptide_msgs::DepthCommand cmd_depth;
   riptide_msgs::ResetControls reset_msg;
+  riptide_msgs::AttitudeCommand cmd_attitude;
   std_msgs::Int8 plane_msg;
   bool isReset, isStarted, isInit, isDepthWorking, isR2Init, isL2Init;
   bool isDepthInit, alignment_plane;

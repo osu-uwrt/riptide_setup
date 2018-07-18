@@ -60,7 +60,6 @@ class AlignmentController
     void ObjectCB(const riptide_msgs::Object::ConstPtr &obj_msg);
     void CommandCB(const riptide_msgs::AlignmentCommand::ConstPtr &cmd);
     void DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg);
-    void Loop();
  };
 
  #endif

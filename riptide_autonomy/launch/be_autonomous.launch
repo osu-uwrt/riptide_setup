@@ -1,0 +1,11 @@
+<launch>
+  <arg name="competition_id" default="0" /> <!-- 0 for semis, 1 for finals -->
+  <arg name="quad" default="0" />
+  <arg name="loader_watchdog" default="5" />
+
+  <node pkg="riptide_autonomy" type="be_autonomous" name="be_autonomous" output="screen" >
+    <param name="competition_id" type="int" value="$(arg competition_id)" />
+    <param name="quad" type="int" value="$(arg quad)" />
+    <param name="loader_watchdog" type="double" value="$(arg loader_watchdog)" />
+  </include>
+</launch>

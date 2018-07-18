@@ -7,7 +7,7 @@
 int main(int argc, char **argv) {
   ros::init(argc, argv, "alignment_controller");
   AlignmentController ac;
-  ac.Loop();
+  ros::spin();
 }
 
 // Constructor: AlignmentController()
@@ -181,6 +181,8 @@ void AlignmentController::ObjectCB(const riptide_msgs::Object::ConstPtr &obj_msg
     status_msg.x.current = obj_pos.x;
     status_msg.z.current = obj_bbox_dim;
   }
+
+  AlignmentController::UpdateError();
 }
 
 void AlignmentController::CommandCB(const riptide_msgs::AlignmentCommand::ConstPtr &cmd) {
@@ -226,6 +228,7 @@ void AlignmentController::CommandCB(const riptide_msgs::AlignmentCommand::ConstP
   else
     pid_alignment_active = false;
 
+  AlignmentController::UpdateError();
 }
 
 void AlignmentController::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg) {
@@ -329,16 +332,5 @@ void AlignmentController::ResetHeave() {
       reset_linZ_sent = true;
     else if(!inactive_linZ_sent)
       inactive_linZ_sent = true;
-  }
-}
-
-void AlignmentController::Loop() {
-  ros::Rate rate(200);
-  while(!ros::isShuttingDown()) {
-    if(!pid_alignment_reset && pid_alignment_active) {
-      AlignmentController::UpdateError();
-    }
-    ros::spinOnce();
-    rate.sleep();
   }
 }
