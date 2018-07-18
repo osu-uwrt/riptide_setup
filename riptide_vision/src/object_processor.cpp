@@ -104,6 +104,8 @@ void ObjectProcessor::ImageCB(const sensor_msgs::Image::ConstPtr &msg) {
   cam_center_x = width/2;
   cam_center_y = height/2;
 
+  object_headings.clear();
+
   // Process image depending on task requirements
   // Append any headings to object_headings vector
   if(task_id == riptide_msgs::Constants::TASK_PATH_MARKER1 || task_id == riptide_msgs::Constants::TASK_PATH_MARKER2) {
@@ -111,11 +113,56 @@ void ObjectProcessor::ImageCB(const sensor_msgs::Image::ConstPtr &msg) {
 
   }
   else if(task_id == riptide_msgs::Constants::TASK_ROULETTE) {
-    // Process Roulette Wheel
+    int width = object_bbox.xmax - object_bbox.xmin;
+    int height = object_bbox.ymax - object_bbox.ymin;
+    cv::Rect myROI(object_bbox.xmin, object_bbox.ymin, width, height);
+		Mat cropped = cv_ptr->image(myROI);
+		Mat bgr[3];   //destination array
+		split(cropped, bgr);//split source  
 
-  }
-  else {
-    object_headings.clear();
+
+		Mat values = bgr[0] + bgr[1];
+
+		double maxRadius = min(width, height) / 2 - 1;
+
+		double scores[180];
+
+		for (int angle = 0; angle < 180; angle++)
+		{
+			scores[angle] = 0;
+			double radians = angle / 180.0 * 3.14159265;
+			double dx = cos(radians);
+			double dy = -sin(radians);
+
+			for (int r = 0; r < maxRadius; r += 2)
+			{
+				int y = dy*r;
+				int x = dx*r;
+				scores[angle] += values.at<uchar>(height / 2 + y, width / 2 + x);
+				scores[angle] += values.at<uchar>(height / 2 - y, width / 2 - x);
+			}
+		}
+
+
+		int maxIndex = 0;
+		int maxVal = 0;
+		for (int i = 0; i < 180; i++)
+		{
+			int score = 0;
+			for (int a = 0; a < 10; a++)
+			{
+				score += scores[(i + a) % 180];
+				score += scores[(i - a + 180) % 180];
+			}
+			if (maxVal < score)
+			{
+				maxIndex = i;
+				maxVal = score;
+			}
+		}
+
+    object_headings.push_back(maxIndex);
+
   }
 
   // Uncomment when ready
@@ -161,7 +208,7 @@ void ObjectProcessor::TaskBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPtr
       // Append heading of each path segment to object msg (seg1 then seg2)
     }
     else if(task_id == riptide_msgs::Constants::TASK_ROULETTE) {
-      // Append heading of roulette wheel to object msg
+      object.object_headings.push_back(object_headings.at(0));
     }
     else {
       object_headings.clear();
