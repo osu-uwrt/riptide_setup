@@ -26,9 +26,20 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
 
   BeAutonomous::LoadParam<int>("competition_id", competition_id);
   BeAutonomous::LoadParam<double>("loader_timer", loader_timer);
-  BeAutonomous::LoadParam<bool>("single_test", single_test);
-  BeAutonomous::LoadParam<double>("relative_current_x", relative_current_x);
-  BeAutonomous::LoadParam<double>("relative_current_y", relative_current_y);
+
+  // Load Task Execution Parameters
+  nh.param("Task_Execution/task_order", task_order, vector<int>(0));
+  BeAutonomous::LoadParam<bool>("Task_Execution/single_test", single_test);
+  BeAutonomous::LoadParam<double>("Task_Execution/relative_current_x", relative_current_x);
+  BeAutonomous::LoadParam<double>("Task_Execution/relative_current_y", relative_current_y);
+
+  // Load Task Runtime Parameters
+  BeAutonomous::LoadParam<double>("Controller_Thresholds/depth_thresh", depth_thresh);
+  BeAutonomous::LoadParam<double>("Controller_Thresholds/roll_thresh", roll_thresh);
+  BeAutonomous::LoadParam<double>("Controller_Thresholds/pitch_thresh", pitch_thresh);
+  BeAutonomous::LoadParam<double>("Controller_Thresholds/yaw_thresh", yaw_thresh);
+  BeAutonomous::LoadParam<double>("Controller_Thresholds/error_duration_thresh", error_duration_thresh);
+
   mission_loaded = false;
   vehicle_ready = false;
   thruster = 0;
@@ -45,9 +56,10 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
 
   tasks = YAML::LoadFile(task_file);
   task_map = YAML::LoadFile(task_map_file);
-  nh.param("/task_order", task_order, vector<int>(0));
   task_order_index = -1;
   tasks_enqueued = task_order.size();
+  search_depth = 0;
+  search_accel = 0;
 
   // Verify number of objects and thresholds match
   total_tasks = (int)tasks["tasks"].size();
@@ -123,9 +135,6 @@ void BeAutonomous::StartTask() {
     BeAutonomous::UpdateTaskInfo();
     BeAutonomous::ReadMap();
     tslam->Start();
-    if(eta > 0) { // Kill TSlam if necessary so vehicle does not go too far
-      timer = nh.createTimer(ros::Duration(eta), &BeAutonomous::EndTSlamTimer, this);
-    }
   }
   else {
     BeAutonomous::EndMission();
@@ -137,14 +146,11 @@ void BeAutonomous::EndMission() {
   task_id = -1;
   last_task_id = -1;
   tslam->Abort();
-  roulette->Abort();
+  if(roulette->active)
+    roulette->Abort();
 }
 
 void BeAutonomous::SystemCheckTimer(const ros::TimerEvent& event) {
-  BeAutonomous::SystemCheck();
-}
-
-void BeAutonomous::SystemCheck() {
   riptide_msgs::PwmStamped pwm_msg;
   pwm_msg.header.stamp = ros::Time::now();
   pwm_msg.pwm.surge_port_lo = 1500;
@@ -189,6 +195,11 @@ void BeAutonomous::UpdateTaskInfo() {
     alignment_plane = rc::PLANE_YZ; // Default to YZ-plane (fwd cam)
 
   search_depth = tasks["tasks"][task_id]["search_depth"].as<double>();
+  search_accel = tasks["tasks"][task_id]["search_accel"].as<double>();
+  align_thresh = tasks["tasks"][task_id]["align_thresh"].as<double>();
+  bbox_thresh = tasks["tasks"][task_id]["bbox_thresh"].as<double>();
+  detection_duration_thresh = tasks["tasks"][task_id]["detection_duration_thresh"].as<double>();
+  detections_req = tasks["tasks"][task_id]["detections_req"].as<double>();
 
   riptide_msgs::TaskInfo task_msg;
   task_msg.task_id = task_id;
@@ -255,6 +266,7 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr& switch_ms
 
   if(switch_msg->kill == 0 && (quad_sum > 1 || activation_sum == 0)) {
     mission_loaded = false; // Cancel if more than two quads activated, or if no switch is in
+    vehicle_ready = false;
     BeAutonomous::EndMission();
   }
   else if(!mission_loaded && switch_msg->kill == 0 && activation_sum > 0) { // Ready to load new mission
@@ -302,7 +314,7 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr& switch_ms
     vehicle_ready = true;
     if(load_id == rc::MISSION_TEST) {
       // Use a delay for the first time because of initializing thrusters
-      timer = nh.createTimer(ros::Duration(2), &BeAutonomous::SystemCheckTimer, this);
+      timer = nh.createTimer(ros::Duration(3), &BeAutonomous::SystemCheckTimer, this);
     }
     else if(load_id < rc::MISSION_TEST) {
       timer = nh.createTimer(ros::Duration(5), &BeAutonomous::StartTaskTimer, this);

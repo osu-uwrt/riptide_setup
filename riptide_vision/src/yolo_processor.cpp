@@ -157,8 +157,10 @@ void YoloProcessor::DarknetBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPt
     }
   }
 
-  task_bbox_pub.publish(task_bboxes);
-  low_detections_pub.publish(low_detections);
+  if(task_bboxes.bounding_boxes.size() > 0)
+    task_bbox_pub.publish(task_bboxes);
+  if(low_detections.bounding_boxes.size() > 0)
+    low_detections_pub.publish(low_detections);
 }
 
 // Get task info

@@ -52,7 +52,8 @@ public:
   // Task Info
   YAML::Node tasks, task_map;
   string task_file, task_map_file, task_name, object_name;
-  double search_depth;
+  double search_depth, search_accel;
+  double align_thresh, bbox_thresh, detection_duration_thresh, detections_req;
   int competition_id, quadrant, task_id, last_task_id, total_tasks, tasks_enqueued, task_order_index;
   int alignment_plane, color, frame_width, frame_height;
   vector<int> task_order;
@@ -64,6 +65,9 @@ public:
   // Vehicle State
   geometry_msgs::Vector3 euler_rpy, linear_accel;
   double depth;
+
+  // Task Parameters
+  double depth_thresh, roll_thresh, pitch_thresh, yaw_thresh, error_duration_thresh;
 
   // Task Specific Objects
   TSlam* tslam;
@@ -80,7 +84,6 @@ public:
   void StartTask();
   void EndMission();
   void SystemCheckTimer(const ros::TimerEvent& event);
-  void SystemCheck();
   void UpdateTaskInfo();
   void ReadMap();
   void CalcETA(double Ax, double dist);

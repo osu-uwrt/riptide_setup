@@ -28,8 +28,7 @@ private:
   double delta_x, delta_y, angle, heading, distance;
 
   ros::Time acceptable_begin;
-  double duration, duration_thresh, x_accel;
-  bool depth_stable;
+  double duration;
 
   // Create instance to master
   BeAutonomous* master;

@@ -36,8 +36,6 @@ DepthController::DepthController() : nh("depth_controller") {
 
     pid_depth_reset = true;
     pid_depth_active = false;
-    reset_accel_sent = true;
-    inactive_accel_sent = true;
 
     // IIR LPF Variables
     double fc = PID_IIR_LPF_bandwidth; // Shorthand variable for IIR bandwidth
@@ -104,9 +102,11 @@ void DepthController::UpdateError() {
     accel.z = output * R_w2b.getRow(2).z() * -1;
   }
 
-  status_msg.header.stamp = ros::Time::now();
-  status_pub.publish(status_msg);
-  cmd_pub.publish(accel);
+  if(!pid_depth_reset && pid_depth_active) {
+    status_msg.header.stamp = ros::Time::now();
+    status_pub.publish(status_msg);
+    cmd_pub.publish(accel);
+  }
   sample_start = ros::Time::now();
 }
 
@@ -143,7 +143,6 @@ void DepthController::CommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd)
       depth_cmd = 0;
     status_msg.reference = depth_cmd;
 
-    inactive_accel_sent = false;
     DepthController::UpdateError();
   }
   else {
@@ -165,33 +164,24 @@ void DepthController::ResetController(const riptide_msgs::ResetControls::ConstPt
     pid_depth_reset = true;
     DepthController::ResetDepth();
   }
-  else { // Don't reset
-    pid_depth_reset = false;
-    reset_accel_sent = false;
-  }
+  else pid_depth_reset = false;
 }
 
 void DepthController::ResetDepth() {
-  if(!reset_accel_sent && !inactive_accel_sent) {
-    depth_controller_pid.reset();
-    depth_cmd = 0;
-    depth_error = 0;
-    depth_error_dot = 0;
-    last_error = 0;
-    last_error_dot = 0;
+  depth_controller_pid.reset();
+  depth_cmd = 0;
+  depth_error = 0;
+  depth_error_dot = 0;
+  last_error = 0;
+  last_error_dot = 0;
 
-    status_msg.reference = 0;
-    status_msg.error = 0;
+  status_msg.reference = 0;
+  status_msg.error = 0;
 
-    output = 0;
-    accel.x = 0;
-    accel.y = 0;
-    accel.z = 0;
+  output = 0;
+  accel.x = 0;
+  accel.y = 0;
+  accel.z = 0;
 
-    DepthController::UpdateError();
-    if(!reset_accel_sent)
-      reset_accel_sent = true;
-    if(!inactive_accel_sent)
-      inactive_accel_sent = true;
-  }
+  DepthController::UpdateError();
 }
