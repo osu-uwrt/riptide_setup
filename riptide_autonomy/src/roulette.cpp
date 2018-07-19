@@ -1,13 +1,21 @@
 #include "riptide_autonomy/roulette.h"
 
+
+
 Roulette::Roulette(BeAutonomous* master) {
   this->master = master;
   active_subs.clear();
   num_stored_frames = 10;
   obj_vis_thresh = 0.8;
   obj_vis.clear();
+  //od = new ObjectDescriber(master);
+  //od->GetRouletteHeading(&Roulette::GotHeading, this);
   active = false;
 }
+
+/*void Roulette::GotHeading(double a) {
+  ROS_INFO("Heading done");
+}*/
 
 void Roulette::Execute() {
   active = true;

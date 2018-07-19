@@ -11,11 +11,14 @@
 #include "darknet_ros_msgs/BoundingBoxes.h"
 #include "darknet_ros_msgs/BoundingBox.h"
 #include "riptide_autonomy/be_autonomous.h"
+#include "riptide_autonomy/object_describer.h"
 #include <cmath>
 using namespace std;
 typedef riptide_msgs::Constants rc;
 
 class BeAutonomous;
+
+class ObjectDescriber;
 
 class Roulette
 {
@@ -25,6 +28,8 @@ private:
   vector<ros::Subscriber> active_subs;
 
   darknet_ros_msgs::BoundingBoxes task_bboxes;
+
+  //ObjectDescriber *od;
 
   double obj_vis_thresh;
   int num_stored_frames;
@@ -42,6 +47,7 @@ public:
   void Execute();
   void TaskBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_msg);
   void Abort();
+  void GotHeading(double);
 
 };
 
