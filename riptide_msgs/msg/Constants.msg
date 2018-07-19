@@ -46,15 +46,16 @@ uint8 MISSION_C_RED = 5
 uint8 MISSION_D_BLACK = 6
 uint8 MISSION_D_RED = 7
 uint8 MISSION_TEST = 8
+uint8 MISSION_NONE = 255
 
 # Competition Round IDs
 uint8 COMPETITION_SEMIS = 0 # Practice and semis are the same
 uint8 COMPETITION_FINALS = 1
 
 # Task and Task Map file paths
-string FILE_TASKS = "../osu-uwrt/riptide_software/src/riptide_autonomy/cfg/tasks.yaml"
-string FILE_MAP_SEMIS = "../osu-uwrt/riptide_software/src/riptide_autonomy/cfg/task_map_semis.yaml"
-string FILE_MAP_FINALS = "../osu-uwrt/riptide_software/src/riptide_autonomy/cfg/task_map_finals.yaml"
+string FILE_TASKS = ../osu-uwrt/riptide_software/src/riptide_autonomy/cfg/tasks.yaml
+string FILE_MAP_SEMIS = ../osu-uwrt/riptide_software/src/riptide_autonomy/cfg/task_map_semis.yaml
+string FILE_MAP_FINALS = ../osu-uwrt/riptide_software/src/riptide_autonomy/cfg/task_map_finals.yaml
 
 # Execute Codes
 uint8 EXECUTE_STANDBY = 0

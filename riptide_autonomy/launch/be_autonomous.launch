@@ -7,5 +7,5 @@
     <param name="competition_id" type="int" value="$(arg competition_id)" />
     <param name="quad" type="int" value="$(arg quad)" />
     <param name="loader_watchdog" type="double" value="$(arg loader_watchdog)" />
-  </include>
+  </node>
 </launch>

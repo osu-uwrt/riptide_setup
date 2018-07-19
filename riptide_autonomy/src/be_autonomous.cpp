@@ -50,8 +50,11 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
   else
     task_map_file = rc::FILE_MAP_FINALS;
 
+  ROS_INFO("Loading tasks: %s", task_file.c_str());
   tasks = YAML::LoadFile(task_file);
+  ROS_INFO("Loading task map");
   task_map = YAML::LoadFile(task_map_file);
+  ROS_INFO("YAML loaded");
 
   // Verify number of objects and thresholds match
   num_tasks = (int)tasks["tasks"].size();
@@ -169,7 +172,37 @@ void BeAutonomous::CalcETA(double Ax, double dist) {
   else eta = -1;
 }
 
-void BeAutonomous::SystemCheck() {
+void BeAutonomous::SystemCheck(const ros::TimerEvent& event) {
+  riptide_msgs::PwmStamped msg;
+  msg.pwm.surge_port_lo = 1500;
+  msg.pwm.surge_stbd_lo = 1500;
+  msg.pwm.sway_fwd = 1500;
+  msg.pwm.sway_aft = 1500;
+  msg.pwm.heave_port_fwd = 1500;
+  msg.pwm.heave_stbd_fwd = 1500;
+  msg.pwm.heave_port_aft = 1500;
+  msg.pwm.heave_stbd_aft = 1500;
+  if(thruster_to_test == 0)
+    msg.pwm.heave_port_fwd = 1530;
+  if(thruster_to_test == 1)
+    msg.pwm.heave_stbd_fwd = 1530;
+  if(thruster_to_test == 2)
+    msg.pwm.heave_port_aft = 1530;
+  if(thruster_to_test == 3)
+    msg.pwm.heave_stbd_aft = 1530;
+  if(thruster_to_test == 4)
+    msg.pwm.surge_port_lo = 1530;
+  if(thruster_to_test == 5)
+    msg.pwm.surge_stbd_lo = 1530;
+  if(thruster_to_test == 6)
+    msg.pwm.sway_fwd = 1530;
+  if(thruster_to_test == 7)
+    msg.pwm.sway_aft = 1530;
+
+  thruster_to_test++;
+  ros::Publisher pwm_publisher = nh.advertise<riptide_msgs::PwmStamped>("/command/pwm", 1);
+  pwm_publisher.publish(msg);
+  nh.createTimer(ros::Duration(2), &BeAutonomous::SystemCheck, this, true);
 
 }
 
@@ -186,6 +219,7 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr& switch_ms
 
   if(switch_msg->kill == 0 && (quad_sum > 1 || activation_sum == 0)) {
     mission_loaded = false; // Cancel if more than two quads activated, or if no switch is in
+    load_id = rc::MISSION_NONE;
     tslam->Abort();
     roulette->Abort();
   }
@@ -218,6 +252,12 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr& switch_ms
       }
     }
     else if(quad_sum == 0 && switch_msg->sw5) {
+      if (load_id != rc::MISSION_TEST)
+      {
+        ROS_INFO("Starting Test");
+        thruster_to_test = 0;
+        nh.createTimer(ros::Duration(0.1), &BeAutonomous::SystemCheck, this, true);
+      }
       load_id = rc::MISSION_TEST; // Do system check
     }
 

@@ -22,6 +22,7 @@
 #include "riptide_msgs/AttitudeCommand.h"
 #include "riptide_msgs/DepthCommand.h"
 #include "riptide_msgs/AlignmentCommand.h"
+#include "riptide_msgs/PwmStamped.h"
 
 #include "riptide_autonomy/tslam.h"
 #include "riptide_autonomy/roulette.h"
@@ -45,7 +46,7 @@ public:
   string task_file, task_map_file, task_name, object_name;
   double search_depth;
   int competition_id, mission_id, task_id, last_task_id, alignment_plane, num_tasks;
-  int frame_width, frame_height;
+  int frame_width, frame_height, thruster_to_test;
 
   // Mission Info
   int execute_id, load_id, last_load_id;
@@ -71,7 +72,7 @@ public:
   void UpdateTaskInfo();
   void ReadMap();
   void CalcETA(double Ax, double dist);
-  void SystemCheck();
+  void SystemCheck(const ros::TimerEvent& event);
   void SwitchCB(const riptide_msgs::SwitchState::ConstPtr& switch_msg);
   void ImuCB(const riptide_msgs::Imu::ConstPtr & imu_msg);
   void DepthCB(const riptide_msgs::Depth::ConstPtr& depth_msg);
