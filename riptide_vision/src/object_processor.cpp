@@ -106,64 +106,6 @@ void ObjectProcessor::ImageCB(const sensor_msgs::Image::ConstPtr &msg) {
 
   object_headings.clear();
 
-  // Process image depending on task requirements
-  // Append any headings to object_headings vector
-  if(task_id == riptide_msgs::Constants::TASK_PATH_MARKER1 || task_id == riptide_msgs::Constants::TASK_PATH_MARKER2) {
-    // Process Path Marker (seg1_heading followed by seg2_heading)
-
-  }
-  else if(task_id == riptide_msgs::Constants::TASK_ROULETTE) {
-    int width = object_bbox.xmax - object_bbox.xmin;
-    int height = object_bbox.ymax - object_bbox.ymin;
-    cv::Rect myROI(object_bbox.xmin, object_bbox.ymin, width, height);
-		Mat cropped = cv_ptr->image(myROI);
-		Mat bgr[3];   //destination array
-		split(cropped, bgr);//split source  
-
-
-		Mat values = bgr[0] + bgr[1];
-
-		double maxRadius = min(width, height) / 2 - 1;
-
-		double scores[180];
-
-		for (int angle = 0; angle < 180; angle++)
-		{
-			scores[angle] = 0;
-			double radians = angle / 180.0 * 3.14159265;
-			double dx = cos(radians);
-			double dy = -sin(radians);
-
-			for (int r = 0; r < maxRadius; r += 2)
-			{
-				int y = dy*r;
-				int x = dx*r;
-				scores[angle] += values.at<uchar>(height / 2 + y, width / 2 + x);
-				scores[angle] += values.at<uchar>(height / 2 - y, width / 2 - x);
-			}
-		}
-
-
-		int maxIndex = 0;
-		int maxVal = 0;
-		for (int i = 0; i < 180; i++)
-		{
-			int score = 0;
-			for (int a = 0; a < 10; a++)
-			{
-				score += scores[(i + a) % 180];
-				score += scores[(i - a + 180) % 180];
-			}
-			if (maxVal < score)
-			{
-				maxIndex = i;
-				maxVal = score;
-			}
-		}
-
-    object_headings.push_back(maxIndex);
-
-  }
 
   // Uncomment when ready
   //sensor_msgs::ImagePtr out_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", object_image).toImageMsg();
@@ -201,19 +143,6 @@ void ObjectProcessor::TaskBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPtr
       }
       break;
     }
-  }
-
-  if(found) {
-    if(task_id == riptide_msgs::Constants::TASK_PATH_MARKER1 || task_id == riptide_msgs::Constants::TASK_PATH_MARKER2) {
-      // Append heading of each path segment to object msg (seg1 then seg2)
-    }
-    else if(task_id == riptide_msgs::Constants::TASK_ROULETTE) {
-      object.object_headings.push_back(object_headings.at(0));
-    }
-    else {
-      object_headings.clear();
-    }
-    object_pub.publish(object);
   }
 }
 
