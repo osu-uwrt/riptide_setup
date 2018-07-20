@@ -30,7 +30,6 @@ class CommandCombinator
     void AngularCB(const geometry_msgs::Vector3::ConstPtr &ang_accel);
     double Constrain(double current, double max);
     void Combine();
-    void Loop();
  };
 
  #endif

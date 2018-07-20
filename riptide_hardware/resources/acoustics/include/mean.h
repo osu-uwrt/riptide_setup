@@ -24,7 +24,7 @@
 #include "detectPhase_types.h"
 
 /* Function Declarations */
-extern double mean(const int x[1024]);
+extern double mean(const int x[2048]);
 
 #endif
 

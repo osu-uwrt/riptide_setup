@@ -15,16 +15,16 @@
 #include "mean.h"
 
 /* Function Definitions */
-double mean(const int x[1024])
+double mean(const int x[2048])
 {
   double y;
   int k;
   y = x[0];
-  for (k = 0; k < 1023; k++) {
+  for (k = 0; k < 2047; k++) {
     y += (double)x[k + 1];
   }
 
-  y /= 1024.0;
+  y /= 2048.0;
   return y;
 }
 

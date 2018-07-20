@@ -24,7 +24,8 @@
 #include "detectPhase_types.h"
 
 /* Function Declarations */
-extern void detectPhase(int data[1024], double *phase, double *freq_pinger);
+extern void detectPhase(int data[2048], int startFreq, int endFreq, double
+  *phase, double *freq_pinger, double *amplitude);
 
 #endif
 

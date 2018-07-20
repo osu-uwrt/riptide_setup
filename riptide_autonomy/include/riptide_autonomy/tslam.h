@@ -1,30 +1,46 @@
 #ifndef TSLAM_H
 #define TSLAM_H
-//#define DEPTH_OFFSET 0.1 // Save, these were used by arduino
-//#define DEPTH_SLOPE 1
 
 #include "ros/ros.h"
-#include "std_msgs/Int8.h"
-#include "std_msgs/Empty.h"
+#include <vector>
 #include "geometry_msgs/Vector3.h"
+#include "riptide_msgs/Constants.h"
 #include "riptide_msgs/ControlStatusAngular.h"
+#include "riptide_msgs/ControlStatus.h"
+#include "riptide_msgs/Depth.h"
+#include "riptide_msgs/AttitudeCommand.h"
+#include "riptide_msgs/DepthCommand.h"
+#include "riptide_autonomy/be_autonomous.h"
 #include <cmath>
 using namespace std;
+typedef riptide_msgs::Constants rc;
+
+class BeAutonomous;
 
 class TSlam
 {
 
 private:
-  ros::NodeHandle nh;
-  ros::Subscriber go_sub, attitude_sub, abort_sub;
+  ros::Subscriber attitude_status_sub, depth_status_sub;
 
-  int currentTaskHeading;
+  vector<ros::Subscriber> active_subs;
+
+  double delta_x, delta_y, angle, heading, distance;
+
+  ros::Time acceptable_begin;
+  double duration;
+
+  // Create instance to master
+  BeAutonomous* master;
 
 public:
-  TSlam();
-  void Go(const std_msgs::Int8::ConstPtr& task);
-  void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr& attitude);
-  void Abort(const std_msgs::Empty::ConstPtr& data);
+  bool enroute;
+
+  TSlam(BeAutonomous* master);
+  void Start();
+  void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr& status_msg);
+  void DepthStatusCB(const riptide_msgs::ControlStatus::ConstPtr& status_msg);
+  void Abort();
 };
 
 #endif

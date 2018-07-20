@@ -10,7 +10,7 @@
 int main(int argc, char **argv) {
   ros::init(argc, argv, "depth_controller");
   DepthController dc;
-  dc.Loop();
+  ros::spin();
 }
 
 DepthController::DepthController() : nh("depth_controller") {
@@ -36,8 +36,6 @@ DepthController::DepthController() : nh("depth_controller") {
 
     pid_depth_reset = true;
     pid_depth_active = false;
-    reset_accel_sent = true;
-    inactive_accel_sent = true;
 
     // IIR LPF Variables
     double fc = PID_IIR_LPF_bandwidth; // Shorthand variable for IIR bandwidth
@@ -104,9 +102,11 @@ void DepthController::UpdateError() {
     accel.z = output * R_w2b.getRow(2).z() * -1;
   }
 
-  status_msg.header.stamp = ros::Time::now();
-  status_pub.publish(status_msg);
-  cmd_pub.publish(accel);
+  if(!pid_depth_reset && pid_depth_active) {
+    status_msg.header.stamp = ros::Time::now();
+    status_pub.publish(status_msg);
+    cmd_pub.publish(accel);
+  }
   sample_start = ros::Time::now();
 }
 
@@ -130,6 +130,7 @@ double DepthController::SmoothErrorIIR(double input, double prev) {
 void DepthController::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg) {
   current_depth = depth_msg->depth;
   status_msg.current = current_depth;
+  DepthController::UpdateError();
 }
 
 // Subscribe to manual depth command
@@ -142,7 +143,7 @@ void DepthController::CommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd)
       depth_cmd = 0;
     status_msg.reference = depth_cmd;
 
-    inactive_accel_sent = false;
+    DepthController::UpdateError();
   }
   else {
     DepthController::ResetDepth();
@@ -155,6 +156,7 @@ void DepthController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg) {
   tf.setValue(tf.x()*PI/180, tf.y()*PI/180, tf.z()*PI/180);
   R_b2w.setRPY(tf.x(), tf.y(), tf.z()); //Body to world rotations --> world_vector =  R_b2w * body_vector
   R_w2b = R_b2w.transpose(); //World to body rotations --> body_vector = R_w2b * world_vector
+  DepthController::UpdateError();
 }
 
 void DepthController::ResetController(const riptide_msgs::ResetControls::ConstPtr &reset_msg) {
@@ -162,44 +164,24 @@ void DepthController::ResetController(const riptide_msgs::ResetControls::ConstPt
     pid_depth_reset = true;
     DepthController::ResetDepth();
   }
-  else { // Don't reset
-    pid_depth_reset = false;
-    reset_accel_sent = false;
-  }
+  else pid_depth_reset = false;
 }
 
 void DepthController::ResetDepth() {
-  if(!reset_accel_sent && !inactive_accel_sent) {
-    depth_controller_pid.reset();
-    depth_cmd = 0;
-    depth_error = 0;
-    depth_error_dot = 0;
-    last_error = 0;
-    last_error_dot = 0;
+  depth_controller_pid.reset();
+  depth_cmd = 0;
+  depth_error = 0;
+  depth_error_dot = 0;
+  last_error = 0;
+  last_error_dot = 0;
 
-    status_msg.reference = 0;
-    status_msg.error = 0;
+  status_msg.reference = 0;
+  status_msg.error = 0;
 
-    output = 0;
-    accel.x = 0;
-    accel.y = 0;
-    accel.z = 0;
+  output = 0;
+  accel.x = 0;
+  accel.y = 0;
+  accel.z = 0;
 
-    DepthController::UpdateError();
-    if(!reset_accel_sent)
-      reset_accel_sent = true;
-    if(!inactive_accel_sent)
-      inactive_accel_sent = true;
-  }
-}
-
-void DepthController::Loop() {
-  ros::Rate rate(200);
-  while(!ros::isShuttingDown()) {
-    if(!pid_depth_reset && pid_depth_active) {
-      DepthController::UpdateError();
-    }
-    ros::spinOnce();
-    rate.sleep();
-  }
+  DepthController::UpdateError();
 }

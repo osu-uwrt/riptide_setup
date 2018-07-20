@@ -6,7 +6,6 @@
 #include "sensor_msgs/Joy.h"
 #include "std_msgs/Int8.h"
 #include "geometry_msgs/Vector3.h"
-#include "tf/transform_listener.h"
 #include "riptide_teleop/ps3_button_mapping.h"
 #include "riptide_msgs/Imu.h"
 #include "riptide_msgs/AttitudeCommand.h"
@@ -23,13 +22,13 @@ class PS3Controller
   ros::Publisher attitude_pub, depth_pub, lin_accel_pub, reset_pub, plane_pub;
   ros::Subscriber joy_sub, depth_sub;
 
-  geometry_msgs::Vector3 cmd_attitude, cmd_accel, delta_attitude;
+  geometry_msgs::Vector3 delta_attitude, euler_rpy, cmd_accel;
   riptide_msgs::DepthCommand cmd_depth;
   riptide_msgs::ResetControls reset_msg;
+  riptide_msgs::AttitudeCommand cmd_attitude;
   std_msgs::Int8 plane_msg;
   bool isReset, isStarted, isInit, isDepthWorking, isR2Init, isL2Init;
   bool isDepthInit, alignment_plane;
-  tf::Vector3 euler_rpy;
   double rt, current_depth, buoyancy_depth_thresh, delta_depth;
 
   // Max values, and command rates
@@ -41,8 +40,7 @@ class PS3Controller
 
   void InitMsgs();
   double Constrain(double current, double max);
-  void ResetControllers();
-  void EnableControllers();
+  void DisableControllers();
   void UpdateCommands();
   void PublishCommands();
 

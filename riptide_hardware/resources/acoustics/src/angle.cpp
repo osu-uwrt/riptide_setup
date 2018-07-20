@@ -54,11 +54,14 @@ static double rt_atan2d_snf(double u0, double u1)
   return y;
 }
 
-void angle(const creal_T x[512], double y[512])
+void angle(const creal_T x_data[], const int x_size[2], double y_data[], int
+           y_size[2])
 {
   int k;
-  for (k = 0; k < 512; k++) {
-    y[k] = rt_atan2d_snf(x[k].im, x[k].re);
+  y_size[0] = 1;
+  y_size[1] = (short)x_size[1];
+  for (k = 0; k + 1 <= x_size[1]; k++) {
+    y_data[k] = rt_atan2d_snf(x_data[k].im, x_data[k].re);
   }
 }
 

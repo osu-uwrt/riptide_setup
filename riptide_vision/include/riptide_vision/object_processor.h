@@ -1,10 +1,6 @@
 #ifndef OBJECT_PROCESSOR_H
 #define OBJECT_PROCESSOR_H
 
-/* README
-To install jsoncpp, do: sudo apt-get install libjsoncpp-dev
-*/
-
 #include "ros/ros.h"
 #include "cmath"
 #include "geometry_msgs/Vector3.h"
@@ -56,8 +52,6 @@ class ObjectProcessor
   void TaskBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_msg);
   void TaskInfoCB(const riptide_msgs::TaskInfo::ConstPtr& task_msg);
   void AlignmentCmdCB(const riptide_msgs::AlignmentCommand::ConstPtr& cmd);
-  void ImuCB(const riptide_msgs::Imu::ConstPtr& imu_msg);
-  void Loop();
 };
 
 #endif

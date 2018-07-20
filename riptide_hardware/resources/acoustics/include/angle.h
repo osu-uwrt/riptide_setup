@@ -24,7 +24,8 @@
 #include "detectPhase_types.h"
 
 /* Function Declarations */
-extern void angle(const creal_T x[512], double y[512]);
+extern void angle(const creal_T x_data[], const int x_size[2], double y_data[],
+                  int y_size[2]);
 
 #endif
 
