@@ -70,8 +70,8 @@ tasks: [
       plane: 0,
       search_depth: 3,
       search_accel: 0.9,
-      objects: ["Slots", "Slots_Lever", "Slots_HoleS", "Slots_HoleL"],
-      thresholds: [0.5, 0.5, 0.5, 0.5],
+      objects: ["Slots_Fruit", "Slots_Big_Red"],
+      thresholds: [0.5, 0.5],
       align_thresh: 20, # [pixels]
       bbox_thresh: 20, # [pixels]
       detection_duration_thresh: 1, # [s]
@@ -98,8 +98,9 @@ tasks: [
       search_accel: 0.9,
       objects: ["Roulette"],
       thresholds: [0.9],
-      align_thresh: 20, # [pixels]
-      bbox_thresh: 20, # [pixels]
+      drop_duration_thresh: 4.0,
+      align_thresh: 30, # [pixels]
+      bbox_thresh: 30, # [pixels]
       detection_duration_thresh: 1.0, # [s]
       detections_req: 8 # [number]
     },
