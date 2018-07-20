@@ -25,7 +25,7 @@ void ObjectDescriber::ImageCB(const sensor_msgs::Image::ConstPtr& msg) {
     return;
   }
 
-  lastImage = cv_ptr->image;
+  lastImage = cv_ptr->image.clone();
 }
 
 void ObjectDescriber::BBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bboxes) {
