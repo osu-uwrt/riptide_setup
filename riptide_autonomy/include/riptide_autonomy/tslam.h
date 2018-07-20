@@ -22,13 +22,13 @@ class TSlam
 
 private:
   ros::Subscriber attitude_status_sub, depth_status_sub;
-
+  ros::Timer timer;
   vector<ros::Subscriber> active_subs;
 
   double delta_x, delta_y, angle, heading, distance;
-
   ros::Time acceptable_begin;
   double duration;
+  bool clock_is_ticking;
 
   // Create instance to master
   BeAutonomous* master;
@@ -40,6 +40,7 @@ public:
   void Start();
   void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr& status_msg);
   void DepthStatusCB(const riptide_msgs::ControlStatus::ConstPtr& status_msg);
+  void BrakeTimer(const ros::TimerEvent& event);
   void Abort();
 };
 

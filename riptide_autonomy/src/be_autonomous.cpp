@@ -15,17 +15,20 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
   imu_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &BeAutonomous::ImuCB, this);
   depth_sub = nh.subscribe<riptide_msgs::Depth>("/state/depth", 1, &BeAutonomous::DepthCB, this);
 
-  reset_pub = nh.advertise<riptide_msgs::ResetControls>("/controls/reset", 1);
-  pwm_pub = nh.advertise<riptide_msgs::PwmStamped>("/command/pwm", 1);
   linear_accel_pub = nh.advertise<geometry_msgs::Vector3>("/command/accel_linear", 1);
   attitude_pub = nh.advertise<riptide_msgs::AttitudeCommand>("/command/attitude", 1);
   alignment_pub = nh.advertise<riptide_msgs::AlignmentCommand>("/command/alignment", 1);
   depth_pub = nh.advertise<riptide_msgs::DepthCommand>("/command/depth", 1);
+  pneumatics_pub = nh.advertise<riptide_msgs::Pneumatics>("/command/pneumatics", 1);
+
+  reset_pub = nh.advertise<riptide_msgs::ResetControls>("/controls/reset", 1);
+  pwm_pub = nh.advertise<riptide_msgs::PwmStamped>("/command/pwm", 1);
   task_info_pub = nh.advertise<riptide_msgs::TaskInfo>("/task/info", 1);
   state_mission_pub = nh.advertise<riptide_msgs::MissionState>("/state/mission", 1);
 
   BeAutonomous::LoadParam<int>("competition_id", competition_id);
   BeAutonomous::LoadParam<double>("loader_timer", loader_timer);
+  BeAutonomous::LoadParam<double>("start_timer", start_timer);
 
   // Load Task Execution Parameters
   nh.param("Task_Execution/task_order", task_order, vector<int>(0));
@@ -41,8 +44,10 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
   BeAutonomous::LoadParam<double>("Controller_Thresholds/error_duration_thresh", error_duration_thresh);
 
   mission_loaded = false;
-  vehicle_ready = false;
+  mission_running = false;
   thruster = 0;
+  pre_start_duration = 0;
+  clock_is_ticking = false;
 
   // Load Task Info
   task_file = rc::FILE_TASKS;
@@ -77,18 +82,10 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
       ros::shutdown();
     }
   }
+  ROS_INFO("Tasks verified");
 
   // Enable all controllers (won't be activated yet until commanded to do so)
-  riptide_msgs::ResetControls reset_msg;
-  reset_msg.reset_surge = false;
-  reset_msg.reset_sway = false;
-  reset_msg.reset_heave = false;
-  reset_msg.reset_roll = false;
-  reset_msg.reset_pitch = false;
-  reset_msg.reset_yaw = false;
-  reset_msg.reset_depth = false;
-  reset_msg.reset_pwm = false;
-  reset_pub.publish(reset_msg);
+  BeAutonomous::SendInitMsgs();
 
   // Vehicle State
   euler_rpy.x = 0;
@@ -98,11 +95,14 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
   linear_accel.y = 0;
   linear_accel.z = 0;
   depth = 0;
+  frame_width = 644;
+  frame_height = 482;
 
   // Initialize class objects and pointers
   // The "new" keyword creates a pointer to the object
   tslam = new TSlam(this);
   roulette = new Roulette(this);
+  ROS_INFO("Created task objects");
 }
 
 // Load parameter from namespace
@@ -125,17 +125,20 @@ void BeAutonomous::LoadParam(string param, T &var)
   }
 }
 
-void BeAutonomous::StartTaskTimer(const ros::TimerEvent& event) {
-  BeAutonomous::StartTask();
-}
-
 void BeAutonomous::StartTask() {
+  mission_running = true;
   task_order_index++;
   if(task_order_index < task_order.size()) {
     task_id = task_order.at(task_order_index);
+    ROS_INFO("New task ID: %i", task_id);
     BeAutonomous::UpdateTaskInfo();
     BeAutonomous::ReadMap();
     tslam->Start();
+    if(task_id == rc::TASK_ROULETTE) {
+      ROS_INFO("Starting roulette task");
+      roulette->Start();
+      ROS_INFO("Roulette task started");
+    }
   }
   else {
     BeAutonomous::EndMission();
@@ -143,16 +146,66 @@ void BeAutonomous::StartTask() {
 }
 
 void BeAutonomous::EndMission() {
+  mission_running = false;
+
+  if(tslam->enroute)
+    tslam->Abort();
+  if(task_id == rc::TASK_ROULETTE)
+    roulette->Abort();
+
   task_order_index = -1;
   task_id = -1;
   last_task_id = -1;
-  tslam->Abort();
-  if(roulette->active)
-    roulette->Abort();
+
+  BeAutonomous::SendResetMsgs();
+}
+
+void BeAutonomous::SendInitMsgs() {
+  reset_msg.reset_surge = false;
+  reset_msg.reset_sway = false;
+  reset_msg.reset_heave = false;
+  reset_msg.reset_roll = false;
+  reset_msg.reset_pitch = false;
+  reset_msg.reset_yaw = false;
+  reset_msg.reset_depth = false;
+  reset_msg.reset_pwm = false;
+  reset_pub.publish(reset_msg);
+}
+
+void BeAutonomous::SendResetMsgs() {
+  attitude_cmd.roll_active = false;
+  attitude_cmd.pitch_active = false;
+  attitude_cmd.yaw_active = false;
+  attitude_cmd.euler_rpy.x = 0;
+  attitude_cmd.euler_rpy.y = 0;
+  attitude_cmd.euler_rpy.z = 0;
+  attitude_pub.publish(attitude_cmd);
+
+  align_cmd.surge_active = false;
+  align_cmd.sway_active = false;
+  align_cmd.heave_active = false;
+  align_cmd.object_name = "Casino_Gate_Black";
+  align_cmd.alignment_plane = rc::PLANE_YZ;
+  align_cmd.bbox_dim = frame_width/2;
+  align_cmd.bbox_control = rc::CONTROL_BBOX_WIDTH;
+  align_cmd.target_pos.x = 0;
+  align_cmd.target_pos.y = 0;
+  align_cmd.target_pos.z = 0;
+  alignment_pub.publish(align_cmd);
+
+  reset_msg.reset_surge = true;
+  reset_msg.reset_sway = true;
+  reset_msg.reset_heave = true;
+  reset_msg.reset_roll = true;
+  reset_msg.reset_pitch = true;
+  reset_msg.reset_yaw = true;
+  reset_msg.reset_depth = true;
+  reset_msg.reset_pwm = true;
+  reset_pub.publish(reset_msg);
 }
 
 void BeAutonomous::SystemCheckTimer(const ros::TimerEvent& event) {
-  riptide_msgs::PwmStamped pwm_msg;
+  ROS_INFO("SystemCheckTimer, thruster number: %i", thruster);
   pwm_msg.header.stamp = ros::Time::now();
   pwm_msg.pwm.surge_port_lo = 1500;
   pwm_msg.pwm.surge_stbd_lo = 1500;
@@ -183,18 +236,23 @@ void BeAutonomous::SystemCheckTimer(const ros::TimerEvent& event) {
 
     pwm_pub.publish(pwm_msg);
     thruster++;
-    timer = nh.createTimer(ros::Duration(2), &BeAutonomous::SystemCheckTimer, this);
+    timer = nh.createTimer(ros::Duration(2), &BeAutonomous::SystemCheckTimer, this, true);
   }
-  else pwm_pub.publish(pwm_msg);
+  else pwm_pub.publish(pwm_msg); // Publish all 1500s
 }
 
 void BeAutonomous::UpdateTaskInfo() {
-
   task_name = tasks["tasks"][task_id]["name"].as<string>();
+  num_objects = (int)tasks["tasks"][task_id]["objects"].size();
 
   alignment_plane = tasks["tasks"][task_id]["plane"].as<int>();
   if(alignment_plane != rc::PLANE_YZ && alignment_plane != rc::PLANE_XY)
     alignment_plane = rc::PLANE_YZ; // Default to YZ-plane (fwd cam)
+
+  object_names.clear();
+  for(int i=0; i < num_objects; i++) {
+    object_names.push_back(tasks["tasks"][task_id]["objects"][i].as<string>());
+  }
 
   search_depth = tasks["tasks"][task_id]["search_depth"].as<double>();
   search_accel = tasks["tasks"][task_id]["search_accel"].as<double>();
@@ -207,7 +265,7 @@ void BeAutonomous::UpdateTaskInfo() {
   task_msg.task_id = task_id;
   task_msg.task_name = task_name;
   task_msg.alignment_plane = alignment_plane;
-  task_info_pub.publish(task_msg); 
+  task_info_pub.publish(task_msg);
 }
 
 void BeAutonomous::ReadMap() {
@@ -247,12 +305,21 @@ void BeAutonomous::CalcETA(double Ax, double dist) {
 }
 
 void BeAutonomous::EndTSlamTimer(const ros::TimerEvent& event) {
-  BeAutonomous::EndTSlam();
+  if(tslam->enroute)
+    BeAutonomous::EndTSlam();
 }
 
 void BeAutonomous::EndTSlam() {
   tslam->Abort();
   eta = 0;
+}
+
+void BeAutonomous::ResetSwitchPanel() {
+  pre_start_duration = 0;
+  clock_is_ticking = false;
+  load_duration = 0;
+  last_load_id = -1;
+  mission_loaded = false;
 }
 
 void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr& switch_msg) {
@@ -267,12 +334,17 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr& switch_ms
   int activation_sum = quad_sum + switch_msg->sw5;
 
   if(switch_msg->kill == 0 && (quad_sum > 1 || activation_sum == 0)) {
-    mission_loaded = false; // Cancel if more than two quads activated, or if no switch is in
-    vehicle_ready = false;
+    BeAutonomous::ResetSwitchPanel();
     BeAutonomous::EndMission();
+    ROS_INFO("Mission ended. Waiting for new load ID");
+  }
+  else if(!switch_msg->kill && last_kill_switch_value) { // Put kill witch in then out
+    BeAutonomous::ResetSwitchPanel();
+    BeAutonomous::EndMission();
+    ROS_INFO("Mission ended. Waiting for new load ID");
   }
   else if(!mission_loaded && switch_msg->kill == 0 && activation_sum > 0) { // Ready to load new mission
-    if(quad_sum > 1) { // No kill switch and one quadrant selected
+    if(quad_sum == 1) { // No kill switch and one quadrant selected
       if(switch_msg->sw1 && !switch_msg->sw5){
         load_id = rc::MISSION_A_BLACK; //Quad A Black
       }
@@ -300,30 +372,48 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr& switch_ms
     }
     else if(quad_sum == 0 && switch_msg->sw5) { // Only test switch is engaged
       load_id = rc::MISSION_TEST; // Do system check
-      ROS_INFO("Ready To Test");
     }
 
     if(load_id != last_load_id) {
+      last_load_id = load_id;
       load_time = ros::Time::now();
+      ROS_INFO("Load ID != last load ID");
     }
     else {
       load_duration = ros::Time::now().toSec() - load_time.toSec();
+      ROS_INFO("Load duration: %f", load_duration);
       if(load_duration > loader_timer) {
         mission_loaded = true;
+        ROS_INFO("Mission Loaded: %i", load_id);
       }
     }
   }
-  else if(switch_msg->kill && mission_loaded && !vehicle_ready) {
-    vehicle_ready = true;
+  else if(switch_msg->kill && mission_loaded) {
     if(load_id == rc::MISSION_TEST) {
+      BeAutonomous::ResetSwitchPanel();
       // Use a delay for the first time because of initializing thrusters
-      ROS_INFO("Testing");
-      timer = nh.createTimer(ros::Duration(10), &BeAutonomous::SystemCheckTimer, this);
+      ROS_INFO("Back off bro. Thrusters be turnin' shortly.");
+      timer = nh.createTimer(ros::Duration(5), &BeAutonomous::SystemCheckTimer, this, true);
     }
     else if(load_id < rc::MISSION_TEST) {
-      timer = nh.createTimer(ros::Duration(5), &BeAutonomous::StartTaskTimer, this);
+      ROS_INFO("Starting the mission. Maelstrom goin' under in %f sec.", start_timer-pre_start_duration);
+      if(!clock_is_ticking) {
+        pre_start_time = ros::Time::now();
+        clock_is_ticking = true;
+      }
+      else
+        pre_start_duration = ros::Time::now().toSec() - pre_start_time.toSec();
+
+      if(pre_start_duration > start_timer) {
+        ROS_INFO("About to call Starttask()");
+        // Set these back to '0' or 'false' so it doesn't run again
+        BeAutonomous::ResetSwitchPanel();
+        BeAutonomous::SendInitMsgs();
+        BeAutonomous::StartTask();
+      }
     }
   }
+  last_kill_switch_value = switch_msg->kill;
 }
 
 void BeAutonomous::ImuCB(const riptide_msgs::Imu::ConstPtr & imu_msg) {
