@@ -1,4 +1,0 @@
-<launch>
-  <include file="$(find riptide_hardware)/launch/hardware.launch" />
-  <include file="$(find riptide_autonomy)/launch/be_autonomous.launch" />
-</launch>
