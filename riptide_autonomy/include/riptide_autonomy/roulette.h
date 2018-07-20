@@ -29,13 +29,10 @@ private:
 
   darknet_ros_msgs::BoundingBoxes task_bboxes;
 
-  //ObjectDescriber *od;
-
-  double obj_vis_thresh;
-  int num_stored_frames;
-  vector<int> obj_vis;
+  double duration;
+  int detections;
   ros::Time acceptable_begin;
-  double duration, duration_thresh;
+  ros::Time detect_start;
 
   // Create instance to master
   BeAutonomous* master;
@@ -45,7 +42,7 @@ public:
 
   Roulette(BeAutonomous* master);
   void Execute();
-  void TaskBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_msg);
+  void LocateRoulette(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_msg);
   void Abort();
   void GotHeading(double);
 

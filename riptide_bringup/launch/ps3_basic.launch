@@ -1,6 +1,6 @@
 <launch>
   <include file="$(find riptide_hardware)/launch/hardware.launch" />
   <include file="$(find riptide_hardware)/launch/cameras_jetson.launch" />
-  <include file="$(find riptide_vision)/launch/hud.launch" />
+  <include file="$(find riptide_vision)/launch/hud_jetson.launch" />
   <include file="$(find riptide_controllers)/launch/controllers.launch" />
 </launch>

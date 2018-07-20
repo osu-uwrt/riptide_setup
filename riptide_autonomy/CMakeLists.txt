@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
 )
 
+
 roslint_cpp()
 
 set(AUTONOMY_OBJECTS

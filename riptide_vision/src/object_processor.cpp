@@ -4,7 +4,7 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "object_processor");
   ObjectProcessor yp;
-  yp.Loop();
+  ros::spin();
 }
 
 ObjectProcessor::ObjectProcessor() : nh("object_processor") {
@@ -50,7 +50,6 @@ ObjectProcessor::ObjectProcessor() : nh("object_processor") {
     current_attitude.x = 0;
     current_attitude.y = 0;
     current_attitude.z = 0;
-    object.object_headings.clear();
 }
 
 // Load parameter from namespace
@@ -104,9 +103,6 @@ void ObjectProcessor::ImageCB(const sensor_msgs::Image::ConstPtr &msg) {
   cam_center_x = width/2;
   cam_center_y = height/2;
 
-  object_headings.clear();
-
-
   // Uncomment when ready
   //sensor_msgs::ImagePtr out_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", object_image).toImageMsg();
   //object_image_pub.publish(out_msg);
@@ -144,6 +140,10 @@ void ObjectProcessor::TaskBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPtr
       break;
     }
   }
+
+  if(found) {
+    object_pub.publish(object);
+  }
 }
 
 // Get task info
@@ -162,23 +162,7 @@ void ObjectProcessor::TaskInfoCB(const riptide_msgs::TaskInfo::ConstPtr& task_ms
   last_alignment_plane = alignment_plane;
 }
 
-
 void ObjectProcessor::AlignmentCmdCB(const riptide_msgs::AlignmentCommand::ConstPtr& cmd) {
   if(strcmp(cmd->object_name.c_str(), object_name.c_str()) != 0 ) // If name does not match, then update
     object_name = cmd->object_name;
-}
-
-// Subscribe to state/imu
-void ObjectProcessor::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg) {
-  current_attitude = imu_msg->euler_rpy;
-}
-
-void ObjectProcessor::Loop()
-{
-  ros::Rate rate(50);
-  while(ros::ok())
-  {
-    ros::spinOnce();
-    rate.sleep();
-  }
 }

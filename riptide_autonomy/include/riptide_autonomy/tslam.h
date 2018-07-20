@@ -28,8 +28,7 @@ private:
   double delta_x, delta_y, angle, heading, distance;
 
   ros::Time acceptable_begin;
-  double duration, duration_thresh, x_accel;
-  bool depth_stable;
+  double duration;
 
   // Create instance to master
   BeAutonomous* master;
@@ -38,7 +37,7 @@ public:
   bool enroute;
 
   TSlam(BeAutonomous* master);
-  void Execute();
+  void Start();
   void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr& status_msg);
   void DepthStatusCB(const riptide_msgs::ControlStatus::ConstPtr& status_msg);
   void Abort();

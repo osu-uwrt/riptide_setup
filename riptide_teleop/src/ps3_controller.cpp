@@ -42,7 +42,9 @@ PS3Controller::PS3Controller() : nh("ps3_controller") {
   isL2Init = false;
   isDepthInit = false;
   current_depth = 0;
-  euler_rpy.setZero();
+  euler_rpy.x = 0;
+  euler_rpy.y = 0;
+  euler_rpy.z = 0;
   alignment_plane = (bool)riptide_msgs::Constants::PLANE_YZ;
 
   roll_factor = CMD_ROLL_RATE/rt;
@@ -57,7 +59,16 @@ void PS3Controller::InitMsgs() {
   reset_msg.reset_surge = true;
   reset_msg.reset_sway = true;
   reset_msg.reset_heave = true;
-  PS3Controller::ResetControllers();
+  reset_msg.reset_roll = false;
+  reset_msg.reset_pitch = false;
+  reset_msg.reset_yaw = true;
+  reset_msg.reset_depth = false;
+  reset_msg.reset_pwm = true;
+
+  euler_rpy.x = 0;
+  euler_rpy.y = 0;
+  euler_rpy.z = 0;
+  PS3Controller::DisableControllers();
 }
 
 // Load parameter from namespace
@@ -86,7 +97,7 @@ void PS3Controller::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg) {
 
 // Create rotation matrix from IMU orientation
 void PS3Controller::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg) {
-  vector3MsgToTF(imu_msg->euler_rpy, euler_rpy);
+  euler_rpy = imu_msg->euler_rpy;
 }
 
 void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr& joy) {
@@ -95,19 +106,20 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr& joy) {
     isStarted = false;
     isInit = false;
     isDepthInit = false;
-    PS3Controller::ResetControllers();
+    PS3Controller::DisableControllers();
   }
   else if(isReset) { // If reset, must wait for Start button to be pressed
     if(joy->buttons[BUTTON_START]) {
       isStarted = true;
       isReset = false;
-      PS3Controller::EnableControllers();
+      reset_msg.reset_pwm = false;
+      reset_pub.publish(reset_msg);
     }
   }
   else if(isStarted) {
     if(!isInit) { // Initialize to roll and pitch of 0 [deg], and set yaw to current heading
       isInit = true;
-      cmd_attitude.euler_rpy.z = round(euler_rpy.z());
+      cmd_attitude.euler_rpy.z = round(euler_rpy.z);
 
       if(isDepthWorking)
         cmd_depth.depth = current_depth;
@@ -179,11 +191,7 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr& joy) {
 }
 
 // Run when Reset button is pressed
-void PS3Controller::ResetControllers() {
-  reset_msg.reset_depth = true;
-  reset_msg.reset_roll = true;
-  reset_msg.reset_pitch = true;
-  reset_msg.reset_yaw = true;
+void PS3Controller::DisableControllers() {
   reset_msg.reset_pwm = true;
 
   cmd_attitude.roll_active = false;
@@ -204,15 +212,8 @@ void PS3Controller::ResetControllers() {
   cmd_depth.depth = 0;
   delta_depth = 0;
 
+  reset_pub.publish(reset_msg);
   PS3Controller::PublishCommands();
-}
-
-// Run when Start button is pressed
-void PS3Controller::EnableControllers() {
-  reset_msg.reset_roll = false;
-  reset_msg.reset_pitch = false;
-  reset_msg.reset_yaw = false;
-  reset_msg.reset_pwm = false;
 }
 
 double PS3Controller::Constrain(double current, double max) {
@@ -255,7 +256,6 @@ void PS3Controller::UpdateCommands() {
 }
 
 void PS3Controller::PublishCommands() {
-  reset_pub.publish(reset_msg);
   attitude_pub.publish(cmd_attitude);
   lin_accel_pub.publish(cmd_accel);
   if(isDepthWorking)
@@ -263,6 +263,7 @@ void PS3Controller::PublishCommands() {
   plane_pub.publish(plane_msg);
 }
 
+// This loop function is critical because it allows for different command rates
 void PS3Controller::Loop()
 {
   ros::Rate rate(rt); // MUST have this rate in here, since all factors are based on it

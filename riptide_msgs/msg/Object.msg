@@ -8,6 +8,3 @@ int32 bbox_height
 
 # BBox Center position in pixels, relative to camera center (follows vehicle coord frame)
 geometry_msgs/Point pos
-
-# Array of angles for any sub-parts of the object
-float64[] object_headings
