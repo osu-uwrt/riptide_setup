@@ -40,11 +40,14 @@ static double rt_hypotd_snf(double u0, double u1)
   return y;
 }
 
-void b_abs(const creal_T x[512], double y[512])
+void b_abs(const creal_T x_data[], const int x_size[2], double y_data[], int
+           y_size[2])
 {
   int k;
-  for (k = 0; k < 512; k++) {
-    y[k] = rt_hypotd_snf(x[k].re, x[k].im);
+  y_size[0] = 1;
+  y_size[1] = (short)x_size[1];
+  for (k = 0; k + 1 <= x_size[1]; k++) {
+    y_data[k] = rt_hypotd_snf(x_data[k].re, x_data[k].im);
   }
 }
 

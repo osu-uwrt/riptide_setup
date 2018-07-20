@@ -30,11 +30,39 @@ uint8 PLANE_XY = 1
 uint8 CONTROL_BBOX_WIDTH = 0
 uint8 CONTROL_BBOX_HEIGHT = 1
 
-# Qualification Task Codes
-uint8 TASK_QUALIFY_GATE = 0
-uint8 TASK_QUALIFY_MARKER = 1
+# Quadrants
+uint8 QUAD_A = 0
+uint8 QUAD_B = 1
+uint8 QUAD_C = 2
+uint8 QUAD_D = 3
 
-# Competition Task Codes
+# Mission IDs
+uint8 MISSION_A_BLACK = 0
+uint8 MISSION_A_RED = 1
+uint8 MISSION_B_BLACK = 2
+uint8 MISSION_B_RED = 3
+uint8 MISSION_C_BLACK = 4
+uint8 MISSION_C_RED = 5
+uint8 MISSION_D_BLACK = 6
+uint8 MISSION_D_RED = 7
+uint8 MISSION_TEST = 8
+uint8 MISSION_NONE = 255
+
+# Competition Round IDs
+uint8 COMPETITION_SEMIS = 0 # Practice and semis are the same
+uint8 COMPETITION_FINALS = 1
+
+# Task and Task Map file paths
+string FILE_TASKS = ../osu-uwrt/riptide_software/src/riptide_autonomy/cfg/tasks.yaml
+string FILE_MAP_SEMIS = ../osu-uwrt/riptide_software/src/riptide_autonomy/cfg/task_map_semis.yaml
+string FILE_MAP_FINALS = ../osu-uwrt/riptide_software/src/riptide_autonomy/cfg/task_map_finals.yaml
+
+# Execute Codes
+uint8 EXECUTE_STANDBY = 0
+uint8 EXECUTE_TSLAM = 1
+uint8 EXECUTE_MISSION = 2
+
+# Competition Task IDs
 uint8 TASK_CASINO_GATE = 0
 uint8 TASK_PATH_MARKER1 = 1
 uint8 TASK_DICE = 2

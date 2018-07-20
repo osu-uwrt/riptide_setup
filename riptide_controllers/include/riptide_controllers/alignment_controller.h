@@ -39,8 +39,6 @@ class AlignmentController
     bool pid_alignment_reset, pid_alignment_active;
     bool pid_surge_reset, pid_sway_reset, pid_heave_reset;
     bool pid_surge_active, pid_sway_active, pid_heave_active;
-    bool reset_linX_sent, reset_linY_sent, reset_linZ_sent; // Send 0 accel
-    bool inactive_linX_sent, inactive_linY_sent, inactive_linZ_sent; // Send 0 accel
 
     ros::Time sample_start;
     ros::Duration sample_duration;
@@ -60,7 +58,6 @@ class AlignmentController
     void ObjectCB(const riptide_msgs::Object::ConstPtr &obj_msg);
     void CommandCB(const riptide_msgs::AlignmentCommand::ConstPtr &cmd);
     void DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg);
-    void Loop();
  };
 
  #endif

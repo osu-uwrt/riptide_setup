@@ -3,7 +3,7 @@
 int main(int argc, char **argv) {
   ros::init(argc, argv, "command_combinator");
   CommandCombinator cc;
-  cc.Loop();
+  ros::spin();
 }
 
 CommandCombinator::CommandCombinator() : nh("command_combinator") {
@@ -67,18 +67,27 @@ void CommandCombinator::LinearCB(const geometry_msgs::Vector3::ConstPtr &lin_acc
   accel.linear.x = lin_accel->x;
   accel.linear.y = lin_accel->y;
   accel.linear.z = lin_accel->z;
+
+  CommandCombinator::Combine();
+  cmd_pub.publish(cmd_accel);
 }
 
 void CommandCombinator::DepthCB(const geometry_msgs::Vector3::ConstPtr &d_accel) {
   depth_accel.x = d_accel->x;
   depth_accel.y = d_accel->y;
   depth_accel.z = d_accel->z;
+
+  CommandCombinator::Combine();
+  cmd_pub.publish(cmd_accel);
 }
 
 void CommandCombinator::AngularCB(const geometry_msgs::Vector3::ConstPtr &ang_accel) {
   accel.angular.x = ang_accel->x;
   accel.angular.y = ang_accel->y;
   accel.angular.z = ang_accel->z;
+
+  CommandCombinator::Combine();
+  cmd_pub.publish(cmd_accel);
 }
 
 void CommandCombinator::Combine() {
@@ -103,14 +112,4 @@ double CommandCombinator::Constrain(double current, double max) {
   else if(current < -1*max)
     return -1*max;
   return current;
-}
-
-void CommandCombinator::Loop() {
-  ros::Rate rate(200);
-  while(!ros::isShuttingDown()) {
-    CommandCombinator::Combine();
-    cmd_pub.publish(cmd_accel); // ALWAYS publish a message, regardless of circumstance
-    ros::spinOnce();
-    rate.sleep();
-  }
 }

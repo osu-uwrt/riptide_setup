@@ -39,34 +39,43 @@ static double rt_roundd_snf(double u)
   return y;
 }
 
-void detectPhase(int data[1024], double *phase, double *freq_pinger)
+void detectPhase(int data[2048], int startFreq, int endFreq, double *phase,
+                 double *freq_pinger, double *amplitude)
 {
-  double mtmp;
-  int ixstart;
   double d0;
-  creal_T X[1024];
+  int n;
+  double d1;
+  creal_T X[2048];
+  int ixstart;
+  int trueCount;
+  int X_size[2];
+  short tmp_data[1024];
+  creal_T X_data[1024];
+  double angles_data[1024];
+  int angles_size[2];
   int itmp;
-  double varargin_1[512];
-  int ix;
   boolean_T exitg1;
+  short b_tmp_data[1024];
+  int b_X_size[2];
+  short c_tmp_data[1024];
 
   /* sample rate, 500 kHz */
-  mtmp = mean(data);
-  for (ixstart = 0; ixstart < 1024; ixstart++) {
-    d0 = rt_roundd_snf((double)data[ixstart] - mtmp);
-    if (d0 < 2.147483648E+9) {
-      if (d0 >= -2.147483648E+9) {
-        itmp = (int)d0;
+  d0 = mean(data);
+  for (n = 0; n < 2048; n++) {
+    d1 = rt_roundd_snf((double)data[n] - d0);
+    if (d1 < 2.147483648E+9) {
+      if (d1 >= -2.147483648E+9) {
+        ixstart = (int)d1;
       } else {
-        itmp = MIN_int32_T;
+        ixstart = MIN_int32_T;
       }
-    } else if (d0 >= 2.147483648E+9) {
-      itmp = MAX_int32_T;
+    } else if (d1 >= 2.147483648E+9) {
+      ixstart = MAX_int32_T;
     } else {
-      itmp = 0;
+      ixstart = 0;
     }
 
-    data[ixstart] = itmp;
+    data[n] = ixstart;
   }
 
   /* normalize data  */
@@ -75,41 +84,94 @@ void detectPhase(int data[1024], double *phase, double *freq_pinger)
 
   /* Zerodatad (Interpolation)  */
   /* Symmetrical */
-  b_abs(*(creal_T (*)[512])&X[0], varargin_1);
+  trueCount = 0;
+  for (ixstart = 0; ixstart < 1024; ixstart++) {
+    if ((250 * ixstart >= startFreq) && (250 * ixstart <= endFreq)) {
+      trueCount++;
+    }
+  }
+
+  n = 0;
+  for (ixstart = 0; ixstart < 1024; ixstart++) {
+    if ((250 * ixstart >= startFreq) && (250 * ixstart <= endFreq)) {
+      tmp_data[n] = (short)(ixstart + 1);
+      n++;
+    }
+  }
+
+  X_size[0] = 1;
+  X_size[1] = trueCount;
+  for (n = 0; n < trueCount; n++) {
+    X_data[n] = X[tmp_data[n] - 1];
+  }
+
+  b_abs(X_data, X_size, angles_data, angles_size);
   ixstart = 1;
-  mtmp = varargin_1[0];
+  n = angles_size[1];
+  *amplitude = angles_data[0];
   itmp = 0;
-  if (rtIsNaN(varargin_1[0])) {
-    ix = 2;
-    exitg1 = false;
-    while ((!exitg1) && (ix < 513)) {
-      ixstart = ix;
-      if (!rtIsNaN(varargin_1[ix - 1])) {
-        mtmp = varargin_1[ix - 1];
-        itmp = ix - 1;
-        exitg1 = true;
-      } else {
-        ix++;
+  if (angles_size[1] > 1) {
+    if (rtIsNaN(angles_data[0])) {
+      trueCount = 1;
+      exitg1 = false;
+      while ((!exitg1) && (trueCount + 1 <= n)) {
+        ixstart = trueCount + 1;
+        if (!rtIsNaN(angles_data[trueCount])) {
+          *amplitude = angles_data[trueCount];
+          itmp = trueCount;
+          exitg1 = true;
+        } else {
+          trueCount++;
+        }
+      }
+    }
+
+    if (ixstart < angles_size[1]) {
+      while (ixstart + 1 <= n) {
+        if (angles_data[ixstart] > *amplitude) {
+          *amplitude = angles_data[ixstart];
+          itmp = ixstart;
+        }
+
+        ixstart++;
       }
     }
   }
 
-  if (ixstart < 512) {
-    while (ixstart + 1 < 513) {
-      if (varargin_1[ixstart] > mtmp) {
-        mtmp = varargin_1[ixstart];
-        itmp = ixstart;
-      }
-
-      ixstart++;
+  n = 0;
+  for (ixstart = 0; ixstart < 1024; ixstart++) {
+    if ((250 * ixstart >= startFreq) && (250 * ixstart <= endFreq)) {
+      b_tmp_data[n] = (short)(ixstart + 1);
+      n++;
     }
   }
 
-  *freq_pinger = 500.0 * ((double)(itmp + 1) - 1.0);
+  *freq_pinger = 250.0 * ((double)b_tmp_data[itmp] - 1.0);
 
   /*  Angle  */
-  angle(*(creal_T (*)[512])&X[0], varargin_1);
-  *phase = varargin_1[itmp] * 180.0 / 3.1415926535897931;
+  trueCount = 0;
+  for (ixstart = 0; ixstart < 1024; ixstart++) {
+    if ((250 * ixstart >= startFreq) && (250 * ixstart <= endFreq)) {
+      trueCount++;
+    }
+  }
+
+  n = 0;
+  for (ixstart = 0; ixstart < 1024; ixstart++) {
+    if ((250 * ixstart >= startFreq) && (250 * ixstart <= endFreq)) {
+      c_tmp_data[n] = (short)(ixstart + 1);
+      n++;
+    }
+  }
+
+  b_X_size[0] = 1;
+  b_X_size[1] = trueCount;
+  for (n = 0; n < trueCount; n++) {
+    X_data[n] = X[c_tmp_data[n] - 1];
+  }
+
+  angle(X_data, b_X_size, angles_data, angles_size);
+  *phase = angles_data[itmp] * 180.0 / 3.1415926535897931;
 }
 
 /* End of code generation (detectPhase.cpp) */

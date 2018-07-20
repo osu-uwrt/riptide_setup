@@ -7,7 +7,7 @@
 int main(int argc, char **argv) {
   ros::init(argc, argv, "alignment_controller");
   AlignmentController ac;
-  ac.Loop();
+  ros::spin();
 }
 
 // Constructor: AlignmentController()
@@ -42,13 +42,6 @@ AlignmentController::AlignmentController() : nh("alignment_controller") {
     pid_sway_active = false;
     pid_heave_active = false;
     pid_alignment_active = false;
-
-    reset_linX_sent = false;
-    reset_linY_sent = false;
-    reset_linZ_sent = false;
-    inactive_linX_sent = false;
-    inactive_linY_sent = false;
-    inactive_linZ_sent = false;
 
     sample_start = ros::Time::now();
     bbox_control = riptide_msgs::Constants::CONTROL_BBOX_WIDTH;
@@ -143,11 +136,13 @@ void AlignmentController::UpdateError() {
     depth_pub.publish(depth_cmd);
   }
 
-  xy_cmd.z = 0;
-  xy_pub.publish(xy_cmd);
+  if(!pid_alignment_reset && pid_alignment_active) {
+    xy_cmd.z = 0;
+    xy_pub.publish(xy_cmd);
 
-  status_msg.header.stamp = sample_start;
-  status_pub.publish(status_msg);
+    status_msg.header.stamp = sample_start;
+    status_pub.publish(status_msg);
+  }
 
   sample_start = ros::Time::now();
 }
@@ -181,6 +176,8 @@ void AlignmentController::ObjectCB(const riptide_msgs::Object::ConstPtr &obj_msg
     status_msg.x.current = obj_pos.x;
     status_msg.z.current = obj_bbox_dim;
   }
+
+  AlignmentController::UpdateError();
 }
 
 void AlignmentController::CommandCB(const riptide_msgs::AlignmentCommand::ConstPtr &cmd) {
@@ -202,13 +199,22 @@ void AlignmentController::CommandCB(const riptide_msgs::AlignmentCommand::ConstP
     target_pos.y = cmd->target_pos.y;
     status_msg.y.reference = target_pos.y;
   }
+  else {
+    AlignmentController::ResetSway();
+  }
   if(alignment_plane == riptide_msgs::Constants::PLANE_YZ) { // Using fwd cam
     if(!pid_surge_reset && pid_surge_active) {
       status_msg.x.reference = target_bbox_dim;
     }
+    else {
+      AlignmentController::ResetSurge();
+    }
     if(!pid_heave_reset && pid_heave_active) {
       target_pos.z = cmd->target_pos.z;
       status_msg.z.reference = target_pos.z;
+    }
+    else {
+      AlignmentController::ResetHeave();
     }
   }
   else if(alignment_plane == riptide_msgs::Constants::PLANE_XY) { // Using dwn cam
@@ -216,8 +222,14 @@ void AlignmentController::CommandCB(const riptide_msgs::AlignmentCommand::ConstP
       target_pos.x = cmd->target_pos.x;
       status_msg.x.reference = target_pos.x;
     }
+    else {
+      AlignmentController::ResetSurge();
+    }
     if(!pid_heave_reset && pid_heave_active) {
       status_msg.z.reference = target_bbox_dim;
+    }
+    else {
+      AlignmentController::ResetHeave();
     }
   }
 
@@ -226,6 +238,7 @@ void AlignmentController::CommandCB(const riptide_msgs::AlignmentCommand::ConstP
   else
     pid_alignment_active = false;
 
+  AlignmentController::UpdateError();
 }
 
 void AlignmentController::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg) {
@@ -237,28 +250,19 @@ void AlignmentController::ResetController(const riptide_msgs::ResetControls::Con
     pid_surge_reset = true;
     AlignmentController::ResetSurge();
   }
-  else {
-    pid_surge_reset = false;
-    reset_linX_sent = false;
-  }
+  else pid_surge_reset = false;
 
   if(reset_msg->reset_sway) {
     pid_sway_reset = true;
     AlignmentController::ResetSway();
   }
-  else {
-    pid_sway_reset = false;
-    reset_linY_sent = false;
-  }
+  else pid_sway_reset = false;
 
   if(reset_msg->reset_heave) {
     pid_heave_reset = true;
     AlignmentController::ResetHeave();
   }
-  else {
-    pid_heave_reset = false;
-    reset_linZ_sent = false;
-  }
+  else pid_heave_reset = false;
 
   if(pid_surge_reset && pid_sway_reset && pid_heave_reset)
     pid_alignment_reset = true;
@@ -267,78 +271,46 @@ void AlignmentController::ResetController(const riptide_msgs::ResetControls::Con
 }
 
 void AlignmentController::ResetSurge() {
-  if(!reset_linX_sent && !inactive_linX_sent) {
-    x_pid.reset();
-    target_pos.x = 0;
-    error.x = 0;
-    error_dot.x = 0;
-    last_error.x = 0;
+  x_pid.reset();
+  target_pos.x = 0;
+  error.x = 0;
+  error_dot.x = 0;
+  last_error.x = 0;
 
-    status_msg.x.reference = 0;
-    status_msg.x.error = 0;
+  status_msg.x.reference = 0;
+  status_msg.x.error = 0;
 
-    xy_cmd.x = 0;
+  xy_cmd.x = 0;
 
-    AlignmentController::UpdateError();
-
-    if(!reset_linX_sent)
-      reset_linX_sent = true;
-    else if(!inactive_linX_sent)
-      inactive_linX_sent = true;
-  }
+  AlignmentController::UpdateError();
 }
 
 void AlignmentController::ResetSway() {
-  if(!reset_linY_sent && !inactive_linY_sent) {
-    y_pid.reset();
-    target_pos.y = 0;
-    error.y = 0;
-    error_dot.y = 0;
-    last_error.y = 0;
+  y_pid.reset();
+  target_pos.y = 0;
+  error.y = 0;
+  error_dot.y = 0;
+  last_error.y = 0;
 
-    status_msg.y.reference = 0;
-    status_msg.y.error = 0;
+  status_msg.y.reference = 0;
+  status_msg.y.error = 0;
 
-    xy_cmd.y = 0;
+  xy_cmd.y = 0;
 
-    AlignmentController::UpdateError();
-
-    if(!reset_linY_sent)
-      reset_linY_sent = true;
-    else if(!inactive_linY_sent)
-      inactive_linY_sent = true;
-  }
+  AlignmentController::UpdateError();
 }
 
 void AlignmentController::ResetHeave() {
-  if(!reset_linZ_sent && !inactive_linZ_sent) {
-    z_pid.reset();
-    target_pos.z = 0;
-    error.z = 0;
-    error_dot.z = 0;
-    last_error.z = 0;
+  z_pid.reset();
+  target_pos.z = 0;
+  error.z = 0;
+  error_dot.z = 0;
+  last_error.z = 0;
 
-    status_msg.z.reference = 0;
-    status_msg.z.error = 0;
+  status_msg.z.reference = 0;
+  status_msg.z.error = 0;
 
-    heave_cmd = 0;
+  heave_cmd = 0;
 
-    AlignmentController::UpdateError();
-
-    if(!reset_linZ_sent)
-      reset_linZ_sent = true;
-    else if(!inactive_linZ_sent)
-      inactive_linZ_sent = true;
-  }
-}
-
-void AlignmentController::Loop() {
-  ros::Rate rate(200);
-  while(!ros::isShuttingDown()) {
-    if(!pid_alignment_reset && pid_alignment_active) {
-      AlignmentController::UpdateError();
-    }
-    ros::spinOnce();
-    rate.sleep();
-  }
+  AlignmentController::UpdateError();
 }

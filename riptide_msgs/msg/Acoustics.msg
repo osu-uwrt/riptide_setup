@@ -6,6 +6,10 @@ float32 PFphase
 float32 PAphase
 float32 SFphase
 float32 SAphase
+float32 PFamp
+float32 PAamp
+float32 SFamp
+float32 SAamp
 float32 angle2
 float32 angle3
 float32 XPos

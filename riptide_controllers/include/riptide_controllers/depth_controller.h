@@ -38,7 +38,7 @@ class DepthController
     double last_error, last_error_dot;
     double dt;
 
-    bool pid_depth_reset, reset_accel_sent, inactive_accel_sent, pid_depth_active;
+    bool pid_depth_reset, pid_depth_active;
 
     ros::Time sample_start;
     ros::Duration sample_duration;
@@ -57,7 +57,6 @@ class DepthController
     void CommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd);
     void DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg);
     void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
-    void Loop();
  };
 
  #endif

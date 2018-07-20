@@ -46,8 +46,6 @@ class AttitudeController
     bool pid_attitude_reset, pid_attitude_active;
     bool pid_roll_reset, pid_pitch_reset, pid_yaw_reset;
     bool pid_roll_active, pid_pitch_active, pid_yaw_active;
-    bool reset_angX_sent, reset_angY_sent, reset_angZ_sent; // Send 0 accel
-    bool inactive_angX_sent, inactive_angY_sent, inactive_angZ_sent; // Send 0 accel
 
     ros::Time sample_start;
     ros::Duration sample_duration;
@@ -68,7 +66,6 @@ class AttitudeController
     void LoadParam(string param, T &var);
     void CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr &cmd);
     void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
-    void Loop();
  };
 
  #endif
