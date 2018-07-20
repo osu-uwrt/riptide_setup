@@ -79,3 +79,7 @@ if(NOT _host_name MATCHES "riptide")
 else()
     message("-- Skipping jetson code on riptide")
 endif()
+
+add_executable(bag_to_csv src/bag_to_csv.cpp)
+target_link_libraries(bag_to_csv ${catkin_LIBRARIES})
+add_dependencies(bag_to_csv ${catkin_EXPORTED_TARGETS})
