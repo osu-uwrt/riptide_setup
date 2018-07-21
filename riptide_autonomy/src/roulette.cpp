@@ -173,6 +173,7 @@ void Roulette::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstP
           duration = 0;
           clock_is_ticking = false;
           drop_clock_is_ticking = false;
+          ROS_INFO("Roulette is DONE!!!");
           Roulette::Abort();
           master->StartTask();
         }
@@ -226,6 +227,7 @@ void Roulette::SetMarkerDropHeading(double heading) {
 // Make sure the robot goes to the marker drop heading
 void Roulette::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr& status_msg) {
 	// Depth is good, now verify heading error
+
 	if(abs(status_msg->yaw.error) < master->yaw_thresh)
 	{
     if(!clock_is_ticking) {
@@ -261,7 +263,10 @@ void Roulette::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstP
 // Shutdown all active subscribers
 void Roulette::Abort() {
   attempts = 0;
+  num_markers_dropped = 0;
+  align_id = ALIGN_CENTER;
   duration = 0;
+  drop_duration = 0;
   clock_is_ticking = false;
   drop_clock_is_ticking = false;
 

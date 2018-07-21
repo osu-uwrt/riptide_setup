@@ -47,7 +47,7 @@ void TSlam::Start() {
 }
 
 void TSlam::DepthStatusCB(const riptide_msgs::ControlStatus::ConstPtr& status_msg) {
-  if(abs(status_msg->error) < master->depth_thresh /* This true is to test out of water */ || true) {
+  if(abs(status_msg->error) < master->depth_thresh) {
     if(!clock_is_ticking) {
       acceptable_begin = ros::Time::now();
       clock_is_ticking = true;

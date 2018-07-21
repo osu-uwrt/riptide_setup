@@ -153,6 +153,8 @@ void BeAutonomous::StartTask() {
 void BeAutonomous::EndMission() {
   mission_running = false;
 
+  ROS_INFO("ENDING MISSION!!!");
+
   if(tslam->enroute)
     tslam->Abort();
   if(task_id == rc::TASK_ROULETTE)
