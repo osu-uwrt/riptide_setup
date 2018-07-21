@@ -1,6 +1,6 @@
 Task_Execution:
   task_order: [7]
-  single_test: true
+  single_test: false
   relative_current_x: 0.0 #  Where the vehicle starts relative to task [m]
   relative_current_y: 0.0 # Where the vehicle starts relative to task [m]
 Controller_Thresholds:

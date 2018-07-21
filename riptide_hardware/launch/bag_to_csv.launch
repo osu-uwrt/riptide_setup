@@ -1,0 +1,11 @@
+<launch>
+  <arg name="username" default="blaine" />
+  <arg name="file_name" default="fwd" />
+  <arg name="ext" default="csv" /> <!--Leave as .avi-->
+
+  <node pkg="riptide_hardware" type="bag_to_csv" name="bag_to_csv" output="screen" >
+    <param name="username" type="string" value="$(arg username)" />
+    <param name="file_name" type="string" value="$(arg file_name)" />
+    <param name="ext" type="string" value="$(arg ext)" />
+  </node>
+</launch>
