@@ -1,7 +1,8 @@
 #include "riptide_autonomy/roulette.h"
 
 #define ALIGN_CENTER 0
-#define ALIGN_OFFSET 1
+#define ALIGN_BBOX_WIDTH 1
+#define ALIGN_OFFSET 2
 
 Roulette::Roulette(BeAutonomous* master) {
   this->master = master;
@@ -9,7 +10,6 @@ Roulette::Roulette(BeAutonomous* master) {
   active_subs.clear();
   detections = 0;
   attempts = 0;
-  task_completed = false;
   align_id = ALIGN_CENTER;
   num_markers_dropped = 0;
   drop_duration = 0;
@@ -111,6 +111,31 @@ void Roulette::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstP
       clock_is_ticking = false;
     }
   }
+  else if(align_id == ALIGN_BBOX_WIDTH) { // Align with bbox
+    if(abs(status_msg->z.error) < master->bbox_thresh)
+  	{
+      if(!clock_is_ticking) {
+        acceptable_begin = ros::Time::now();
+        clock_is_ticking = true;
+      }
+      else
+        duration = ros::Time::now().toSec() - acceptable_begin.toSec();
+
+      if(duration >= master->bb_duration_thresh) { // Roulete should be in the camera center
+        alignment_status_sub.shutdown();
+        active_subs.erase(active_subs.end());
+        duration = 0;
+        clock_is_ticking = false;
+
+    		// Calculate heading for roulette wheel
+        od->GetRouletteHeading(&Roulette::SetMarkerDropHeading, this);
+      }
+  	}
+    else {
+      duration = 0;
+      clock_is_ticking = false;
+    }
+  }
   else if(align_id == ALIGN_OFFSET) { // Perform (B)
     if(abs(status_msg->x.error) < master->align_thresh && abs(status_msg->y.error) < master->align_thresh)
   	{
@@ -145,11 +170,11 @@ void Roulette::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstP
           master->pneumatics_pub.publish(pneumatics_cmd);
           alignment_status_sub.shutdown();
           active_subs.erase(active_subs.end());
-          task_completed = true;
           duration = 0;
           clock_is_ticking = false;
           drop_clock_is_ticking = false;
           Roulette::Abort();
+          master->StartTask();
         }
       }
   	}
@@ -251,7 +276,4 @@ void Roulette::Abort() {
   align_cmd.heave_active = false;
   master->alignment_pub.publish(align_cmd);
   ROS_INFO("Roulette: Aborting");
-
-  if(task_completed)
-    master->StartTask();
 }

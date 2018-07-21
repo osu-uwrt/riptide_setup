@@ -32,7 +32,7 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
 
   // Load Task Execution Parameters
   nh.param("Task_Execution/task_order", task_order, vector<int>(0));
-  BeAutonomous::LoadParam<bool>("Task_Execution/single_test", single_test);
+  BeAutonomous::LoadParam<bool>("Task_Execution/run_single_task", run_single_task);
   BeAutonomous::LoadParam<double>("Task_Execution/relative_current_x", relative_current_x);
   BeAutonomous::LoadParam<double>("Task_Execution/relative_current_y", relative_current_y);
 
@@ -42,6 +42,7 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
   BeAutonomous::LoadParam<double>("Controller_Thresholds/pitch_thresh", pitch_thresh);
   BeAutonomous::LoadParam<double>("Controller_Thresholds/yaw_thresh", yaw_thresh);
   BeAutonomous::LoadParam<double>("Controller_Thresholds/error_duration_thresh", error_duration_thresh);
+  BeAutonomous::LoadParam<double>("Controller_Thresholds/bbox_duration_thresh", bbox_duration_thresh);
 
   mission_loaded = false;
   mission_running = false;
@@ -49,11 +50,17 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
   pre_start_duration = 0;
   clock_is_ticking = false;
 
+  start_x = 0;
+  start_y = 0;
+  current_x = 0;
+  current_y = 0;
+
   // Load Task Info
   task_file = rc::FILE_TASKS;
   task_id = -1;
   last_task_id = -1;
   color = rc::COLOR_BLACK;
+  quadrant = rc::QUAD_A;
   ROS_INFO("comp id: %i", competition_id);
   if(competition_id == rc::COMPETITION_SEMIS)
     task_map_file = rc::FILE_MAP_SEMIS;
@@ -283,7 +290,7 @@ void BeAutonomous::ReadMap() {
 
     if(last_task_id == -1 && !single_test) {
       current_x = task_map["task_map"][quadrant]["dock_x"].as<double>();
-      current_x = task_map["task_map"][quadrant]["dock_y"].as<double>();
+      current_y = task_map["task_map"][quadrant]["dock_y"].as<double>();
     }
     else if(single_test && task_order.size() == 1) {
       current_x = start_x + relative_current_x;

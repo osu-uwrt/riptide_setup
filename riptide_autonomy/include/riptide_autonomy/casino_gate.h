@@ -30,12 +30,12 @@ private:
   riptide_msgs::AlignmentCommand align_cmd;
   riptide_msgs::AttitudeCommand attitude_cmd;
 
-  double duration;
+  double duration, gate_heading;
   int detections, attempts;
   ros::Time acceptable_begin;
   ros::Time detect_start;
   bool clock_is_ticking;
-  string object;
+  string object_name;
 
   // Create instance to master
   BeAutonomous* master;

@@ -12,7 +12,8 @@ task_map: [
           start_x: 0.0,
           start_y: 0.0.0,
           end_x: 0.0,
-          end_y: 0.0
+          end_y: 0.0,
+          heading: -80.0
         },
         {
           id: 1,
@@ -93,7 +94,8 @@ task_map: [
           start_x: 0.0,
           start_y: 0.0,
           end_x: 0.0,
-          end_y: 0.0
+          end_y: 0.0,
+          heading: -100.0
         },
         {
           id: 1,
@@ -174,7 +176,8 @@ task_map: [
           start_x: 0.0,
           start_y: 0.0,
           end_x: 0.0,
-          end_y: 0.0
+          end_y: 0.0,
+          heading: 80.0
         },
         {
           id: 1,
@@ -255,7 +258,8 @@ task_map: [
           start_x: 0.0,
           start_y: 0.0,
           end_x: 0.0,
-          end_y: 0.0
+          end_y: 0.0,
+          heading: 100.0
         },
         {
           id: 1,
