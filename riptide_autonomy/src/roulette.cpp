@@ -23,7 +23,7 @@ void Roulette::Start() {
   align_cmd.surge_active = false;
   align_cmd.sway_active = false;
   align_cmd.heave_active = false;
-  align_cmd.object_name = "Roulette";
+  align_cmd.object_name = master->object_names.at(0); // Roulette
   align_cmd.alignment_plane = master->alignment_plane;
   align_cmd.bbox_dim = (int)master->frame_height*0.7;
   align_cmd.bbox_control = rc::CONTROL_BBOX_HEIGHT;
@@ -31,7 +31,7 @@ void Roulette::Start() {
   align_cmd.target_pos.y = 0;
   align_cmd.target_pos.z = 0;
   master->alignment_pub.publish(align_cmd);
-  ROS_INFO("Roulette: alignment command published (linear motion deactivated)");
+  ROS_INFO("Roulette: alignment command published (but disabled)");
 
   task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &Roulette::IDRoulette, this);
   active_subs.push_back(task_bbox_sub);
@@ -55,6 +55,7 @@ void Roulette::IDRoulette(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_
       task_bbox_sub.shutdown();
       active_subs.erase(active_subs.end());
       master->tslam->Abort();
+      clock_is_ticking = false;
       duration = 0;
 
       // Send alignment command to put in center of frame (activate controllers)
@@ -72,6 +73,7 @@ void Roulette::IDRoulette(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_
       ROS_INFO("Roulette: %i detections in %f sec", detections, duration);
       ROS_INFO("Roulette: Beginning attempt %i", attempts+1);
       detections = 0;
+      duration = 0;
     }
     else {
       ROS_INFO("Roulette: More than 3 attempts used to ID roulette");
@@ -82,10 +84,10 @@ void Roulette::IDRoulette(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_
 }
 
 // A. Make sure the vehicle is aligned to the center of the roulette wheel
-// B. make sure the vehicle is aligned to the ofset position so it can drop two markers
+// B. Make sure the vehicle is aligned to the ofset position so it can drop two markers
 void Roulette::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr& status_msg) {
   if(align_id == ALIGN_CENTER) { // Perform (A)
-    if(abs(status_msg->x.error) < master->align_thresh)
+    if(abs(status_msg->x.error) < master->align_thresh && abs(status_msg->y.error) < master->align_thresh)
   	{
       if(!clock_is_ticking) {
         acceptable_begin = ros::Time::now();
@@ -110,7 +112,7 @@ void Roulette::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstP
     }
   }
   else if(align_id == ALIGN_OFFSET) { // Perform (B)
-    if(abs(status_msg->x.error) < master->align_thresh)
+    if(abs(status_msg->x.error) < master->align_thresh && abs(status_msg->y.error) < master->align_thresh)
   	{
       if(!clock_is_ticking) {
         acceptable_begin = ros::Time::now();
@@ -154,6 +156,7 @@ void Roulette::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstP
     else {
       duration = 0;
       clock_is_ticking = false;
+      drop_clock_is_ticking = false;
     }
   }
 }
@@ -233,6 +236,7 @@ void Roulette::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstP
 // Shutdown all active subscribers
 void Roulette::Abort() {
   attempts = 0;
+  duration = 0;
   clock_is_ticking = false;
   drop_clock_is_ticking = false;
 

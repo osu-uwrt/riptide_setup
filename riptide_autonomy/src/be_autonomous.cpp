@@ -320,6 +320,7 @@ void BeAutonomous::ResetSwitchPanel() {
   load_duration = 0;
   last_load_id = -1;
   mission_loaded = false;
+  color = 0;
 }
 
 void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr& switch_msg) {
@@ -385,6 +386,9 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr& switch_ms
       if(load_duration > loader_timer) {
         mission_loaded = true;
         ROS_INFO("Mission Loaded: %i", load_id);
+        if(load_id < rc::MISSION_TEST) {
+          color == load_id % 2;
+        }
       }
     }
   }

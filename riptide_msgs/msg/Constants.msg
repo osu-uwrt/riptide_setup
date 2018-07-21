@@ -1,6 +1,7 @@
 # Colors Codes
-uint8 COLOR_RED = 0
-uint8 COLOR_BLACK = 1
+uint8 COLOR_BLACK = 0
+uint8 COLOR_RED = 1
+
 
 # Safety Measure Codes
 uint8 SAFETY_BAT_VOLT_LOW = 0
