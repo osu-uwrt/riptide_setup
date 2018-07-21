@@ -29,8 +29,8 @@ void ObjectDescriber::ImageCB(const sensor_msgs::Image::ConstPtr& msg) {
 }
 
 void ObjectDescriber::BBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bboxes) {
-  if(rouletteImagesLeft > 0) {
-    darknet_ros_msgs::BoundingBox bbox = bboxes->bounding_boxes.at(0);
+  if(rouletteImagesLeft > 0 && lastImage.size().width != 0 && lastImage.size().height != 0) {
+    darknet_ros_msgs::BoundingBox bbox = bboxes->bounding_boxes[0];
     int64 width = bbox.xmax - bbox.xmin;
     int64 height = bbox.ymax - bbox.ymin;
     cv::Rect myROI(bbox.xmin, bbox.ymin, width, height);
