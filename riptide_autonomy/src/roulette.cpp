@@ -121,7 +121,7 @@ void Roulette::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstP
       else
         duration = ros::Time::now().toSec() - acceptable_begin.toSec();
 
-      if(duration >= master->bb_duration_thresh) { // Roulete should be in the camera center
+      if(duration >= master->bbox_duration_thresh) { // Roulete should be in the camera center
         alignment_status_sub.shutdown();
         active_subs.erase(active_subs.end());
         duration = 0;

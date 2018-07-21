@@ -112,6 +112,7 @@ void TSlam::BrakeTimer(const ros::TimerEvent& event) {
   msg.y = 0;
   msg.z = 0;
   master->linear_accel_pub.publish(msg);
+  ROS_INFO("TSlam: Thruster brake applied");
 }
 
 // Shutdown all active subscribers

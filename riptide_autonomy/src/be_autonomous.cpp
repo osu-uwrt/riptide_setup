@@ -290,11 +290,11 @@ void BeAutonomous::ReadMap() {
     start_x = task_map["task_map"][quadrant]["map"][task_id]["start_x"].as<double>();
     start_y = task_map["task_map"][quadrant]["map"][task_id]["start_y"].as<double>();
 
-    if(last_task_id == -1 && !single_test) {
+    if(last_task_id == -1 && !run_single_task) {
       current_x = task_map["task_map"][quadrant]["dock_x"].as<double>();
       current_y = task_map["task_map"][quadrant]["dock_y"].as<double>();
     }
-    else if(single_test && task_order.size() == 1) {
+    else if(run_single_task && task_order.size() == 1) {
       current_x = start_x + relative_current_x;
       current_y = start_y + relative_current_y;
     }

@@ -8,14 +8,16 @@ CasinoGate::CasinoGate(BeAutonomous* master) {
   active_subs.clear();
   detections = 0;
   attempts = 0;
-  task_completed = false;
   align_id = ALIGN_YZ;
   clock_is_ticking = false;
   gate_heading = 0;
+  passed_thru_gate = false;
+  braked = false;
+  pass_thru_duration = 0;
 }
 
 void CasinoGate::Start() {
-  object_name = (master->color == rc::COLOR_BLACK)?object_names.at(0):object_names.at(1); // Black side if statement true, Red otherwise
+  object_name = (master->color == rc::COLOR_BLACK)?master->object_names.at(0):master->object_names.at(1); // Black side if statement true, Red otherwise
   align_cmd.surge_active = false;
   align_cmd.sway_active = false;
   align_cmd.heave_active = false;
@@ -95,7 +97,7 @@ void CasinoGate::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::Cons
       if(duration >= master->error_duration_thresh) { // Roulete should be in the camera center
         duration = 0;
         clock_is_ticking = false;
-        //align_id = ALIGN_BBOX_WIDTH; // Verify if bbox alignment will work
+        align_id = ALIGN_BBOX_WIDTH; // Verify if bbox alignment will work
 
         // Activate X alignment controller
         align_cmd.surge_active = true;
@@ -109,7 +111,7 @@ void CasinoGate::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::Cons
     }
   }
   else if(align_id == ALIGN_BBOX_WIDTH) { // Perform (B) - X alignment
-    if(abs(status_msg->x.error) < master->bbox_thresh)
+    if(abs(status_msg->x.error) < master->bbox_thresh || true) // Remove true later
   	{
       if(!clock_is_ticking) {
         acceptable_begin = ros::Time::now();
@@ -176,8 +178,10 @@ void CasinoGate::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::Cons
       linear_accel_cmd.y = 0;
       linear_accel_cmd.z = 0;
       master->linear_accel_pub.publish(linear_accel_cmd);
-      master->timer = master->nh.createTimer(ros::Duration(1.2*master->eta), &BeAutonomous::EndTSlamTimer, master, true);
-      ROS_INFO("CasinoGate: Aligned to gate, now moving forward. Abort timer initiated. ETA: %f", );
+
+      pass_thru_duration = master->tasks["tasks"][master->task_id]["pass_thru_duration"].as<double>();
+      timer = master->nh.createTimer(ros::Duration(pass_thru_duration), &CasinoGate::PassThruTimer, this, true);
+      ROS_INFO("CasinoGate: Aligned to gate, now moving forward. Abort timer initiated. ETA: %f", pass_thru_duration);
     }
 	}
   else {
@@ -186,10 +190,33 @@ void CasinoGate::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::Cons
   }
 }
 
+void CasinoGate::PassThruTimer(const ros::TimerEvent& event) {
+  geometry_msgs::Vector3 msg;
+  msg.x = 0;
+  msg.y = 0;
+  msg.z = 0;
+  if(!passed_thru_gate) {
+    msg.x = -(master->search_accel);
+    passed_thru_gate = true;
+    timer = master->nh.createTimer(ros::Duration(0.25), &CasinoGate::PassThruTimer, this, true);
+    ROS_INFO("CasinoGate: Passed thru gate...I think. Timer set for braking");
+  }
+  else if(passed_thru_gate && !braked) {
+    braked = true;
+    ROS_INFO("CasinoGate: Thruster brake applied");
+  }
+  master->linear_accel_pub.publish(msg);
+}
+
 // Shutdown all active subscribers
 void CasinoGate::Abort() {
   attempts = 0;
+  detections = 0;
+  duration = 0;
+  passed_thru_gate = false;
+  braked = false;
   clock_is_ticking = false;
+  pass_thru_duration = 0;
 
   if(active_subs.size() > 0) {
     for(int i=0; i<active_subs.size(); i++) {
@@ -202,7 +229,4 @@ void CasinoGate::Abort() {
   align_cmd.heave_active = false;
   master->alignment_pub.publish(align_cmd);
   ROS_INFO("CasinoGate: Aborting");
-
-  if(task_completed)
-    master->StartTask();
 }

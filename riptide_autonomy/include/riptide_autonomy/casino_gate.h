@@ -25,13 +25,14 @@ class CasinoGate
 private:
   ros::Subscriber task_bbox_sub, alignment_status_sub, attitude_status_sub;
   vector<ros::Subscriber> active_subs;
+  ros::Timer timer;
 
   darknet_ros_msgs::BoundingBoxes task_bboxes;
   riptide_msgs::AlignmentCommand align_cmd;
   riptide_msgs::AttitudeCommand attitude_cmd;
 
-  double duration, gate_heading;
-  int detections, attempts;
+  double duration, gate_heading, pass_thru_duration;
+  int detections, attempts, align_id;
   ros::Time acceptable_begin;
   ros::Time detect_start;
   bool clock_is_ticking;
@@ -39,7 +40,7 @@ private:
 
   // Create instance to master
   BeAutonomous* master;
-  bool task_completed;
+  bool passed_thru_gate, braked;
 
 public:
 
@@ -48,6 +49,7 @@ public:
   void IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_msg);
   void AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr& status_msg);
   void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr& status_msg);
+  void PassThruTimer(const ros::TimerEvent& event);
   void Abort();
 };
 

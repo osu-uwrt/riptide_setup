@@ -5,9 +5,9 @@ tasks: [
       plane: 0,
       search_depth: 1,
       search_accel: 0.8,
+      pass_thru_duration: 4.0, # [s]
       objects: ["Casino_Gate_Black", "Casino_Gate_Red"],
       thresholds: [0.3, 0.3],
-      gate_heading: [] # By quadrant: A, B, C, D
       align_thresh: 20, # [pixels]
       bbox_thresh: 20, # [pixels]
       detection_duration_thresh: 1, # [s]
