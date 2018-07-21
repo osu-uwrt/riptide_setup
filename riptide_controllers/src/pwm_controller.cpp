@@ -110,7 +110,7 @@ void PWMController::LoadParam(string param, T &var)
 
 void PWMController::ThrustCB(const riptide_msgs::ThrustStamped::ConstPtr& thrust)
 {
-  if (!dead && !silent)
+  if (!dead)
   {
     msg.header.stamp = thrust->header.stamp;
 

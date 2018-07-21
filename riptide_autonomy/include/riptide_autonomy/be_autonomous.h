@@ -12,7 +12,7 @@
 
 #include "riptide_msgs/SwitchState.h"
 #include "riptide_msgs/ResetControls.h"
-#include "riptide_msgs/PwmStamped.h"
+#include "riptide_msgs/ThrustStamped.h"
 
 #include "riptide_msgs/Imu.h"
 #include "riptide_msgs/Depth.h"
@@ -42,13 +42,13 @@ public:
   ros::NodeHandle nh;
   ros::Subscriber switch_sub, imu_sub, depth_sub;
   ros::Publisher linear_accel_pub, attitude_pub, depth_pub, alignment_pub, pneumatics_pub;
-  ros::Publisher pwm_pub, reset_pub, task_info_pub, state_mission_pub;
+  ros::Publisher thrust_pub, reset_pub, task_info_pub, state_mission_pub;
   ros::Timer timer;
 
   // Mission End/System Check
   int thruster;
   riptide_msgs::ResetControls reset_msg;
-  riptide_msgs::PwmStamped pwm_msg;
+  riptide_msgs::ThrustStamped thrust_msg;
   riptide_msgs::AlignmentCommand align_cmd;
   riptide_msgs::AttitudeCommand attitude_cmd;
 
