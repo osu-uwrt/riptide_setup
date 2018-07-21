@@ -93,11 +93,11 @@ tasks: [
     {
       id: 7,
       name: "Roulette",
-      plane: 0,
+      plane: 1,
       search_depth: 2.0,
       search_accel: 0.9,
       objects: ["Roulette"],
-      thresholds: [0.9],
+      thresholds: [0.5],
       drop_duration_thresh: 4.0,
       align_thresh: 30, # [pixels]
       bbox_thresh: 30, # [pixels]

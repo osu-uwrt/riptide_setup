@@ -146,6 +146,8 @@ void BeAutonomous::StartTask() {
 void BeAutonomous::EndMission() {
   mission_running = false;
 
+  ROS_INFO("ENDING MISSION!!!");
+
   if(tslam->enroute)
     tslam->Abort();
   if(task_id == rc::TASK_ROULETTE)
@@ -283,7 +285,7 @@ void BeAutonomous::ReadMap() {
 
     if(last_task_id == -1 && !single_test) {
       current_x = task_map["task_map"][quadrant]["dock_x"].as<double>();
-      current_x = task_map["task_map"][quadrant]["dock_y"].as<double>();
+      current_y = task_map["task_map"][quadrant]["dock_y"].as<double>();
     }
     else if(single_test && task_order.size() == 1) {
       current_x = start_x + relative_current_x;
