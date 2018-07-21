@@ -68,18 +68,18 @@ void Roulette::IDRoulette(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_
       active_subs.push_back(alignment_status_sub);
       ROS_INFO("Roulette: Identified roulette. Now aligning to center");
     }
-    else if(attempts < 3){
+    else /*if(attempts < 3)*/{
       ROS_INFO("Roulette: Attempt %i to ID roulette", attempts);
       ROS_INFO("Roulette: %i detections in %f sec", detections, duration);
       ROS_INFO("Roulette: Beginning attempt %i", attempts+1);
       detections = 0;
       duration = 0;
-    }
+    }/*
     else {
       ROS_INFO("Roulette: More than 3 attempts used to ID roulette");
       ROS_INFO("Roulette: Aborting");
       Roulette::Abort();
-    }
+    }*/
   }
 }
 

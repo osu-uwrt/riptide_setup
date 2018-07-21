@@ -22,7 +22,7 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
   pneumatics_pub = nh.advertise<riptide_msgs::Pneumatics>("/command/pneumatics", 1);
 
   reset_pub = nh.advertise<riptide_msgs::ResetControls>("/controls/reset", 1);
-  pwm_pub = nh.advertise<riptide_msgs::PwmStamped>("/command/pwm", 1);
+  thrust_pub = nh.advertise<riptide_msgs::ThrustStamped>("/command/thrust", 1);
   task_info_pub = nh.advertise<riptide_msgs::TaskInfo>("/task/info", 1);
   state_mission_pub = nh.advertise<riptide_msgs::MissionState>("/state/mission", 1);
 
@@ -84,8 +84,6 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
   }
   ROS_INFO("Tasks verified");
 
-  // Enable all controllers (won't be activated yet until commanded to do so)
-  BeAutonomous::SendInitMsgs();
 
   // Vehicle State
   euler_rpy.x = 0;
@@ -205,40 +203,48 @@ void BeAutonomous::SendResetMsgs() {
 }
 
 void BeAutonomous::SystemCheckTimer(const ros::TimerEvent& event) {
+
+
   ROS_INFO("SystemCheckTimer, thruster number: %i", thruster);
-  pwm_msg.header.stamp = ros::Time::now();
-  pwm_msg.pwm.surge_port_lo = 1500;
-  pwm_msg.pwm.surge_stbd_lo = 1500;
-  pwm_msg.pwm.sway_fwd = 1500;
-  pwm_msg.pwm.sway_aft = 1500;
-  pwm_msg.pwm.heave_port_fwd = 1500;
-  pwm_msg.pwm.heave_stbd_fwd = 1500;
-  pwm_msg.pwm.heave_port_aft = 1500;
-  pwm_msg.pwm.heave_stbd_aft = 1500;
+  thrust_msg.header.stamp = ros::Time::now();
+  thrust_msg.force.surge_port_lo = 0;
+  thrust_msg.force.surge_stbd_lo = 0;
+  thrust_msg.force.sway_fwd = 0;
+  thrust_msg.force.sway_aft = 0;
+  thrust_msg.force.heave_port_fwd = 0;
+  thrust_msg.force.heave_stbd_fwd = 0;
+  thrust_msg.force.heave_port_aft = 0;
+  thrust_msg.force.heave_stbd_aft = 0;
 
   if(thruster < 8) { // Set thrusters to 1550 one at a time
-    if(thruster == 0)
-      pwm_msg.pwm.surge_port_lo = 1530;
-    else if(thruster == 1)
-      pwm_msg.pwm.surge_stbd_lo = 1530;
-    else if(thruster == 2)
-      pwm_msg.pwm.sway_fwd = 1530;
-    else if(thruster == 3)
-      pwm_msg.pwm.sway_aft = 1530;
-    else if(thruster == 4)
-      pwm_msg.pwm.heave_port_fwd = 1530;
-    else if(thruster == 5)
-      pwm_msg.pwm.heave_stbd_fwd = 1530;
-    else if(thruster == 6)
-      pwm_msg.pwm.heave_port_aft = 1530;
-    else if(thruster == 7)
-      pwm_msg.pwm.heave_stbd_aft = 1530;
 
-    pwm_pub.publish(pwm_msg);
+    if(thruster == 0)
+      thrust_msg.force.heave_port_fwd = 1;
+    else if(thruster == 1)
+      thrust_msg.force.heave_stbd_fwd = 1;
+    else if(thruster == 2)
+      thrust_msg.force.heave_port_aft = 1;
+    else if(thruster == 3)
+      thrust_msg.force.heave_stbd_aft = 1;
+    else if(thruster == 4)
+      thrust_msg.force.surge_port_lo = 1;
+    else if(thruster == 5)
+      thrust_msg.force.surge_stbd_lo = 1;
+    else if(thruster == 6)
+      thrust_msg.force.sway_fwd = 1;
+    else if(thruster == 7)
+      thrust_msg.force.sway_aft = 1;
+
+
+    thrust_pub.publish(thrust_msg);
     thruster++;
     timer = nh.createTimer(ros::Duration(2), &BeAutonomous::SystemCheckTimer, this, true);
   }
-  else pwm_pub.publish(pwm_msg); // Publish all 1500s
+  else {
+    SendInitMsgs();
+    thrust_pub.publish(thrust_msg); // Publish all 1500s
+    thruster = 0;
+  }
 }
 
 void BeAutonomous::UpdateTaskInfo() {
@@ -270,6 +276,7 @@ void BeAutonomous::UpdateTaskInfo() {
 
 void BeAutonomous::ReadMap() {
   quadrant = floor(load_id / 2.0);
+  ROS_INFO("Quadrant: %i", quadrant);
   if(quadrant < 4) {
     start_x = task_map["task_map"][quadrant]["map"][task_id]["start_x"].as<double>();
     start_y = task_map["task_map"][quadrant]["map"][task_id]["start_y"].as<double>();
@@ -293,6 +300,9 @@ void BeAutonomous::ReadMap() {
     start_x = 420;
     start_y = 420;
   }
+
+  ROS_INFO("Start X: %f", start_x);
+  ROS_INFO("Start Y: %f", start_y);
 }
 
 // Calculate eta for TSlam to bring vehicle to next task
@@ -321,6 +331,7 @@ void BeAutonomous::ResetSwitchPanel() {
   last_load_id = -1;
   mission_loaded = false;
   color = 0;
+  thruster = 0;
 }
 
 void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr& switch_msg) {
@@ -397,6 +408,15 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr& switch_ms
       BeAutonomous::ResetSwitchPanel();
       // Use a delay for the first time because of initializing thrusters
       ROS_INFO("Back off bro. Thrusters be turnin' shortly.");
+      reset_msg.reset_surge = true;
+      reset_msg.reset_sway = true;
+      reset_msg.reset_heave = true;
+      reset_msg.reset_roll = true;
+      reset_msg.reset_pitch = true;
+      reset_msg.reset_yaw = true;
+      reset_msg.reset_depth = true;
+      reset_msg.reset_pwm = false;
+      reset_pub.publish(reset_msg);
       timer = nh.createTimer(ros::Duration(5), &BeAutonomous::SystemCheckTimer, this, true);
     }
     else if(load_id < rc::MISSION_TEST) {
@@ -410,7 +430,7 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr& switch_ms
 
       if(pre_start_duration > start_timer) {
         ROS_INFO("About to call Starttask()");
-        // Set these back to '0' or 'false' so it doesn't run again
+        // Set these back to '0' or 'true' so it doesn't run again
         BeAutonomous::ResetSwitchPanel();
         BeAutonomous::SendInitMsgs();
         BeAutonomous::StartTask();

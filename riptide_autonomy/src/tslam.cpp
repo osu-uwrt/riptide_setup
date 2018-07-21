@@ -12,6 +12,8 @@ void TSlam::Start() {
   // Calculate heading to point towards next task
   delta_x = master->start_x - master->current_x;
   delta_y = master->start_y - master->current_y;
+  ROS_INFO("Cur X: %f", master->current_x);
+  ROS_INFO("Cur Y: %f", master->current_y);
   angle = atan2(delta_y, delta_x);
   heading = angle - 90;
   if(heading <= -180)
@@ -45,7 +47,7 @@ void TSlam::Start() {
 }
 
 void TSlam::DepthStatusCB(const riptide_msgs::ControlStatus::ConstPtr& status_msg) {
-  if(abs(status_msg->error) < master->depth_thresh) {
+  if(abs(status_msg->error) < master->depth_thresh /* This true is to test out of water */ || true) {
     if(!clock_is_ticking) {
       acceptable_begin = ros::Time::now();
       clock_is_ticking = true;
@@ -95,7 +97,7 @@ void TSlam::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr&
       enroute = true;
       master->eta_start = ros::Time::now();
       master->timer = master->nh.createTimer(ros::Duration(1.2*master->eta), &BeAutonomous::EndTSlamTimer, master, true);
-      ROS_INFO("TSlam: Reached heading, now moving forward. Abort timer initiated");
+      ROS_INFO("TSlam: Reached heading, now moving forward. Abort timer initiated. ETA: %f", 1.2*master->eta);
     }
 	}
   else {
