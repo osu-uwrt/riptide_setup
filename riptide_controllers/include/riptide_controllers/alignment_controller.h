@@ -32,7 +32,7 @@ class AlignmentController
 
     riptide_msgs::ControlStatusLinear status_msg;
     double current_depth;
-    double MAX_X_ERROR, MAX_Y_ERROR, MAX_Z_ERROR, MAX_BBOX_ERROR;
+    double MAX_X_ERROR, MAX_Y_ERROR, MAX_Z_ERROR, MAX_BBOX_ACCEL_ERROR, MAX_BBOX_DEPTH_ERROR;
 
     int alignment_plane, bbox_control, obj_bbox_dim, target_bbox_dim;
 

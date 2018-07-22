@@ -18,6 +18,7 @@ PS3Controller::PS3Controller() : nh("ps3_controller") {
   depth_pub = nh.advertise<riptide_msgs::DepthCommand>("/command/depth", 1);
   reset_pub = nh.advertise<riptide_msgs::ResetControls>("/controls/reset", 1);
   plane_pub = nh.advertise<std_msgs::Int8>("/command/ps3_plane", 1);
+  pneumatics_pub = nh.advertise<riptide_msgs::Pneumatics>("/command/pneumatics", 1);
 
   PS3Controller::LoadParam<bool>("is_depth_working", isDepthWorking); // Is depth sensor working?
   PS3Controller::LoadParam<double>("rate", rt); // [Hz]
@@ -41,11 +42,13 @@ PS3Controller::PS3Controller() : nh("ps3_controller") {
   isR2Init = false;
   isL2Init = false;
   isDepthInit = false;
+
   current_depth = 0;
   euler_rpy.x = 0;
   euler_rpy.y = 0;
   euler_rpy.z = 0;
   alignment_plane = (bool)riptide_msgs::Constants::PLANE_YZ;
+  publish_pneumatics = false;
 
   roll_factor = CMD_ROLL_RATE/rt;
   pitch_factor = CMD_PITCH_RATE/rt;
@@ -61,13 +64,14 @@ void PS3Controller::InitMsgs() {
   reset_msg.reset_heave = true;
   reset_msg.reset_roll = false;
   reset_msg.reset_pitch = false;
-  reset_msg.reset_yaw = true;
+  reset_msg.reset_yaw = false;
   reset_msg.reset_depth = false;
   reset_msg.reset_pwm = true;
 
   euler_rpy.x = 0;
   euler_rpy.y = 0;
   euler_rpy.z = 0;
+
   PS3Controller::DisableControllers();
 }
 
@@ -186,6 +190,20 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr& joy) {
 
       if(joy->buttons[BUTTON_SELECT])
         alignment_plane = !alignment_plane;
+
+      publish_pneumatics = false;
+      if(joy->buttons[BUTTON_REAR_L1]) {
+        pneumatics_cmd.torpedo_port = true;
+        publish_pneumatics = true;
+      }
+      if(joy->buttons[BUTTON_REAR_R1]) {
+        pneumatics_cmd.torpedo_stbd = true;
+        publish_pneumatics = true;
+      }
+      if(joy->buttons[BUTTON_PAIRING]) {
+        pneumatics_cmd.markerdropper = true;
+        publish_pneumatics = true;
+      }
     }
   }
 }
@@ -213,6 +231,13 @@ void PS3Controller::DisableControllers() {
   delta_depth = 0;
 
   reset_pub.publish(reset_msg);
+
+  pneumatics_cmd.torpedo_port = false;
+  pneumatics_cmd.torpedo_stbd = false;
+  pneumatics_cmd.manipulator = false;
+  pneumatics_cmd.markerdropper = false;
+  pneumatics_cmd.duration = 250;
+
   PS3Controller::PublishCommands();
 }
 
@@ -261,6 +286,13 @@ void PS3Controller::PublishCommands() {
   if(isDepthWorking)
     depth_pub.publish(cmd_depth);
   plane_pub.publish(plane_msg);
+  
+
+  pneumatics_pub.publish(pneumatics_cmd);
+  pneumatics_cmd.torpedo_port = false;
+  pneumatics_cmd.torpedo_stbd = false;
+  pneumatics_cmd.manipulator = false;
+  pneumatics_cmd.markerdropper = false;
 }
 
 // This loop function is critical because it allows for different command rates
