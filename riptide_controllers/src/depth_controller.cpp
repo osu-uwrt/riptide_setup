@@ -183,5 +183,5 @@ void DepthController::ResetDepth() {
   accel.y = 0;
   accel.z = 0;
 
-  DepthController::UpdateError();
+  cmd_pub.publish(accel);
 }
