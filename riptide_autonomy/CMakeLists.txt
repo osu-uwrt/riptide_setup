@@ -23,6 +23,7 @@ set(AUTONOMY_OBJECTS
   src/tslam.cpp
   src/roulette.cpp
   src/object_describer.cpp
+  src/casino_gate.cpp
 )
 
 catkin_package(INCLUDE_DIRS include)
@@ -35,4 +36,4 @@ if(NOT _host_name MATCHES "jetson")
   add_executable(be_autonomous src/be_autonomous.cpp ${AUTONOMY_OBJECTS})
   target_link_libraries(be_autonomous ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} yaml-cpp)
   add_dependencies(be_autonomous ${catkin_EXPORTED_TARGETS})
-endif()  
+endif()

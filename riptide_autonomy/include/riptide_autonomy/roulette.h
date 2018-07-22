@@ -49,7 +49,6 @@ private:
   // Create instance to master
   BeAutonomous* master;
   ObjectDescriber* od;
-  bool task_completed;
 
 public:
 

@@ -67,14 +67,14 @@ public:
   int alignment_plane, color, frame_width, frame_height;
   vector<int> task_order;
   vector<string> object_names;
-  bool single_test;
+  bool run_single_task;
 
   // Vehicle State
   geometry_msgs::Vector3 euler_rpy, linear_accel;
   double depth;
 
   // Task Parameters
-  double depth_thresh, roll_thresh, pitch_thresh, yaw_thresh, error_duration_thresh;
+  double depth_thresh, roll_thresh, pitch_thresh, yaw_thresh, error_duration_thresh, bbox_duration_thresh;
 
   // Task Specific Objects
   TSlam* tslam;

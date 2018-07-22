@@ -6,6 +6,8 @@
 
 #define PI 3.141592653
 #define MIN_DEPTH 0
+#define RESET_ID 0
+#define DISABLE_ID 1
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "depth_controller");
@@ -45,7 +47,7 @@ DepthController::DepthController() : nh("depth_controller") {
     sample_start = ros::Time::now();
 
     DepthController::InitMsgs();
-    DepthController::ResetDepth();
+    DepthController::ResetDepth(RESET_ID);
 }
 
 void DepthController::InitMsgs() {
@@ -146,7 +148,7 @@ void DepthController::CommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd)
     DepthController::UpdateError();
   }
   else {
-    DepthController::ResetDepth();
+    DepthController::ResetDepth(DISABLE_ID);
   }
 }
 
@@ -161,13 +163,12 @@ void DepthController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg) {
 
 void DepthController::ResetController(const riptide_msgs::ResetControls::ConstPtr &reset_msg) {
   if(reset_msg->reset_depth) { // Reset
-    pid_depth_reset = true;
-    DepthController::ResetDepth();
+    DepthController::ResetDepth(RESET_ID);
   }
   else pid_depth_reset = false;
 }
 
-void DepthController::ResetDepth() {
+void DepthController::ResetDepth(int id) {
   depth_controller_pid.reset();
   depth_cmd = 0;
   depth_error = 0;
@@ -177,11 +178,17 @@ void DepthController::ResetDepth() {
 
   status_msg.reference = 0;
   status_msg.error = 0;
+  status_msg.header.stamp = ros::Time::now();
+  status_pub.publish(status_msg);
 
   output = 0;
   accel.x = 0;
   accel.y = 0;
   accel.z = 0;
-
   cmd_pub.publish(accel);
+
+  if(id == RESET_ID)
+    pid_depth_reset = true;
+  else if(id == DISABLE_ID)
+    pid_depth_active = false;
 }

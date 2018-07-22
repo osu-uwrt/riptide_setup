@@ -4,7 +4,8 @@ tasks: [
       name: "Casino_Gate",
       plane: 0,
       search_depth: 1,
-      search_accel: 0.9,
+      search_accel: 0.8,
+      pass_thru_duration: 4.0, # [s]
       objects: ["Casino_Gate_Black", "Casino_Gate_Red"],
       thresholds: [0.3, 0.3],
       align_thresh: 20, # [pixels]
@@ -17,7 +18,7 @@ tasks: [
       name: "Path_Marker1",
       plane: 1,
       search_depth: 1,
-      search_accel: 0.9,
+      search_accel: 0.8,
       objects: ["Path_Marker"],
       thresholds: [0.6],
       align_thresh: 20, # [pixels]
@@ -30,7 +31,7 @@ tasks: [
       name: "Dice",
       plane: 0,
       search_depth: 2,
-      search_accel: 0.9,
+      search_accel: 0.8,
       objects: ["Dice1", "Dice2", "Dice5", "Dice6"],
       thresholds: [0.6, 0.6, 0.6, 0.6],
       align_thresh: 20, # [pixels]
@@ -43,7 +44,7 @@ tasks: [
       name: "Buy_Gold_Chip1",
       plane: 0,
       search_depth: 3,
-      search_accel: 0.9,
+      search_accel: 0.8,
       objects: ["Buy_Gold_Chip"],
       thresholds: [0.5],
       align_thresh: 20, # [pixels]
@@ -56,7 +57,7 @@ tasks: [
       name: "Path_Marker2",
       plane: 1,
       search_depth: 2,
-      search_accel: 0.9,
+      search_accel: 0.8,
       objects: ["Path_Marker"],
       thresholds: [0.6],
       align_thresh: 20, # [pixels]
@@ -69,7 +70,7 @@ tasks: [
       name: "Slots",
       plane: 0,
       search_depth: 3,
-      search_accel: 0.9,
+      search_accel: 0.8,
       objects: ["Slots_Fruit", "Slots_Big_Red"],
       thresholds: [0.5, 0.5],
       align_thresh: 20, # [pixels]
@@ -82,7 +83,7 @@ tasks: [
       name: "Buy_Gold_Chip2",
       plane: 0,
       search_depth: 3,
-      search_accel: 0.9,
+      search_accel: 0.8,
       objects: ["Buy_Gold_Chip"],
       thresholds: [0.5],
       align_thresh: 20, # [pixels]
@@ -95,7 +96,7 @@ tasks: [
       name: "Roulette",
       plane: 1,
       search_depth: 2.0,
-      search_accel: 0.9,
+      search_accel: 0.8,
       objects: ["Roulette"],
       thresholds: [0.5],
       drop_duration_thresh: 4.0,
@@ -109,7 +110,7 @@ tasks: [
       name: "Cash_In",
       plane: 0,
       search_depth: 2,
-      search_accel: 0.9,
+      search_accel: 0.8,
       objects: ["Cash_In"],
       thresholds: [0.5],
       align_thresh: 20, # [pixels]

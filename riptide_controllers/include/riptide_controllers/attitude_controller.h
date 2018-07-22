@@ -56,9 +56,9 @@ class AttitudeController
     double Constrain(double current, double max);
     double SmoothErrorIIR(double input, double prev);
     void ResetController(const riptide_msgs::ResetControls::ConstPtr& reset_msg);
-    void ResetRoll();
-    void ResetPitch();
-    void ResetYaw();
+    void ResetRoll(int id);
+    void ResetPitch(int id);
+    void ResetYaw(int id);
 
   public:
     AttitudeController();

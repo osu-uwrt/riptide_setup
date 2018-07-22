@@ -1,7 +1,8 @@
 #include "riptide_autonomy/roulette.h"
 
 #define ALIGN_CENTER 0
-#define ALIGN_OFFSET 1
+#define ALIGN_BBOX_WIDTH 1
+#define ALIGN_OFFSET 2
 
 Roulette::Roulette(BeAutonomous* master) {
   this->master = master;
@@ -9,7 +10,6 @@ Roulette::Roulette(BeAutonomous* master) {
   active_subs.clear();
   detections = 0;
   attempts = 0;
-  task_completed = false;
   align_id = ALIGN_CENTER;
   num_markers_dropped = 0;
   drop_duration = 0;
@@ -23,15 +23,15 @@ void Roulette::Start() {
   align_cmd.surge_active = false;
   align_cmd.sway_active = false;
   align_cmd.heave_active = false;
-  align_cmd.object_name = "Roulette";
+  align_cmd.object_name = master->object_names.at(0); // Roulette
   align_cmd.alignment_plane = master->alignment_plane;
-  align_cmd.bbox_dim = (int)master->frame_height*0.7;
+  align_cmd.bbox_dim = (int)(master->frame_height*0.7);
   align_cmd.bbox_control = rc::CONTROL_BBOX_HEIGHT;
   align_cmd.target_pos.x = 0;
   align_cmd.target_pos.y = 0;
   align_cmd.target_pos.z = 0;
   master->alignment_pub.publish(align_cmd);
-  ROS_INFO("Roulette: alignment command published (linear motion deactivated)");
+  ROS_INFO("Roulette: alignment command published (but disabled)");
 
   task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &Roulette::IDRoulette, this);
   active_subs.push_back(task_bbox_sub);
@@ -55,13 +55,14 @@ void Roulette::IDRoulette(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_
       task_bbox_sub.shutdown();
       active_subs.erase(active_subs.end());
       master->tslam->Abort();
+      clock_is_ticking = false;
       duration = 0;
 
       // Send alignment command to put in center of frame (activate controllers)
       // Set points already specified in initial alignment command
       align_cmd.surge_active = true;
       align_cmd.sway_active = true;
-      align_cmd.heave_active = true;
+      align_cmd.heave_active = false;
       master->alignment_pub.publish(align_cmd);
       alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &Roulette::AlignmentStatusCB, this);
       active_subs.push_back(alignment_status_sub);
@@ -83,7 +84,7 @@ void Roulette::IDRoulette(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_
 }
 
 // A. Make sure the vehicle is aligned to the center of the roulette wheel
-// B. make sure the vehicle is aligned to the ofset position so it can drop two markers
+// B. Make sure the vehicle is aligned to the ofset position so it can drop two markers
 void Roulette::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr& status_msg) {
   if(align_id == ALIGN_CENTER) { // Perform (A)
     if(abs(status_msg->x.error) < master->align_thresh && abs(status_msg->y.error) < master->align_thresh)
@@ -96,6 +97,31 @@ void Roulette::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstP
         duration = ros::Time::now().toSec() - acceptable_begin.toSec();
 
       if(duration >= master->error_duration_thresh) { // Roulete should be in the camera center
+        alignment_status_sub.shutdown();
+        active_subs.erase(active_subs.end());
+        duration = 0;
+        clock_is_ticking = false;
+
+    		// Calculate heading for roulette wheel
+        od->GetRouletteHeading(&Roulette::SetMarkerDropHeading, this);
+      }
+  	}
+    else {
+      duration = 0;
+      clock_is_ticking = false;
+    }
+  }
+  else if(align_id == ALIGN_BBOX_WIDTH) { // Align with bbox
+    if(abs(status_msg->z.error) < master->bbox_thresh)
+  	{
+      if(!clock_is_ticking) {
+        acceptable_begin = ros::Time::now();
+        clock_is_ticking = true;
+      }
+      else
+        duration = ros::Time::now().toSec() - acceptable_begin.toSec();
+
+      if(duration >= master->bbox_duration_thresh) { // Roulete should be in the camera center
         alignment_status_sub.shutdown();
         active_subs.erase(active_subs.end());
         duration = 0;
@@ -144,7 +170,6 @@ void Roulette::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstP
           master->pneumatics_pub.publish(pneumatics_cmd);
           alignment_status_sub.shutdown();
           active_subs.erase(active_subs.end());
-          task_completed = true;
           duration = 0;
           clock_is_ticking = false;
           drop_clock_is_ticking = false;
@@ -157,6 +182,7 @@ void Roulette::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstP
     else {
       duration = 0;
       clock_is_ticking = false;
+      drop_clock_is_ticking = false;
     }
   }
 }
@@ -255,5 +281,4 @@ void Roulette::Abort() {
   align_cmd.heave_active = false;
   master->alignment_pub.publish(align_cmd);
   ROS_INFO("Roulette: Aborting");
-
 }

@@ -48,7 +48,7 @@ class DepthController
     double Constrain(double current, double max);
     double SmoothErrorIIR(double input, double prev);
     void ResetController(const riptide_msgs::ResetControls::ConstPtr &reset_msg);
-    void ResetDepth();
+    void ResetDepth(int id);
 
   public:
     DepthController();

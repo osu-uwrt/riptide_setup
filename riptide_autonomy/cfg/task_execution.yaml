@@ -1,11 +1,12 @@
 Task_Execution:
   task_order: [7]
-  single_test: false
+  run_single_task: false
   relative_current_x: 0.0 #  Where the vehicle starts relative to task [m]
   relative_current_y: 0.0 # Where the vehicle starts relative to task [m]
 Controller_Thresholds:
-  depth_thresh: 0.1 # [m]
+  depth_thresh: 0.3 # [m]
   roll_thresh: 5 # [deg]
   pitch_thresh: 5 # [deg]
-  yaw_thresh: 5 # [deg]
+  yaw_thresh: 10 # [deg]
   error_duration_thresh: 5 # [s]
+  bbox_duration_thresh: 1.5 # [s]
