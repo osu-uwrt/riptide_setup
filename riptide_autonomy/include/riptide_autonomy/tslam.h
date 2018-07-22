@@ -25,10 +25,14 @@ private:
   ros::Timer timer;
   vector<ros::Subscriber> active_subs;
 
+  riptide_msgs::AttitudeCommand attitude_cmd;
+  riptide_msgs::DepthCommand depth_cmd;
+
   double delta_x, delta_y, angle, heading, distance;
   ros::Time acceptable_begin;
   double duration;
   bool clock_is_ticking;
+  int validate_id;
 
   // Create instance to master
   BeAutonomous* master;
@@ -37,6 +41,7 @@ public:
   bool enroute;
 
   TSlam(BeAutonomous* master);
+  void Initialize();
   void Start();
   void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr& status_msg);
   void DepthStatusCB(const riptide_msgs::ControlStatus::ConstPtr& status_msg);

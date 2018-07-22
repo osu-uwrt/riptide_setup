@@ -17,7 +17,7 @@ Roulette::Roulette(BeAutonomous* master) {
   clock_is_ticking = false;
   drop_clock_is_ticking = false;
 }
-
+sed
 void Roulette::Start() {
   drop_duration_thresh = master->tasks["tasks"][master->task_id]["drop_duration_thresh"].as<double>();
   align_cmd.surge_active = false;
@@ -25,7 +25,7 @@ void Roulette::Start() {
   align_cmd.heave_active = false;
   align_cmd.object_name = master->object_names.at(0); // Roulette
   align_cmd.alignment_plane = master->alignment_plane;
-  align_cmd.bbox_dim = (int)master->frame_height*0.7;
+  align_cmd.bbox_dim = (int)(master->frame_height*0.7);
   align_cmd.bbox_control = rc::CONTROL_BBOX_HEIGHT;
   align_cmd.target_pos.x = 0;
   align_cmd.target_pos.y = 0;
@@ -62,7 +62,7 @@ void Roulette::IDRoulette(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_
       // Set points already specified in initial alignment command
       align_cmd.surge_active = true;
       align_cmd.sway_active = true;
-      align_cmd.heave_active = true;
+      align_cmd.heave_active = false;
       master->alignment_pub.publish(align_cmd);
       alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &Roulette::AlignmentStatusCB, this);
       active_subs.push_back(alignment_status_sub);

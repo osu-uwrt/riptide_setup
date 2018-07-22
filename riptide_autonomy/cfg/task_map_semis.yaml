@@ -66,8 +66,8 @@ task_map: [
         {
           id: 7,
           name: "Roulette",
-          start_x: 1,
-          start_y: 0.0,
+          start_x: 6,
+          start_y: 3.0,
           end_x: 0.0,
           end_y: 0.0
         },

@@ -180,7 +180,7 @@ void YoloObjectDetector::init()
 
   // Subscribe to PS3 Plane command so yolo can switch between appropriate camera
   ps3Subscriber_ = nodeHandle_.subscribe<std_msgs::Int8>("/command/ps3_plane", 1, &YoloObjectDetector::PS3CB, this);
-  //taskSubscriber_ = nodeHandle.subscribe<riptide_msgs::Task>("/command/task", 1, &&YoloObjectDetector::TaskCB, this);
+  taskSubscriber_ = nodeHandle_.subscribe<riptide_msgs::TaskInfo>("/task/info", 1, &YoloObjectDetector::TaskInfoCB, this);
   alignment_plane = riptide_msgs::Constants::PLANE_YZ;
   prev_alignment_plane = alignment_plane;
 }

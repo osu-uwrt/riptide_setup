@@ -5,6 +5,8 @@
 #undef progress
 
 #define PI 3.141592653
+#define RESET_ID 0
+#define DISABLE_ID 1
 
 float round(float d) {
   return floor(d + 0.5);
@@ -63,9 +65,9 @@ AttitudeController::AttitudeController() : nh("attitude_controller") {
     sample_start = ros::Time::now();
 
     AttitudeController::InitMsgs();
-    AttitudeController::ResetRoll();
-    AttitudeController::ResetPitch();
-    AttitudeController::ResetYaw();
+    AttitudeController::ResetRoll(RESET_ID);
+    AttitudeController::ResetPitch(RESET_ID);
+    AttitudeController::ResetYaw(RESET_ID);
 }
 
 void AttitudeController::InitMsgs() {
@@ -200,7 +202,7 @@ void AttitudeController::CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr
     status_msg.roll.reference = roll_cmd;
   }
   else {
-    AttitudeController::ResetRoll();
+    AttitudeController::ResetRoll(DISABLE_ID);
   }
 
   if(!pid_pitch_reset && pid_pitch_active) {
@@ -209,7 +211,7 @@ void AttitudeController::CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr
     status_msg.pitch.reference = pitch_cmd;
   }
   else {
-    AttitudeController::ResetPitch();
+    AttitudeController::ResetPitch(DISABLE_ID);
   }
 
   if(!pid_yaw_reset && pid_yaw_active) {
@@ -217,7 +219,7 @@ void AttitudeController::CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr
     status_msg.yaw.reference = yaw_cmd;
   }
   else {
-    AttitudeController::ResetYaw();
+    AttitudeController::ResetYaw(DISABLE_ID);
   }
 
   if(pid_roll_active || pid_pitch_active || pid_yaw_active)
@@ -230,20 +232,20 @@ void AttitudeController::CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr
 
 void AttitudeController::ResetController(const riptide_msgs::ResetControls::ConstPtr& reset_msg) {
   if(reset_msg->reset_roll) {
-    pid_roll_reset = true;
-    AttitudeController::ResetRoll();
+    //pid_roll_reset = true;
+    AttitudeController::ResetRoll(RESET_ID);
   }
   else pid_roll_reset = false;
 
   if(reset_msg->reset_pitch) {
-    pid_pitch_reset = true;
-    AttitudeController::ResetPitch();
+    //pid_pitch_reset = true;
+    AttitudeController::ResetPitch(RESET_ID);
   }
   else pid_pitch_reset = false;
 
   if(reset_msg->reset_yaw) {
-    pid_yaw_reset = true;
-    AttitudeController::ResetYaw();
+    //pid_yaw_reset = true;
+    AttitudeController::ResetYaw(RESET_ID);
   }
   else pid_yaw_reset = false;
 
@@ -253,7 +255,7 @@ void AttitudeController::ResetController(const riptide_msgs::ResetControls::Cons
     pid_attitude_reset = false;
 }
 
-void AttitudeController::ResetRoll() {
+void AttitudeController::ResetRoll(int id) {
   roll_controller_pid.reset();
   roll_cmd = 0;
   roll_error = 0;
@@ -267,9 +269,13 @@ void AttitudeController::ResetRoll() {
   ang_accel_cmd.x = 0;
 
   AttitudeController::UpdateError();
+  if(id == RESET_ID)
+    pid_roll_reset = true;
+  else if(id == DISABLE_ID)
+    pid_roll_active = false;
 }
 
-void AttitudeController::ResetPitch() {
+void AttitudeController::ResetPitch(int id) {
   pitch_controller_pid.reset();
   pitch_cmd = 0;
   pitch_error = 0;
@@ -283,9 +289,13 @@ void AttitudeController::ResetPitch() {
   ang_accel_cmd.y = 0;
 
   AttitudeController::UpdateError();
+  if(id == RESET_ID)
+    pid_pitch_reset = true;
+  else if(id == DISABLE_ID)
+    pid_pitch_active = false;
 }
 
-void AttitudeController::ResetYaw() {
+void AttitudeController::ResetYaw(int id) {
   yaw_controller_pid.reset();
   yaw_cmd = 0;
   yaw_error = 0;
@@ -299,4 +309,8 @@ void AttitudeController::ResetYaw() {
   ang_accel_cmd.z = 0;
 
   AttitudeController::UpdateError();
+  if(id == RESET_ID)
+    pid_yaw_reset = true;
+  else if(id == DISABLE_ID)
+    pid_yaw_active = false;
 }

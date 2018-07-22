@@ -212,9 +212,7 @@ void BeAutonomous::SendResetMsgs() {
 }
 
 void BeAutonomous::SystemCheckTimer(const ros::TimerEvent& event) {
-
-
-  ROS_INFO("SystemCheckTimer, thruster number: %i", thruster);
+  string thruster_name;
   thrust_msg.header.stamp = ros::Time::now();
   thrust_msg.force.surge_port_lo = 0;
   thrust_msg.force.surge_stbd_lo = 0;
@@ -225,33 +223,50 @@ void BeAutonomous::SystemCheckTimer(const ros::TimerEvent& event) {
   thrust_msg.force.heave_port_aft = 0;
   thrust_msg.force.heave_stbd_aft = 0;
 
-  if(thruster < 8) { // Set thrusters to 1550 one at a time
+  if(thruster < 8) { // Set thrusters to output 1 N of force
 
-    if(thruster == 0)
+    if(thruster == 0) {
       thrust_msg.force.heave_port_fwd = 1;
-    else if(thruster == 1)
+      thruster_name = "HPF";
+    }
+    else if(thruster == 1) {
       thrust_msg.force.heave_stbd_fwd = 1;
-    else if(thruster == 2)
+      thruster_name = "HSF";
+    }
+    else if(thruster == 2) {
       thrust_msg.force.heave_port_aft = 1;
-    else if(thruster == 3)
+      thruster_name = "HPA";
+    }
+    else if(thruster == 3) {
       thrust_msg.force.heave_stbd_aft = 1;
-    else if(thruster == 4)
+      thruster_name = "HSA";
+    }
+    else if(thruster == 4) {
       thrust_msg.force.surge_port_lo = 1;
-    else if(thruster == 5)
+      thruster_name = "SPL";
+    }
+    else if(thruster == 5) {
       thrust_msg.force.surge_stbd_lo = 1;
-    else if(thruster == 6)
+      thruster_name = "SSL";
+    }
+    else if(thruster == 6) {
       thrust_msg.force.sway_fwd = 1;
-    else if(thruster == 7)
+      thruster_name = "SWFWD";
+    }
+    else if(thruster == 7) {
       thrust_msg.force.sway_aft = 1;
+      thruster_name = "SWAFT";
+    }
 
-
+    ROS_INFO("SystemCheckTimer: thruster %s, depth %f m", thruster_name.c_str(), depth);
     thrust_pub.publish(thrust_msg);
     thruster++;
     timer = nh.createTimer(ros::Duration(2), &BeAutonomous::SystemCheckTimer, this, true);
   }
   else {
+    ROS_INFO("SystemCheckTimer: thrusters tested, depth %f m", depth);
     SendInitMsgs();
-    thrust_pub.publish(thrust_msg); // Publish all 1500s
+    thrust_pub.publish(thrust_msg); // Publish zero
     thruster = 0;
   }
 }
@@ -263,6 +278,8 @@ void BeAutonomous::UpdateTaskInfo() {
   alignment_plane = tasks["tasks"][task_id]["plane"].as<int>();
   if(alignment_plane != rc::PLANE_YZ && alignment_plane != rc::PLANE_XY)
     alignment_plane = rc::PLANE_YZ; // Default to YZ-plane (fwd cam)
+
+  ROS_INFO("Alignment Plane: %i", alignment_plane);
 
   object_names.clear();
   for(int i=0; i < num_objects; i++) {
@@ -310,8 +327,18 @@ void BeAutonomous::ReadMap() {
     start_y = 420;
   }
 
-  ROS_INFO("Start X: %f", start_x);
-  ROS_INFO("Start Y: %f", start_y);
+  // Verify current_x and current_y were not set to an arbitrarily large number
+  if(abs(current_x) > 55) {
+    current_x = 0;
+    ROS_INFO("ERROR: Current X not initialized properly, exceeded limit. Setting to 0.");
+  }
+  if(abs(current_y) > 40) {
+    current_y = 0;
+    ROS_INFO("ERROR: Current Y not initialized properly, exceeded limit. Setting to 0.");
+  }
+
+  ROS_INFO("Next Task (%s) Start X: %f", task_name.c_str(), start_x);
+  ROS_INFO("Next Task (%s) Start Y: %f", task_name.c_str(), start_y);
 }
 
 // Calculate eta for TSlam to bring vehicle to next task
@@ -357,12 +384,10 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr& switch_ms
   if(switch_msg->kill == 0 && (quad_sum > 1 || activation_sum == 0)) {
     BeAutonomous::ResetSwitchPanel();
     BeAutonomous::EndMission();
-    ROS_INFO("Mission ended. Waiting for new load ID");
   }
   else if(!switch_msg->kill && last_kill_switch_value) { // Put kill witch in then out
     BeAutonomous::ResetSwitchPanel();
     BeAutonomous::EndMission();
-    ROS_INFO("Mission ended. Waiting for new load ID");
   }
   else if(!mission_loaded && switch_msg->kill == 0 && activation_sum > 0) { // Ready to load new mission
     if(quad_sum == 1) { // No kill switch and one quadrant selected
@@ -412,7 +437,7 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr& switch_ms
       }
     }
   }
-  else if(switch_msg->kill && mission_loaded) {
+  else if(switch_msg->kill && mission_loaded && activation_sum == 0) { // Must wait for all activation switches to be pulled
     if(load_id == rc::MISSION_TEST) {
       BeAutonomous::ResetSwitchPanel();
       // Use a delay for the first time because of initializing thrusters
@@ -429,7 +454,7 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr& switch_ms
       timer = nh.createTimer(ros::Duration(5), &BeAutonomous::SystemCheckTimer, this, true);
     }
     else if(load_id < rc::MISSION_TEST) {
-      ROS_INFO("Starting the mission. Maelstrom goin' under in %f sec.", start_timer-pre_start_duration);
+      ROS_INFO("Starting mission. Maelstrom goin' under in %f sec.", start_timer-pre_start_duration);
       if(!clock_is_ticking) {
         pre_start_time = ros::Time::now();
         clock_is_ticking = true;

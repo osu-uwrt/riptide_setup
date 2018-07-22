@@ -3,14 +3,15 @@
 
 #include "ros/ros.h"
 #include "control_toolbox/pid.h"
+#include "geometry_msgs/Vector3.h"
 #include "riptide_msgs/Object.h"
 #include "riptide_msgs/AlignmentCommand.h"
+#include "riptide_msgs/TaskInfo.h"
 #include "riptide_msgs/Depth.h"
 #include "riptide_msgs/DepthCommand.h"
 #include "riptide_msgs/ResetControls.h"
 #include "riptide_msgs/ControlStatusLinear.h"
 #include "riptide_msgs/Constants.h"
-#include "geometry_msgs/Vector3.h"
 using namespace std;
 
 class AlignmentController
@@ -18,8 +19,11 @@ class AlignmentController
   private:
     // Comms
     ros::NodeHandle nh;
-    ros::Subscriber alignment_cmd_sub, object_sub, depth_sub, reset_sub;
+    ros::Subscriber alignment_cmd_sub, object_sub, depth_sub, reset_sub, task_info_sub;
     ros::Publisher xy_pub, depth_pub, status_pub;
+    ros::Timer timer;
+
+    double max_zero_detect_duration;
 
     control_toolbox::Pid x_pid, y_pid, z_pid;
     double heave_cmd;
@@ -28,7 +32,7 @@ class AlignmentController
 
     riptide_msgs::ControlStatusLinear status_msg;
     double current_depth;
-    double MAX_X_ERROR, MAX_Y_ERROR, MAX_Z_ERROR;
+    double MAX_X_ERROR, MAX_Y_ERROR, MAX_Z_ERROR, MAX_BBOX_ERROR;
 
     int alignment_plane, bbox_control, obj_bbox_dim, target_bbox_dim;
 
@@ -47,17 +51,19 @@ class AlignmentController
     void UpdateError();
     double Constrain(double current, double max);
     void ResetController(const riptide_msgs::ResetControls::ConstPtr &reset_msg);
-    void ResetSurge();
-    void ResetSway();
-    void ResetHeave();
+    void ResetSurge(int id);
+    void ResetSway(int id);
+    void ResetHeave(int id);
 
   public:
     AlignmentController();
     template <typename T>
     void LoadParam(string param, T &var);
+    void DisableControllerTimer(const ros::TimerEvent& event);
     void ObjectCB(const riptide_msgs::Object::ConstPtr &obj_msg);
     void CommandCB(const riptide_msgs::AlignmentCommand::ConstPtr &cmd);
     void DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg);
+    void TaskInfoCB(const riptide_msgs::TaskInfo::ConstPtr& task_msg);
  };
 
  #endif

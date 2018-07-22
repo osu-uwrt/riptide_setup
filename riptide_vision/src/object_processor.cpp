@@ -122,7 +122,7 @@ void ObjectProcessor::TaskBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPtr
       object.bbox_width = abs(object_bbox.xmax - object_bbox.xmin);
       object.bbox_height = abs(object_bbox.ymax - object_bbox.ymin);
 
-      // Centers are relative to the CAMERA's center using standard frame axes
+      // Adjust positions so they are relative to the center of the CAMERA FRAME
       // Cam x-axis is pos. right; Cam y-axis is pos. down
       int xcenter = (object_bbox.xmin + object_bbox.xmax)/2 - cam_center_x;
       int ycenter = (object_bbox.ymin + object_bbox.ymax)/2 - cam_center_y;
