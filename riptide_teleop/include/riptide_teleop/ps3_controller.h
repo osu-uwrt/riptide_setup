@@ -12,6 +12,7 @@
 #include "riptide_msgs/DepthCommand.h"
 #include "riptide_msgs/Depth.h"
 #include "riptide_msgs/ResetControls.h"
+#include "riptide_msgs/Pneumatics.h"
 #include "riptide_msgs/Constants.h"
 using namespace std;
 
@@ -19,17 +20,19 @@ class PS3Controller
 {
  private:
   ros::NodeHandle nh;
-  ros::Publisher attitude_pub, depth_pub, lin_accel_pub, reset_pub, plane_pub;
+  ros::Publisher attitude_pub, depth_pub, lin_accel_pub, reset_pub, plane_pub, pneumatics_pub;
   ros::Subscriber joy_sub, depth_sub;
 
   geometry_msgs::Vector3 delta_attitude, euler_rpy, cmd_accel;
   riptide_msgs::DepthCommand cmd_depth;
   riptide_msgs::ResetControls reset_msg;
   riptide_msgs::AttitudeCommand cmd_attitude;
+  riptide_msgs::Pneumatics pneumatics_cmd;
   std_msgs::Int8 plane_msg;
   bool isReset, isStarted, isInit, isDepthWorking, isR2Init, isL2Init;
   bool isDepthInit, alignment_plane;
   double rt, current_depth, buoyancy_depth_thresh, delta_depth;
+  bool publish_pneumatics;
 
   // Max values, and command rates
   double MAX_ROLL, MAX_PITCH, MAX_DEPTH, MAX_XY_ACCEL, MAX_Z_ACCEL;

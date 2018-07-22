@@ -36,7 +36,8 @@ AlignmentController::AlignmentController() : nh("alignment_controller") {
     AlignmentController::LoadParam<double>("max_x_error", MAX_X_ERROR);
     AlignmentController::LoadParam<double>("max_y_error", MAX_Y_ERROR);
     AlignmentController::LoadParam<double>("max_z_error", MAX_Z_ERROR);
-    AlignmentController::LoadParam<double>("max_bbox_error", MAX_BBOX_ERROR);
+    AlignmentController::LoadParam<double>("max_bbox_accel_error", MAX_BBOX_ACCEL_ERROR);
+    AlignmentController::LoadParam<double>("max_bbox_depth_error", MAX_BBOX_DEPTH_ERROR);
     AlignmentController::LoadParam<double>("max_zero_detect_duration", max_zero_detect_duration);
 
     pid_surge_reset = true;
@@ -130,7 +131,7 @@ void AlignmentController::UpdateError() {
   if(!pid_surge_reset && pid_surge_active) {
     if (alignment_plane == riptide_msgs::Constants::PLANE_YZ) { // Using fwd cam
       error.x = (target_bbox_dim - obj_bbox_dim);
-      error.x = AlignmentController::Constrain(error.x, MAX_BBOX_ERROR);
+      error.x = AlignmentController::Constrain(error.x, MAX_BBOX_ACCEL_ERROR);
     }
     else if(alignment_plane == riptide_msgs::Constants::PLANE_XY) { // Using dwn cam
       error.x = (obj_pos.x - target_pos.x); // MUST subtract target pos from current pos
@@ -150,7 +151,7 @@ void AlignmentController::UpdateError() {
     }
     else if(alignment_plane == riptide_msgs::Constants::PLANE_XY) { // Using dwn cam
       error.z = (target_bbox_dim - obj_bbox_dim);
-      error.z = AlignmentController::Constrain(error.z, MAX_BBOX_ERROR);
+      error.z = AlignmentController::Constrain(error.z, MAX_BBOX_DEPTH_ERROR);
     }
 
     error_dot.z = (error.z - last_error.z) / dt;
