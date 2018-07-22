@@ -292,7 +292,7 @@ void PS3Controller::PublishCommands() {
   pneumatics_cmd.torpedo_port = false;
   pneumatics_cmd.torpedo_stbd = false;
   pneumatics_cmd.manipulator = false;
-  pneumatics_cmd.markerdropper = false;
+  pneumatics_cmd.markerdropper = false; 
 }
 
 // This loop function is critical because it allows for different command rates
