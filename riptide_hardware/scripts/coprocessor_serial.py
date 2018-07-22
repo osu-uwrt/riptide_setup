@@ -74,5 +74,10 @@ def main():
                     swPub.publish(sw_msg)
 
         rate.sleep()
+    rospy.loginfo("Stopping thrusters")
+    #The pwm values and start and end bytes are added to a String and written
+    final_pwm = "####15001500150015001500150015001500@@@@"
+    final_pwm = bytes(final_pwm)
+    ser.write(final_pwm)
 
 if __name__ == "__main__": main()
