@@ -163,7 +163,6 @@ void DepthController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg) {
 
 void DepthController::ResetController(const riptide_msgs::ResetControls::ConstPtr &reset_msg) {
   if(reset_msg->reset_depth) { // Reset
-    //pid_depth_reset = true;
     DepthController::ResetDepth(RESET_ID);
   }
   else pid_depth_reset = false;
@@ -179,6 +178,8 @@ void DepthController::ResetDepth(int id) {
 
   status_msg.reference = 0;
   status_msg.error = 0;
+  status_msg.header.stamp = ros::Time::now();
+  status_pub.publish(status_msg);
 
   output = 0;
   accel.x = 0;

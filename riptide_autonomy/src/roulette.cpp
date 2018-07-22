@@ -17,7 +17,7 @@ Roulette::Roulette(BeAutonomous* master) {
   clock_is_ticking = false;
   drop_clock_is_ticking = false;
 }
-sed
+
 void Roulette::Start() {
   drop_duration_thresh = master->tasks["tasks"][master->task_id]["drop_duration_thresh"].as<double>();
   align_cmd.surge_active = false;

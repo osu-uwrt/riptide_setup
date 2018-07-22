@@ -281,19 +281,16 @@ void AlignmentController::TaskInfoCB(const riptide_msgs::TaskInfo::ConstPtr& tas
 
 void AlignmentController::ResetController(const riptide_msgs::ResetControls::ConstPtr& reset_msg) {
   if(reset_msg->reset_surge) {
-    //pid_surge_reset = true;
     AlignmentController::ResetSurge(RESET_ID);
   }
   else pid_surge_reset = false;
 
   if(reset_msg->reset_sway) {
-    //pid_sway_reset = true;
     AlignmentController::ResetSway(RESET_ID);
   }
   else pid_sway_reset = false;
 
   if(reset_msg->reset_heave) {
-    //pid_heave_reset = true;
     AlignmentController::ResetHeave(RESET_ID);
   }
   else pid_heave_reset = false;
@@ -313,6 +310,8 @@ void AlignmentController::ResetSurge(int id) {
 
   status_msg.x.reference = 0;
   status_msg.x.error = 0;
+  status_msg.header.stamp = ros::Time::now();
+  status_pub.publish(status_msg);
 
   xy_cmd.x = 0;
   xy_pub.publish(xy_cmd);
@@ -332,6 +331,8 @@ void AlignmentController::ResetSway(int id) {
 
   status_msg.y.reference = 0;
   status_msg.y.error = 0;
+  status_msg.header.stamp = ros::Time::now();
+  status_pub.publish(status_msg);
 
   xy_cmd.y = 0;
   xy_pub.publish(xy_cmd);
@@ -351,6 +352,8 @@ void AlignmentController::ResetHeave(int id) {
 
   status_msg.z.reference = 0;
   status_msg.z.error = 0;
+  status_msg.header.stamp = ros::Time::now();
+  status_pub.publish(status_msg);
 
   heave_cmd = 0;
   depth_cmd.active = true;

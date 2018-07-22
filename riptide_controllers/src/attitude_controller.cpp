@@ -232,19 +232,16 @@ void AttitudeController::CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr
 
 void AttitudeController::ResetController(const riptide_msgs::ResetControls::ConstPtr& reset_msg) {
   if(reset_msg->reset_roll) {
-    //pid_roll_reset = true;
     AttitudeController::ResetRoll(RESET_ID);
   }
   else pid_roll_reset = false;
 
   if(reset_msg->reset_pitch) {
-    //pid_pitch_reset = true;
     AttitudeController::ResetPitch(RESET_ID);
   }
   else pid_pitch_reset = false;
 
   if(reset_msg->reset_yaw) {
-    //pid_yaw_reset = true;
     AttitudeController::ResetYaw(RESET_ID);
   }
   else pid_yaw_reset = false;
@@ -265,10 +262,12 @@ void AttitudeController::ResetRoll(int id) {
 
   status_msg.roll.reference = 0;
   status_msg.roll.error = 0;
+  status_msg.header.stamp = ros::Time::now();
+  status_pub.publish(status_msg);
 
   ang_accel_cmd.x = 0;
+  cmd_pub.publish(ang_accel_cmd);
 
-  AttitudeController::UpdateError();
   if(id == RESET_ID)
     pid_roll_reset = true;
   else if(id == DISABLE_ID)
@@ -285,10 +284,12 @@ void AttitudeController::ResetPitch(int id) {
 
   status_msg.pitch.reference = 0;
   status_msg.pitch.error = 0;
+  status_msg.header.stamp = ros::Time::now();
+  status_pub.publish(status_msg);
 
   ang_accel_cmd.y = 0;
+  cmd_pub.publish(ang_accel_cmd);
 
-  AttitudeController::UpdateError();
   if(id == RESET_ID)
     pid_pitch_reset = true;
   else if(id == DISABLE_ID)
@@ -305,10 +306,12 @@ void AttitudeController::ResetYaw(int id) {
 
   status_msg.yaw.reference = 0;
   status_msg.yaw.error = 0;
+  status_msg.header.stamp = ros::Time::now();
+  status_pub.publish(status_msg);
 
   ang_accel_cmd.z = 0;
+  cmd_pub.publish(ang_accel_cmd);
 
-  AttitudeController::UpdateError();
   if(id == RESET_ID)
     pid_yaw_reset = true;
   else if(id == DISABLE_ID)
