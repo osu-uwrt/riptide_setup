@@ -42,7 +42,8 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
   BeAutonomous::LoadParam<double>("Controller_Thresholds/pitch_thresh", pitch_thresh);
   BeAutonomous::LoadParam<double>("Controller_Thresholds/yaw_thresh", yaw_thresh);
   BeAutonomous::LoadParam<double>("Controller_Thresholds/error_duration_thresh", error_duration_thresh);
-  BeAutonomous::LoadParam<double>("Controller_Thresholds/bbox_duration_thresh", bbox_duration_thresh);
+  BeAutonomous::LoadParam<double>("Controller_Thresholds/bbox_surge_duration_thresh", bbox_surge_duration_thresh);
+  BeAutonomous::LoadParam<double>("Controller_Thresholds/bbox_heave_duration_thresh", bbox_heave_duration_thresh);
 
   mission_loaded = false;
   mission_running = false;
@@ -67,15 +68,13 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
   else
     task_map_file = rc::FILE_MAP_FINALS;
 
-  ROS_INFO("Loading tasks: %s", task_file.c_str());
   tasks = YAML::LoadFile(task_file);
-  ROS_INFO("Loading task map: %s", task_map_file.c_str());
   task_map = YAML::LoadFile(task_map_file);
-  ROS_INFO("YAML loaded");
   task_order_index = -1;
   tasks_enqueued = task_order.size();
   search_depth = 0;
   search_accel = 0;
+  bbox_thresh = 0;
 
   // Verify number of objects and thresholds match
   total_tasks = (int)tasks["tasks"].size();
@@ -89,8 +88,6 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
       ros::shutdown();
     }
   }
-  ROS_INFO("Tasks verified");
-
 
   // Vehicle State
   euler_rpy.x = 0;
@@ -151,20 +148,20 @@ void BeAutonomous::StartTask() {
 }
 
 void BeAutonomous::EndMission() {
+  if(mission_running) {
+    ROS_INFO("ENDING MISSION!!!");
+    if(tslam->enroute)
+      tslam->Abort();
+    if(task_id == rc::TASK_ROULETTE)
+      roulette->Abort();
+
+    task_order_index = -1;
+    task_id = -1;
+    last_task_id = -1;
+
+    BeAutonomous::SendResetMsgs();
+  }
   mission_running = false;
-
-  ROS_INFO("ENDING MISSION!!!");
-
-  if(tslam->enroute)
-    tslam->Abort();
-  if(task_id == rc::TASK_ROULETTE)
-    roulette->Abort();
-
-  task_order_index = -1;
-  task_id = -1;
-  last_task_id = -1;
-
-  BeAutonomous::SendResetMsgs();
 }
 
 void BeAutonomous::SendInitMsgs() {
@@ -344,8 +341,8 @@ void BeAutonomous::ReadMap() {
 // Calculate eta for TSlam to bring vehicle to next task
 void BeAutonomous::CalcETA(double Ax, double dist) {
   if(Ax >= 0.6 && Ax <= 1.25) { // Eqn only valid for Ax=[0.6, 1.25] m/s^2
-    double vel = A2V_SLOPE*Ax + A2V_INT;
-    eta = dist/vel;
+    x_vel = A2V_SLOPE*Ax + A2V_INT;
+    eta = dist/x_vel;
   }
   else eta = 0;
 }
@@ -385,7 +382,7 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr& switch_ms
     BeAutonomous::ResetSwitchPanel();
     BeAutonomous::EndMission();
   }
-  else if(!switch_msg->kill && last_kill_switch_value) { // Put kill witch in then out
+  else if(!switch_msg->kill && last_kill_switch_value) { // Put kill switch in then out
     BeAutonomous::ResetSwitchPanel();
     BeAutonomous::EndMission();
   }

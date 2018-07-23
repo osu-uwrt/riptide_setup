@@ -1,9 +1,6 @@
 <launch>
   <machine address="jetson" name="jetson" user="ros" env-loader="~/osu-uwrt/riptide_software/src/riptide_utilities/riptide_master.sh"/>
   <arg name="machine_name" default="jetson" />
-  <arg name="task_file" default="/home/ros/ssd/osu-uwrt/riptide_software/src/riptide_autonomy/cfg/tasks.yaml" />
 
-  <node machine="$(arg machine_name)" pkg="riptide_vision" type="object_processor" name="object_processor" output="screen" >
-    <param name="task_file" type="string" value="$(arg task_file)" />
-  </node>
+  <node machine="$(arg machine_name)" pkg="riptide_vision" type="object_processor" name="object_processor" output="screen" />
 </launch>

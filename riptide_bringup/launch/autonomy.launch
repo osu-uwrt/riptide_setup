@@ -1,8 +1,7 @@
 <launch>
   <include file="$(find riptide_autonomy)/launch/be_autonomous.launch" />
-  <include file="$(find riptide_hardware)/launch/hardware.launch" />
+  <!--<include file="$(find riptide_hardware)/launch/hardware.launch" />
+  <include file="$(find riptide_hardware)/launch/darknet_ros_jetson.launch" />-->
   <include file="$(find riptide_controllers)/launch/controllers.launch" />
   <include file="$(find riptide_vision)/launch/vision.launch" />
-  <include file="$(find riptide_hardware)/launch/cameras_jetson.launch" />
-  <include file="$(find darknet_ros)/launch/darknet_ros_jetson.launch" />
 </launch>

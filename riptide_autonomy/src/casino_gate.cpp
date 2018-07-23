@@ -120,7 +120,7 @@ void CasinoGate::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::Cons
       else
         duration = ros::Time::now().toSec() - acceptable_begin.toSec();
 
-      if(duration >= master->bbox_duration_thresh) { // Roulete should be off-center
+      if(duration >= master->bbox_surge_duration_thresh) { // Roulete should be off-center
         // Calculate heading for gate based on quadrant
         gate_heading = master->task_map["task_map"][master->quadrant]["map"][master->task_id]["gate_heading"].as<double>();
 

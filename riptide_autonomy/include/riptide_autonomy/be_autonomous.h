@@ -74,12 +74,13 @@ public:
   double depth;
 
   // Task Parameters
-  double depth_thresh, roll_thresh, pitch_thresh, yaw_thresh, error_duration_thresh, bbox_duration_thresh;
+  double depth_thresh, roll_thresh, pitch_thresh, yaw_thresh, error_duration_thresh;
+  double bbox_surge_duration_thresh, bbox_heave_duration_thresh;
 
   // Task Specific Objects
   TSlam* tslam;
   double current_x, current_y, start_x, start_y, relative_current_x, relative_current_y;
-  double eta, time_elapsed;
+  double eta, time_elapsed, x_vel;
   ros::Time eta_start, cur_time;
 
   Roulette* roulette;

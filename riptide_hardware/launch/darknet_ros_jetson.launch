@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find riptide_hardware)/launch/cameras_jetson.launch" />
+  <include file="$(find darknet_ros)/launch/darknet_ros_jetson.launch" />
+</launch>

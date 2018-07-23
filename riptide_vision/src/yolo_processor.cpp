@@ -28,10 +28,9 @@ YoloProcessor::YoloProcessor() : nh("yolo_processor") {
   for(int i = 0; i < num_rows; i++)
     text_start[i] = (i+1.0)/num_rows*top_margin - offset;
 
-  YoloProcessor::LoadParam<string>("task_file", task_file);
-
   // Initialize task info to Casino gate
   task_id = 0;
+  task_file = rc::FILE_TASKS;
   task_name = "Casino_Gate";
   alignment_plane = rc::PLANE_YZ;
 

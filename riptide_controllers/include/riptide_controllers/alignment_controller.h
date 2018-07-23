@@ -13,6 +13,7 @@
 #include "riptide_msgs/ControlStatusLinear.h"
 #include "riptide_msgs/Constants.h"
 using namespace std;
+typedef riptide_msgs::Constants rc;
 
 class AlignmentController
 {
@@ -23,6 +24,9 @@ class AlignmentController
     ros::Publisher xy_pub, depth_pub, status_pub;
     ros::Timer timer;
 
+    // IIR Filter variables for error_dot
+    double PID_IIR_LPF_bandwidth, dt_iir, alpha, imu_filter_rate;
+
     double max_zero_detect_duration;
 
     control_toolbox::Pid x_pid, y_pid, z_pid;
@@ -32,25 +36,26 @@ class AlignmentController
 
     riptide_msgs::ControlStatusLinear status_msg;
     double current_depth;
-    double MAX_X_ERROR, MAX_Y_ERROR, MAX_Z_ERROR, MAX_BBOX_ACCEL_ERROR, MAX_BBOX_DEPTH_ERROR;
-
+    double MAX_X_ERROR, MAX_Y_ERROR, MAX_Z_ERROR, MAX_BBOX_SURGE_ERROR, MAX_BBOX_DEPTH_ERROR;
+    
     int alignment_plane, bbox_control, obj_bbox_dim, target_bbox_dim;
 
-    geometry_msgs::Vector3 error, error_dot, last_error;
+    geometry_msgs::Vector3 error, error_dot, last_error_dot, last_error;
     geometry_msgs::Vector3 obj_pos, target_pos;
     double dt;
-
-    bool pid_alignment_reset, pid_alignment_active;
-    bool pid_surge_reset, pid_sway_reset, pid_heave_reset;
-    bool pid_surge_active, pid_sway_active, pid_heave_active;
 
     ros::Time sample_start;
     ros::Duration sample_duration;
 
+    // Reset and active variables
+    bool pid_alignment_reset, pid_alignment_active;
+    bool pid_surge_reset, pid_sway_reset, pid_heave_reset;
+    bool pid_surge_active, pid_sway_active, pid_heave_active;
+
     void InitMsgs();
     void UpdateError();
     double Constrain(double current, double max);
-    void ResetController(const riptide_msgs::ResetControls::ConstPtr &reset_msg);
+    double SmoothErrorIIR(double input, double prev);
     void ResetSurge(int id);
     void ResetSway(int id);
     void ResetHeave(int id);
@@ -64,6 +69,7 @@ class AlignmentController
     void CommandCB(const riptide_msgs::AlignmentCommand::ConstPtr &cmd);
     void DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg);
     void TaskInfoCB(const riptide_msgs::TaskInfo::ConstPtr& task_msg);
+    void ResetCB(const riptide_msgs::ResetControls::ConstPtr &reset_msg);
  };
 
  #endif

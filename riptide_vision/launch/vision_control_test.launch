@@ -1,0 +1,5 @@
+<launch>
+  <include file="$(find riptide_controllers)/launch/controllers.launch" />
+  <include file="$(find riptide_vision)/launch/vision.launch" />
+  <include file="$(find riptide_vision)/launch/darknet_sim.launch" />
+</launch>

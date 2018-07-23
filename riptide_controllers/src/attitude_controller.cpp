@@ -29,7 +29,7 @@ AttitudeController::AttitudeController() : nh("attitude_controller") {
 
     cmd_sub = nh.subscribe<riptide_msgs::AttitudeCommand>("/command/attitude", 1, &AttitudeController::CommandCB, this);
     imu_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &AttitudeController::ImuCB, this);
-    reset_sub = nh.subscribe<riptide_msgs::ResetControls>("/controls/reset", 1, &AttitudeController::ResetController, this);
+    reset_sub = nh.subscribe<riptide_msgs::ResetControls>("/controls/reset", 1, &AttitudeController::ResetCB, this);
 
     cmd_pub = nh.advertise<geometry_msgs::Vector3>("/command/accel_angular", 1);
     status_pub = nh.advertise<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1);
@@ -51,11 +51,6 @@ AttitudeController::AttitudeController() : nh("attitude_controller") {
     pid_pitch_active = false;
     pid_yaw_active = false;
     pid_attitude_active = false;
-
-    R_b2w.setIdentity();
-    R_w2b.setIdentity();
-    tf.setValue(0, 0, 0);
-    ang_vel.setValue(0, 0, 0);
 
     // IIR LPF Variables
     double fc = PID_IIR_LPF_bandwidth; // Shorthand variable for IIR bandwidth
@@ -116,9 +111,8 @@ void AttitudeController::UpdateError() {
   if(!pid_roll_reset && pid_roll_active) {
     roll_error = roll_cmd - current_attitude.x;
     roll_error = AttitudeController::Constrain(roll_error, MAX_ROLL_ERROR);
-    roll_error_dot = -ang_vel.x(); // Negative sign is necesary to account for correct sign of error_dot
+    roll_error_dot = -ang_vel.x; // Negative sign is necesary to account for correct sign of error_dot
     last_error.x = roll_error;
-    last_error_dot.x = roll_error_dot;
     status_msg.roll.error = roll_error;
 
     ang_accel_cmd.x = roll_controller_pid.computeCommand(roll_error, roll_error_dot, sample_duration);
@@ -128,9 +122,8 @@ void AttitudeController::UpdateError() {
   if(!pid_pitch_reset && pid_pitch_active) {
     pitch_error = pitch_cmd - current_attitude.y;
     pitch_error = AttitudeController::Constrain(pitch_error, MAX_PITCH_ERROR);
-    pitch_error_dot = -ang_vel.y(); // Negative sign is necesary to account for correct sign of error_dot
+    pitch_error_dot = -ang_vel.y; // Negative sign is necesary to account for correct sign of error_dot
     last_error.y = pitch_error;
-    last_error_dot.y = pitch_error_dot;
     status_msg.pitch.error = pitch_error;
 
     ang_accel_cmd.y = pitch_controller_pid.computeCommand(pitch_error, pitch_error_dot, sample_duration);
@@ -146,9 +139,8 @@ void AttitudeController::UpdateError() {
         yaw_error += 360;
     yaw_error = AttitudeController::Constrain(yaw_error, MAX_YAW_ERROR);
 
-    yaw_error_dot = -ang_vel.z(); // Negative sign is necesary to account for correct sign of error_dot
+    yaw_error_dot = -ang_vel.z; // Negative sign is necesary to account for correct sign of error_dot
     last_error.z = yaw_error;
-    last_error_dot.z = yaw_error_dot;
     status_msg.yaw.error = yaw_error;
 
     ang_accel_cmd.z = yaw_controller_pid.computeCommand(yaw_error, yaw_error_dot, sample_duration);
@@ -174,7 +166,7 @@ double AttitudeController::Constrain(double current, double max) {
   return current;
 }
 
-// Apply IIR LPF to error
+// Apply IIR LPF to error_dot
 double AttitudeController::SmoothErrorIIR(double input, double prev) {
   return (alpha*input + (1-alpha)*prev);
 }
@@ -187,7 +179,7 @@ void AttitudeController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg) {
   status_msg.yaw.current = current_attitude.z;
 
   //Get angular velocity (leave in [deg/s])
-  vector3MsgToTF(imu_msg->ang_vel, ang_vel);
+  ang_vel = imu_msg->ang_vel;
   AttitudeController::UpdateError();
 }
 
@@ -226,11 +218,9 @@ void AttitudeController::CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr
     pid_attitude_active = true; // Only need one to be active
   else
     pid_attitude_active = false;
-
-  AttitudeController::UpdateError();
 }
 
-void AttitudeController::ResetController(const riptide_msgs::ResetControls::ConstPtr& reset_msg) {
+void AttitudeController::ResetCB(const riptide_msgs::ResetControls::ConstPtr& reset_msg) {
   if(reset_msg->reset_roll) {
     AttitudeController::ResetRoll(RESET_ID);
   }
@@ -258,7 +248,6 @@ void AttitudeController::ResetRoll(int id) {
   roll_error = 0;
   roll_error_dot = 0;
   last_error.x = 0;
-  last_error_dot.x = 0;
 
   status_msg.roll.reference = 0;
   status_msg.roll.error = 0;
@@ -280,7 +269,6 @@ void AttitudeController::ResetPitch(int id) {
   pitch_error = 0;
   pitch_error_dot = 0;
   last_error.y = 0;
-  last_error_dot.y = 0;
 
   status_msg.pitch.reference = 0;
   status_msg.pitch.error = 0;
@@ -302,7 +290,6 @@ void AttitudeController::ResetYaw(int id) {
   yaw_error = 0;
   yaw_error_dot = 0;
   last_error.z = 0;
-  last_error_dot.z = 0;
 
   status_msg.yaw.reference = 0;
   status_msg.yaw.error = 0;

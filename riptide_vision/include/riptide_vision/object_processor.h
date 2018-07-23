@@ -19,6 +19,7 @@
 
 using namespace cv;
 using namespace std;
+typedef riptide_msgs::Constants rc;
 
 class ObjectProcessor
 {
