@@ -40,7 +40,7 @@ if(NOT _host_name MATCHES "riptide")
   add_dependencies(hud ${catkin_EXPORTED_TARGETS} ${OpenCV_LIBRARIES})
 
   add_executable(darknet_sim src/darknet_sim.cpp)
-  target_link_libraries(darknet_sim ${catkin_LIBRARIES})
+  target_link_libraries(darknet_sim ${catkin_LIBRARIES} yaml-cpp)
   add_dependencies(darknet_sim ${catkin_EXPORTED_TARGETS})
 
   add_executable(yolo_processor src/yolo_processor.cpp)

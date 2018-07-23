@@ -55,6 +55,7 @@ uint8 COMPETITION_FINALS = 1
 
 # Task and Task Map file paths
 string FILE_TASKS = ../osu-uwrt/riptide_software/src/riptide_autonomy/cfg/tasks.yaml
+string FILE_TASKS_SIM = ../osu-uwrt/riptide_software/src/riptide_vision/cfg/tasks_sim.yaml
 string FILE_MAP_SEMIS = ../osu-uwrt/riptide_software/src/riptide_autonomy/cfg/task_map_semis.yaml
 string FILE_MAP_FINALS = ../osu-uwrt/riptide_software/src/riptide_autonomy/cfg/task_map_finals.yaml
 

@@ -26,7 +26,7 @@ DepthController::DepthController() : nh("depth_controller") {
     cmd_sub = nh.subscribe<riptide_msgs::DepthCommand>("/command/depth", 1, &DepthController::CommandCB, this);
     depth_sub = nh.subscribe<riptide_msgs::Depth>("/state/depth", 1, &DepthController::DepthCB, this);
     imu_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &DepthController::ImuCB, this);
-    reset_sub = nh.subscribe<riptide_msgs::ResetControls>("/controls/reset", 1, &DepthController::ResetController, this);
+    reset_sub = nh.subscribe<riptide_msgs::ResetControls>("/controls/reset", 1, &DepthController::ResetCB, this);
 
     cmd_pub = nh.advertise<geometry_msgs::Vector3>("/command/accel_depth", 1);
     status_pub = nh.advertise<riptide_msgs::ControlStatus>("/status/controls/depth", 1);
@@ -38,6 +38,7 @@ DepthController::DepthController() : nh("depth_controller") {
 
     pid_depth_reset = true;
     pid_depth_active = false;
+    current_depth = 0;
 
     // IIR LPF Variables
     double fc = PID_IIR_LPF_bandwidth; // Shorthand variable for IIR bandwidth
@@ -123,7 +124,7 @@ double DepthController::Constrain(double current, double max) {
   return current;
 }
 
-// Apply IIR LPF to depth error
+// Apply IIR LPF to depth error_dot
 double DepthController::SmoothErrorIIR(double input, double prev) {
   return (alpha*input + (1-alpha)*prev);
 }
@@ -144,8 +145,6 @@ void DepthController::CommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd)
     if(depth_cmd < 0) // Min. depth is zero
       depth_cmd = 0;
     status_msg.reference = depth_cmd;
-
-    DepthController::UpdateError();
   }
   else {
     DepthController::ResetDepth(DISABLE_ID);
@@ -161,7 +160,7 @@ void DepthController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg) {
   DepthController::UpdateError();
 }
 
-void DepthController::ResetController(const riptide_msgs::ResetControls::ConstPtr &reset_msg) {
+void DepthController::ResetCB(const riptide_msgs::ResetControls::ConstPtr &reset_msg) {
   if(reset_msg->reset_depth) { // Reset
     DepthController::ResetDepth(RESET_ID);
   }

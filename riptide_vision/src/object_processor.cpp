@@ -21,13 +21,12 @@ ObjectProcessor::ObjectProcessor() : nh("object_processor") {
   colors.push_back(Scalar(255, 128, 0)); // Orange
   colors.push_back(Scalar(255, 0, 255)); // Purple
 
-  ObjectProcessor::LoadParam<string>("task_file", task_file);
-
   // Initialize task info to Casino Gate
+  task_file = rc::FILE_TASKS;
   task_id = 0;
   task_name = "Casino_Gate";
   object_name = "Casino_Gate_Black";
-  alignment_plane = riptide_msgs::Constants::PLANE_YZ;
+  alignment_plane = rc::PLANE_YZ;
 
   tasks = YAML::LoadFile(task_file);
 
@@ -44,12 +43,17 @@ ObjectProcessor::ObjectProcessor() : nh("object_processor") {
     }
   }
 
-    // Update task info
-    ObjectProcessor::UpdateTaskInfo();
+  // Update task info
+  ObjectProcessor::UpdateTaskInfo();
 
-    current_attitude.x = 0;
-    current_attitude.y = 0;
-    current_attitude.z = 0;
+  current_attitude.x = 0;
+  current_attitude.y = 0;
+  current_attitude.z = 0;
+
+  width = 644;
+  height = 482;
+  cam_center_x = width/2;
+  cam_center_y = height/2;
 }
 
 // Load parameter from namespace
@@ -77,8 +81,8 @@ void ObjectProcessor::UpdateTaskInfo() {
   num_objects = (int)tasks["tasks"][task_id]["objects"].size();
 
   alignment_plane = tasks["tasks"][task_id]["plane"].as<int>();
-  if(alignment_plane != riptide_msgs::Constants::PLANE_YZ && alignment_plane != riptide_msgs::Constants::PLANE_XY)
-    alignment_plane = riptide_msgs::Constants::PLANE_YZ; // Default to YZ-plane (fwd cam)
+  if(alignment_plane != rc::PLANE_YZ && alignment_plane != rc::PLANE_XY)
+    alignment_plane = rc::PLANE_YZ; // Default to YZ-plane (fwd cam)
 
   object_names.clear();
   thresholds.clear();

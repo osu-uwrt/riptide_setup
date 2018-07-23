@@ -1,5 +1,6 @@
 #include "riptide_autonomy/tslam.h"
 
+#define PI 3.141592653
 #define VALIDATE_PITCH 0
 #define VALIDATE_YAW 1
 
@@ -26,15 +27,18 @@ void TSlam::Start() {
   delta_y = master->start_y - master->current_y;
   ROS_INFO("Cur X: %f", master->current_x);
   ROS_INFO("Cur Y: %f", master->current_y);
-  angle = atan2(delta_y, delta_x);
+  angle = atan2(delta_y, delta_x) * 180/PI;
   heading = angle - 90;
   if(heading <= -180)
     heading += 360;
 
+  ROS_INFO("TSlam: Calculated angle: %f", angle);
+  ROS_INFO("TSlam: Vehicle heading to task: %f", heading);
+
   // Calculate distance and ETA
   distance = sqrt(delta_x*delta_x + delta_y*delta_y);
   master->CalcETA(master->search_accel, distance);
-  ROS_INFO("TSlam: eta of %f sec to task %s", master->eta, master->task_name.c_str());
+  ROS_INFO("TSlam: Distance %f with eta of %f sec at %f m/s", distance, master->eta, master->x_vel);
 
   // Publish attitude command
   attitude_cmd.roll_active = true;
