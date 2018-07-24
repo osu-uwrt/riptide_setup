@@ -12,5 +12,7 @@ geometry_msgs/Point target_pos
 # Bounding Box width in pixels. Useful for controlling
 # an approximate distance.
 int32 bbox_width
+boolean bbox_control
+float32 target_approach_accel
 
 int8 task_id
