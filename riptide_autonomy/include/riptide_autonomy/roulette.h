@@ -34,7 +34,7 @@ private:
   riptide_msgs::AttitudeCommand attitude_cmd;
   riptide_msgs::Pneumatics pneumatics_cmd;
 
-  double duration;
+  double detection_duration, error_duration;
   int detections, attempts;
   ros::Time acceptable_begin;
   ros::Time detect_start;
@@ -53,6 +53,7 @@ private:
 public:
 
   Roulette(BeAutonomous* master);
+  void Initialize();
   void Start();
   void IDRoulette(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_msg);
   void AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr& status_msg);

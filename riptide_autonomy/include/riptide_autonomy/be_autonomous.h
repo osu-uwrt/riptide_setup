@@ -59,11 +59,11 @@ public:
   ros::Time load_time, pre_start_time;
 
   // Task Info
-  YAML::Node tasks, task_map;
-  string task_file, task_map_file, task_name, object_name;
+  YAML::Node tasks;
+  string task_file, task_name, object_name;
   double search_depth, search_accel, detection_duration_thresh;
   int num_objects, align_thresh, bbox_thresh, detections_req;
-  int competition_id, quadrant, task_id, last_task_id, total_tasks, tasks_enqueued, task_order_index;
+  int competition_id, quadrant, task_id, last_task_id, total_tasks, task_order_index;
   int alignment_plane, color, frame_width, frame_height;
   vector<int> task_order;
   vector<string> object_names;
@@ -79,9 +79,7 @@ public:
 
   // Task Specific Objects
   TSlam* tslam;
-  double current_x, current_y, start_x, start_y, relative_current_x, relative_current_y;
-  double eta, time_elapsed, x_vel;
-  ros::Time eta_start, cur_time;
+  double relative_current_x, relative_current_y, global_y_axis_heading;
 
   Roulette* roulette;
 
@@ -94,8 +92,6 @@ public:
   void SendResetMsgs();
   void SystemCheckTimer(const ros::TimerEvent& event);
   void UpdateTaskInfo();
-  void ReadMap();
-  void CalcETA(double Ax, double dist);
   void SystemCheck(const ros::TimerEvent& event);
   void EndTSlamTimer(const ros::TimerEvent& event);
   void EndTSlam();

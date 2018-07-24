@@ -5,15 +5,20 @@
 
 CasinoGate::CasinoGate(BeAutonomous* master) {
   this->master = master;
+  CasinoGate::Initialize();
+}
+
+void CasinoGate::Initialize() {
   active_subs.clear();
   detections = 0;
   attempts = 0;
-  align_id = ALIGN_YZ;
-  clock_is_ticking = false;
   gate_heading = 0;
-  passed_thru_gate = false;
+  align_id = ALIGN_YZ;
+  
+  detection_duration = 0;
+  error_duration = 0;
+  clock_is_ticking = false;
   braked = false;
-  pass_thru_duration = 0;
 }
 
 void CasinoGate::Start() {
@@ -45,16 +50,16 @@ void CasinoGate::IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr& b
     attempts++;
   }
   else {
-    duration = ros::Time::now().toSec() - detect_start.toSec();
+    detection_duration = ros::Time::now().toSec() - detect_start.toSec();
   }
 
-  if(duration > master->detection_duration_thresh) {
+  if(detection_duration > master->detection_duration_thresh) {
     if(detections >= master->detections_req) {
       task_bbox_sub.shutdown();
       active_subs.erase(active_subs.end());
-      master->tslam->Abort();
+      master->tslam->Abort(true);
       clock_is_ticking = false;
-      duration = 0;
+      detection_duration = 0;
 
       // Activate YZ alignment controllers
       // Set points already specified in initial alignment command
@@ -68,10 +73,10 @@ void CasinoGate::IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr& b
     }
     else /*if(attempts < 3)*/{
       ROS_INFO("CasinoGate: Attempt %i to ID CasinoGate", attempts);
-      ROS_INFO("CasinoGate: %i detections in %f sec", detections, duration);
+      ROS_INFO("CasinoGate: %i detections in %f sec", detections, detection_duration);
       ROS_INFO("CasinoGate: Beginning attempt %i", attempts+1);
       detections = 0;
-      duration = 0;
+      detection_duration = 0;
     }
     /*else {
       ROS_INFO("CasinoGate: More than 3 attempts used to ID CasinoGate");
@@ -92,10 +97,10 @@ void CasinoGate::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::Cons
         clock_is_ticking = true;
       }
       else
-        duration = ros::Time::now().toSec() - acceptable_begin.toSec();
+        error_duration = ros::Time::now().toSec() - acceptable_begin.toSec();
 
-      if(duration >= master->error_duration_thresh) { // Roulete should be in the camera center
-        duration = 0;
+      if(error_duration >= master->error_duration_thresh) { // Roulete should be in the camera center
+        error_duration = 0;
         clock_is_ticking = false;
         align_id = ALIGN_BBOX_WIDTH; // Verify if bbox alignment will work
 
@@ -106,7 +111,7 @@ void CasinoGate::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::Cons
       }
   	}
     else {
-      duration = 0;
+      error_duration = 0;
       clock_is_ticking = false;
     }
   }
@@ -118,11 +123,11 @@ void CasinoGate::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::Cons
         clock_is_ticking = true;
       }
       else
-        duration = ros::Time::now().toSec() - acceptable_begin.toSec();
+        error_duration = ros::Time::now().toSec() - acceptable_begin.toSec();
 
-      if(duration >= master->bbox_surge_duration_thresh) { // Roulete should be off-center
+      if(error_duration >= master->bbox_surge_duration_thresh) { // Roulete should be off-center
         // Calculate heading for gate based on quadrant
-        gate_heading = master->task_map["task_map"][master->quadrant]["map"][master->task_id]["gate_heading"].as<double>();
+        gate_heading = master->tslam->task_map["task_map"][master->quadrant]["map"][master->task_id]["gate_heading"].as<double>();
 
         // Publish attitude command
         attitude_cmd.roll_active = true;
@@ -139,7 +144,7 @@ void CasinoGate::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::Cons
       }
   	}
     else {
-      duration = 0;
+      error_duration = 0;
       clock_is_ticking = false;
     }
   }
@@ -155,13 +160,13 @@ void CasinoGate::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::Cons
       clock_is_ticking = true;
     }
     else
-      duration = ros::Time::now().toSec() - acceptable_begin.toSec();
+      error_duration = ros::Time::now().toSec() - acceptable_begin.toSec();
 
-    if(duration >= master->error_duration_thresh) {
+    if(error_duration >= master->error_duration_thresh) {
       // Shutdown alignment callback
       alignment_status_sub.shutdown();
       active_subs.erase(active_subs.begin());
-      duration = 0;
+      error_duration = 0;
       clock_is_ticking = false;
 
   		// Disable alignment controller so vehicle can move forward
@@ -185,7 +190,7 @@ void CasinoGate::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::Cons
     }
 	}
   else {
-    duration = 0;
+    error_duration = 0;
     clock_is_ticking = false;
   }
 }
@@ -210,13 +215,7 @@ void CasinoGate::PassThruTimer(const ros::TimerEvent& event) {
 
 // Shutdown all active subscribers
 void CasinoGate::Abort() {
-  attempts = 0;
-  detections = 0;
-  duration = 0;
-  passed_thru_gate = false;
-  braked = false;
-  clock_is_ticking = false;
-  pass_thru_duration = 0;
+  CasinoGate::Initialize();
 
   if(active_subs.size() > 0) {
     for(int i=0; i<active_subs.size(); i++) {

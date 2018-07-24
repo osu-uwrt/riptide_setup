@@ -1,9 +1,5 @@
 #include "riptide_autonomy/be_autonomous.h"
 
-// Slope and y-int for x-accel to x-velocity
-#define A2V_SLOPE 0.2546
-#define A2V_INT .1090
-
 int main(int argc, char** argv) {
   ros::init(argc, argv, "be_autonomous");
   BeAutonomous ba;
@@ -35,6 +31,7 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
   BeAutonomous::LoadParam<bool>("Task_Execution/run_single_task", run_single_task);
   BeAutonomous::LoadParam<double>("Task_Execution/relative_current_x", relative_current_x);
   BeAutonomous::LoadParam<double>("Task_Execution/relative_current_y", relative_current_y);
+  BeAutonomous::LoadParam<double>("Task_Execution/global_y_axis_heading", global_y_axis_heading);
 
   // Load Task Runtime Parameters
   BeAutonomous::LoadParam<double>("Controller_Thresholds/depth_thresh", depth_thresh);
@@ -45,16 +42,13 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
   BeAutonomous::LoadParam<double>("Controller_Thresholds/bbox_surge_duration_thresh", bbox_surge_duration_thresh);
   BeAutonomous::LoadParam<double>("Controller_Thresholds/bbox_heave_duration_thresh", bbox_heave_duration_thresh);
 
+  ROS_INFO("Competition id: %i", competition_id);
+
   mission_loaded = false;
   mission_running = false;
   thruster = 0;
   pre_start_duration = 0;
   clock_is_ticking = false;
-
-  start_x = 0;
-  start_y = 0;
-  current_x = 0;
-  current_y = 0;
 
   // Load Task Info
   task_file = rc::FILE_TASKS;
@@ -62,16 +56,8 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
   last_task_id = -1;
   color = rc::COLOR_BLACK;
   quadrant = rc::QUAD_A;
-  ROS_INFO("comp id: %i", competition_id);
-  if(competition_id == rc::COMPETITION_SEMIS)
-    task_map_file = rc::FILE_MAP_SEMIS;
-  else
-    task_map_file = rc::FILE_MAP_FINALS;
-
   tasks = YAML::LoadFile(task_file);
-  task_map = YAML::LoadFile(task_map_file);
   task_order_index = -1;
-  tasks_enqueued = task_order.size();
   search_depth = 0;
   search_accel = 0;
   bbox_thresh = 0;
@@ -134,12 +120,10 @@ void BeAutonomous::StartTask() {
     task_id = task_order.at(task_order_index);
     ROS_INFO("New task ID: %i", task_id);
     BeAutonomous::UpdateTaskInfo();
-    BeAutonomous::ReadMap();
     tslam->Start();
     if(task_id == rc::TASK_ROULETTE) {
       ROS_INFO("Starting roulette task");
       roulette->Start();
-      ROS_INFO("Roulette task started");
     }
   }
   else {
@@ -150,8 +134,9 @@ void BeAutonomous::StartTask() {
 void BeAutonomous::EndMission() {
   if(mission_running) {
     ROS_INFO("ENDING MISSION!!!");
-    if(tslam->enroute)
-      tslam->Abort();
+    
+    tslam->Abort(false); // Don't apply thruster brake
+
     if(task_id == rc::TASK_ROULETTE)
       roulette->Abort();
 
@@ -271,6 +256,7 @@ void BeAutonomous::SystemCheckTimer(const ros::TimerEvent& event) {
 void BeAutonomous::UpdateTaskInfo() {
   task_name = tasks["tasks"][task_id]["name"].as<string>();
   num_objects = (int)tasks["tasks"][task_id]["objects"].size();
+  ROS_INFO("New Task Name: %s", task_name.c_str());
 
   alignment_plane = tasks["tasks"][task_id]["plane"].as<int>();
   if(alignment_plane != rc::PLANE_YZ && alignment_plane != rc::PLANE_XY)
@@ -295,66 +281,6 @@ void BeAutonomous::UpdateTaskInfo() {
   task_msg.task_name = task_name;
   task_msg.alignment_plane = alignment_plane;
   task_info_pub.publish(task_msg);
-}
-
-void BeAutonomous::ReadMap() {
-  quadrant = floor(load_id / 2.0);
-  ROS_INFO("Quadrant: %i", quadrant);
-  if(quadrant < 4) {
-    start_x = task_map["task_map"][quadrant]["map"][task_id]["start_x"].as<double>();
-    start_y = task_map["task_map"][quadrant]["map"][task_id]["start_y"].as<double>();
-
-    if(last_task_id == -1 && !run_single_task) {
-      current_x = task_map["task_map"][quadrant]["dock_x"].as<double>();
-      current_y = task_map["task_map"][quadrant]["dock_y"].as<double>();
-    }
-    else if(run_single_task && task_order.size() == 1) {
-      current_x = start_x + relative_current_x;
-      current_y = start_y + relative_current_y;
-    }
-    else {
-      current_x = task_map["task_map"][quadrant]["map"][last_task_id]["end_x"].as<double>();
-      current_y = task_map["task_map"][quadrant]["map"][last_task_id]["end_y"].as<double>();
-    }
-  }
-  else {
-    current_x = 420;
-    current_y = 420;
-    start_x = 420;
-    start_y = 420;
-  }
-
-  // Verify current_x and current_y were not set to an arbitrarily large number
-  if(abs(current_x) > 55) {
-    current_x = 0;
-    ROS_INFO("ERROR: Current X not initialized properly, exceeded limit. Setting to 0.");
-  }
-  if(abs(current_y) > 40) {
-    current_y = 0;
-    ROS_INFO("ERROR: Current Y not initialized properly, exceeded limit. Setting to 0.");
-  }
-
-  ROS_INFO("Next Task (%s) Start X: %f", task_name.c_str(), start_x);
-  ROS_INFO("Next Task (%s) Start Y: %f", task_name.c_str(), start_y);
-}
-
-// Calculate eta for TSlam to bring vehicle to next task
-void BeAutonomous::CalcETA(double Ax, double dist) {
-  if(Ax >= 0.6 && Ax <= 1.25) { // Eqn only valid for Ax=[0.6, 1.25] m/s^2
-    x_vel = A2V_SLOPE*Ax + A2V_INT;
-    eta = dist/x_vel;
-  }
-  else eta = 0;
-}
-
-void BeAutonomous::EndTSlamTimer(const ros::TimerEvent& event) {
-  if(tslam->enroute)
-    BeAutonomous::EndTSlam();
-}
-
-void BeAutonomous::EndTSlam() {
-  tslam->Abort();
-  eta = 0;
 }
 
 void BeAutonomous::ResetSwitchPanel() {

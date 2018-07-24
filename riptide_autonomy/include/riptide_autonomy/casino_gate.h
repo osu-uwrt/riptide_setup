@@ -31,7 +31,7 @@ private:
   riptide_msgs::AlignmentCommand align_cmd;
   riptide_msgs::AttitudeCommand attitude_cmd;
 
-  double duration, gate_heading, pass_thru_duration;
+  double detection_duration, error_duration, gate_heading, pass_thru_duration;
   int detections, attempts, align_id;
   ros::Time acceptable_begin;
   ros::Time detect_start;
@@ -45,6 +45,7 @@ private:
 public:
 
   CasinoGate(BeAutonomous* master);
+  void Initialize();
   void Start();
   void IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_msg);
   void AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr& status_msg);
