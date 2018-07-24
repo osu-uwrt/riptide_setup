@@ -3,6 +3,7 @@
 
 #include "ros/ros.h"
 #include <vector>
+#include <yaml-cpp/yaml.h>
 #include "geometry_msgs/Vector3.h"
 #include "riptide_msgs/Constants.h"
 #include "riptide_msgs/ControlStatusAngular.h"
@@ -28,9 +29,16 @@ private:
   riptide_msgs::AttitudeCommand attitude_cmd;
   riptide_msgs::DepthCommand depth_cmd;
 
-  double delta_x, delta_y, angle, heading, distance;
+  // Task Info
+  string task_map_file;
+
+  int quadrant;
+  double current_x, current_y, start_x, start_y;
+  double eta, x_vel;
+
+  double delta_x, delta_y, angle, search_heading, distance;
   ros::Time acceptable_begin;
-  double duration;
+  double error_duration;
   bool clock_is_ticking;
   int validate_id;
 
@@ -38,15 +46,19 @@ private:
   BeAutonomous* master;
 
 public:
-  bool enroute;
+  YAML::Node task_map;
 
   TSlam(BeAutonomous* master);
   void Initialize();
+  void ReadMap();
+  void CalcETA(double Ax, double dist);
+  double KeepHeadingInRange(double input);
   void Start();
   void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr& status_msg);
   void DepthStatusCB(const riptide_msgs::ControlStatus::ConstPtr& status_msg);
+  void AbortTSlamTimer(const ros::TimerEvent& event);
   void BrakeTimer(const ros::TimerEvent& event);
-  void Abort();
+  void Abort(bool apply_brake);
 };
 
 #endif
