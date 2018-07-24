@@ -39,7 +39,7 @@ def main():
         if ser.inWaiting() != 0:
             ser.readline()
         else:
-            print "No pneumatics message"
+            rospy.loginfo("No pneumatics message")
         rate.sleep()
 
 if __name__ == "__main__": main()
