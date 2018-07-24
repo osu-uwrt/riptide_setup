@@ -5,6 +5,7 @@
 
 CasinoGate::CasinoGate(BeAutonomous* master) {
   this->master = master;
+  end_pos_offset = master->tasks["tasks"][master->task_id]["end_pos_offset"].as<double>();
   CasinoGate::Initialize();
 }
 
@@ -19,10 +20,14 @@ void CasinoGate::Initialize() {
   error_duration = 0;
   clock_is_ticking = false;
   braked = false;
+  passing_on_right = false;
+  passing_on_left = false;
 }
 
 void CasinoGate::Start() {
   object_name = (master->color == rc::COLOR_BLACK)?master->object_names.at(0):master->object_names.at(1); // Black side if statement true, Red otherwise
+  gate_heading = master->tslam->task_map["task_map"][master->tslam->quadrant]["map"][master->task_id]["gate_heading"].as<double>();
+  
   align_cmd.surge_active = false;
   align_cmd.sway_active = false;
   align_cmd.heave_active = false;
@@ -126,9 +131,6 @@ void CasinoGate::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::Cons
         error_duration = ros::Time::now().toSec() - acceptable_begin.toSec();
 
       if(error_duration >= master->bbox_surge_duration_thresh) { // Roulete should be off-center
-        // Calculate heading for gate based on quadrant
-        gate_heading = master->tslam->task_map["task_map"][master->quadrant]["map"][master->task_id]["gate_heading"].as<double>();
-
         // Publish attitude command
         attitude_cmd.roll_active = true;
         attitude_cmd.pitch_active = true;

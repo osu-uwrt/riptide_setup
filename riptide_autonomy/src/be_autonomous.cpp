@@ -90,6 +90,7 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
   // The "new" keyword creates a pointer to the object
   tslam = new TSlam(this);
   roulette = new Roulette(this);
+  casino_gate = new CasinoGate(this);
   ROS_INFO("Created task objects");
 }
 
