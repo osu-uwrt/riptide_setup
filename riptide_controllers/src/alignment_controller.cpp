@@ -289,8 +289,10 @@ void AlignmentController::ResetHeave() {
 }
 
 void AlignmentController::Loop() {
+  ros::Rate rate(200);
   while(!ros::isShuttingDown()) {
     AlignmentController::UpdateError(); // ALWAYS update error, regardless of circumstance
     ros::spinOnce();
+    rate.sleep();
   }
 }

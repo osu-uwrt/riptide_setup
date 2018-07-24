@@ -206,8 +206,10 @@ void DepthController::ResetDepth() {
 }
 
 void DepthController::Loop() {
+  ros::Rate rate(200);
   while(!ros::isShuttingDown()) {
     DepthController::UpdateError(); // ALWAYS update error, regardless of circumstance
     ros::spinOnce();
+    rate.sleep();
   }
 }

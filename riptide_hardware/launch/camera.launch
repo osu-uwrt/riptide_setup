@@ -2,16 +2,11 @@
   <arg name="camera_name" />
   <arg name="serial_number" />
   <arg name="frame_rate" default="30" />
-  <arg name="video_mode" default="format7_mode1" /> <!--mode0: Max res 1288 x 964 -->
+  <arg name="video_mode" default="format7_mode1" />
+  <!--mode0: Max res at 1288 x 964-->
+  <!--mode1: Half res at 644 x 482-->
 
   <group ns="$(arg camera_name)">
-
-    <!--<node pkg="riptide_hardware" type="undistort_camera" name="undistort_camera" output="screen" >
-      <rosparam command="load" file="$(find riptide_hardware)/cfg/camera_$(arg camera_name)_cal.yaml" />
-      <param name="camera_name" type="string" value="$(arg camera_name)" />
-      <param name="frame_rate" type="double" value="$(arg frame_rate)" />
-      <param name="video_mode" type="string" value="$(arg video_mode)" />
-    </node>-->
 
     <include file="$(find riptide_hardware)/launch/undistort_camera.launch" >
       <arg name="camera_name" value="$(arg camera_name)" />

@@ -28,8 +28,8 @@ struct vector {
 // laxed, then the solver will not turn on those additional thrusters and the
 // output will be as expected.
 // NOTE: For the time being, the upper/lower bounds have been REMOVED from the solver
-double MIN_THRUST = -200.0;
-double MAX_THRUST = 200.0;
+double MIN_THRUST = -20.0;
+double MAX_THRUST = 20.0;
 
 // Vehicle mass (kg):
 // Updated 5-15-18
@@ -68,7 +68,7 @@ double buoyancy_depth_thresh, buoyancy_pitch_thresh;
 // Rotation Matrices: world to body, and body to world
 // Angular Velocity
 tf::Matrix3x3 R_w2b, R_b2w;
-tf::Vector3 euler_rpy, ang_v;
+tf::Vector3 euler_deg, euler_rpy, ang_v;
 
 // Debug variables
 geometry_msgs::Vector3Stamped buoyancy_pos;
@@ -131,8 +131,7 @@ struct heave
                   const T *const heave_port_aft, const T *const heave_stbd_aft, T *residual) const
   {
 
-      residual[0] = ((heave_port_fwd[0] + heave_stbd_fwd[0]) * T(enableHeaveFwd) +
-                    (heave_port_aft[0] + heave_stbd_aft[0]) * T(enableHeaveAft) +
+      residual[0] = (heave_port_fwd[0] + heave_stbd_fwd[0] + heave_port_aft[0] + heave_stbd_aft[0] +
                     (T(R_w2b.getRow(2).z()) * (T(buoyancy) - T(weight))*T(isBuoyant))) / T(mass) -
                     T(cmdHeave);
     return true;
@@ -155,8 +154,8 @@ struct roll
     residual[0] = ((T(R_w2b.getRow(1).z()) * T(buoyancy) * T(-pos_buoyancy.z) +
                   T(R_w2b.getRow(2).z()) * T(buoyancy) * T(pos_buoyancy.y))*T(isBuoyant) +
                   sway_fwd[0] * T(-pos_sway_fwd.z) + sway_aft[0] * T(-pos_sway_aft.z) +
-                  (heave_port_fwd[0] * T(pos_heave_port_fwd.y) + heave_stbd_fwd[0] * T(pos_heave_stbd_fwd.y)) * T(enableHeaveFwd) +
-                  (heave_port_aft[0] * T(pos_heave_port_aft.y) + heave_stbd_aft[0] * T(pos_heave_stbd_aft.y)) * T(enableHeaveAft) -
+                  heave_port_fwd[0] * T(pos_heave_port_fwd.y) + heave_stbd_fwd[0] * T(pos_heave_stbd_fwd.y) +
+                  heave_port_aft[0] * T(pos_heave_port_aft.y) + heave_stbd_aft[0] * T(pos_heave_stbd_aft.y) -
                   ((T(ang_v.z()) * T(ang_v.y())) * (T(Izz) - T(Iyy)))) / T(Ixx) -
                   T(cmdRoll);
     return true;
@@ -177,8 +176,8 @@ struct pitch
     residual[0] = ((T(R_w2b.getRow(0).z()) * T(buoyancy) * T(pos_buoyancy.z) +
                   T(R_w2b.getRow(2).z()) * T(buoyancy) * T(-pos_buoyancy.x))*T(isBuoyant) +
                   surge_port_lo[0] * T(pos_surge_port_lo.z) + surge_stbd_lo[0] * T(pos_surge_stbd_lo.z) +
-                  (heave_port_fwd[0] * T(-pos_heave_port_fwd.x) + heave_stbd_fwd[0] * T(-pos_heave_stbd_fwd.x)) * T(enableHeaveFwd) +
-                  (heave_port_aft[0] * T(-pos_heave_port_aft.x) + heave_stbd_aft[0] * T(-pos_heave_stbd_aft.x)) * T(enableHeaveAft) -
+                  heave_port_fwd[0] * T(-pos_heave_port_fwd.x) + heave_stbd_fwd[0] * T(-pos_heave_stbd_fwd.x) +
+                  heave_port_aft[0] * T(-pos_heave_port_aft.x) + heave_stbd_aft[0] * T(-pos_heave_stbd_aft.x) -
                   ((T(ang_v.x()) * T(ang_v.z())) * (T(Ixx) - T(Izz)))) / T(Iyy) -
                   T(cmdPitch);
     return true;
@@ -332,6 +331,7 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller") 
 
   R_b2w.setIdentity();
   R_w2b.setIdentity();
+  euler_deg.setZero();
   euler_rpy.setZero();
   ang_v.setZero();
 
@@ -383,6 +383,10 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller") 
   problem.AddResidualBlock(new ceres::AutoDiffCostFunction<yaw, 1, 1, 1, 1, 1>(new yaw), NULL,
                            &surge_port_lo, &surge_stbd_lo, &sway_fwd, &sway_aft);
 
+  /*problem.SetParameterLowerBound(&surge_port_lo, 0, MIN_THRUST);
+  problem.SetParameterUpperBound(&surge_port_lo, 0, MAX_THRUST);
+  problem.SetParameterLowerBound(&surge_stbd_lo, 0, MIN_THRUST);
+  problem.SetParameterUpperBound(&surge_stbd_lo, 0, MAX_THRUST);*/
   // Configure solver
   options.max_num_iterations = 100;
   options.linear_solver_type = ceres::DENSE_QR;
@@ -445,8 +449,8 @@ void ThrusterController::DynamicReconfigCallback(riptide_controllers::VehiclePro
 void ThrusterController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
 {
   //Get euler angles, convert to radians, and make two rotation matrices
-  vector3MsgToTF(imu_msg->euler_rpy, euler_rpy);
-  euler_rpy.setValue(euler_rpy.x()*PI/180, euler_rpy.y()*PI/180, euler_rpy.z()*PI/180);
+  vector3MsgToTF(imu_msg->euler_rpy, euler_deg);
+  euler_rpy.setValue(euler_deg.x()*PI/180, euler_deg.y()*PI/180, euler_deg.z()*PI/180);
   R_b2w.setRPY(euler_rpy.x(), euler_rpy.y(), euler_rpy.z()); //Body to world rotations --> world_vector =  R_b2w * body_vector
   R_w2b = R_b2w.transpose(); //World to body rotations --> body_vector = R_w2b * world_vector
 
@@ -462,15 +466,16 @@ void ThrusterController::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg)
     isBuoyant = true;
     enableHeaveFwd = true;
     enableHeaveAft = true;
-  } else {
+  }
+  else {
     isBuoyant = false;
 
     // Enable/Disable Apprpriate Heave Thrusters
-    if(euler_rpy.y()*180/PI > buoyancy_pitch_thresh) { // Aft is too high -> disable heave aft
+    if(euler_deg.y() > buoyancy_pitch_thresh) { // Aft is too high -> disable heave aft
       enableHeaveFwd = true;
       enableHeaveAft = false;
     }
-    else if(euler_rpy.y()*180/PI < -buoyancy_pitch_thresh) { // Nose is too high -> disable heave fwd
+    else if(euler_deg.y() < -buoyancy_pitch_thresh) { // Nose is too high -> disable heave fwd
       enableHeaveFwd = false;
       enableHeaveAft = true;
     }
@@ -560,5 +565,9 @@ void ThrusterController::AccelCB(const geometry_msgs::Accel::ConstPtr &a)
 
 void ThrusterController::Loop()
 {
-  ros::spin();
+  ros::Rate rate(200);
+  while(!ros::isShuttingDown()) {
+    ros::spinOnce();
+    rate.sleep();
+  }
 }
