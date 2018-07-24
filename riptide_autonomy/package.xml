@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package>
+  <name>riptide_autonomy</name>
+  <version>0.0.17</version>
+  <description>High level autonomy package for Riptide</description>
+
+  <maintainer email="justice.251@osu.edu">Benji Justice</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://go.osu.edu/uwrt</url>
+  <url type="repository">http://github.com/osu-uwrt/riptide-ros</url>
+
+  <author email="cary.42@osu.edu">Conor Cary</author>
+  <author email="justice.251@osu.edu">Benji Justice</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>riptide_msgs</build_depend>
+  <build_depend>roscpp</build_depend>
+
+  <export>
+  </export>
+</package>
