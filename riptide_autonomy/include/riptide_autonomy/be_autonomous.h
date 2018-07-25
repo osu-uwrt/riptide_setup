@@ -38,9 +38,6 @@ class Roulette;
 class CasinoGate;
 class PathMarker;
 
-void Subscribe(vector<ros::Subscriber> subs, ros::Subscriber sub);
-void Unsub(vector<ros::Subscriber> subs, string topic);
-void UnsubAll(vector<ros::Subscriber> subs);
 
 class BeAutonomous
 {

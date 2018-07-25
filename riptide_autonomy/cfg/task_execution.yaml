@@ -1,9 +1,9 @@
 Task_Execution:
-  task_order: [1,7]
+  task_order: [7, 1]
   run_single_task: false
   relative_current_x: 0.0 #  Where the vehicle starts relative to task [m]
   relative_current_y: 0.0 # Where the vehicle starts relative to task [m]
-  global_y_axis_heading: 20 # Allows user to specify where world positive y-axis points [deg]
+  global_y_axis_heading: 0 # Allows user to specify where world positive y-axis points [deg]
 Controller_Thresholds:
   depth_thresh: 0.3 # [m]
   roll_thresh: 5 # [deg]

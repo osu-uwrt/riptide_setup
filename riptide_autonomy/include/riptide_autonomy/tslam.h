@@ -51,6 +51,7 @@ public:
   TSlam(BeAutonomous *master);
   void Initialize();
   void ReadMap();
+  void SetPos(double x, double y);
   void CalcETA(double Ax, double dist);
   double KeepHeadingInRange(double input);
   void Start();
