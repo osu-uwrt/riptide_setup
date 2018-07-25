@@ -33,13 +33,20 @@ def main():
     rospy.init_node('pneumatics')
     print "starting node"
     pneuPub = rospy.Subscriber("/command/pneumatics", Pneumatics, pneuCB, queue_size=1)
-    rate = rospy.Rate(0.5)
+    rate = rospy.Rate(0.1)
     pneuMsg = Pneumatics()
+    failState = False
     while not rospy.is_shutdown():
+        rate.sleep()
         if ser.inWaiting() != 0:
+            if failState:
+                rospy.loginfo("Pneumatics re-connected")
+                failState = False
             ser.readline()
         else:
-            rospy.loginfo("No pneumatics message")
-        rate.sleep()
+            if not failState:
+                rospy.logerr('Pneumatics not connected')
+                failState = True
+        
 
 if __name__ == "__main__": main()
