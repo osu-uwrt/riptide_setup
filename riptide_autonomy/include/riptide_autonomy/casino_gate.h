@@ -24,7 +24,7 @@ class CasinoGate
 
 private:
   ros::Subscriber task_bbox_sub, alignment_status_sub, attitude_status_sub;
-  vector<ros::Subscriber> active_subs;
+  ros::Subscriber active_subs[3] = {task_bbox_sub, alignment_status_sub, attitude_status_sub};
   ros::Timer timer;
 
   darknet_ros_msgs::BoundingBoxes task_bboxes;

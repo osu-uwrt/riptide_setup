@@ -3,12 +3,12 @@
 
 // Useful functions
 
-void subscribe(vector<ros::Subscriber> subs, ros::Subscriber sub)
+void Subscribe(vector<ros::Subscriber> subs, ros::Subscriber sub)
 {
   subs.push_back(sub);
 }
 
-void unsub(vector<ros::Subscriber> subs, string topic)
+void Unsub(vector<ros::Subscriber> subs, string topic)
 {
   for(int i=0; i<subs.size(); i++) {
     if(subs.at(i).getTopic() == topic)
@@ -19,7 +19,7 @@ void unsub(vector<ros::Subscriber> subs, string topic)
   }
 }
 
-void unsubAll(vector<ros::Subscriber> subs)
+void UnsubAll(vector<ros::Subscriber> subs)
 {
   for(int i=0; i<subs.size(); i++) {
     subs.at(i).shutdown();

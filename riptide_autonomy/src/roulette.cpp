@@ -11,7 +11,6 @@ Roulette::Roulette(BeAutonomous* master) {
 }
 
 void Roulette::Initialize() {
-  active_subs.clear();
   detections = 0;
   attempts = 0;
   num_markers_dropped = 0;
@@ -23,6 +22,9 @@ void Roulette::Initialize() {
   drop_duration_thresh = 0;
   clock_is_ticking = false;
   drop_clock_is_ticking = false;
+
+  for(int i=0; i< sizeof(active_subs)/sizeof(active_subs[0]); i++)
+    active_subs[i].shutdown();
 }
 
 void Roulette::Start() {
@@ -41,7 +43,7 @@ void Roulette::Start() {
   ROS_INFO("Roulette: alignment command published (but disabled)");
 
   task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &Roulette::IDRoulette, this);
-  active_subs.push_back(task_bbox_sub);
+  ROS_INFO("Roulette: subscribed to /task/bboxes");
 }
 
 // ID the roulette task
@@ -60,7 +62,6 @@ void Roulette::IDRoulette(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_
   if(detection_duration > master->detection_duration_thresh) {
     if(detections >= master->detections_req) {
       task_bbox_sub.shutdown();
-      active_subs.erase(active_subs.end());
       master->tslam->Abort(true);
       clock_is_ticking = false;
       detection_duration = 0;
@@ -72,7 +73,6 @@ void Roulette::IDRoulette(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_
       align_cmd.heave_active = false;
       master->alignment_pub.publish(align_cmd);
       alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &Roulette::AlignmentStatusCB, this);
-      active_subs.push_back(alignment_status_sub);
       ROS_INFO("Roulette: Identified roulette. Now aligning to center");
     }
     else /*if(attempts < 3)*/{
@@ -104,13 +104,13 @@ void Roulette::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstP
         error_duration = ros::Time::now().toSec() - acceptable_begin.toSec();
 
       if(error_duration >= master->error_duration_thresh) { // Roulete should be in the camera center
-        alignment_status_sub.shutdown();
-        active_subs.erase(active_subs.end());
+        //alignment_status_sub.shutdown();
         error_duration = 0;
         clock_is_ticking = false;
+        align_id = ALIGN_BBOX_WIDTH;
 
     		// Calculate heading for roulette wheel
-        od->GetRouletteHeading(&Roulette::SetMarkerDropHeading, this);
+        //od->GetRouletteHeading(&Roulette::SetMarkerDropHeading, this);
       }
   	}
     else {
@@ -130,10 +130,14 @@ void Roulette::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstP
 
       if(error_duration >= master->bbox_heave_duration_thresh) { // Roulete should be in the camera center
         alignment_status_sub.shutdown();
-        active_subs.erase(active_subs.end());
         error_duration = 0;
         clock_is_ticking = false;
 
+        // Lock in current depth
+        depth_cmd.active = true;
+        depth_cmd.depth = master->depth;
+        master->depth_pub.publish(depth_cmd);
+        
     		// Calculate heading for roulette wheel
         od->GetRouletteHeading(&Roulette::SetMarkerDropHeading, this);
       }
@@ -173,7 +177,7 @@ void Roulette::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstP
           }
         }
         else {
-          pneumatics_cmd.markerdropper = false;;
+          pneumatics_cmd.markerdropper = false;
           master->pneumatics_pub.publish(pneumatics_cmd);
           ROS_INFO("Roulette is DONE!!!");
           Roulette::Abort();
@@ -191,20 +195,19 @@ void Roulette::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstP
 
 // When the green_heading has been found, set the robot to a heading normal to the green section
 void Roulette::SetMarkerDropHeading(double heading) {
-  ROS_INFO("Roulette angle: %f", heading);
-  double offset = heading - 90;
-  green_heading = master->euler_rpy.z + offset; // Center about current heading
-  green_heading = master->tslam->KeepHeadingInRange(green_heading);
+  ROS_INFO("Roulette angle in camera frame: %f", heading);
+  
+  double offset = 0;
+  if(heading <= 90)
+    green_heading = heading + 90;
+  else if(heading > 90)
+    green_heading = heading - 90;
 
-  // Calculate heading to drop markers - align to angle normal to green heading
-  if(offset <= 90)
-    marker_drop_heading = master->euler_rpy.z + 90;
-  if(offset > 90)
-    marker_drop_heading = master->euler_rpy.z - 90;
+  offset = green_heading - 90;
 
+  marker_drop_heading = master->euler_rpy.z + offset; // Center about current heading
   marker_drop_heading = master->tslam->KeepHeadingInRange(marker_drop_heading);
 
-  ROS_INFO("Roulette: Green heading is %f", green_heading);
   ROS_INFO("Roulette: Marker Drop Heading is %f", marker_drop_heading);
 
   // Publish attitude command
@@ -218,7 +221,6 @@ void Roulette::SetMarkerDropHeading(double heading) {
   ROS_INFO("Roulette: Published marker drop attitude");
 
   attitude_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &Roulette::AttitudeStatusCB, this);
-  active_subs.push_back(attitude_status_sub);
 }
 
 // Make sure the robot goes to the marker drop heading
@@ -236,7 +238,6 @@ void Roulette::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstP
 
     if(error_duration >= master->error_duration_thresh) {
       attitude_status_sub.shutdown();
-      active_subs.clear();
       error_duration = 0;
       clock_is_ticking = false;
 
@@ -247,7 +248,6 @@ void Roulette::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstP
       master->alignment_pub.publish(align_cmd);
       align_id = ALIGN_OFFSET;
       alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &Roulette::AlignmentStatusCB, this);
-      active_subs.push_back(alignment_status_sub);
       ROS_INFO("Roulette: Identified roulette. Now aligning to off-center");
     }
 	}
@@ -261,12 +261,6 @@ void Roulette::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstP
 void Roulette::Abort() {
   Roulette::Initialize();
 
-  if(active_subs.size() > 0) {
-    for(int i=0; i<active_subs.size(); i++) {
-      active_subs.at(i).shutdown();
-    }
-    active_subs.clear();
-  }
   align_cmd.surge_active = false;
   align_cmd.sway_active = false;
   align_cmd.heave_active = false;

@@ -23,8 +23,8 @@ class TSlam
 
 private:
   ros::Subscriber attitude_status_sub, depth_status_sub;
+  ros::Subscriber active_subs[2] = {attitude_status_sub, depth_status_sub};
   ros::Timer timer;
-  vector<ros::Subscriber> active_subs;
 
   riptide_msgs::AttitudeCommand attitude_cmd;
   riptide_msgs::DepthCommand depth_cmd;
