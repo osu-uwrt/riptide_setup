@@ -36,9 +36,9 @@ class TSlam;
 class Roulette;
 class CasinoGate;
 
-void subscribe(vector<ros::Subscriber> subs, ros::Subscriber sub);
-void unsub(vector<ros::Subscriber> subs, string topic);
-void unsubAll(vector<ros::Subscriber> subs);
+void Subscribe(vector<ros::Subscriber> subs, ros::Subscriber sub);
+void Unsub(vector<ros::Subscriber> subs, string topic);
+void UnsubAll(vector<ros::Subscriber> subs);
 
 class BeAutonomous
 {

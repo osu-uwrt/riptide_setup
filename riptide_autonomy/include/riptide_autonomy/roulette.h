@@ -9,6 +9,7 @@
 #include "riptide_msgs/ControlStatusLinear.h"
 #include "riptide_msgs/AttitudeCommand.h"
 #include "riptide_msgs/AlignmentCommand.h"
+#include "riptide_msgs/DepthCommand.h"
 #include "riptide_msgs/Pneumatics.h"
 #include "darknet_ros_msgs/BoundingBoxes.h"
 #include "darknet_ros_msgs/BoundingBox.h"
@@ -27,12 +28,13 @@ class Roulette
 
 private:
   ros::Subscriber task_bbox_sub, alignment_status_sub, attitude_status_sub;
-  vector<ros::Subscriber> active_subs;
+  ros::Subscriber active_subs[3] = {task_bbox_sub, alignment_status_sub, attitude_status_sub};
 
   darknet_ros_msgs::BoundingBoxes task_bboxes;
   riptide_msgs::AlignmentCommand align_cmd;
   riptide_msgs::AttitudeCommand attitude_cmd;
   riptide_msgs::Pneumatics pneumatics_cmd;
+  riptide_msgs::DepthCommand depth_cmd;
 
   double detection_duration, error_duration;
   int detections, attempts;
@@ -45,6 +47,7 @@ private:
   double green_heading, marker_drop_heading, drop_duration, drop_duration_thresh;
   int align_id, num_markers_dropped;
   ros::Time drop_time;
+
 
   // Create instance to master
   BeAutonomous* master;
