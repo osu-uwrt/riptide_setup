@@ -5,7 +5,6 @@
 
 CasinoGate::CasinoGate(BeAutonomous* master) {
   this->master = master;
-  end_pos_offset = master->tasks["tasks"][master->task_id]["end_pos_offset"].as<double>();
   CasinoGate::Initialize();
 }
 
@@ -27,6 +26,7 @@ void CasinoGate::Initialize() {
 void CasinoGate::Start() {
   object_name = (master->color == rc::COLOR_BLACK)?master->object_names.at(0):master->object_names.at(1); // Black side if statement true, Red otherwise
   gate_heading = master->tslam->task_map["task_map"][master->tslam->quadrant]["map"][master->task_id]["gate_heading"].as<double>();
+  end_pos_offset = master->tasks["tasks"][master->task_id]["end_pos_offset"].as<double>();
   
   align_cmd.surge_active = false;
   align_cmd.sway_active = false;
