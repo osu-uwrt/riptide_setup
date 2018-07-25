@@ -191,6 +191,7 @@ void Roulette::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstP
 
 // When the green_heading has been found, set the robot to a heading normal to the green section
 void Roulette::SetMarkerDropHeading(double heading) {
+  ROS_INFO("Roulette angle: %f", heading);
   double offset = heading - 90;
   green_heading = master->euler_rpy.z + offset; // Center about current heading
   green_heading = master->tslam->KeepHeadingInRange(green_heading);
