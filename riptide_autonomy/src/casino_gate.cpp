@@ -9,7 +9,6 @@ CasinoGate::CasinoGate(BeAutonomous* master) {
 }
 
 void CasinoGate::Initialize() {
-  active_subs.clear();
   detections = 0;
   attempts = 0;
   gate_heading = 0;
@@ -21,6 +20,9 @@ void CasinoGate::Initialize() {
   braked = false;
   passing_on_right = false;
   passing_on_left = false;
+
+  for(int i=0; i< sizeof(active_subs)/sizeof(active_subs[0]); i++)
+    active_subs[i].shutdown();
 }
 
 void CasinoGate::Start() {
@@ -42,7 +44,6 @@ void CasinoGate::Start() {
   ROS_INFO("CasinoGate: alignment command published (but disabled)");
 
   task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &CasinoGate::IDCasinoGate, this);
-  active_subs.push_back(task_bbox_sub);
 }
 
 // ID the CasinoGate task
@@ -61,7 +62,6 @@ void CasinoGate::IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr& b
   if(detection_duration > master->detection_duration_thresh) {
     if(detections >= master->detections_req) {
       task_bbox_sub.shutdown();
-      active_subs.erase(active_subs.end());
       master->tslam->Abort(true);
       clock_is_ticking = false;
       detection_duration = 0;
@@ -72,8 +72,7 @@ void CasinoGate::IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr& b
       align_cmd.sway_active = true;
       align_cmd.heave_active = true;
       master->alignment_pub.publish(align_cmd);
-      alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &CasinoGate::AlignmentStatusCB, this);
-      active_subs.push_back(alignment_status_sub);
+      alignment_status_sub =  master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &CasinoGate::AlignmentStatusCB, this);
       ROS_INFO("CasinoGate: Identified CasinoGate. Now aligning wit YZ controllers");
     }
     else /*if(attempts < 3)*/{
@@ -131,6 +130,8 @@ void CasinoGate::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::Cons
         error_duration = ros::Time::now().toSec() - acceptable_begin.toSec();
 
       if(error_duration >= master->bbox_surge_duration_thresh) { // Roulete should be off-center
+        alignment_status_sub.shutdown();
+        
         // Publish attitude command
         attitude_cmd.roll_active = true;
         attitude_cmd.pitch_active = true;
@@ -142,7 +143,6 @@ void CasinoGate::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::Cons
         ROS_INFO("CasinoGate: Published gate heading");
 
         attitude_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &CasinoGate::AttitudeStatusCB, this);
-        active_subs.push_back(attitude_status_sub);
       }
   	}
     else {
@@ -166,8 +166,7 @@ void CasinoGate::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::Cons
 
     if(error_duration >= master->error_duration_thresh) {
       // Shutdown alignment callback
-      alignment_status_sub.shutdown();
-      active_subs.erase(active_subs.begin());
+      attitude_status_sub.shutdown();
       error_duration = 0;
       clock_is_ticking = false;
 
@@ -218,13 +217,7 @@ void CasinoGate::PassThruTimer(const ros::TimerEvent& event) {
 // Shutdown all active subscribers
 void CasinoGate::Abort() {
   CasinoGate::Initialize();
-
-  if(active_subs.size() > 0) {
-    for(int i=0; i<active_subs.size(); i++) {
-      active_subs.at(i).shutdown();
-    }
-    active_subs.clear();
-  }
+  timer.stop();
   align_cmd.surge_active = false;
   align_cmd.sway_active = false;
   align_cmd.heave_active = false;

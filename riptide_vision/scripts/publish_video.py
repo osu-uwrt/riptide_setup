@@ -10,7 +10,7 @@ import sys
 
 
 def main():
-    FILE = "/home/tsender/rosbags/roulette_7-7-18.avi"
+    FILE = "/home/tsender/rosbags/gold_chip_rpac.avi"
     TOPIC = "/forward/image_undistorted"
     loop = False
 

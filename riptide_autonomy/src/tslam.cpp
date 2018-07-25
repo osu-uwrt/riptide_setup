@@ -35,11 +35,11 @@ void TSlam::Initialize() {
   start_y = 0;
   eta = 0;
   x_vel = 0;
-
-  unsubAll(active_subs);
-
   clock_is_ticking = false;
   validate_id = VALIDATE_PITCH;
+
+  for(int i=0; i< sizeof(active_subs)/sizeof(active_subs[0]); i++)
+    active_subs[i].shutdown();
 }
 
 void TSlam::ReadMap() {
@@ -146,7 +146,7 @@ void TSlam::Start() {
   master->attitude_pub.publish(attitude_cmd);
   ROS_INFO("TSlam: Published attitude cmd");
 
-  subscribe(active_subs, master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &TSlam::AttitudeStatusCB, this));
+  attitude_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &TSlam::AttitudeStatusCB, this);
   
   ROS_INFO("TSlam: Checking pitch error");
 }
@@ -163,7 +163,7 @@ void TSlam::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr&
         error_duration = ros::Time::now().toSec() - acceptable_begin.toSec();
 
       if(error_duration >= master->error_duration_thresh) {
-        unsub(active_subs, "/status/controls/angular");
+        attitude_status_sub.shutdown();
         error_duration = 0;
         clock_is_ticking = false;
 
@@ -172,7 +172,7 @@ void TSlam::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr&
         depth_cmd.depth = master->search_depth;
         master->depth_pub.publish(depth_cmd);
         ROS_INFO("TSlam: Pitch good. Published depth cmd");
-        subscribe(active_subs, master->nh.subscribe<riptide_msgs::ControlStatus>("/status/controls/depth", 1, &TSlam::DepthStatusCB, this));
+        depth_status_sub = master->nh.subscribe<riptide_msgs::ControlStatus>("/status/controls/depth", 1, &TSlam::DepthStatusCB, this);
       }
   	}
     else {
@@ -191,7 +191,7 @@ void TSlam::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr&
         error_duration = ros::Time::now().toSec() - acceptable_begin.toSec();
 
       if(error_duration >= master->error_duration_thresh) {
-        unsub(active_subs, "/status/controls/angular");
+        attitude_status_sub.shutdown();
         error_duration = 0;
         clock_is_ticking = false;
 
@@ -224,14 +224,14 @@ void TSlam::DepthStatusCB(const riptide_msgs::ControlStatus::ConstPtr& status_ms
       error_duration = ros::Time::now().toSec() - acceptable_begin.toSec();
 
     if(error_duration >= master->error_duration_thresh) {
-      unsub(active_subs, "/status/controls/depth");
+      depth_status_sub.shutdown();
       error_duration = 0;
       clock_is_ticking = false;
       validate_id = VALIDATE_YAW;
 
       attitude_cmd.yaw_active = true;
       master->attitude_pub.publish(attitude_cmd);
-      subscribe(active_subs, master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &TSlam::AttitudeStatusCB, this));
+      attitude_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &TSlam::AttitudeStatusCB, this);
       ROS_INFO("TSlam: Reached search depth, now checking heading error");
     }
   }
@@ -258,13 +258,13 @@ void TSlam::BrakeTimer(const ros::TimerEvent& event) {
 void TSlam::Abort(bool apply_brake) {
   TSlam::Initialize();
 
+  timer.stop();
   geometry_msgs::Vector3 msg;
   if(apply_brake) {
     msg.x = -(master->search_accel);
     msg.y = 0;
     msg.z = 0;
     master->linear_accel_pub.publish(msg);
-    timer.stop();
     timer = master->nh.createTimer(ros::Duration(0.25), &TSlam::BrakeTimer, this, true);
     ROS_INFO("TSlam: Aborting. Braking now.");
   }
