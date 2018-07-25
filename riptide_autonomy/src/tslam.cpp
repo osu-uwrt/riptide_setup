@@ -36,7 +36,8 @@ void TSlam::Initialize() {
   eta = 0;
   x_vel = 0;
 
-  active_subs.clear();
+  unsubAll(active_subs);
+
   clock_is_ticking = false;
   validate_id = VALIDATE_PITCH;
 }
@@ -62,8 +63,20 @@ void TSlam::ReadMap() {
       current_y = task_map["task_map"][quadrant]["map"][master->last_task_id]["end_y"].as<double>();
     }
 
-    if(master->last_task_id == rc::TASK_CASINO_GATE) {
+    if(master->last_task_id == rc::TASK_CASINO_GATE) { // Calculate ending pos on other side of the gate
+      double gate_heading = master->casino_gate->gate_heading;
+      bool passing_on_left = master->casino_gate->passing_on_left;
+      bool passing_on_right = master->casino_gate->passing_on_right;
+      double alpha = 0;
+      double end_pos_offset = master->casino_gate->end_pos_offset;
 
+      if(passing_on_left)
+        alpha = gate_heading - 90;
+      else if(passing_on_right)
+        alpha = gate_heading + 90;
+
+      current_x = current_x + end_pos_offset * sin(alpha*PI/180);
+      current_y = current_y - end_pos_offset * cos(alpha*PI/180);
     }
   }
   else {
@@ -133,8 +146,8 @@ void TSlam::Start() {
   master->attitude_pub.publish(attitude_cmd);
   ROS_INFO("TSlam: Published attitude cmd");
 
-  attitude_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &TSlam::AttitudeStatusCB, this);
-  active_subs.push_back(attitude_status_sub);
+  subscribe(active_subs, master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &TSlam::AttitudeStatusCB, this));
+  
   ROS_INFO("TSlam: Checking pitch error");
 }
 
@@ -150,8 +163,7 @@ void TSlam::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr&
         error_duration = ros::Time::now().toSec() - acceptable_begin.toSec();
 
       if(error_duration >= master->error_duration_thresh) {
-        attitude_status_sub.shutdown();
-        active_subs.erase(active_subs.end());
+        unsub(active_subs, "/status/controls/angular");
         error_duration = 0;
         clock_is_ticking = false;
 
@@ -160,8 +172,7 @@ void TSlam::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr&
         depth_cmd.depth = master->search_depth;
         master->depth_pub.publish(depth_cmd);
         ROS_INFO("TSlam: Pitch good. Published depth cmd");
-        depth_status_sub = master->nh.subscribe<riptide_msgs::ControlStatus>("/status/controls/depth", 1, &TSlam::DepthStatusCB, this);
-        active_subs.push_back(depth_status_sub);
+        subscribe(active_subs, master->nh.subscribe<riptide_msgs::ControlStatus>("/status/controls/depth", 1, &TSlam::DepthStatusCB, this));
       }
   	}
     else {
@@ -180,8 +191,7 @@ void TSlam::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr&
         error_duration = ros::Time::now().toSec() - acceptable_begin.toSec();
 
       if(error_duration >= master->error_duration_thresh) {
-        attitude_status_sub.shutdown();
-        active_subs.clear();
+        unsub(active_subs, "/status/controls/angular");
         error_duration = 0;
         clock_is_ticking = false;
 
@@ -214,16 +224,14 @@ void TSlam::DepthStatusCB(const riptide_msgs::ControlStatus::ConstPtr& status_ms
       error_duration = ros::Time::now().toSec() - acceptable_begin.toSec();
 
     if(error_duration >= master->error_duration_thresh) {
-      depth_status_sub.shutdown();
-      active_subs.erase(active_subs.end());
+      unsub(active_subs, "/status/controls/depth");
       error_duration = 0;
       clock_is_ticking = false;
       validate_id = VALIDATE_YAW;
 
       attitude_cmd.yaw_active = true;
       master->attitude_pub.publish(attitude_cmd);
-      attitude_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &TSlam::AttitudeStatusCB, this);
-      active_subs.push_back(attitude_status_sub);
+      subscribe(active_subs, master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &TSlam::AttitudeStatusCB, this));
       ROS_INFO("TSlam: Reached search depth, now checking heading error");
     }
   }
@@ -250,21 +258,15 @@ void TSlam::BrakeTimer(const ros::TimerEvent& event) {
 void TSlam::Abort(bool apply_brake) {
   TSlam::Initialize();
 
-  if(active_subs.size() > 0) {
-    for(int i=0; i<active_subs.size(); i++) {
-      active_subs.at(i).shutdown();
-    }
-    active_subs.clear();
-  }
-
   geometry_msgs::Vector3 msg;
   if(apply_brake) {
     msg.x = -(master->search_accel);
     msg.y = 0;
     msg.z = 0;
     master->linear_accel_pub.publish(msg);
+    timer.stop();
     timer = master->nh.createTimer(ros::Duration(0.25), &TSlam::BrakeTimer, this, true);
-  ROS_INFO("TSlam: Aborting. Braking now.");
+    ROS_INFO("TSlam: Aborting. Braking now.");
   }
   else {
     msg.x = 0;

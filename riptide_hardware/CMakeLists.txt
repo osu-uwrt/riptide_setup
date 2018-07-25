@@ -44,9 +44,7 @@ message("-- Computer name: " ${_host_name})
 
 if(NOT _host_name MATCHES "jetson")
 
-    add_executable(imu_processor src/imu_processor.cpp)
-    target_link_libraries(imu_processor ${catkin_LIBRARIES})
-    add_dependencies(imu_processor ${catkin_EXPORTED_TARGETS})
+    
 
     add_executable(imu_logger src/imu_logger.cpp)
     target_link_libraries(imu_logger ${catkin_LIBRARIES})
@@ -83,3 +81,7 @@ endif()
 add_executable(bag_to_csv src/bag_to_csv.cpp)
 target_link_libraries(bag_to_csv ${catkin_LIBRARIES})
 add_dependencies(bag_to_csv ${catkin_EXPORTED_TARGETS})
+
+add_executable(imu_processor src/imu_processor.cpp)
+target_link_libraries(imu_processor ${catkin_LIBRARIES})
+add_dependencies(imu_processor ${catkin_EXPORTED_TARGETS})

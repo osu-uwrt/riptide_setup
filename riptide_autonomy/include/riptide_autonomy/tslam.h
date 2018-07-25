@@ -32,7 +32,6 @@ private:
   // Task Info
   string task_map_file;
 
-  int quadrant;
   double current_x, current_y, start_x, start_y;
   double eta, x_vel;
 
@@ -47,6 +46,7 @@ private:
 
 public:
   YAML::Node task_map;
+  int quadrant;
 
   TSlam(BeAutonomous* master);
   void Initialize();

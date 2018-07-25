@@ -28,11 +28,17 @@
 
 #include "riptide_autonomy/tslam.h"
 #include "riptide_autonomy/roulette.h"
+#include "riptide_autonomy/casino_gate.h"
 using namespace std;
 typedef riptide_msgs::Constants rc;
 
 class TSlam;
 class Roulette;
+class CasinoGate;
+
+void subscribe(vector<ros::Subscriber> subs, ros::Subscriber sub);
+void unsub(vector<ros::Subscriber> subs, string topic);
+void unsubAll(vector<ros::Subscriber> subs);
 
 class BeAutonomous
 {
@@ -82,6 +88,7 @@ public:
   double relative_current_x, relative_current_y, global_y_axis_heading;
 
   Roulette* roulette;
+  CasinoGate* casino_gate;
 
   BeAutonomous();
   template <typename T>

@@ -1,5 +1,32 @@
 #include "riptide_autonomy/be_autonomous.h"
 
+
+// Useful functions
+
+void subscribe(vector<ros::Subscriber> subs, ros::Subscriber sub)
+{
+  subs.push_back(sub);
+}
+
+void unsub(vector<ros::Subscriber> subs, string topic)
+{
+  for(int i=0; i<subs.size(); i++) {
+    if(subs.at(i).getTopic() == topic)
+    {
+      subs.at(i).shutdown();
+      subs.erase(subs.begin()+i);
+    }
+  }
+}
+
+void unsubAll(vector<ros::Subscriber> subs)
+{
+  for(int i=0; i<subs.size(); i++) {
+    subs.at(i).shutdown();
+  }
+  subs.clear();
+}
+
 int main(int argc, char** argv) {
   ros::init(argc, argv, "be_autonomous");
   BeAutonomous ba;
@@ -62,6 +89,7 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
   search_accel = 0;
   bbox_thresh = 0;
 
+  ROS_INFO("Verifying yaml");
   // Verify number of objects and thresholds match
   total_tasks = (int)tasks["tasks"].size();
   for(int i=0; i<total_tasks; i++) {
@@ -90,6 +118,7 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
   // The "new" keyword creates a pointer to the object
   tslam = new TSlam(this);
   roulette = new Roulette(this);
+  casino_gate = new CasinoGate(this);
   ROS_INFO("Created task objects");
 }
 
