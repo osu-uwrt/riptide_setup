@@ -1,19 +1,19 @@
-#include "riptide_autonomy/roulette.h"
+#include "riptide_autonomy/task_slots.h"
 
 // State number is based on index in the "object names" list
 // -1 mission state indicates uninitialized
-#define MST_FRUIT = 0
-#define MST_BIG_RED = 1
-#define MST_NO_ID = 2
+#define MST_FRUIT 0
+#define MST_BIG_RED 1
+#define MST_NO_ID 2
 
-#define AST_CENTER = 0
-#define AST_BBOX = 1
+#define AST_CENTER 0
+#define AST_BBOX 1
 
-#define FRUIT_STR = "Slots_Fruit"
-#define BIG_RED_STR = "Slots_Big_Red"
+#define FRUIT_STR "Slots_Fruit"
+#define BIG_RED_STR "Slots_Big_Red"
 
-#define PORT_TORPEDO = -1
-#define STBD_TORPEDO = 1
+#define PORT_TORPEDO -1
+#define STBD_TORPEDO 1
 
 Slots::Slots(BeAutonomous* master) {
   this->master = master;
@@ -33,7 +33,7 @@ void Slots::Initialize() {
   bbox_control = master->tasks["tasks"][master->task_id]["bbox_control"].as<int>();
   bbox_dim = master->tasks["tasks"][master->task_id]["bbox_dim"].as<int>();
 
-  aligned_duration_thresh master->tasks["tasks"][master->task_id]["aligned_duration_thresh"].as<double>();
+  aligned_duration_thresh = master->tasks["tasks"][master->task_id]["aligned_duration_thresh"].as<double>();
 
   mission_state = -1;
   alignment_state = -1;
@@ -76,8 +76,9 @@ void Slots::idToAlignment() {
   align_cmd.bbox_dim = bbox_dim;
   align_cmd.bbox_control = bbox_control;
   if (mission_state == MST_BIG_RED) {
-    align_cmd.target_pos.y = alignmentOffset[active_torpedo].y;
-    align_cmd.target_pos.z = alignmentOffset[active_torpedo].z;
+    align_cmd.target_pos.y = torpedo_offsets[active_torpedo].y;
+    align_cmd.target_pos.z = torpedo_offsets[active_torpedo].z;
+    alignment_state = AST_CENTER;
   }
 
   // Take control
@@ -92,31 +93,30 @@ void Slots::Identify(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_msg) 
   if (fruit_detections + big_red_detections == 0) {
     id_start = ros::Time::now();
     id_attempts++;
-    ROS_INFO("Slots: Beginning slots detection. Attempt %d", id_attempts)
+    ROS_INFO("Slots: Beginning slots detection. Attempt %d", id_attempts);
   } else {
-    id_duration = ros::Time::now() - id_start();
+    id_duration = ros::Time::now() - id_start;
   }
 
   // Process the bbox_msg and determine what we're seeing
-  darknet_ros_msgs::BoundingBox boxes = bbox_msg->bounding_boxes;
-  for (int i = 0; i < boxes.size(); i++) {
-    if (strcmp(boxes[i].Class, FRUIT_STR)) {
+  for (int i = 0; i < bbox_msg->bounding_boxes.size(); i++) {
+    if (bbox_msg->bounding_boxes[i].Class == FRUIT_STR) {
       fruit_detections++;
-    } else if (strcmp(boxes[i].Class, BIG_RED_STR)) {
+    } else if (bbox_msg->bounding_boxes[i].Class == BIG_RED_STR) {
       big_red_detections++;
     }
   }
 
   // Figure out our state based on what we saw in the past X seconds
   // Prioritize identification of Big Red
-  if (id_duraiton.toSec() >= master->detection_duration_thresh) {
+  if (id_duration.toSec() >= master->detection_duration_thresh) {
     if (big_red_detections >= master->detections_req) {
       mission_state = MST_BIG_RED;
       ROS_INFO("Slots: Detection complete. Identified Big Red after after %d attempts. Aligning to Big Red.", id_attempts);
       Slots::idToAlignment();
     } else if (fruit_detections >= master->detections_req) {
       mission_state = MST_FRUIT;
-      ROS_INFO("Slots: Detection complete. Identified Fruit after %d attempts. Aligning to Fruit.", id_attempts)
+      ROS_INFO("Slots: Detection complete. Identified Fruit after %d attempts. Aligning to Fruit.", id_attempts);
       Slots::idToAlignment();
     } else {
       mission_state = MST_NO_ID;
@@ -134,6 +134,7 @@ void Slots::updateAlignTimer(bool stopTimer) {
     } else {
       aligned_duration = ros::Time::now() - align_start;
     }
+  }
   else {
     aligned_duration = ros::Duration(0);
     align_timer_started = false;
@@ -149,7 +150,7 @@ void Slots::hitJackpot() {
     pneumatics_cmd.manipulator = false;
     pneumatics_cmd.duration = pneumatics_duration;
     master->pneumatics_pub.publish(pneumatics_cmd);
-    ROS_INFO("Slots: Torpedo %d fired. Toggling active. %d torpedoes remaining.", acitve_torpedo, torpedo_count);
+    ROS_INFO("Slots: Torpedo %d fired. Toggling active. %d torpedoes remaining.", active_torpedo, torpedo_count);
     active_torpedo *= -1;
   } else {
     ROS_INFO("Slots: CRITICAL! Tried to fire with no torpedoes.");
@@ -157,14 +158,14 @@ void Slots::hitJackpot() {
 }
 
 void Slots::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr& status_msg) {
-  if (alignment_state == ALIGN_CENTER) {
+  if (alignment_state == AST_CENTER) {
     if (abs(status_msg->y.error) < master->align_thresh && abs(status_msg->z.error) < master->align_thresh) {
       Slots::updateAlignTimer();
       if (aligned_duration.toSec() >= aligned_duration_thresh) {
-        ROS_INFO("Slots: Aligned for %d seconds. Approaching target.", aligned_duration.toSec());
+        ROS_INFO("Slots: Aligned for %f seconds. Approaching target.", aligned_duration.toSec());
         // Change alignment state, stop timer, activate surge alignment.
         if (mission_state == MST_BIG_RED) {
-          alignment_state = ALIGN_BBOX;
+          alignment_state = AST_BBOX;
           Slots::updateAlignTimer(true);
           align_cmd.surge_active = true;
           master->alignment_pub.publish(align_cmd);
@@ -174,18 +175,18 @@ void Slots::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr&
       Slots::updateAlignTimer(true);
       ROS_INFO("Slots: Alignment lost. Timer stopped.");
     }
-  } else if (alignment_state == ALIGN_BBOX) {
+  } else if (alignment_state == AST_BBOX) {
     if (abs(status_msg->x.error) < master->bbox_thresh) {
       Slots::updateAlignTimer();
-      if (aligned_duration).toSec() >= aligned_duration_thresh) {
+      if (aligned_duration.toSec() >= aligned_duration_thresh) {
         if (mission_state == MST_BIG_RED) {
-          ROS_INFO("Slots: Bounding Box aligned for %d seconds. Attempting to fire.", aligned_duration.toSec());
+          ROS_INFO("Slots: Bounding Box aligned for %f seconds. Attempting to fire.", aligned_duration.toSec());
           Slots::updateAlignTimer(true);
           Slots::hitJackpot();
           // Update target alignment (next torpedo)
           if (torpedo_count > 0) {
-            align_cmd.target_pos.y = alignmentOffset[active_torpedo].y;
-            align_cmd.target_pos.z = alignmentOffset[active_torpedo].z;
+            align_cmd.target_pos.y = torpedo_offsets[active_torpedo].y;
+            align_cmd.target_pos.z = torpedo_offsets[active_torpedo].z;
             master->alignment_pub.publish(align_cmd);
           } else {
             ROS_INFO("Slots: Out of torpedoes. Let's go home, boys.");

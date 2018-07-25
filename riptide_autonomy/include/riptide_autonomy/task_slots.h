@@ -20,13 +20,13 @@ typedef riptide_msgs::Constants rc;
 
 class BeAutonomous;
 
-class Slots
-{
-
 struct torpedoOffset {
   int y;
   int z;
 };
+
+class Slots
+{
 
 private:
   ros::Subscriber task_bbox_sub, alignment_status_sub, attitude_status_sub;
@@ -44,13 +44,13 @@ private:
   int pneumatics_duration;
 
   // Alignment variables
-  torpedoOffset[] torpedo_offsets;
+  torpedoOffset torpedo_offsets[];
   int bbox_control;
   int bbox_dim;
   int alignment_state;
   bool align_timer_started;
   ros::Time align_start;
-  ros::Duration align_duration;
+  ros::Duration aligned_duration;
   double aligned_duration_thresh;
 
   // Identification variables
@@ -63,8 +63,9 @@ private:
   // Reference to master
   BeAutonomous* master;
 
-  void switchToAlignment();
+  void idToAlignment();
   void updateAlignTimer(bool stopTimer=false);
+  void hitJackpot();
 
 public:
 
