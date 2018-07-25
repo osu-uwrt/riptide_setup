@@ -72,10 +72,20 @@ tasks: [
       search_depth: 3,
       search_accel: 0.8,
       objects: ["Slots_Fruit", "Slots_Big_Red"],
+      torpedo_offset: # Offset to align vehicle to fire each torpedo
+        port:
+          y: 0, # [pixels]
+          z: 0, # [pixels]
+        stbd:
+          y: 0, # [pixels]
+          z: 0, # [pixels]
+      bbox_dim: 80,
+      bbox_control: 0,
       thresholds: [0.5, 0.5],
       align_thresh: 20, # [pixels]
       bbox_thresh: 20, # [pixels]
       detection_duration_thresh: 1, # [s]
+      aligned_duration_thresh: 4, # [seconds]
       detections_req: 8 # [number]
     },
     {
