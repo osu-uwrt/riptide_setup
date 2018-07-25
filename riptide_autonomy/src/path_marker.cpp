@@ -11,7 +11,6 @@ PathMarker::PathMarker(BeAutonomous* master) {
 }
 
 void PathMarker::Initialize() {
-  active_subs.clear();
   detections = 0;
   attempts = 0;
   num_markers_dropped = 0;
@@ -23,6 +22,9 @@ void PathMarker::Initialize() {
   drop_duration_thresh = 0;
   clock_is_ticking = false;
   drop_clock_is_ticking = false;
+
+  for(int i=0; i< sizeof(active_subs)/sizeof(active_subs[0]); i++)
+    active_subs[i]->shutdown();
 }
 
 void PathMarker::Start() {
@@ -40,7 +42,6 @@ void PathMarker::Start() {
   ROS_INFO("PathMarker: alignment command published (but disabled)");
 
   task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &PathMarker::IDPathMarker, this);
-  active_subs.push_back(task_bbox_sub);
 }
 
 // ID the PathMarker task
@@ -106,7 +107,6 @@ void PathMarker::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::Cons
 
       if(error_duration >= master->error_duration_thresh) { // Roulete should be in the camera center
         alignment_status_sub.shutdown();
-        active_subs.erase(active_subs.end());
         error_duration = 0;
         clock_is_ticking = false;
 
@@ -131,7 +131,6 @@ void PathMarker::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::Cons
 
       if(error_duration >= master->bbox_heave_duration_thresh) { // Roulete should be in the camera center
         alignment_status_sub.shutdown();
-        active_subs.erase(active_subs.end());
         error_duration = 0;
         clock_is_ticking = false;
 
@@ -237,7 +236,6 @@ void PathMarker::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::Cons
 
     if(error_duration >= master->error_duration_thresh) {
       attitude_status_sub.shutdown();
-      active_subs.clear();
       error_duration = 0;
       clock_is_ticking = false;
 
@@ -248,7 +246,6 @@ void PathMarker::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::Cons
       master->alignment_pub.publish(align_cmd);
       align_id = ALIGN_OFFSET;
       alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &PathMarker::AlignmentStatusCB, this);
-      active_subs.push_back(alignment_status_sub);
       ROS_INFO("PathMarker: Identified PathMarker. Now aligning to off-center");
     }
 	}
@@ -261,13 +258,7 @@ void PathMarker::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::Cons
 // Shutdown all active subscribers
 void PathMarker::Abort() {
   PathMarker::Initialize();
-
-  if(active_subs.size() > 0) {
-    for(int i=0; i<active_subs.size(); i++) {
-      active_subs.at(i).shutdown();
-    }
-    active_subs.clear();
-  }
+  
   align_cmd.surge_active = false;
   align_cmd.sway_active = false;
   align_cmd.heave_active = false;

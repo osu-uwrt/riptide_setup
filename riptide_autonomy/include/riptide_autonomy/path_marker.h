@@ -27,7 +27,7 @@ class PathMarker
 
 private:
   ros::Subscriber task_bbox_sub, alignment_status_sub, attitude_status_sub;
-  vector<ros::Subscriber> active_subs;
+  ros::Subscriber *active_subs[3] = {&task_bbox_sub, &alignment_status_sub, &attitude_status_sub};
 
   darknet_ros_msgs::BoundingBoxes task_bboxes;
   riptide_msgs::AlignmentCommand align_cmd;
@@ -47,18 +47,17 @@ private:
   ros::Time drop_time;
 
   // Create instance to master
-  BeAutonomous* master;
-  ObjectDescriber* od;
+  BeAutonomous *master;
+  ObjectDescriber *od;
 
 public:
-
-  PathMarker(BeAutonomous* master);
+  PathMarker(BeAutonomous *master);
   void Initialize();
   void Start();
-  void IDPathMarker(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_msg);
-  void AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr& status_msg);
+  void IDPathMarker(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg);
+  void AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr &status_msg);
   void GotHeading(double heading);
-  void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr& status_msg);
+  void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &status_msg);
   void Abort();
 };
 
