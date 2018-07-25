@@ -70,12 +70,12 @@ void TSlam::ReadMap() {
       double end_pos_offset = master->casino_gate->end_pos_offset;
 
       if(passing_on_left)
-        alpha = gate_heading - 90;
-      else if(passing_on_right)
         alpha = gate_heading + 90;
+      else if(passing_on_right)
+        alpha = gate_heading - 90;
 
-      current_x = current_x + end_pos_offset * sin(alpha*PI/180);
-      current_y = current_y - end_pos_offset * cos(alpha*PI/180);
+      current_x = current_x - end_pos_offset * sin(alpha*PI/180);
+      current_y = current_y + end_pos_offset * cos(alpha*PI/180);
     }
   }
   else {
