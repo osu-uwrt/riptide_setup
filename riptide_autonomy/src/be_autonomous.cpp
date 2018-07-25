@@ -118,6 +118,7 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
   // The "new" keyword creates a pointer to the object
   tslam = new TSlam(this);
   roulette = new Roulette(this);
+  path = new PathMarker(this);
   casino_gate = new CasinoGate(this);
   ROS_INFO("Created task objects");
 }
@@ -153,6 +154,10 @@ void BeAutonomous::StartTask() {
     if(task_id == rc::TASK_ROULETTE) {
       ROS_INFO("Starting roulette task");
       roulette->Start();
+    }
+    if(task_id == rc::TASK_PATH_MARKER1) {
+      ROS_INFO("Starting path task");
+      path->Start();
     }
   }
   else {

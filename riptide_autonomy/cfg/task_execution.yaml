@@ -1,5 +1,5 @@
 Task_Execution:
-  task_order: [7]
+  task_order: [1,7]
   run_single_task: false
   relative_current_x: 0.0 #  Where the vehicle starts relative to task [m]
   relative_current_y: 0.0 # Where the vehicle starts relative to task [m]

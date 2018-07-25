@@ -14,6 +14,7 @@ using namespace cv;
 
 class BeAutonomous;
 class Roulette;
+class PathMarker;
 
 class ObjectDescriber
 {
@@ -28,11 +29,17 @@ private:
   Roulette *rouletteCallbackObject;
   double averageRouletteAngle = 0;
   int rouletteImagesLeft = 0;
+  void (PathMarker::*pathCallbackFunction)(double);
+  PathMarker *pathCallbackObject;
+  double averagePathAngle = 0;
+  int pathImagesLeft = 0;
+  
 
 public:
   ObjectDescriber(BeAutonomous* master);
 
   void GetRouletteHeading(void (Roulette::*callback)(double), Roulette *object);
+  void GetPathHeading(void (PathMarker::*callback)(double), PathMarker *object);
   void BBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox);
   void ImageCB(const sensor_msgs::Image::ConstPtr& image);
 };
