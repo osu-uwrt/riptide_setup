@@ -29,6 +29,7 @@
 #include "riptide_autonomy/tslam.h"
 #include "riptide_autonomy/roulette.h"
 #include "riptide_autonomy/casino_gate.h"
+#include "riptide_autonomy/task_slots.h"
 using namespace std;
 typedef riptide_msgs::Constants rc;
 
@@ -89,6 +90,7 @@ public:
 
   Roulette* roulette;
   CasinoGate* casino_gate;
+  Slots* slots;
 
   BeAutonomous();
   template <typename T>
