@@ -50,8 +50,8 @@ task_map: [
         {
           id: 5,
           name: "Slots",
-          start_x: 0.0,
-          start_y: 0.0,
+          start_x: 10.0,
+          start_y: 10.0,
           end_x: 0.0,
           end_y: 0.0
         },
