@@ -1,13 +1,26 @@
 #include "riptide_autonomy/roulette.h"
 
 #define ALIGN_CENTER 0
-#define ALIGN_BBOX_WIDTH 1
+#define ALIGN_BBOX_HEIGHT 1
 #define ALIGN_OFFSET 2
+
+/* Roulette - Order of Execution:
+1. Start. Set alignment command.
+2. ID roulette.
+3. Align to center.
+4. Find depth at which bbox is of good size. Lock in current depth.
+5. Get green heading.
+6. Calculate marker drop heading, set heading, then check.
+7. Align to offcenter
+8. Drop two markers with short duration between.
+9. Abort. Start next task.
+*/
 
 Roulette::Roulette(BeAutonomous* master) {
   this->master = master;
   od = new ObjectDescriber(master);
   Roulette::Initialize();
+  ROS_INFO("Roulette: Initialized");
 }
 
 void Roulette::Initialize() {
@@ -51,143 +64,77 @@ void Roulette::IDRoulette(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_
   // Get number of objects and make sure you have 'x' many within 't' seconds
   // Simply entering this callback signifies the object was detected (unless it was a false-positive)
   detections++;
-  if(detections == 1) {
-    detect_start = ros::Time::now();
-    attempts++;
+  if(ValidateDetections(&detections, &detection_duration, master->detections_req, master->detection_duration_thresh, &error_check_start, &attempts)) {
+    task_bbox_sub.shutdown();
+    master->tslam->Abort(true);
+
+    // Send alignment command to put in center of frame (activate controllers)
+    // Set points already specified in initial alignment command
+    align_cmd.surge_active = true;
+    align_cmd.sway_active = true;
+    align_cmd.heave_active = false;
+    master->alignment_pub.publish(align_cmd);
+    alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &Roulette::AlignmentStatusCB, this);
+    ROS_INFO("Roulette: Identified roulette. Now aligning to center");
   }
   else {
-    detection_duration = ros::Time::now().toSec() - detect_start.toSec();
-  }
-
-  if(detection_duration > master->detection_duration_thresh) {
-    if(detections >= master->detections_req) {
-      task_bbox_sub.shutdown();
-      master->tslam->Abort(true);
-      clock_is_ticking = false;
-      detection_duration = 0;
-
-      // Send alignment command to put in center of frame (activate controllers)
-      // Set points already specified in initial alignment command
-      align_cmd.surge_active = true;
-      align_cmd.sway_active = true;
-      align_cmd.heave_active = false;
-      master->alignment_pub.publish(align_cmd);
-      alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &Roulette::AlignmentStatusCB, this);
-      ROS_INFO("Roulette: Identified roulette. Now aligning to center");
-    }
-    else /*if(attempts < 3)*/{
-      ROS_INFO("Roulette: Attempt %i to ID roulette", attempts);
-      ROS_INFO("Roulette: %i detections in %f sec", detections, detection_duration);
-      ROS_INFO("Roulette: Beginning attempt %i", attempts+1);
-      detections = 0;
-      detection_duration = 0;
-    }/*
-    else {
-      ROS_INFO("Roulette: More than 3 attempts used to ID roulette");
-      ROS_INFO("Roulette: Aborting");
-      Roulette::Abort();
-    }*/
+    ROS_INFO("Roulette: Attempt %i to ID roulette", attempts);
+    ROS_INFO("Roulette: %i detections in %f sec", detections, detection_duration);
+    ROS_INFO("Roulette: Beginning attempt %i", attempts+1);
   }
 }
 
-// A. Make sure the vehicle is aligned to the center of the roulette wheel
-// B. Make sure the vehicle is aligned to the ofset position so it can drop two markers
+// Align roulette in center of camera frame
+// Find depth for optimal bbox height
+// Align roulette offcenter to drop markers
 void Roulette::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr& status_msg) {
-  if(align_id == ALIGN_CENTER) { // Perform (A)
-    if(abs(status_msg->x.error) < master->align_thresh && abs(status_msg->y.error) < master->align_thresh)
-  	{
-      if(!clock_is_ticking) {
-        acceptable_begin = ros::Time::now();
-        clock_is_ticking = true;
-      }
-      else
-        error_duration = ros::Time::now().toSec() - acceptable_begin.toSec();
+  if(align_id == ALIGN_CENTER) { // Align roulette in center of camera frame
+    if(ValidateError(status_msg->x.error, &error_duration, master->align_thresh, master->error_duration_thresh, &clock_is_ticking, &error_check_start)) {
+      align_id = ALIGN_BBOX_HEIGHT;
 
-      if(error_duration >= master->error_duration_thresh) { // Roulete should be in the camera center
-        //alignment_status_sub.shutdown();
-        error_duration = 0;
-        clock_is_ticking = false;
-        align_id = ALIGN_BBOX_WIDTH;
-
-    		// Calculate heading for roulette wheel
-        //od->GetRouletteHeading(&Roulette::SetMarkerDropHeading, this);
-      }
-  	}
-    else {
-      error_duration = 0;
-      clock_is_ticking = false;
+      // Calculate heading for roulette wheel
+      //od->GetRouletteHeading(&Roulette::SetMarkerDropHeading, this);
     }
   }
-  else if(align_id == ALIGN_BBOX_WIDTH) { // Align with bbox
-    if(abs(status_msg->z.error) < master->bbox_thresh)
-  	{
-      if(!clock_is_ticking) {
-        acceptable_begin = ros::Time::now();
-        clock_is_ticking = true;
-      }
-      else
-        error_duration = ros::Time::now().toSec() - acceptable_begin.toSec();
+  else if(align_id == ALIGN_BBOX_HEIGHT) { // Find depth for optimal bbox height
+    if(ValidateError(status_msg->z.error, &error_duration, master->bbox_thresh, master->error_duration_thresh, &clock_is_ticking, &error_check_start)) {
+      alignment_status_sub.shutdown();
+      align_cmd.heave_active = false;
+      master->alignment_pub.publish(align_cmd);
 
-      if(error_duration >= master->bbox_heave_duration_thresh) { // Roulete should be in the camera center
-        alignment_status_sub.shutdown();
-        error_duration = 0;
-        clock_is_ticking = false;
-
-        // Lock in current depth
-        depth_cmd.active = true;
-        depth_cmd.depth = master->depth;
-        master->depth_pub.publish(depth_cmd);
-        
-    		// Calculate heading for roulette wheel
-        od->GetRouletteHeading(&Roulette::SetMarkerDropHeading, this);
-      }
-  	}
-    else {
-      error_duration = 0;
-      clock_is_ticking = false;
+      // Calculate heading for roulette wheel
+      od->GetRouletteHeading(&Roulette::SetMarkerDropHeading, this);
     }
   }
-  else if(align_id == ALIGN_OFFSET) { // Perform (B)
-    if(abs(status_msg->x.error) < master->align_thresh && abs(status_msg->y.error) < master->align_thresh)
-  	{
-      if(!clock_is_ticking) {
-        acceptable_begin = ros::Time::now();
-        clock_is_ticking = true;
-      }
-      else
-        error_duration = ros::Time::now().toSec() - acceptable_begin.toSec();
+  else if(align_id == ALIGN_OFFSET) { // Align roulette offcenter to drop markers
+    if(ValidateError2(status_msg->x.error, status_msg->y.error, &error_duration, master->align_thresh, master->error_duration_thresh, &clock_is_ticking, &error_check_start)) {
+      if(num_markers_dropped < 2) {
+        pneumatics_cmd.header.stamp = ros::Time::now();
+        pneumatics_cmd.torpedo_stbd = false;
+        pneumatics_cmd.torpedo_port = false;
+        pneumatics_cmd.markerdropper = true;
+        pneumatics_cmd.manipulator = false;
+        pneumatics_cmd.duration = 300; // [ms]
 
-      if(error_duration >= master->error_duration_thresh) { // Roulete should be off-center
-        if(num_markers_dropped < 2) {
-          pneumatics_cmd.header.stamp = ros::Time::now();
-          pneumatics_cmd.torpedo_stbd = false;
-          pneumatics_cmd.torpedo_port = false;
-          pneumatics_cmd.markerdropper = true;
-          pneumatics_cmd.manipulator = false;
-          pneumatics_cmd.duration = 300; // [ms]
-
-          if(!drop_clock_is_ticking || drop_duration > drop_duration_thresh) {
-            drop_time = ros::Time::now();
-            drop_clock_is_ticking = true;
-            master->pneumatics_pub.publish(pneumatics_cmd);
-            num_markers_dropped++;
-          }
-          else {
-            drop_duration = ros::Time::now().toSec() - drop_time.toSec();
-          }
+        if(!drop_clock_is_ticking || drop_duration > drop_duration_thresh) {
+          drop_time = ros::Time::now();
+          drop_clock_is_ticking = true;
+          master->pneumatics_pub.publish(pneumatics_cmd);
+          num_markers_dropped++;
         }
         else {
-          pneumatics_cmd.markerdropper = false;
-          master->pneumatics_pub.publish(pneumatics_cmd);
-          ROS_INFO("Roulette is DONE!!!");
-          Roulette::Abort();
-          master->StartTask();
+          drop_duration = ros::Time::now().toSec() - drop_time.toSec();
         }
       }
-  	}
+      else {
+        pneumatics_cmd.markerdropper = false;
+        master->pneumatics_pub.publish(pneumatics_cmd);
+        ROS_INFO("Roulette is DONE!!!");
+        Roulette::Abort();
+        master->StartTask();
+      }
+    }
     else {
-      error_duration = 0;
-      clock_is_ticking = false;
       drop_clock_is_ticking = false;
     }
   }
@@ -195,7 +142,7 @@ void Roulette::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstP
 
 // When the green_heading has been found, set the robot to a heading normal to the green section
 void Roulette::SetMarkerDropHeading(double heading) {
-  ROS_INFO("Roulette angle in camera frame: %f", heading);
+  ROS_INFO("Roulette angle in camera frame: %f deg.", heading);
   
   double offset = 0;
   if(heading <= 90)
@@ -208,7 +155,7 @@ void Roulette::SetMarkerDropHeading(double heading) {
   marker_drop_heading = master->euler_rpy.z + offset; // Center about current heading
   marker_drop_heading = master->tslam->KeepHeadingInRange(marker_drop_heading);
 
-  ROS_INFO("Roulette: Marker Drop Heading is %f", marker_drop_heading);
+  ROS_INFO("Roulette: Marker Drop Heading is %f deg.", marker_drop_heading);
 
   // Publish attitude command
   attitude_cmd.roll_active = true;
@@ -218,42 +165,24 @@ void Roulette::SetMarkerDropHeading(double heading) {
   attitude_cmd.euler_rpy.y = 0;
   attitude_cmd.euler_rpy.z = marker_drop_heading;
   master->attitude_pub.publish(attitude_cmd);
-  ROS_INFO("Roulette: Published marker drop attitude");
 
   attitude_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &Roulette::AttitudeStatusCB, this);
-}
+  ROS_INFO("Roulette: Published marker drop attitude. Checking heading.");
+  }
 
 // Make sure the robot goes to the marker drop heading
 void Roulette::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr& status_msg) {
-	// Depth is good, now verify heading error
+	if(ValidateError(status_msg->yaw.error, &error_duration, master->yaw_thresh, master->error_duration_thresh, &clock_is_ticking, &error_check_start)) {
+    attitude_status_sub.shutdown();
 
-	if(abs(status_msg->yaw.error) < master->yaw_thresh)
-	{
-    if(!clock_is_ticking) {
-      acceptable_begin = ros::Time::now();
-      clock_is_ticking = true;
-    }
-    else
-      error_duration = ros::Time::now().toSec() - acceptable_begin.toSec();
-
-    if(error_duration >= master->error_duration_thresh) {
-      attitude_status_sub.shutdown();
-      error_duration = 0;
-      clock_is_ticking = false;
-
-  		// Now align to a bit left of the roulette center
-      align_cmd.target_pos.x = 0;
-      align_cmd.target_pos.y = -(master->frame_width/6);
-      align_cmd.target_pos.z = 0;
-      master->alignment_pub.publish(align_cmd);
-      align_id = ALIGN_OFFSET;
-      alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &Roulette::AlignmentStatusCB, this);
-      ROS_INFO("Roulette: Identified roulette. Now aligning to off-center");
-    }
-	}
-  else {
-    error_duration = 0;
-    clock_is_ticking = false;
+    // Now align to a bit left of the roulette center
+    align_cmd.target_pos.x = 0;
+    align_cmd.target_pos.y = -(master->frame_width/6);
+    align_cmd.target_pos.z = 0;
+    master->alignment_pub.publish(align_cmd);
+    align_id = ALIGN_OFFSET;
+    alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &Roulette::AlignmentStatusCB, this);
+    ROS_INFO("Roulette: At marker drop heading. Now aligning off-center");
   }
 }
 

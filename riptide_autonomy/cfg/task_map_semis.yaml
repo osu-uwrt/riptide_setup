@@ -13,7 +13,8 @@ task_map: [
           start_y: 0.0.0,
           end_x: 0.0,
           end_y: 0.0,
-          heading: -80.0
+          heading: -80.0,
+          left_color: 0 # Black
         },
         {
           id: 1,
@@ -95,7 +96,8 @@ task_map: [
           start_y: 0.0,
           end_x: 0.0,
           end_y: 0.0,
-          heading: -100.0
+          heading: -100.0,
+          left_color: 0 # Black
         },
         {
           id: 1,
@@ -177,7 +179,8 @@ task_map: [
           start_y: 0.0,
           end_x: 0.0,
           end_y: 0.0,
-          heading: 80.0
+          heading: 80.0,
+          left_color: 1 # Red
         },
         {
           id: 1,
@@ -259,7 +262,8 @@ task_map: [
           start_y: 0.0,
           end_x: 0.0,
           end_y: 0.0,
-          heading: 100.0
+          heading: 100.0,
+          left_color: 1 # Red
         },
         {
           id: 1,

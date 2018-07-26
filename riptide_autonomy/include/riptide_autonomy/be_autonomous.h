@@ -32,13 +32,13 @@
 using namespace std;
 typedef riptide_msgs::Constants rc;
 
+bool ValidateDetections(int* dets, double* dets_duration, int dets_thresh, double dets_duration_thresh, ros::Time* start, int* attempts);
+bool ValidateError(double value, double* error_duration, double error_thresh, double error_duration_thresh, bool* clock_is_ticking, ros::Time* start);
+bool ValidateError2(double value1, double value2, double* error_duration, double error_thresh, double error_duration_thresh, bool* clock_is_ticking, ros::Time* start);
+
 class TSlam;
 class Roulette;
 class CasinoGate;
-
-void Subscribe(vector<ros::Subscriber> subs, ros::Subscriber sub);
-void Unsub(vector<ros::Subscriber> subs, string topic);
-void UnsubAll(vector<ros::Subscriber> subs);
 
 class BeAutonomous
 {

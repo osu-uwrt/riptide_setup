@@ -20,7 +20,6 @@ using namespace std;
 typedef riptide_msgs::Constants rc;
 
 class BeAutonomous;
-
 class ObjectDescriber;
 
 class Roulette
@@ -38,7 +37,7 @@ private:
 
   double detection_duration, error_duration;
   int detections, attempts;
-  ros::Time acceptable_begin;
+  ros::Time error_check_start;
   ros::Time detect_start;
   bool clock_is_ticking, drop_clock_is_ticking;
 

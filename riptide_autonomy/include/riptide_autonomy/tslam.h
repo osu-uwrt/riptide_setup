@@ -36,7 +36,7 @@ private:
   double eta, x_vel;
 
   double delta_x, delta_y, angle, search_heading, distance;
-  ros::Time acceptable_begin;
+  ros::Time error_check_start;
   double error_duration;
   bool clock_is_ticking;
   int validate_id;

@@ -1,31 +1,86 @@
 #include "riptide_autonomy/be_autonomous.h"
 
 
-// Useful functions
+/////////////////////////////////////// Useful functions //////////////////////////////////////////
 
-void Subscribe(vector<ros::Subscriber> subs, ros::Subscriber sub)
-{
-  subs.push_back(sub);
-}
+// Do NOT let this function increment *dets (it can only reset it to 0 once it returns true. 
+//This functions is ONLY meant for validation to reduce code in callbacks.
+// The dets_durations is necessary becuase this function gets called again and again
+bool ValidateDetections(int* dets, double* dets_duration, int dets_thresh, double dets_duration_thresh, ros::Time* start, int* attempts) {
+  if(*dets == 1) {
+    *start = ros::Time::now();
+    (*attempts)++;
+  }
+  else {
+    *dets_duration = ros::Time::now().toSec() - start->toSec();
+  }
 
-void Unsub(vector<ros::Subscriber> subs, string topic)
-{
-  for(int i=0; i<subs.size(); i++) {
-    if(subs.at(i).getTopic() == topic)
-    {
-      subs.at(i).shutdown();
-      subs.erase(subs.begin()+i);
+  if(*dets_duration >= dets_duration_thresh) {
+    if(*dets >= dets_thresh) {
+      *dets = 0;
+      *dets_duration = 0;
+      return true;
+    }
+    else {
+      *dets = 0;
+      *dets_duration = 0;
     }
   }
+  return false;
 }
 
-void UnsubAll(vector<ros::Subscriber> subs)
-{
-  for(int i=0; i<subs.size(); i++) {
-    subs.at(i).shutdown();
+// Validate the error when inside a status callback
+// The error_duration is necessary becuase this function gets called again and again
+bool ValidateError(double value, double* error_duration, double error_thresh, double error_duration_thresh, bool* clock_is_ticking, ros::Time* start) {
+  if(abs(value) <= error_thresh) {
+    if(!(*clock_is_ticking)) {
+      *start = ros::Time::now();
+      *clock_is_ticking = true;
+    }
+    else {
+      *error_duration = ros::Time::now().toSec() - start->toSec();
+    }
+
+    if(*error_duration >= error_duration_thresh) {
+      *error_duration = 0;
+      *clock_is_ticking = false;
+      return true;
+    }
+    return false;
   }
-  subs.clear();
+  else {
+    *error_duration = 0;
+    *clock_is_ticking = false;
+    return false;
+  }
 }
+
+// Validate TWO errors when inside a status callback (must have same error thresholds)
+// The error_duration is necessary becuase this function gets called again and again
+bool ValidateError2(double value1, double value2, double* error_duration, double error_thresh, double error_duration_thresh, bool* clock_is_ticking, ros::Time* start) {
+  if(abs(value1) <= error_thresh && abs(value2) <= error_thresh) {
+    if(!(*clock_is_ticking)) {
+      *start = ros::Time::now();
+      *clock_is_ticking = true;
+    }
+    else {
+      *error_duration = ros::Time::now().toSec() - start->toSec();
+    }
+
+    if(*error_duration >= error_duration_thresh) {
+      *error_duration = 0;
+      *clock_is_ticking = false;
+      return true;
+    }
+    return false;
+  }
+  else {
+    *error_duration = 0;
+    *clock_is_ticking = false;
+    return false;
+  }
+}
+///////////////////////////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char** argv) {
   ros::init(argc, argv, "be_autonomous");
@@ -89,7 +144,6 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
   search_accel = 0;
   bbox_thresh = 0;
 
-  ROS_INFO("Verifying yaml");
   // Verify number of objects and thresholds match
   total_tasks = (int)tasks["tasks"].size();
   for(int i=0; i<total_tasks; i++) {
@@ -102,6 +156,7 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
       ros::shutdown();
     }
   }
+  ROS_INFO("Verified tasks yaml");
 
   // Vehicle State
   euler_rpy.x = 0;
@@ -298,6 +353,7 @@ void BeAutonomous::UpdateTaskInfo() {
     object_names.push_back(tasks["tasks"][task_id]["objects"][i].as<string>());
   }
 
+  // Task specific parameters (in tasks.yaml)
   search_depth = tasks["tasks"][task_id]["search_depth"].as<double>();
   search_accel = tasks["tasks"][task_id]["search_accel"].as<double>();
   align_thresh = tasks["tasks"][task_id]["align_thresh"].as<int>();
@@ -305,6 +361,7 @@ void BeAutonomous::UpdateTaskInfo() {
   detection_duration_thresh = tasks["tasks"][task_id]["detection_duration_thresh"].as<double>();
   detections_req = tasks["tasks"][task_id]["detections_req"].as<int>();
 
+  // Publish new task info
   riptide_msgs::TaskInfo task_msg;
   task_msg.task_id = task_id;
   task_msg.task_name = task_name;

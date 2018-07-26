@@ -118,7 +118,7 @@ void ObjectProcessor::TaskBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPtr
 
   // Search for bbox with object name
   for(int i=0; i<bbox_msg->bounding_boxes.size(); i++) {
-    if(strcmp(object_name.c_str(), bbox_msg->bounding_boxes[i].Class.c_str()) == 0 ) {
+    if(object_name == bbox_msg->bounding_boxes[i].Class) {
       found = true;
       object_bbox = bbox_msg->bounding_boxes[i];
 

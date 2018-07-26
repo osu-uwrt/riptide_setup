@@ -8,18 +8,27 @@
 #define A2V_SLOPE 0.2546
 #define A2V_INT .1090
 
+/* TSlam - Order of Execution:
+1. Read map, calculate distances and angles.
+2. Set attitude cmd (only enable roll/pitch).
+3. Check pitch (roll is probably fine).
+4. Set search depth. Check search depth.
+5. Set search heading. Check heading.
+6. Move forward (initiate timer in case).
+7. Abort (brake if required).
+*/
+
 TSlam::TSlam(BeAutonomous* master) {
   this->master = master;
 
-  ROS_INFO("comp id: %i", master->competition_id);
   if(master->competition_id == rc::COMPETITION_SEMIS)
     task_map_file = rc::FILE_MAP_SEMIS;
   else
     task_map_file = rc::FILE_MAP_FINALS;
 
   task_map = YAML::LoadFile(task_map_file);
-
   TSlam::Initialize();
+  ROS_INFO("TSlam: Initialized");
 }
 
 void TSlam::Initialize() {
@@ -120,6 +129,7 @@ double TSlam::KeepHeadingInRange(double input) {
 
 void TSlam::Start() {
   // Calculate heading to point towards next task
+  TSlam::ReadMap();
   delta_x = start_x - current_x;
   delta_y = start_y - current_y;
   angle = atan2(delta_y, delta_x) * 180/PI;
@@ -147,97 +157,48 @@ void TSlam::Start() {
   ROS_INFO("TSlam: Published attitude cmd");
 
   attitude_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &TSlam::AttitudeStatusCB, this);
-  
   ROS_INFO("TSlam: Checking pitch error");
 }
 
 void TSlam::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr& status_msg) {
   if(validate_id == VALIDATE_PITCH) { // Must first validate pitch so vehicle can submerge properly
-  	if(abs(status_msg->pitch.error) < master->pitch_thresh)
-  	{
-      if(!clock_is_ticking) {
-        acceptable_begin = ros::Time::now();
-        clock_is_ticking = true;
-      }
-      else
-        error_duration = ros::Time::now().toSec() - acceptable_begin.toSec();
+  	if(ValidateError(status_msg->pitch.error, &error_duration, master->pitch_thresh, master->error_duration_thresh, &clock_is_ticking, &error_check_start)) {
+      attitude_status_sub.shutdown();
 
-      if(error_duration >= master->error_duration_thresh) {
-        attitude_status_sub.shutdown();
-        error_duration = 0;
-        clock_is_ticking = false;
-
-        // Publish depth command
-        depth_cmd.active = true;
-        depth_cmd.depth = master->search_depth;
-        master->depth_pub.publish(depth_cmd);
-        ROS_INFO("TSlam: Pitch good. Published depth cmd");
-        depth_status_sub = master->nh.subscribe<riptide_msgs::ControlStatus>("/status/controls/depth", 1, &TSlam::DepthStatusCB, this);
-      }
-  	}
-    else {
-      error_duration = 0;
-      clock_is_ticking = false;
+      // Publish depth command
+      depth_cmd.active = true;
+      depth_cmd.depth = master->search_depth;
+      master->depth_pub.publish(depth_cmd);
+      depth_status_sub = master->nh.subscribe<riptide_msgs::ControlStatus>("/status/controls/depth", 1, &TSlam::DepthStatusCB, this);
+      ROS_INFO("TSlam: Pitch good. Now checking depth");
     }
   }
   else if(validate_id == VALIDATE_YAW) { // Validate heading after depth is reached
-  	if(abs(status_msg->yaw.error) < master->yaw_thresh)
-  	{
-      if(!clock_is_ticking) {
-        acceptable_begin = ros::Time::now();
-        clock_is_ticking = true;
-      }
-      else
-        error_duration = ros::Time::now().toSec() - acceptable_begin.toSec();
+  	if(ValidateError(status_msg->yaw.error, &error_duration, master->yaw_thresh, master->error_duration_thresh, &clock_is_ticking, &error_check_start)) {
+      attitude_status_sub.shutdown();
 
-      if(error_duration >= master->error_duration_thresh) {
-        attitude_status_sub.shutdown();
-        error_duration = 0;
-        clock_is_ticking = false;
+      // Drive forward
+      geometry_msgs::Vector3 msg;
+      msg.x = master->search_accel;
+      msg.y = 0;
+      msg.z = 0;
+      master->linear_accel_pub.publish(msg);
 
-    		// Drive forward
-    		geometry_msgs::Vector3 msg;
-    		msg.x = master->search_accel;
-    		msg.y = 0;
-    		msg.z = 0;
-    		master->linear_accel_pub.publish(msg);
-
-        double tslam_duration = 1.5*eta;
-        timer = master->nh.createTimer(ros::Duration(tslam_duration), &TSlam::AbortTSlamTimer, this, true);
-        ROS_INFO("TSlam: Reached heading, now moving forward. Abort timer initiated. ETA: %f", tslam_duration);
-      }
-  	}
-    else {
-      error_duration = 0;
-      clock_is_ticking = false;
+      double tslam_duration = 1.5*eta;
+      timer = master->nh.createTimer(ros::Duration(tslam_duration), &TSlam::AbortTSlamTimer, this, true);
+      ROS_INFO("TSlam: Reached heading, now moving forward. Abort timer initiated. ETA: %f", tslam_duration);
     }
   }
 }
 
 void TSlam::DepthStatusCB(const riptide_msgs::ControlStatus::ConstPtr& status_msg) {
-  if(abs(status_msg->error) < master->depth_thresh) {
-    if(!clock_is_ticking) {
-      acceptable_begin = ros::Time::now();
-      clock_is_ticking = true;
-    }
-    else
-      error_duration = ros::Time::now().toSec() - acceptable_begin.toSec();
+  if(ValidateError(status_msg->error, &error_duration, master->depth_thresh, master->error_duration_thresh, &clock_is_ticking, &error_check_start)) {
+    depth_status_sub.shutdown();
 
-    if(error_duration >= master->error_duration_thresh) {
-      depth_status_sub.shutdown();
-      error_duration = 0;
-      clock_is_ticking = false;
-      validate_id = VALIDATE_YAW;
-
-      attitude_cmd.yaw_active = true;
-      master->attitude_pub.publish(attitude_cmd);
-      attitude_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &TSlam::AttitudeStatusCB, this);
-      ROS_INFO("TSlam: Reached search depth, now checking heading error");
-    }
-  }
-  else {
-    error_duration = 0;
-    clock_is_ticking = false;
+    attitude_cmd.yaw_active = true;
+    master->attitude_pub.publish(attitude_cmd);
+    attitude_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &TSlam::AttitudeStatusCB, this);
+    ROS_INFO("TSlam: Reached search depth, now checking heading error");
   }
 }
 

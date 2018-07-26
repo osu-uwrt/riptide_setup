@@ -33,7 +33,7 @@ private:
 
   double detection_duration, error_duration, pass_thru_duration;
   int detections, attempts, align_id;
-  ros::Time acceptable_begin;
+  ros::Time error_check_start;
   ros::Time detect_start;
   bool clock_is_ticking;
   string object_name;
