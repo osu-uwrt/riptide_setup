@@ -23,7 +23,7 @@ class TSlam
 
 private:
   ros::Subscriber attitude_status_sub, depth_status_sub;
-  ros::Subscriber active_subs[2] = {attitude_status_sub, depth_status_sub};
+  ros::Subscriber *active_subs[2] = {&attitude_status_sub, &depth_status_sub};
   ros::Timer timer;
 
   riptide_msgs::AttitudeCommand attitude_cmd;
@@ -42,22 +42,23 @@ private:
   int validate_id;
 
   // Create instance to master
-  BeAutonomous* master;
+  BeAutonomous *master;
 
 public:
   YAML::Node task_map;
   int quadrant;
 
-  TSlam(BeAutonomous* master);
+  TSlam(BeAutonomous *master);
   void Initialize();
   void ReadMap();
+  void SetPos(double x, double y);
   void CalcETA(double Ax, double dist);
   double KeepHeadingInRange(double input);
   void Start();
-  void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr& status_msg);
-  void DepthStatusCB(const riptide_msgs::ControlStatus::ConstPtr& status_msg);
-  void AbortTSlamTimer(const ros::TimerEvent& event);
-  void BrakeTimer(const ros::TimerEvent& event);
+  void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &status_msg);
+  void DepthStatusCB(const riptide_msgs::ControlStatus::ConstPtr &status_msg);
+  void AbortTSlamTimer(const ros::TimerEvent &event);
+  void BrakeTimer(const ros::TimerEvent &event);
   void Abort(bool apply_brake);
 };
 
