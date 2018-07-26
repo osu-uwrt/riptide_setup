@@ -1,3 +1,18 @@
+// Slots, what it does:
+// 1: Identify either the Fruit or Big Red Slot
+// 2: If Big Red is found:
+//     2a. Align the active torpedo YZ to Big Red
+//     2b. Align to Big Red in X axis
+//     2c. Fire active torpedo
+//     2d. If torpedoes remain:
+//          2da. Toggle the active torpedo, return to 2a
+//         Otherwise:
+//          2db. END.
+//    If Fruits are the only thing found:
+//      2e. Case unimplemented. END.
+//    If nothing is found:
+//      2f. Return to step 1
+
 #include "riptide_autonomy/task_slots.h"
 
 // State number is based on index in the "object names" list
@@ -57,6 +72,7 @@ void Slots::Start() {
 }
 
 // Requires mission_state be either MST_FRUIT or MST_BIG_RED
+// Only MST_BIG_RED is implemented for now
 void Slots::idToAlignment() {
   fruit_detections = 0;
   big_red_detections = 0;
@@ -75,13 +91,14 @@ void Slots::idToAlignment() {
     align_cmd.target_pos.y = torpedo_offsets[active_torpedo].y;
     align_cmd.target_pos.z = torpedo_offsets[active_torpedo].z;
     alignment_state = AST_CENTER;
+    // Take control
+    master->tslam->Abort(true);
+    master->alignment_pub.publish(align_cmd);
+    alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &Slots::AlignmentStatusCB, this);
+    active_subs.push_back(alignment_status_sub);
+  } else {
+    Slots::Abort();
   }
-
-  // Take control
-  master->tslam->Abort(true);
-  master->alignment_pub.publish(align_cmd);
-  alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &Slots::AlignmentStatusCB, this);
-  active_subs.push_back(alignment_status_sub);
 }
 
 void Slots::Identify(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_msg) {
@@ -147,7 +164,7 @@ void Slots::hitJackpot() {
     pneumatics_cmd.duration = pneumatics_duration;
     master->pneumatics_pub.publish(pneumatics_cmd);
     ROS_INFO("Slots: Torpedo %d fired. Toggling active. %d torpedoes remaining.", active_torpedo, torpedo_count);
-    active_torpedo *= -1;
+    active_torpedo *= -1; // Toggle active torpedo
   } else {
     ROS_INFO("Slots: CRITICAL! Tried to fire with no torpedoes.");
   }
@@ -181,6 +198,7 @@ void Slots::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr&
           Slots::hitJackpot();
           // Update target alignment (next torpedo)
           if (torpedo_count > 0) {
+            alignment_state = AST_CENTER;
             align_cmd.target_pos.y = torpedo_offsets[active_torpedo].y;
             align_cmd.target_pos.z = torpedo_offsets[active_torpedo].z;
             master->alignment_pub.publish(align_cmd);
