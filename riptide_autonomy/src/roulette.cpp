@@ -24,7 +24,7 @@ void Roulette::Initialize() {
   drop_clock_is_ticking = false;
 
   for(int i=0; i< sizeof(active_subs)/sizeof(active_subs[0]); i++)
-    active_subs[i].shutdown();
+    active_subs[i]->shutdown();
 }
 
 void Roulette::Start() {
@@ -133,6 +133,8 @@ void Roulette::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstP
         error_duration = 0;
         clock_is_ticking = false;
 
+        ROS_INFO("Locking depth");
+
         // Lock in current depth
         depth_cmd.active = true;
         depth_cmd.depth = master->depth;
@@ -171,6 +173,7 @@ void Roulette::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstP
             drop_clock_is_ticking = true;
             master->pneumatics_pub.publish(pneumatics_cmd);
             num_markers_dropped++;
+            ROS_INFO("Dropped it like it's hot");
           }
           else {
             drop_duration = ros::Time::now().toSec() - drop_time.toSec();
@@ -180,6 +183,7 @@ void Roulette::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstP
           pneumatics_cmd.markerdropper = false;
           master->pneumatics_pub.publish(pneumatics_cmd);
           ROS_INFO("Roulette is DONE!!!");
+          master->tslam->SetEndPos();
           Roulette::Abort();
           master->StartTask();
         }

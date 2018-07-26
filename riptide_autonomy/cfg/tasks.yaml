@@ -21,7 +21,7 @@ tasks: [
       search_depth: 1,
       search_accel: 0.8,
       objects: ["Path_Marker"],
-      thresholds: [0.6],
+      thresholds: [0.1],
       align_thresh: 30, # [pixels]
       bbox_thresh: 30, # [pixels]
       detection_duration_thresh: 1, # [s]

@@ -1,5 +1,5 @@
-#ifndef CASINO_GATE_H
-#define CASINO_GATE_H
+#ifndef PATH_MARKER_H
+#define PATH_MARKER_H
 
 #include "ros/ros.h"
 #include <vector>
@@ -13,13 +13,16 @@
 #include "darknet_ros_msgs/BoundingBoxes.h"
 #include "darknet_ros_msgs/BoundingBox.h"
 #include "riptide_autonomy/be_autonomous.h"
+#include "riptide_autonomy/object_describer.h"
 #include <cmath>
 using namespace std;
 typedef riptide_msgs::Constants rc;
 
 class BeAutonomous;
 
-class CasinoGate
+class ObjectDescriber;
+
+class PathMarker
 {
 
 private:
@@ -27,32 +30,35 @@ private:
   ros::Subscriber *active_subs[3] = {&task_bbox_sub, &alignment_status_sub, &attitude_status_sub};
   ros::Timer timer;
 
-  darknet_ros_msgs::BoundingBoxes task_bboxes;
+  enum direction
+  {
+    right,
+    left
+  };
+  direction pathDirection;
+
   riptide_msgs::AlignmentCommand align_cmd;
   riptide_msgs::AttitudeCommand attitude_cmd;
-
-  double detection_duration, error_duration, pass_thru_duration;
-  int detections, attempts, align_id;
-  ros::Time acceptable_begin;
   ros::Time detect_start;
-  bool clock_is_ticking;
-  string object_name;
+
+  int detections, attempts;
+  double path_heading;
+  double heading_average = 360, y_average = 100, x_average = 100;
 
   // Create instance to master
   BeAutonomous *master;
-  bool passed_thru_gate, braked;
+  ObjectDescriber *od;
 
 public:
-  bool passing_on_left, passing_on_right;
-  double gate_heading, end_pos_offset;
-
-  CasinoGate(BeAutonomous *master);
+  PathMarker(BeAutonomous *master);
   void Initialize();
   void Start();
-  void IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg);
+  void IDPathMarker(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg);
+  void GotHeading(double heading);
+  void FirstAttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &status_msg);
   void AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr &status_msg);
-  void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &status_msg);
-  void PassThruTimer(const ros::TimerEvent &event);
+  void SecondAttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &status_msg);
+  void Success(const ros::TimerEvent &event);
   void Abort();
 };
 

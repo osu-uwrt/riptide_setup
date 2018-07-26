@@ -28,6 +28,7 @@
 
 #include "riptide_autonomy/tslam.h"
 #include "riptide_autonomy/roulette.h"
+#include "riptide_autonomy/path_marker.h"
 #include "riptide_autonomy/casino_gate.h"
 #include "riptide_autonomy/task_slots.h"
 using namespace std;
@@ -37,10 +38,7 @@ class TSlam;
 class Roulette;
 class CasinoGate;
 class Slots;
-
-void Subscribe(vector<ros::Subscriber> subs, ros::Subscriber sub);
-void Unsub(vector<ros::Subscriber> subs, string topic);
-void UnsubAll(vector<ros::Subscriber> subs);
+class PathMarker;
 
 class BeAutonomous
 {
@@ -90,6 +88,7 @@ public:
   double relative_current_x, relative_current_y, global_y_axis_heading;
 
   Roulette* roulette;
+  PathMarker* path;
   CasinoGate* casino_gate;
   Slots* slots;
 
