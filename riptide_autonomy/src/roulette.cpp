@@ -37,7 +37,7 @@ void Roulette::Initialize() {
   drop_clock_is_ticking = false;
 
   for(int i=0; i< sizeof(active_subs)/sizeof(active_subs[0]); i++)
-    active_subs[i].shutdown();
+    active_subs[i]->shutdown();
 }
 
 void Roulette::Start() {
@@ -130,6 +130,7 @@ void Roulette::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstP
         pneumatics_cmd.markerdropper = false;
         master->pneumatics_pub.publish(pneumatics_cmd);
         ROS_INFO("Roulette is DONE!!!");
+        master->tslam->SetPos(master->tslam->task_map["task_map"][master->tslam->quadrant]["map"][master->task_id]["end_x"].as<double>(), master->tslam->task_map["task_map"][master->tslam->quadrant]["map"][master->task_id]["end_y"].as<double>());
         Roulette::Abort();
         master->StartTask();
       }

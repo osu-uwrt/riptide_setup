@@ -32,7 +32,7 @@ void CasinoGate::Initialize() {
   passing_on_left = false;
 
   for(int i=0; i< sizeof(active_subs)/sizeof(active_subs[0]); i++)
-    active_subs[i].shutdown();
+    active_subs[i]->shutdown();
 }
 
 void CasinoGate::Start() {

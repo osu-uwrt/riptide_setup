@@ -31,15 +31,14 @@ TSlam::TSlam(BeAutonomous* master) {
   ROS_INFO("TSlam: Initialized");
 }
 
-void TSlam::Initialize() {
+void TSlam::Initialize()
+{
   error_duration = 0;
   delta_x = 0;
   delta_y = 0;
   angle = 0;
   search_heading = 0;
 
-  current_x = 0;
-  current_y = 0;
   start_x = 0;
   start_y = 0;
   eta = 0;
@@ -47,48 +46,54 @@ void TSlam::Initialize() {
   clock_is_ticking = false;
   validate_id = VALIDATE_PITCH;
 
-  for(int i=0; i< sizeof(active_subs)/sizeof(active_subs[0]); i++)
-    active_subs[i].shutdown();
+  current_x = 1000;
+  current_y = 1000;
+
+  for (int i = 0; i < sizeof(active_subs) / sizeof(active_subs[0]); i++)
+    active_subs[i]->shutdown();
 }
 
-void TSlam::ReadMap() {
+void TSlam::ReadMap()
+{
   quadrant = floor(master->load_id / 2.0);
 
+  if (current_x == 1000)
+  {
+    current_x = task_map["task_map"][quadrant]["dock_x"].as<double>();
+    current_y = task_map["task_map"][quadrant]["dock_y"].as<double>();
+  }
+
   ROS_INFO("Quadrant: %i", quadrant);
-  if(quadrant < 4) {
+  if (quadrant < 4)
+  {
     start_x = task_map["task_map"][quadrant]["map"][master->task_id]["start_x"].as<double>();
     start_y = task_map["task_map"][quadrant]["map"][master->task_id]["start_y"].as<double>();
 
-    if(master->last_task_id == -1 && !master->run_single_task) {
-      current_x = task_map["task_map"][quadrant]["dock_x"].as<double>();
-      current_y = task_map["task_map"][quadrant]["dock_y"].as<double>();
-    }
-    else if(master->run_single_task && master->task_order.size() == 1) {
+    if (master->run_single_task && master->task_order.size() == 1)
+    {
       current_x = start_x + master->relative_current_x;
       current_y = start_y + master->relative_current_y;
     }
-    else {
-      current_x = task_map["task_map"][quadrant]["map"][master->last_task_id]["end_x"].as<double>();
-      current_y = task_map["task_map"][quadrant]["map"][master->last_task_id]["end_y"].as<double>();
-    }
 
-    if(master->last_task_id == rc::TASK_CASINO_GATE) { // Calculate ending pos on other side of the gate
+    if (master->last_task_id == rc::TASK_CASINO_GATE)
+    { // Calculate ending pos on other side of the gate
       double gate_heading = master->casino_gate->gate_heading;
       bool passing_on_left = master->casino_gate->passing_on_left;
       bool passing_on_right = master->casino_gate->passing_on_right;
       double alpha = 0;
       double end_pos_offset = master->casino_gate->end_pos_offset;
 
-      if(passing_on_left)
+      if (passing_on_left)
         alpha = gate_heading + 90;
-      else if(passing_on_right)
+      else if (passing_on_right)
         alpha = gate_heading - 90;
 
-      current_x = current_x - end_pos_offset * sin(alpha*PI/180);
-      current_y = current_y + end_pos_offset * cos(alpha*PI/180);
+      current_x = current_x - end_pos_offset * sin(alpha * PI / 180);
+      current_y = current_y + end_pos_offset * cos(alpha * PI / 180);
     }
   }
-  else {
+  else
+  {
     current_x = 420;
     current_y = 420;
     start_x = 420;
@@ -96,11 +101,13 @@ void TSlam::ReadMap() {
   }
 
   // Verify current_x and current_y were not set to an arbitrarily large number
-  if(abs(current_x) > 55) {
+  if (abs(current_x) > 55)
+  {
     current_x = 0;
     ROS_INFO("ERROR: Current X not initialized properly, exceeded limit. Setting to 0.");
   }
-  if(abs(current_y) > 40) {
+  if (abs(current_y) > 40)
+  {
     current_y = 0;
     ROS_INFO("ERROR: Current Y not initialized properly, exceeded limit. Setting to 0.");
   }
@@ -109,30 +116,44 @@ void TSlam::ReadMap() {
   ROS_INFO("Next Task (%s) Start Y: %f", master->task_name.c_str(), start_y);
 }
 
+void TSlam::SetPos(double x, double y)
+{
+  current_x = x;
+  current_y = y;
+}
+
 // Calculate eta for TSlam to bring vehicle to next task
-void TSlam::CalcETA(double Ax, double dist) {
-  if(Ax >= 0.6 && Ax <= 1.25) { // Eqn only valid for Ax=[0.6, 1.25] m/s^2
-    x_vel = A2V_SLOPE*Ax + A2V_INT;
-    eta = dist/x_vel;
+void TSlam::CalcETA(double Ax, double dist)
+{
+  if (Ax >= 0.6 && Ax <= 1.25)
+  { // Eqn only valid for Ax=[0.6, 1.25] m/s^2
+    x_vel = A2V_SLOPE * Ax + A2V_INT;
+    eta = dist / x_vel;
   }
-  else eta = 0;
+  else
+    eta = 0;
 }
 
 // Keeps heading in the range determined by the IMU [180, -180]
-double TSlam::KeepHeadingInRange(double input) {
-  if(input > 180)
+double TSlam::KeepHeadingInRange(double input)
+{
+  if (input > 180)
     return (input - 360.0);
-  else if(input < -180)
+  else if (input < -180)
     return (input + 360.0);
-  else return input; 
+  else
+    return input;
 }
 
-void TSlam::Start() {
+void TSlam::Start()
+{
+  ReadMap();
+
   // Calculate heading to point towards next task
   TSlam::ReadMap();
   delta_x = start_x - current_x;
   delta_y = start_y - current_y;
-  angle = atan2(delta_y, delta_x) * 180/PI;
+  angle = atan2(delta_y, delta_x) * 180 / PI;
   double offset = angle - 90;
   search_heading = master->global_y_axis_heading + offset; // Center about global_y_axis_heading
   search_heading = TSlam::KeepHeadingInRange(search_heading);
@@ -142,7 +163,7 @@ void TSlam::Start() {
   ROS_INFO("TSlam: Vehicle search heading: %f", search_heading);
 
   // Calculate distance and ETA
-  distance = sqrt(delta_x*delta_x + delta_y*delta_y);
+  distance = sqrt(delta_x * delta_x + delta_y * delta_y);
   TSlam::CalcETA(master->search_accel, distance);
   ROS_INFO("TSlam: Distance %f with eta of %f sec at %f m/s", distance, eta, x_vel);
 
@@ -194,6 +215,7 @@ void TSlam::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr&
 void TSlam::DepthStatusCB(const riptide_msgs::ControlStatus::ConstPtr& status_msg) {
   if(ValidateError(status_msg->error, &error_duration, master->depth_thresh, master->error_duration_thresh, &clock_is_ticking, &error_check_start)) {
     depth_status_sub.shutdown();
+    validate_id = VALIDATE_YAW;
 
     attitude_cmd.yaw_active = true;
     master->attitude_pub.publish(attitude_cmd);
@@ -202,11 +224,13 @@ void TSlam::DepthStatusCB(const riptide_msgs::ControlStatus::ConstPtr& status_ms
   }
 }
 
-void TSlam::AbortTSlamTimer(const ros::TimerEvent& event) {
+void TSlam::AbortTSlamTimer(const ros::TimerEvent &event)
+{
   TSlam::Abort(true);
 }
 
-void TSlam::BrakeTimer(const ros::TimerEvent& event) {
+void TSlam::BrakeTimer(const ros::TimerEvent &event)
+{
   geometry_msgs::Vector3 msg;
   msg.x = 0;
   msg.y = 0;
@@ -216,12 +240,14 @@ void TSlam::BrakeTimer(const ros::TimerEvent& event) {
 }
 
 // Shutdown all active subscribers
-void TSlam::Abort(bool apply_brake) {
+void TSlam::Abort(bool apply_brake)
+{
   TSlam::Initialize();
 
   timer.stop();
   geometry_msgs::Vector3 msg;
-  if(apply_brake) {
+  if (apply_brake)
+  {
     msg.x = -(master->search_accel);
     msg.y = 0;
     msg.z = 0;
@@ -229,7 +255,8 @@ void TSlam::Abort(bool apply_brake) {
     timer = master->nh.createTimer(ros::Duration(0.25), &TSlam::BrakeTimer, this, true);
     ROS_INFO("TSlam: Aborting. Braking now.");
   }
-  else {
+  else
+  {
     msg.x = 0;
     msg.y = 0;
     msg.z = 0;

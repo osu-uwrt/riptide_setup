@@ -19,9 +19,9 @@ task_map: [
         {
           id: 1,
           name: "Path_Marker1",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
+          start_x: 1,
+          start_y: 0,
+          end_x: 0,
           end_y: 0.0
         },
         {
@@ -67,10 +67,10 @@ task_map: [
         {
           id: 7,
           name: "Roulette",
-          start_x: 6,
-          start_y: 3.0,
-          end_x: 0.0,
-          end_y: 0.0
+          start_x: 2,
+          start_y: 2,
+          end_x: 1,
+          end_y: 1
         },
         {
           id: 8,
