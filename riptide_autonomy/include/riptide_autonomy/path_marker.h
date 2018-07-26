@@ -29,6 +29,13 @@ private:
   ros::Subscriber task_bbox_sub, alignment_status_sub, attitude_status_sub;
   ros::Subscriber *active_subs[3] = {&task_bbox_sub, &alignment_status_sub, &attitude_status_sub};
 
+  enum direction
+  {
+    right,
+    left
+  };
+  direction pathDirection;
+
   darknet_ros_msgs::BoundingBoxes task_bboxes;
   riptide_msgs::AlignmentCommand align_cmd;
   riptide_msgs::AttitudeCommand attitude_cmd;

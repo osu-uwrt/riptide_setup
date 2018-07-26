@@ -38,6 +38,9 @@ void TSlam::Initialize()
   clock_is_ticking = false;
   validate_id = VALIDATE_PITCH;
 
+  current_x = 1000;
+  current_y = 1000;
+
   for (int i = 0; i < sizeof(active_subs) / sizeof(active_subs[0]); i++)
     active_subs[i]->shutdown();
 }
@@ -46,8 +49,11 @@ void TSlam::ReadMap()
 {
   quadrant = floor(master->load_id / 2.0);
 
-  current_x = task_map["task_map"][quadrant]["dock_x"].as<double>();
-  current_y = task_map["task_map"][quadrant]["dock_y"].as<double>();
+  if (current_x == 1000)
+  {
+    current_x = task_map["task_map"][quadrant]["dock_x"].as<double>();
+    current_y = task_map["task_map"][quadrant]["dock_y"].as<double>();
+  }
 
   ROS_INFO("Quadrant: %i", quadrant);
   if (quadrant < 4)
