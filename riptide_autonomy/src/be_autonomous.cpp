@@ -252,6 +252,7 @@ void BeAutonomous::EndMission()
   {
     ROS_INFO("ENDING MISSION!!!");
 
+    tslam->EndMission();
     tslam->Abort(false); // Don't apply thruster brake
     roulette->Abort();
     path->Abort();

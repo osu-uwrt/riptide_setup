@@ -1,14 +1,14 @@
 Task_Execution:
-  task_order: [7, 1]
+  task_order: [1, 7]
   run_single_task: false
   relative_current_x: 0.0 #  Where the vehicle starts relative to task [m]
   relative_current_y: 0.0 # Where the vehicle starts relative to task [m]
-  global_y_axis_heading: 0 # Allows user to specify where world positive y-axis points [deg]
+  global_y_axis_heading: 80 # Allows user to specify where world positive y-axis points [deg]
 Controller_Thresholds:
   depth_thresh: 0.3 # [m]
   roll_thresh: 5 # [deg]
   pitch_thresh: 5 # [deg]
-  yaw_thresh: 10 # [deg]
+  yaw_thresh: 5 # [deg]
   error_duration_thresh: 3 # [s]
   bbox_surge_duration_thresh: 1 # [s]
   bbox_heave_duration_thresh: 1 # [s]
