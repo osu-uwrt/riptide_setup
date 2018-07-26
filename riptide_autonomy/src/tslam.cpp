@@ -129,6 +129,12 @@ void TSlam::SetEndPos()
   current_y = end_y;
 }
 
+void TSlam::EndMission()
+{
+  current_x = 420;
+  current_y = 420;
+}
+
 // Calculate eta for TSlam to bring vehicle to next task
 void TSlam::CalcETA(double Ax, double dist)
 {
@@ -276,8 +282,4 @@ void TSlam::Abort(bool apply_brake)
   }
 }
 
-void TSlam::EndMission()
-{
-  current_x = 420;
-  current_y = 420;
-}
+

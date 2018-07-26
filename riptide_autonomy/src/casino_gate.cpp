@@ -1,12 +1,13 @@
 #include "riptide_autonomy/casino_gate.h"
 
+#define PI 3.141592653
 #define ALIGN_YZ 0
 #define ALIGN_BBOX_WIDTH 1
 
 /* Casino_Gate - Order of Execution:
 1. Start. Set alignment command.
-2. ID BOTH sides of the gate. Compare which side is where, set passing_on_<left or right> to true.
-3. Align to center of correct side with the bbox towards the top and of certain width.
+2. ID any side(s) of the gate. Compare which side is where, and update alignment command accordingly.
+3. Align required side to center of frame with the bbox towards the top and of certain width.
 4. Lock in suitable depth and maintain.
 5. Drive forward for specified duration and call it a success
 6. Abort. Start next task.
@@ -48,7 +49,7 @@ void CasinoGate::Start()
   left_color = master->tslam->task_map["task_map"][master->tslam->quadrant]["map"]["left_colot"].as<int>();
 
   // Set to black and just hope it's right if it doesn't load
-  if(left_color != rc::COLOR_BLACK && left_color != rc::COLOR_RED)
+  if (left_color != rc::COLOR_BLACK && left_color != rc::COLOR_RED)
     left_color = rc::COLOR_BLACK;
 
   align_cmd.surge_active = false;
@@ -56,109 +57,88 @@ void CasinoGate::Start()
   align_cmd.heave_active = false;
   align_cmd.object_name = object_name; // Casino_Gate Black/Red
   align_cmd.alignment_plane = master->alignment_plane;
-
+  align_cmd.bbox_dim = (int)master->frame_width * 0.6;
+  align_cmd.bbox_control = rc::CONTROL_BBOX_WIDTH;
+  align_cmd.target_pos.x = 0;
+  align_cmd.target_pos.y = 0;
+  align_cmd.target_pos.z = (int)(master->frame_height / 4);
   master->alignment_pub.publish(align_cmd);
   ROS_INFO("CasinoGate: alignment command published (but disabled)");
 
-  black_visible = false;
-  red_visible = false;
+  detected_black = false;
+  detected_red = false;
   task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &CasinoGate::IDCasinoGate, this);
   ROS_INFO("CasinoGate: subscribed to /task/bboxes");
 }
 
-// ID the CasinoGate task
+// ID the CasinoGate task and set update target y-pos based on the detected object(s)
 void CasinoGate::IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg)
 {
-  // Figure out what sides of the gate we can detect
-  for(int i=0; i<bbox_msg.bounding_boxes.size(); i++) {
-    if(bbox_msg.bounding_boxes.at(i).Class == "Casino_Gate_Black")
-      black_detections++;
-      black_visible = ValidateDetections(&black_detections, &detection_duration_black, master->detections_req, master->detection_duration_thresh, &detect_black_start, &attempts_black);
+  // Figure out which side(s) of the gate we can detect
+  for (int i = 0; i < bbox_msg->bounding_boxes.size(); i++)
+  {
+    if (bbox_msg->bounding_boxes.at(i).Class == "Casino_Gate_Black")
+    {
+      detections_black++;
+      detected_black = ValidateDetections(&detections_black, &detection_duration_black, master->detections_req, master->detection_duration_thresh, &detect_black_start, &attempts_black);
+      if (!detected_black)
+        ROS_INFO("CasinoGateBlack: %i Attemps - %i detections in %f sec", attempts_black, detections_black, detection_duration_black);
+    }
     else
-      red_detections++;
-      red_visible = ValidateDetections(&red_detections, &detection_duration_red, master->detections_req, master->detection_duration_thresh, &detect_red_start, &attempts_red);
+    {
+      detections_red++;
+      detected_red = ValidateDetections(&detections_red, &detection_duration_red, master->detections_req, master->detection_duration_thresh, &detect_red_start, &attempts_red);
+      if (!detected_red)
+        ROS_INFO("CasinoGateBlack: %i Attemps - %i detections in %f sec", attempts_red, detections_red, detection_duration_red);
+    }
   }
 
-  if(black_visible && red_visible) 
+  // Set the side we are passing on and update the target y-pos in the frame
+  if (detected_black || detected_red)
   {
     task_bbox_sub.shutdown();
+    master->tslam->Abort(true);
+    
+    if (master->color == left_color) // Must pass on LEFT side
+    {
+      passing_on_left = true;
+      if(detected_black && detected_red) // Align object to center of frame
+      {
+        ROS_INFO("CasinoGate: Detected both sides. Aligning left side in center");
+      }
+      else if ((detected_red && left_color == rc::COLOR_BLACK) || (detected_black && left_color == rc::COLOR_RED)) 
+      {
+        // Detected the right side of the gate, so put target y-pos on right side of frame using detected object
+        align_cmd.object_name = master->object_names.at((master->color + 1)%2); // Switch to detected object
+        align_cmd.target_pos.y = -(int)(master->frame_height / 3);
+        ROS_INFO("CasinoGate: Detected right side. Aligning to left side");
+      }
+      else ROS_INFO("CasinoGate: Detected left side. Aligning to center");
+    }
+    else // Must pass on RIGHT side
+    {
+      passing_on_right = true;
+       if(detected_black && detected_red) // Align object to center of frame
+      {
+        ROS_INFO("CasinoGate: Detected both sides. Aligning right side in center");
+      }
+      else if ((detected_black && left_color == rc::COLOR_BLACK) || (detected_black && left_color == rc::COLOR_RED)) 
+      {
+        // Detected the left side of the gate, so put target y-pos on left side of frame using detected object
+        align_cmd.object_name = master->object_names.at((master->color + 1)%2); // Switch to detected object
+        align_cmd.target_pos.y = (int)(master->frame_height / 3);
+        ROS_INFO("CasinoGate: Detected left side. Aligning to right side");
+      }
+      else ROS_INFO("CasinoGate: Detected right side. Aligning to center");
+    }
 
-    // Activate YZ alignment controllers
-    // Set points already specified in initial alignment command
     align_cmd.surge_active = false;
     align_cmd.sway_active = true;
     align_cmd.heave_active = true;
-    align_cmd.bbox_dim = (int)master->frame_width * 0.7;
-    align_cmd.bbox_control = rc::CONTROL_BBOX_WIDTH;
-    align_cmd.target_pos.x = 0;
-    align_cmd.target_pos.y = 0;
-    align_cmd.target_pos.z = (int)(master->frame_height / 4);
     master->alignment_pub.publish(align_cmd);
     alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &CasinoGate::AlignmentStatusCB, this);
-    ROS_INFO("CasinoGate: Identified CasinoGate. Now aligning wit YZ controllers");
+    ROS_INFO("CasinoGate: Aligning to %s. Checking sway/heave error", object_name.c_str());
   }
-  else if(black_visible) {
-    task_bbox_sub.shutdown();
-    if(left_color == rc::COLOR_BLACK) {
-
-    }
-    
-  }
-  else if(red_visible) {
-    task_bbox_sub.shutdown();
-    
-  }
-
-  detections2++;
-    if (ValidateDetections(&black_detections, &detection_duration, master->detections_req, master->detection_duration_thresh, &error_check_start, &attempts))
-    {
-      task_bbox_sub.shutdown();
-
-    }
-  }
-  if (detections == 1)
-  {
-    detect_start = ros::Time::now();
-    attempts++;
-  }
-  else
-  {
-    detection_duration = ros::Time::now().toSec() - detect_start.toSec();
-  }
-
-  if (detection_duration > master->detection_duration_thresh)
-  {
-    if (detections >= master->detections_req)
-    {
-      task_bbox_sub.shutdown();
-      master->tslam->Abort(true);
-      clock_is_ticking = false;
-      detection_duration = 0;
-
-      // Activate YZ alignment controllers
-      // Set points already specified in initial alignment command
-      align_cmd.surge_active = false;
-      align_cmd.sway_active = true;
-      align_cmd.heave_active = true;
-      align_cmd.bbox_dim = (int)master->frame_width * 0.7;
-      align_cmd.bbox_control = rc::CONTROL_BBOX_WIDTH;
-      align_cmd.target_pos.x = 0;
-      align_cmd.target_pos.y = 0;
-      align_cmd.target_pos.z = (int)(master->frame_height / 4);
-      master->alignment_pub.publish(align_cmd);
-      alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &CasinoGate::AlignmentStatusCB, this);
-      ROS_INFO("CasinoGate: Identified CasinoGate. Now aligning wit YZ controllers");
-    }
-    else
-    {
-      ROS_INFO("CasinoGate: Attempt %i to ID CasinoGate", attempts);
-      ROS_INFO("CasinoGate: %i detections in %f sec", detections, detection_duration);
-      ROS_INFO("CasinoGate: Beginning attempt %i", attempts + 1);
-      detections = 0;
-      detection_duration = 0;
-    }
-  }
-  //}
 }
 
 // A. Make sure the vehicle is aligned with the YZ controllers

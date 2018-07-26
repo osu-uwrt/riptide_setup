@@ -6,7 +6,6 @@ tasks: [
       search_depth: 1,
       search_accel: 0.8,
       pass_thru_duration: 4.0, # [s]
-      end_pos_offset: 1.0, # [m]
       objects: ["Casino_Gate_Black", "Casino_Gate_Red"],
       thresholds: [0.3, 0.3],
       align_thresh: 30, # [pixels]
@@ -21,7 +20,7 @@ tasks: [
       search_depth: 1,
       search_accel: 0.8,
       objects: ["Path_Marker"],
-      thresholds: [0.1],
+      thresholds: [0.3],
       align_thresh: 30, # [pixels]
       bbox_thresh: 30, # [pixels]
       detection_duration_thresh: 1, # [s]

@@ -84,9 +84,7 @@ void Roulette::IDRoulette(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_
   }
   else
   {
-    ROS_INFO("Roulette: Attempt %i to ID roulette", attempts);
-    ROS_INFO("Roulette: %i detections in %f sec", detections, detection_duration);
-    ROS_INFO("Roulette: Beginning attempt %i", attempts + 1);
+    ROS_INFO("Roulette: %i Attemps - %i detections in %f sec", attempts, detections, detection_duration);
   }
 }
 

@@ -35,7 +35,7 @@ private:
   int detections_black, detections_red, attempts_black, attempts_red, align_id, left_color;
   ros::Time error_check_start;
   ros::Time detect_black_start, detect_red_start;
-  bool clock_is_ticking, black_visible, red_visible;
+  bool clock_is_ticking, detected_black, detected_red;
   string object_name;
 
   // Create instance to master
