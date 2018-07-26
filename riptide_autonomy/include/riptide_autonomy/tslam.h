@@ -32,7 +32,8 @@ private:
   // Task Info
   string task_map_file;
 
-  double current_x, current_y, start_x, start_y;
+  double current_x = 420, current_y = 420;
+  
   double eta, x_vel;
 
   double delta_x, delta_y, angle, search_heading, distance;
@@ -47,11 +48,14 @@ private:
 public:
   YAML::Node task_map;
   int quadrant;
+  double start_x, start_y, end_x, end_y;
 
   TSlam(BeAutonomous *master);
   void Initialize();
   void ReadMap();
   void SetPos(double x, double y);
+  void SetEndPos();
+  void EndMission();
   void CalcETA(double Ax, double dist);
   double KeepHeadingInRange(double input);
   void Start();

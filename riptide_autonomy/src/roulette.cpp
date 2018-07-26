@@ -183,7 +183,7 @@ void Roulette::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstP
           pneumatics_cmd.markerdropper = false;
           master->pneumatics_pub.publish(pneumatics_cmd);
           ROS_INFO("Roulette is DONE!!!");
-          master->tslam->SetPos(master->tslam->task_map["task_map"][master->tslam->quadrant]["map"][master->task_id]["end_x"].as<double>(), master->tslam->task_map["task_map"][master->tslam->quadrant]["map"][master->task_id]["end_y"].as<double>());
+          master->tslam->SetEndPos();
           Roulette::Abort();
           master->StartTask();
         }
