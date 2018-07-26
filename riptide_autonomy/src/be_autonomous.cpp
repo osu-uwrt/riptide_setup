@@ -1,27 +1,32 @@
 #include "riptide_autonomy/be_autonomous.h"
 
-
 /////////////////////////////////////// Useful functions //////////////////////////////////////////
 
-// Do NOT let this function increment *dets (it can only reset it to 0 once it returns true. 
+// Do NOT let this function increment *dets (it can only reset it to 0 once it returns true.
 //This functions is ONLY meant for validation to reduce code in callbacks.
 // The dets_durations is necessary becuase this function gets called again and again
-bool ValidateDetections(int* dets, double* dets_duration, int dets_thresh, double dets_duration_thresh, ros::Time* start, int* attempts) {
-  if(*dets == 1) {
+bool ValidateDetections(int *dets, double *dets_duration, int dets_thresh, double dets_duration_thresh, ros::Time *start, int *attempts)
+{
+  if (*dets == 1)
+  {
     *start = ros::Time::now();
     (*attempts)++;
   }
-  else {
+  else
+  {
     *dets_duration = ros::Time::now().toSec() - start->toSec();
   }
 
-  if(*dets_duration >= dets_duration_thresh) {
-    if(*dets >= dets_thresh) {
+  if (*dets_duration >= dets_duration_thresh)
+  {
+    if (*dets >= dets_thresh)
+    {
       *dets = 0;
       *dets_duration = 0;
       return true;
     }
-    else {
+    else
+    {
       *dets = 0;
       *dets_duration = 0;
     }
@@ -31,24 +36,30 @@ bool ValidateDetections(int* dets, double* dets_duration, int dets_thresh, doubl
 
 // Validate the error when inside a status callback
 // The error_duration is necessary becuase this function gets called again and again
-bool ValidateError(double value, double* error_duration, double error_thresh, double error_duration_thresh, bool* clock_is_ticking, ros::Time* start) {
-  if(abs(value) <= error_thresh) {
-    if(!(*clock_is_ticking)) {
+bool ValidateError(double value, double *error_duration, double error_thresh, double error_duration_thresh, bool *clock_is_ticking, ros::Time *start)
+{
+  if (abs(value) <= error_thresh)
+  {
+    if (!(*clock_is_ticking))
+    {
       *start = ros::Time::now();
       *clock_is_ticking = true;
     }
-    else {
+    else
+    {
       *error_duration = ros::Time::now().toSec() - start->toSec();
     }
 
-    if(*error_duration >= error_duration_thresh) {
+    if (*error_duration >= error_duration_thresh)
+    {
       *error_duration = 0;
       *clock_is_ticking = false;
       return true;
     }
     return false;
   }
-  else {
+  else
+  {
     *error_duration = 0;
     *clock_is_ticking = false;
     return false;
@@ -57,24 +68,30 @@ bool ValidateError(double value, double* error_duration, double error_thresh, do
 
 // Validate TWO errors when inside a status callback (must have same error thresholds)
 // The error_duration is necessary becuase this function gets called again and again
-bool ValidateError2(double value1, double value2, double* error_duration, double error_thresh, double error_duration_thresh, bool* clock_is_ticking, ros::Time* start) {
-  if(abs(value1) <= error_thresh && abs(value2) <= error_thresh) {
-    if(!(*clock_is_ticking)) {
+bool ValidateError2(double value1, double value2, double *error_duration, double error_thresh, double error_duration_thresh, bool *clock_is_ticking, ros::Time *start)
+{
+  if (abs(value1) <= error_thresh && abs(value2) <= error_thresh)
+  {
+    if (!(*clock_is_ticking))
+    {
       *start = ros::Time::now();
       *clock_is_ticking = true;
     }
-    else {
+    else
+    {
       *error_duration = ros::Time::now().toSec() - start->toSec();
     }
 
-    if(*error_duration >= error_duration_thresh) {
+    if (*error_duration >= error_duration_thresh)
+    {
       *error_duration = 0;
       *clock_is_ticking = false;
       return true;
     }
     return false;
   }
-  else {
+  else
+  {
     *error_duration = 0;
     *clock_is_ticking = false;
     return false;
@@ -82,7 +99,8 @@ bool ValidateError2(double value1, double value2, double* error_duration, double
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv)
+{
   ros::init(argc, argv, "be_autonomous");
   BeAutonomous ba;
   ros::spin();

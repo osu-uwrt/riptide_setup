@@ -18,10 +18,11 @@
 7. Abort (brake if required).
 */
 
-TSlam::TSlam(BeAutonomous* master) {
+TSlam::TSlam(BeAutonomous *master)
+{
   this->master = master;
 
-  if(master->competition_id == rc::COMPETITION_SEMIS)
+  if (master->competition_id == rc::COMPETITION_SEMIS)
     task_map_file = rc::FILE_MAP_SEMIS;
   else
     task_map_file = rc::FILE_MAP_FINALS;
@@ -46,8 +47,8 @@ void TSlam::Initialize()
   clock_is_ticking = false;
   validate_id = VALIDATE_PITCH;
 
-  current_x = 1000;
-  current_y = 1000;
+  current_x = 420;
+  current_y = 420;
 
   for (int i = 0; i < sizeof(active_subs) / sizeof(active_subs[0]); i++)
     active_subs[i]->shutdown();
@@ -57,7 +58,7 @@ void TSlam::ReadMap()
 {
   quadrant = floor(master->load_id / 2.0);
 
-  if (current_x == 1000)
+  if (current_x == 420)
   {
     current_x = task_map["task_map"][quadrant]["dock_x"].as<double>();
     current_y = task_map["task_map"][quadrant]["dock_y"].as<double>();
@@ -147,8 +148,6 @@ double TSlam::KeepHeadingInRange(double input)
 
 void TSlam::Start()
 {
-  ReadMap();
-
   // Calculate heading to point towards next task
   TSlam::ReadMap();
   delta_x = start_x - current_x;
@@ -181,9 +180,12 @@ void TSlam::Start()
   ROS_INFO("TSlam: Checking pitch error");
 }
 
-void TSlam::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr& status_msg) {
-  if(validate_id == VALIDATE_PITCH) { // Must first validate pitch so vehicle can submerge properly
-  	if(ValidateError(status_msg->pitch.error, &error_duration, master->pitch_thresh, master->error_duration_thresh, &clock_is_ticking, &error_check_start)) {
+void TSlam::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &status_msg)
+{
+  if (validate_id == VALIDATE_PITCH)
+  { // Must first validate pitch so vehicle can submerge properly
+    if (ValidateError(status_msg->pitch.error, &error_duration, master->pitch_thresh, master->error_duration_thresh, &clock_is_ticking, &error_check_start))
+    {
       attitude_status_sub.shutdown();
 
       // Publish depth command
@@ -194,8 +196,10 @@ void TSlam::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr&
       ROS_INFO("TSlam: Pitch good. Now checking depth");
     }
   }
-  else if(validate_id == VALIDATE_YAW) { // Validate heading after depth is reached
-  	if(ValidateError(status_msg->yaw.error, &error_duration, master->yaw_thresh, master->error_duration_thresh, &clock_is_ticking, &error_check_start)) {
+  else if (validate_id == VALIDATE_YAW)
+  { // Validate heading after depth is reached
+    if (ValidateError(status_msg->yaw.error, &error_duration, master->yaw_thresh, master->error_duration_thresh, &clock_is_ticking, &error_check_start))
+    {
       attitude_status_sub.shutdown();
 
       // Drive forward
@@ -205,15 +209,17 @@ void TSlam::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr&
       msg.z = 0;
       master->linear_accel_pub.publish(msg);
 
-      double tslam_duration = 1.5*eta;
+      double tslam_duration = 1.5 * eta;
       timer = master->nh.createTimer(ros::Duration(tslam_duration), &TSlam::AbortTSlamTimer, this, true);
       ROS_INFO("TSlam: Reached heading, now moving forward. Abort timer initiated. ETA: %f", tslam_duration);
     }
   }
 }
 
-void TSlam::DepthStatusCB(const riptide_msgs::ControlStatus::ConstPtr& status_msg) {
-  if(ValidateError(status_msg->error, &error_duration, master->depth_thresh, master->error_duration_thresh, &clock_is_ticking, &error_check_start)) {
+void TSlam::DepthStatusCB(const riptide_msgs::ControlStatus::ConstPtr &status_msg)
+{
+  if (ValidateError(status_msg->error, &error_duration, master->depth_thresh, master->error_duration_thresh, &clock_is_ticking, &error_check_start))
+  {
     depth_status_sub.shutdown();
     validate_id = VALIDATE_YAW;
 

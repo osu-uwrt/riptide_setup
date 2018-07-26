@@ -11,8 +11,9 @@ task_map: [
           name: "Casino_Gate",
           start_x: 0.0,
           start_y: 0.0.0,
-          end_x: 0.0,
-          end_y: 0.0,
+          end_mid_x: 0.0,
+          end_mid_y: 0.0,
+          end_pos_offset: 1.0, # [m]
           heading: -80.0,
           left_color: 0 # Black
         },
@@ -94,8 +95,9 @@ task_map: [
           name: "Casino_Gate",
           start_x: 0.0,
           start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0,
+          end_mid_x: 0.0,
+          end_mid_y: 0.0,
+          end_pos_offset: 1.0, # [m]
           heading: -100.0,
           left_color: 0 # Black
         },
@@ -177,8 +179,9 @@ task_map: [
           name: "Casino_Gate",
           start_x: 0.0,
           start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0,
+          end_mid_x: 0.0,
+          end_mid_y: 0.0,
+          end_pos_offset: 1.0, # [m]
           heading: 80.0,
           left_color: 1 # Red
         },
@@ -260,8 +263,9 @@ task_map: [
           name: "Casino_Gate",
           start_x: 0.0,
           start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0,
+          end_mid_x: 0.0,
+          end_mid_y: 0.0,
+          end_pos_offset: 1.0, # [m]
           heading: 100.0,
           left_color: 1 # Red
         },

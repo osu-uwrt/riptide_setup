@@ -31,11 +31,11 @@ private:
   riptide_msgs::AlignmentCommand align_cmd;
   riptide_msgs::AttitudeCommand attitude_cmd;
 
-  double detection_duration, error_duration, pass_thru_duration;
-  int detections, attempts, align_id;
+  double detection_duration_black, detection_duration_red, error_duration, pass_thru_duration;
+  int detections_black, detections_red, attempts_black, attempts_red, align_id, left_color;
   ros::Time error_check_start;
-  ros::Time detect_start;
-  bool clock_is_ticking;
+  ros::Time detect_black_start, detect_red_start;
+  bool clock_is_ticking, black_visible, red_visible;
   string object_name;
 
   // Create instance to master
@@ -53,6 +53,7 @@ public:
   void AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr &status_msg);
   void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &status_msg);
   void PassThruTimer(const ros::TimerEvent &event);
+  void SetEndPos();
   void Abort();
 };
 
