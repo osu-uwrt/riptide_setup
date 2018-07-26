@@ -120,7 +120,8 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous") { // NOTE: there is no namesp
   roulette = new Roulette(this);
   casino_gate = new CasinoGate(this);
   slots = new Slots(this);
-  ROS_INFO("Created task objects");
+
+  ROS_INFO("BE: Created task objects. Awaiting mission start.");
 }
 
 // Load parameter from namespace

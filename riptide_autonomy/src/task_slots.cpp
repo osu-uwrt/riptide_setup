@@ -22,18 +22,6 @@ Slots::Slots(BeAutonomous* master) {
 
 void Slots::Initialize() {
   active_subs.clear();
-  torpedo_offsets[PORT_TORPEDO].y = master->tasks["tasks"][master->task_id]["torpedo_offset"]["port"]["y"].as<int>();
-  torpedo_offsets[PORT_TORPEDO].z = master->tasks["tasks"][master->task_id]["torpedo_offset"]["port"]["z"].as<int>();
-
-  torpedo_offsets[STBD_TORPEDO].y = master->tasks["tasks"][master->task_id]["torpedo_offset"]["stbd"]["y"].as<int>();
-  torpedo_offsets[STBD_TORPEDO].z = master->tasks["tasks"][master->task_id]["torpedo_offset"]["stbd"]["z"].as<int>();
-
-  pneumatics_duration = master->tasks["tasks"][master->task_id]["pneumatics_duration"].as<double>();
-
-  bbox_control = master->tasks["tasks"][master->task_id]["bbox_control"].as<int>();
-  bbox_dim = master->tasks["tasks"][master->task_id]["bbox_dim"].as<int>();
-
-  aligned_duration_thresh = master->tasks["tasks"][master->task_id]["aligned_duration_thresh"].as<double>();
 
   mission_state = -1;
   alignment_state = -1;
@@ -42,6 +30,14 @@ void Slots::Initialize() {
 }
 
 void Slots::Start() {
+  torpedo_offsets[PORT_TORPEDO].y = master->tasks["tasks"][master->task_id]["torpedo_offset"]["port"]["y"].as<int>();
+  torpedo_offsets[PORT_TORPEDO].z = master->tasks["tasks"][master->task_id]["torpedo_offset"]["port"]["z"].as<int>();
+  torpedo_offsets[STBD_TORPEDO].y = master->tasks["tasks"][master->task_id]["torpedo_offset"]["stbd"]["y"].as<int>();
+  torpedo_offsets[STBD_TORPEDO].z = master->tasks["tasks"][master->task_id]["torpedo_offset"]["stbd"]["z"].as<int>();
+  pneumatics_duration = master->tasks["tasks"][master->task_id]["pneumatics_duration"].as<double>();
+  bbox_control = master->tasks["tasks"][master->task_id]["bbox_control"].as<int>();
+  bbox_dim = master->tasks["tasks"][master->task_id]["bbox_dim"].as<int>();
+  aligned_duration_thresh = master->tasks["tasks"][master->task_id]["aligned_duration_thresh"].as<double>();
 
   align_cmd.surge_active = false;
   align_cmd.sway_active = false;

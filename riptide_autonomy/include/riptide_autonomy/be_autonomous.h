@@ -36,6 +36,7 @@ typedef riptide_msgs::Constants rc;
 class TSlam;
 class Roulette;
 class CasinoGate;
+class Slots;
 
 void Subscribe(vector<ros::Subscriber> subs, ros::Subscriber sub);
 void Unsub(vector<ros::Subscriber> subs, string topic);
