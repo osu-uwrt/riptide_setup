@@ -174,6 +174,7 @@ void BeAutonomous::StartTask()
         ROS_INFO("BE: Invalid Task ID. Ending mission.");
         BeAutonomous::EndMission();
         break;
+      }
   }
 }
 
@@ -182,11 +183,6 @@ void BeAutonomous::EndMission()
   if (mission_running)
   {
     ROS_INFO("ENDING MISSION!!!");
-<<<<<<< HEAD
-
-    tslam->Abort(false); // Don't apply thruster brake
-=======
->>>>>>> 92353c8c6e031f2fc619d00a798f812a21d9f8d0
 
     tslam->EndMission();
     tslam->Abort(false); // Don't apply thruster brake
