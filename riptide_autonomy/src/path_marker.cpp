@@ -4,6 +4,14 @@
 #define ALIGN_BBOX_WIDTH 1
 #define ALIGN_OFFSET 2
 
+//  Path Marker, what it does:
+// 1: If we see the Path Marker, abort tslam & get path heading
+// 2: Once we have determined the heading start aligning
+// 3: Once we are at the right angle, go forward
+// 4: Once we are over the center, turn
+// 5: Once we have turned, go
+// 6: Once we have gone, be done
+
 PathMarker::PathMarker(BeAutonomous *master)
 {
   this->master = master;
@@ -15,15 +23,6 @@ void PathMarker::Initialize()
 {
   detections = 0;
   attempts = 0;
-  num_markers_dropped = 0;
-  align_id = ALIGN_CENTER;
-
-  detection_duration = 0;
-  error_duration = 0;
-  drop_duration = 0;
-  drop_duration_thresh = 0;
-  clock_is_ticking = false;
-  drop_clock_is_ticking = false;
 
   for (int i = 0; i < sizeof(active_subs) / sizeof(active_subs[0]); i++)
     active_subs[i]->shutdown();
@@ -47,7 +46,7 @@ void PathMarker::Start()
   task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &PathMarker::IDPathMarker, this);
 }
 
-// ID the PathMarker task
+// If we see the Path Marker, abort tslam & get angle
 void PathMarker::IDPathMarker(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg)
 {
   // Get number of objects and make sure you have 'x' many within 't' seconds
@@ -72,14 +71,14 @@ void PathMarker::IDPathMarker(const darknet_ros_msgs::BoundingBoxes::ConstPtr &b
     else
     {
       ROS_INFO("PathMarker: Attempt %i to ID PathMarker", attempts);
-      ROS_INFO("PathMarker: %i detections in %f sec", detections, detection_duration);
+      ROS_INFO("PathMarker: %i detections", detections);
       ROS_INFO("PathMarker: Beginning attempt %i", attempts + 1);
       detections = 0;
     }
   }
 }
 
-// When the green_heading has been found, set the robot to a heading normal to the green section
+// Once we have determined the heading start aligning
 void PathMarker::GotHeading(double heading)
 {
   ROS_INFO("PathMarker angle: %f", heading);
@@ -93,163 +92,108 @@ void PathMarker::GotHeading(double heading)
   if (heading < 90 && heading > -90)
   {
     pathDirection = right;
-    attitude_cmd.euler_rpy.z = marker_drop_heading - (heading - (-22.5));
+    ROS_INFO("Path Right");
+    path_heading = master->euler_rpy.z + (heading - (-22.5));
   }
   else
   {
     pathDirection = left;
-    attitude_cmd.euler_rpy.z = marker_drop_heading - (heading - (-157.5));
+    ROS_INFO("Path Left");
+    path_heading = master->euler_rpy.z + (heading - (-157.5));
   }
 
+  path_heading = master->tslam->KeepHeadingInRange(path_heading);
+
+  attitude_cmd.euler_rpy.z = path_heading;
   master->attitude_pub.publish(attitude_cmd);
-  // Send alignment command to put in center of frame (activate controllers)
-  // Set points already specified in initial alignment command
   align_cmd.surge_active = false;
   align_cmd.sway_active = true;
   align_cmd.heave_active = false;
   master->alignment_pub.publish(align_cmd);
-  alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &PathMarker::AlignmentStatusCB, this);
+  attitude_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &PathMarker::FirstAttitudeStatusCB, this);
 
   ROS_INFO("PathMarker: Identified Heading. Now rotating and aligning along y");
 }
 
-// Make sure the robot goes to the marker drop heading
-void PathMarker::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &status_msg)
+// Once we are at the right angle, go forward
+void PathMarker::FirstAttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &status_msg)
 {
-  // Depth is good, now verify heading error
-  if (abs(status_msg->yaw.error) < master->yaw_thresh)
+  heading_average = (heading_average * 99 + abs(status_msg->yaw.error)) / 100;
+
+  if (heading_average < master->yaw_thresh)
   {
     attitude_status_sub.shutdown();
+    heading_average = 360;
 
-    geometry_msgs::Vector3 accel;
-    accel.x = 0;
-    accel.y = 0;
-    accel.z = 0;
-    master->linear_accel_pub.publish(accel);
+    // TODO: If you dont see it, do something
 
-    // Now align to a bit left of the PathMarker center
     align_cmd.surge_active = true;
     align_cmd.sway_active = true;
     align_cmd.heave_active = false;
     master->alignment_pub.publish(align_cmd);
     alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &PathMarker::AlignmentStatusCB, this);
-    ROS_INFO("PathMarker: Identified PathMarker. Now aligning to off-center");
+    ROS_INFO("PathMarker: At heading. Now aligning center");
   }
 }
 
-// A. Make sure the vehicle is aligned to the center of the PathMarker wheel
-// B. Make sure the vehicle is aligned to the ofset position so it can drop two markers
+// Once we are over the center, turn
 void PathMarker::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr &status_msg)
 {
-  if (align_id == ALIGN_CENTER)
-  { // Perform (A)
-    if (abs(status_msg->x.error) < master->align_thresh && abs(status_msg->y.error) < master->align_thresh)
-    {
-      if (!clock_is_ticking)
-      {
-        acceptable_begin = ros::Time::now();
-        clock_is_ticking = true;
-      }
-      else
-        error_duration = ros::Time::now().toSec() - acceptable_begin.toSec();
+  x_average = (x_average * 9 + abs(status_msg->x.error)) / 10;
+  y_average = (y_average * 9 + abs(status_msg->y.error)) / 10;
 
-      if (error_duration >= master->error_duration_thresh)
-      {
-        alignment_status_sub.shutdown();
-        error_duration = 0;
-        clock_is_ticking = false;
+  if (x_average < master->align_thresh && y_average < master->align_thresh)
+  {
+    alignment_status_sub.shutdown();
 
-        // Calculate heading for PathMarker wheel
-        //od->GetPathHeading(&PathMarker::SetMarkerDropHeading, this);
-      }
-    }
+    if (pathDirection == right)
+      attitude_cmd.euler_rpy.z = path_heading - 45;
     else
-    {
-      error_duration = 0;
-      clock_is_ticking = false;
-    }
+      attitude_cmd.euler_rpy.z = path_heading + 45;
+
+    attitude_cmd.euler_rpy.z = master->tslam->KeepHeadingInRange(attitude_cmd.euler_rpy.z);
+    master->attitude_pub.publish(attitude_cmd);
+
+    x_average = 100;
+    y_average = 100;
+
+    attitude_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &PathMarker::SecondAttitudeStatusCB, this);
+    ROS_INFO("Now center, turning to %f", attitude_cmd.euler_rpy.z);
+
   }
-  else if (align_id == ALIGN_BBOX_WIDTH)
-  { // Align with bbox
-    if (abs(status_msg->z.error) < master->bbox_thresh)
-    {
-      if (!clock_is_ticking)
-      {
-        acceptable_begin = ros::Time::now();
-        clock_is_ticking = true;
-      }
-      else
-        error_duration = ros::Time::now().toSec() - acceptable_begin.toSec();
+}
 
-      if (error_duration >= master->bbox_heave_duration_thresh)
-      { // Roulete should be in the camera center
-        alignment_status_sub.shutdown();
-        error_duration = 0;
-        clock_is_ticking = false;
+// Once we have turned, go
+void PathMarker::SecondAttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &status_msg)
+{
+  heading_average = (heading_average * 99 + abs(status_msg->yaw.error)) / 100;
 
-        // Calculate heading for PathMarker wheel
-        //od->GetPathHeading(&PathMarker::SetMarkerDropHeading, this);
-      }
-    }
-    else
-    {
-      error_duration = 0;
-      clock_is_ticking = false;
-    }
+  if (heading_average < master->yaw_thresh)
+  {
+    attitude_status_sub.shutdown();
+
+    geometry_msgs::Vector3 msg;
+    msg.x = 0;
+    msg.y = 0.8;
+    msg.z = 0;
+    master->linear_accel_pub.publish(msg);
+
+    ROS_INFO("HALF SPEED AHEAD!!!");
+    timer = master->nh.createTimer(ros::Duration(2), &PathMarker::Success, this, true);
   }
-  else if (align_id == ALIGN_OFFSET)
-  { // Perform (B)
-    if (abs(status_msg->x.error) < master->align_thresh && abs(status_msg->y.error) < master->align_thresh)
-    {
-      if (!clock_is_ticking)
-      {
-        acceptable_begin = ros::Time::now();
-        clock_is_ticking = true;
-      }
-      else
-        error_duration = ros::Time::now().toSec() - acceptable_begin.toSec();
+}
 
-      if (error_duration >= master->error_duration_thresh)
-      { // Roulete should be off-center
-        if (num_markers_dropped < 2)
-        {
-          pneumatics_cmd.header.stamp = ros::Time::now();
-          pneumatics_cmd.torpedo_stbd = false;
-          pneumatics_cmd.torpedo_port = false;
-          pneumatics_cmd.markerdropper = true;
-          pneumatics_cmd.manipulator = false;
-          pneumatics_cmd.duration = 300; // [ms]
-
-          if (!drop_clock_is_ticking || drop_duration > drop_duration_thresh)
-          {
-            drop_time = ros::Time::now();
-            drop_clock_is_ticking = true;
-            master->pneumatics_pub.publish(pneumatics_cmd);
-            num_markers_dropped++;
-          }
-          else
-          {
-            drop_duration = ros::Time::now().toSec() - drop_time.toSec();
-          }
-        }
-        else
-        {
-          pneumatics_cmd.markerdropper = false;
-          ;
-          master->pneumatics_pub.publish(pneumatics_cmd);
-          ROS_INFO("PathMarker is DONE!!!");
-          PathMarker::Abort();
-          master->StartTask();
-        }
-      }
-    }
-    else
-    {
-      error_duration = 0;
-      clock_is_ticking = false;
-      drop_clock_is_ticking = false;
-    }
-  }
+// Once we have gone, be done
+void PathMarker::Success(const ros::TimerEvent &event)
+{
+  geometry_msgs::Vector3 msg;
+  msg.x = 0;
+  msg.y = 0;
+  msg.z = 0;
+  master->linear_accel_pub.publish(msg);
+  Abort();
+  master->tslam->SetEndPos();
+  master->StartTask();
 }
 
 // Shutdown all active subscribers

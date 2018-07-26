@@ -21,7 +21,7 @@ task_map: [
           start_x: 1,
           start_y: 0,
           end_x: 0,
-          end_y: 0.0
+          end_y: -1
         },
         {
           id: 2,

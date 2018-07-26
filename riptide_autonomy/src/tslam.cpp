@@ -38,9 +38,6 @@ void TSlam::Initialize()
   clock_is_ticking = false;
   validate_id = VALIDATE_PITCH;
 
-  current_x = 1000;
-  current_y = 1000;
-
   for (int i = 0; i < sizeof(active_subs) / sizeof(active_subs[0]); i++)
     active_subs[i]->shutdown();
 }
@@ -49,7 +46,7 @@ void TSlam::ReadMap()
 {
   quadrant = floor(master->load_id / 2.0);
 
-  if (current_x == 1000)
+  if (current_x == 420)
   {
     current_x = task_map["task_map"][quadrant]["dock_x"].as<double>();
     current_y = task_map["task_map"][quadrant]["dock_y"].as<double>();
@@ -60,6 +57,9 @@ void TSlam::ReadMap()
   {
     start_x = task_map["task_map"][quadrant]["map"][master->task_id]["start_x"].as<double>();
     start_y = task_map["task_map"][quadrant]["map"][master->task_id]["start_y"].as<double>();
+
+    end_x = task_map["task_map"][quadrant]["map"][master->task_id]["end_x"].as<double>();
+    end_y = task_map["task_map"][quadrant]["map"][master->task_id]["end_y"].as<double>();
 
     if (master->run_single_task && master->task_order.size() == 1)
     {
@@ -112,6 +112,12 @@ void TSlam::SetPos(double x, double y)
 {
   current_x = x;
   current_y = y;
+}
+
+void TSlam::SetEndPos()
+{
+  current_x = end_x;
+  current_y = end_y;
 }
 
 // Calculate eta for TSlam to bring vehicle to next task
@@ -315,4 +321,10 @@ void TSlam::Abort(bool apply_brake)
     msg.z = 0;
     master->linear_accel_pub.publish(msg);
   }
+}
+
+void TSlam::EndMission()
+{
+  current_x = 420;
+  current_y = 420;
 }
