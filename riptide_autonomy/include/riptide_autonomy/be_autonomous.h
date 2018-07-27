@@ -27,10 +27,11 @@
 #include "darknet_ros_msgs/BoundingBoxes.h"
 
 #include "riptide_autonomy/tslam.h"
-#include "riptide_autonomy/roulette.h"
-#include "riptide_autonomy/path_marker.h"
-#include "riptide_autonomy/casino_gate.h"
+#include "riptide_autonomy/task_casino_gate.h"
+#include "riptide_autonomy/task_path_marker.h"
 #include "riptide_autonomy/task_slots.h"
+#include "riptide_autonomy/task_roulette.h"
+
 using namespace std;
 typedef riptide_msgs::Constants rc;
 
@@ -87,9 +88,9 @@ public:
   TSlam* tslam;
   double relative_current_x, relative_current_y, global_y_axis_heading;
 
-  Roulette* roulette;
-  PathMarker* path;
   CasinoGate* casino_gate;
+  PathMarker* path;
+  Roulette* roulette;
   Slots* slots;
 
   BeAutonomous();

@@ -21,7 +21,6 @@ using namespace std;
 typedef riptide_msgs::Constants rc;
 
 class BeAutonomous;
-
 class ObjectDescriber;
 
 class Roulette
@@ -37,19 +36,17 @@ private:
   riptide_msgs::Pneumatics pneumatics_cmd;
   riptide_msgs::DepthCommand depth_cmd;
 
-
   ros::Time acceptable_begin;
   bool drop_clock_is_ticking;
 
   // ALignment variables
   bool got_heading;
   double green_heading, marker_drop_heading, drop_duration, drop_duration_thresh;
-  int align_id, num_markers_dropped;
+  int num_markers_dropped;
   ros::Time drop_time;
 
   DetectionValidator *detectionValidator;
   ErrorValidator *xValidator, *yValidator, *zValidator, *yawValidator;
-
 
   // Create instance to master
   BeAutonomous* master;
@@ -61,9 +58,11 @@ public:
   void Initialize();
   void Start();
   void IDRoulette(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_msg);
-  void AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr& status_msg);
+  void CenterAlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr& status_msg);
+  void BBoxAlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr& status_msg);
   void SetMarkerDropHeading(double heading);
   void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr& status_msg);
+  void OffsetAlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr& status_msg);
   void Abort();
 };
 

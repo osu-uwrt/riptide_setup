@@ -6,7 +6,6 @@ tasks: [
       search_depth: 1,
       search_accel: 0.8,
       pass_thru_duration: 4.0, # [s]
-      end_pos_offset: 1.0, # [m]
       objects: ["Casino_Gate_Black", "Casino_Gate_Red"],
       thresholds: [0.3, 0.3],
       align_thresh: 30, # [pixels]
@@ -21,7 +20,7 @@ tasks: [
       search_depth: 1,
       search_accel: 0.8,
       objects: ["Path_Marker"],
-      thresholds: [0.1],
+      thresholds: [0.3],
       align_thresh: 30, # [pixels]
       bbox_thresh: 30, # [pixels]
       detection_duration_thresh: 1, # [s]
@@ -31,43 +30,30 @@ tasks: [
       id: 2,
       name: "Dice",
       plane: 0,
-      search_depth: 2,
+      search_depth: 3,
       search_accel: 0.8,
       objects: ["Dice1", "Dice2", "Dice5", "Dice6"],
       thresholds: [0.6, 0.6, 0.6, 0.6],
-      align_thresh: 20, # [pixels]
-      bbox_thresh: 20, # [pixels]
+      align_thresh: 30, # [pixels]
+      bbox_thresh: 30, # [pixels]
       detection_duration_thresh: 1, # [s]
       detections_req: 8 # [number]
     },
     {
       id: 3,
-      name: "Buy_Gold_Chip1",
-      plane: 0,
-      search_depth: 3,
-      search_accel: 0.8,
-      objects: ["Buy_Gold_Chip"],
-      thresholds: [0.5],
-      align_thresh: 20, # [pixels]
-      bbox_thresh: 20, # [pixels]
-      detection_duration_thresh: 1, # [s]
-      detections_req: 8 # [number]
-    },
-    {
-      id: 4,
       name: "Path_Marker2",
       plane: 1,
       search_depth: 2,
       search_accel: 0.8,
       objects: ["Path_Marker"],
       thresholds: [0.6],
-      align_thresh: 20, # [pixels]
-      bbox_thresh: 20, # [pixels]
+      align_thresh: 30, # [pixels]
+      bbox_thresh: 30, # [pixels]
       detection_duration_thresh: 1, # [s]
       detections_req: 8 # [number]
     },
     {
-      id: 5,
+      id: 4,
       name: "Slots",
       plane: 0,
       search_depth: 3,
@@ -81,27 +67,26 @@ tasks: [
       bbox_control: 0,
       pneumatics_duration: 200,
       thresholds: [0.5, 0.5],
-      align_thresh: 20, # [pixels]
-      bbox_thresh: 20, # [pixels]
+      align_thresh: 30, # [pixels]
+      bbox_thresh: 30, # [pixels]
       detection_duration_thresh: 1, # [s]
-      aligned_duration_thresh: 4, # [seconds]
       detections_req: 8 # [number]
     },
     {
-      id: 6,
-      name: "Buy_Gold_Chip2",
+      id: 5,
+      name: "Buy_Gold_Chip1",
       plane: 0,
       search_depth: 3,
       search_accel: 0.8,
       objects: ["Buy_Gold_Chip"],
       thresholds: [0.5],
-      align_thresh: 20, # [pixels]
-      bbox_thresh: 20, # [pixels]
+      align_thresh: 30, # [pixels]
+      bbox_thresh: 30, # [pixels]
       detection_duration_thresh: 1, # [s]
       detections_req: 8 # [number]
     },
     {
-      id: 7,
+      id: 6,
       name: "Roulette",
       plane: 1,
       search_depth: 2.0,
@@ -115,6 +100,19 @@ tasks: [
       detections_req: 8 # [number]
     },
     {
+      id: 7,
+      name: "Buy_Gold_Chip2",
+      plane: 0,
+      search_depth: 3,
+      search_accel: 0.8,
+      objects: ["Buy_Gold_Chip"],
+      thresholds: [0.5],
+      align_thresh: 30, # [pixels]
+      bbox_thresh: 30, # [pixels]
+      detection_duration_thresh: 1, # [s]
+      detections_req: 8 # [number]
+    },
+    {
       id: 8,
       name: "Cash_In",
       plane: 0,
@@ -122,8 +120,8 @@ tasks: [
       search_accel: 0.8,
       objects: ["Cash_In"],
       thresholds: [0.5],
-      align_thresh: 20, # [pixels]
-      bbox_thresh: 20, # [pixels]
+      align_thresh: 30, # [pixels]
+      bbox_thresh: 30, # [pixels]
       detection_duration_thresh: 1, # [s]
       detections_req: 8 # [number]
     }

@@ -44,12 +44,13 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous")
   BeAutonomous::LoadParam<double>("Controller_Thresholds/bbox_surge_duration_thresh", bbox_surge_duration_thresh);
   BeAutonomous::LoadParam<double>("Controller_Thresholds/bbox_heave_duration_thresh", bbox_heave_duration_thresh);
 
-  ROS_INFO("Competition id: %i", competition_id);
+  ROS_INFO("BE: Competition id: %i", competition_id);
 
   mission_loaded = false;
   mission_running = false;
   thruster = 0;
   pre_start_duration = 0;
+  load_duration = 0;
   clock_is_ticking = false;
 
   // Load Task Info
@@ -64,7 +65,6 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous")
   search_accel = 0;
   bbox_thresh = 0;
 
-  ROS_INFO("Verifying yaml");
   // Verify number of objects and thresholds match
   total_tasks = (int)tasks["tasks"].size();
   for (int i = 0; i < total_tasks; i++)
@@ -79,6 +79,7 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous")
       ros::shutdown();
     }
   }
+  ROS_INFO("BE: Tasks yaml loaded and verified");
 
   // Vehicle State
   euler_rpy.x = 0;
@@ -94,10 +95,10 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous")
   // Initialize class objects and pointers
   // The "new" keyword creates a pointer to the object
   tslam = new TSlam(this);
-  roulette = new Roulette(this);
-  path = new PathMarker(this);
   casino_gate = new CasinoGate(this);
+  path = new PathMarker(this);
   slots = new Slots(this);
+  roulette = new Roulette(this);
 
   ROS_INFO("BE: Created task objects. Awaiting mission start.");
 }
@@ -133,48 +134,49 @@ void BeAutonomous::StartTask()
     BeAutonomous::UpdateTaskInfo();
     tslam->Start();
 
-    switch (task_id) {
-      case rc::TASK_ROULETTE:
-        ROS_INFO("BE: Starting roulette task");
-        roulette->Start();
-        break;
-      case rc::TASK_SLOTS:
-        ROS_INFO("BE: Starting slots task");
-        slots->Start();
-        break;
-      case rc::TASK_CASINO_GATE:
-        ROS_INFO("BE: Casino Gate unimplemented. Ending mission.");
-        BeAutonomous::EndMission();
-        break;
-      case rc::TASK_PATH_MARKER1:
-        ROS_INFO("BE: Path Marker 1 unimplemented. Ending mission.");
-        BeAutonomous::EndMission();
-        break;
-      case rc::TASK_DICE:
-        ROS_INFO("BE: Dice unimplemented. Ending mission.");
-        BeAutonomous::EndMission();
-        break;
-      case rc::TASK_BUY_GOLD_CHIP1:
-        ROS_INFO("BE: Buy Gold Chip 1 unimplemented. Ending mission.");
-        BeAutonomous::EndMission();
-        break;
-      case rc::TASK_PATH_MARKER2:
-        ROS_INFO("BE: Path Marker 2 unimplemented. Ending mission.");
-        BeAutonomous::EndMission();
-        break;
-      case rc::TASK_BUY_GOLD_CHIP2:
-        ROS_INFO("BE: Buy Gold Chip 2 unimplemented. Ending mission.");
-        BeAutonomous::EndMission();
-        break;
-      case rc::TASK_CASH_IN:
-        ROS_INFO("BE: Cash In unimplemented. Ending mission.");
-        BeAutonomous::EndMission();
-        break;
-      default:
-        ROS_INFO("BE: Invalid Task ID. Ending mission.");
-        BeAutonomous::EndMission();
-        break;
-      }
+    switch (task_id)
+    {
+    case rc::TASK_CASINO_GATE:
+      ROS_INFO("BE: Starting Casino Gate.");
+      casino_gate->Start();
+      break;
+    case rc::TASK_PATH_MARKER1:
+      ROS_INFO("BE: Path Marker 1 unimplemented. Ending mission.");
+      BeAutonomous::EndMission();
+      break;
+    case rc::TASK_DICE:
+      ROS_INFO("BE: Dice unimplemented. Ending mission.");
+      BeAutonomous::EndMission();
+      break;
+    case rc::TASK_PATH_MARKER2:
+      ROS_INFO("BE: Path Marker 2 unimplemented. Ending mission.");
+      BeAutonomous::EndMission();
+      break;
+    case rc::TASK_SLOTS:
+      ROS_INFO("BE: Starting slots task");
+      slots->Start();
+      break;
+    case rc::TASK_BUY_GOLD_CHIP1:
+      ROS_INFO("BE: Buy Gold Chip 1 unimplemented. Ending mission.");
+      BeAutonomous::EndMission();
+      break;
+    case rc::TASK_ROULETTE:
+      ROS_INFO("BE: Starting roulette task");
+      roulette->Start();
+      break;
+    case rc::TASK_BUY_GOLD_CHIP2:
+      ROS_INFO("BE: Buy Gold Chip 2 unimplemented. Ending mission.");
+      BeAutonomous::EndMission();
+      break;
+    case rc::TASK_CASH_IN:
+      ROS_INFO("BE: Cash In unimplemented. Ending mission.");
+      BeAutonomous::EndMission();
+      break;
+    default:
+      ROS_INFO("BE: Invalid Task ID. Ending mission.");
+      BeAutonomous::EndMission();
+      break;
+    }
   }
 }
 
@@ -333,6 +335,7 @@ void BeAutonomous::UpdateTaskInfo()
     object_names.push_back(tasks["tasks"][task_id]["objects"][i].as<string>());
   }
 
+  // Task specific parameters (in tasks.yaml)
   search_depth = tasks["tasks"][task_id]["search_depth"].as<double>();
   search_accel = tasks["tasks"][task_id]["search_accel"].as<double>();
   align_thresh = tasks["tasks"][task_id]["align_thresh"].as<int>();
@@ -340,6 +343,7 @@ void BeAutonomous::UpdateTaskInfo()
   detection_duration_thresh = tasks["tasks"][task_id]["detection_duration_thresh"].as<double>();
   detections_req = tasks["tasks"][task_id]["detections_req"].as<int>();
 
+  // Publish new task info
   riptide_msgs::TaskInfo task_msg;
   task_msg.task_id = task_id;
   task_msg.task_name = task_name;

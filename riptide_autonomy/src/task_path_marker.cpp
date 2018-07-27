@@ -1,4 +1,4 @@
-#include "riptide_autonomy/path_marker.h"
+#include "riptide_autonomy/task_path_marker.h"
 
 #define ALIGN_CENTER 0
 #define ALIGN_BBOX_WIDTH 1
