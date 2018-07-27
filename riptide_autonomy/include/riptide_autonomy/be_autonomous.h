@@ -30,14 +30,15 @@
 #include "riptide_autonomy/roulette.h"
 #include "riptide_autonomy/path_marker.h"
 #include "riptide_autonomy/casino_gate.h"
+#include "riptide_autonomy/task_slots.h"
 using namespace std;
 typedef riptide_msgs::Constants rc;
 
 class TSlam;
 class Roulette;
 class CasinoGate;
+class Slots;
 class PathMarker;
-
 
 class BeAutonomous
 {
@@ -89,6 +90,7 @@ public:
   Roulette* roulette;
   PathMarker* path;
   CasinoGate* casino_gate;
+  Slots* slots;
 
   BeAutonomous();
   template <typename T>

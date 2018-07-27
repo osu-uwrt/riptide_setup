@@ -24,6 +24,7 @@ set(AUTONOMY_OBJECTS
   src/roulette.cpp
   src/object_describer.cpp
   src/casino_gate.cpp
+  src/task_slots.cpp
   src/path_marker.cpp
   src/validators.cpp
 )
