@@ -1,104 +1,5 @@
 #include "riptide_autonomy/be_autonomous.h"
 
-/////////////////////////////////////// Useful functions //////////////////////////////////////////
-
-// Do NOT let this function increment *dets (it can only reset it to 0 once it returns true.
-//This functions is ONLY meant for validation to reduce code in callbacks.
-// The dets_durations is necessary becuase this function gets called again and again
-bool ValidateDetections(int *dets, double *dets_duration, int dets_thresh, double dets_duration_thresh, ros::Time *start, int *attempts)
-{
-  if (*dets == 1)
-  {
-    *start = ros::Time::now();
-    (*attempts)++;
-  }
-  else
-  {
-    *dets_duration = ros::Time::now().toSec() - start->toSec();
-  }
-
-  if (*dets_duration >= dets_duration_thresh)
-  {
-    if (*dets >= dets_thresh)
-    {
-      *dets = 0;
-      *dets_duration = 0;
-      return true;
-    }
-    else
-    {
-      *dets = 0;
-      *dets_duration = 0;
-    }
-  }
-  return false;
-}
-
-// Validate the error when inside a status callback
-// The error_duration is necessary becuase this function gets called again and again
-bool ValidateError(double value, double *error_duration, double error_thresh, double error_duration_thresh, bool *clock_is_ticking, ros::Time *start)
-{
-  if (abs(value) <= error_thresh)
-  {
-    if (!(*clock_is_ticking))
-    {
-      *start = ros::Time::now();
-      *clock_is_ticking = true;
-    }
-    else
-    {
-      *error_duration = ros::Time::now().toSec() - start->toSec();
-    }
-
-    if (*error_duration >= error_duration_thresh)
-    {
-      *error_duration = 0;
-      *clock_is_ticking = false;
-      return true;
-    }
-    return false;
-  }
-  else
-  {
-    *error_duration = 0;
-    *clock_is_ticking = false;
-    return false;
-  }
-}
-
-// Validate TWO errors when inside a status callback (must have same error thresholds)
-// The error_duration is necessary becuase this function gets called again and again
-bool ValidateError2(double value1, double value2, double *error_duration, double error_thresh, double error_duration_thresh, bool *clock_is_ticking, ros::Time *start)
-{
-  if (abs(value1) <= error_thresh && abs(value2) <= error_thresh)
-  {
-    if (!(*clock_is_ticking))
-    {
-      *start = ros::Time::now();
-      *clock_is_ticking = true;
-    }
-    else
-    {
-      *error_duration = ros::Time::now().toSec() - start->toSec();
-    }
-
-    if (*error_duration >= error_duration_thresh)
-    {
-      *error_duration = 0;
-      *clock_is_ticking = false;
-      return true;
-    }
-    return false;
-  }
-  else
-  {
-    *error_duration = 0;
-    *clock_is_ticking = false;
-    return false;
-  }
-}
-///////////////////////////////////////////////////////////////////////////////////////////////
-
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "be_autonomous");
@@ -143,7 +44,7 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous")
   BeAutonomous::LoadParam<double>("Controller_Thresholds/bbox_surge_duration_thresh", bbox_surge_duration_thresh);
   BeAutonomous::LoadParam<double>("Controller_Thresholds/bbox_heave_duration_thresh", bbox_heave_duration_thresh);
 
-  ROS_INFO("Competition id: %i", competition_id);
+  ROS_INFO("BE: Competition id: %i", competition_id);
 
   mission_loaded = false;
   mission_running = false;
@@ -178,7 +79,7 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous")
       ros::shutdown();
     }
   }
-  ROS_INFO("Verified tasks yaml");
+  ROS_INFO("BE: Tasks yaml loaded and verified");
 
   // Vehicle State
   euler_rpy.x = 0;
@@ -194,10 +95,10 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous")
   // Initialize class objects and pointers
   // The "new" keyword creates a pointer to the object
   tslam = new TSlam(this);
-  roulette = new Roulette(this);
-  path = new PathMarker(this);
   casino_gate = new CasinoGate(this);
+  path = new PathMarker(this);
   slots = new Slots(this);
+  roulette = new Roulette(this);
 
   ROS_INFO("BE: Created task objects. Awaiting mission start.");
 }
@@ -233,48 +134,49 @@ void BeAutonomous::StartTask()
     BeAutonomous::UpdateTaskInfo();
     tslam->Start();
 
-    switch (task_id) {
-      case rc::TASK_ROULETTE:
-        ROS_INFO("BE: Starting roulette task");
-        roulette->Start();
-        break;
-      case rc::TASK_SLOTS:
-        ROS_INFO("BE: Starting slots task");
-        slots->Start();
-        break;
-      case rc::TASK_CASINO_GATE:
-        ROS_INFO("BE: Casino Gate unimplemented. Ending mission.");
-        BeAutonomous::EndMission();
-        break;
-      case rc::TASK_PATH_MARKER1:
-        ROS_INFO("BE: Path Marker 1 unimplemented. Ending mission.");
-        BeAutonomous::EndMission();
-        break;
-      case rc::TASK_DICE:
-        ROS_INFO("BE: Dice unimplemented. Ending mission.");
-        BeAutonomous::EndMission();
-        break;
-      case rc::TASK_BUY_GOLD_CHIP1:
-        ROS_INFO("BE: Buy Gold Chip 1 unimplemented. Ending mission.");
-        BeAutonomous::EndMission();
-        break;
-      case rc::TASK_PATH_MARKER2:
-        ROS_INFO("BE: Path Marker 2 unimplemented. Ending mission.");
-        BeAutonomous::EndMission();
-        break;
-      case rc::TASK_BUY_GOLD_CHIP2:
-        ROS_INFO("BE: Buy Gold Chip 2 unimplemented. Ending mission.");
-        BeAutonomous::EndMission();
-        break;
-      case rc::TASK_CASH_IN:
-        ROS_INFO("BE: Cash In unimplemented. Ending mission.");
-        BeAutonomous::EndMission();
-        break;
-      default:
-        ROS_INFO("BE: Invalid Task ID. Ending mission.");
-        BeAutonomous::EndMission();
-        break;
-      }
+    switch (task_id)
+    {
+    case rc::TASK_CASINO_GATE:
+      ROS_INFO("BE: Starting Casino Gate.");
+      casino_gate->Start();
+      break;
+    case rc::TASK_PATH_MARKER1:
+      ROS_INFO("BE: Path Marker 1 unimplemented. Ending mission.");
+      BeAutonomous::EndMission();
+      break;
+    case rc::TASK_DICE:
+      ROS_INFO("BE: Dice unimplemented. Ending mission.");
+      BeAutonomous::EndMission();
+      break;
+    case rc::TASK_PATH_MARKER2:
+      ROS_INFO("BE: Path Marker 2 unimplemented. Ending mission.");
+      BeAutonomous::EndMission();
+      break;
+    case rc::TASK_SLOTS:
+      ROS_INFO("BE: Starting slots task");
+      slots->Start();
+      break;
+    case rc::TASK_BUY_GOLD_CHIP1:
+      ROS_INFO("BE: Buy Gold Chip 1 unimplemented. Ending mission.");
+      BeAutonomous::EndMission();
+      break;
+    case rc::TASK_ROULETTE:
+      ROS_INFO("BE: Starting roulette task");
+      roulette->Start();
+      break;
+    case rc::TASK_BUY_GOLD_CHIP2:
+      ROS_INFO("BE: Buy Gold Chip 2 unimplemented. Ending mission.");
+      BeAutonomous::EndMission();
+      break;
+    case rc::TASK_CASH_IN:
+      ROS_INFO("BE: Cash In unimplemented. Ending mission.");
+      BeAutonomous::EndMission();
+      break;
+    default:
+      ROS_INFO("BE: Invalid Task ID. Ending mission.");
+      BeAutonomous::EndMission();
+      break;
+    }
   }
 }
 

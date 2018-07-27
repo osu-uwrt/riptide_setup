@@ -134,12 +134,12 @@ void ObjectProcessor::TaskBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPtr
       if(alignment_plane == riptide_msgs::Constants::PLANE_YZ) {
         object.pos.x = 0; // AUV x-axis is pos. fwd
         object.pos.y = -xcenter; // AUV y-axis is pos. port-side
-        object.pos.z = -ycenter; // AUV z-axi is pos. up
+        object.pos.z = -ycenter; // AUV z-axis is pos. up
       }
       else if(alignment_plane == riptide_msgs::Constants::PLANE_XY) {
         object.pos.x = -ycenter; // AUV x-axis is pos. fwd
         object.pos.y = -xcenter; // AUV y-axis is pos. port-side
-        object.pos.z = 0; // AUV z-axi is pos. up
+        object.pos.z = 0; // AUV z-axis is pos. up
       }
       break;
     }

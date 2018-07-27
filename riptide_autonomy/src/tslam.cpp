@@ -1,8 +1,6 @@
 #include "riptide_autonomy/tslam.h"
 
 #define PI 3.141592653
-#define VALIDATE_PITCH 0
-#define VALIDATE_YAW 1
 
 // Slope and y-int for Maelstrom x-accel to x-velocity
 #define A2V_SLOPE 0.2546
@@ -24,19 +22,21 @@ TSlam::TSlam(BeAutonomous *master)
 {
   this->master = master;
 
+  
   if (master->competition_id == rc::COMPETITION_SEMIS)
     task_map_file = rc::FILE_MAP_SEMIS;
   else
     task_map_file = rc::FILE_MAP_FINALS;
 
   task_map = YAML::LoadFile(task_map_file);
+  ROS_INFO("TSlam: Loaded map");
+
   TSlam::Initialize();
   ROS_INFO("TSlam: Initialized");
 }
 
 void TSlam::Initialize()
 {
-  error_duration = 0;
   delta_x = 0;
   delta_y = 0;
   angle = 0;
@@ -46,8 +46,6 @@ void TSlam::Initialize()
   start_y = 0;
   eta = 0;
   x_vel = 0;
-  clock_is_ticking = false;
-  validate_id = VALIDATE_PITCH;
 
   for (int i = 0; i < sizeof(active_subs) / sizeof(active_subs[0]); i++)
     active_subs[i]->shutdown();
@@ -56,6 +54,7 @@ void TSlam::Initialize()
 void TSlam::ReadMap()
 {
   quadrant = floor(master->load_id / 2.0);
+  ROS_INFO("TSlam: Quadrant %i", quadrant);
 
   if (current_x == 420)
   {
@@ -145,6 +144,10 @@ double TSlam::KeepHeadingInRange(double input)
 
 void TSlam::Start()
 {
+  pitchValidator = new ErrorValidator(master->pitch_thresh, master->error_duration_thresh);
+  yawValidator = new ErrorValidator(master->yaw_thresh, master->error_duration_thresh);
+  depthValidator = new ErrorValidator(master->depth_thresh, master->error_duration_thresh);
+  
   // Calculate heading to point towards next task
   TSlam::ReadMap();
   delta_x = start_x - current_x;
@@ -166,64 +169,65 @@ void TSlam::Start()
   // Publish attitude command
   attitude_cmd.roll_active = true;
   attitude_cmd.pitch_active = true;
-  attitude_cmd.yaw_active = false; // Don't go to heading yet
+  attitude_cmd.yaw_active = false; // Rotate to heading once search depth is reached
   attitude_cmd.euler_rpy.x = 0;
   attitude_cmd.euler_rpy.y = 0;
   attitude_cmd.euler_rpy.z = search_heading;
   master->attitude_pub.publish(attitude_cmd);
-  ROS_INFO("TSlam: Published attitude cmd");
 
-  attitude_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &TSlam::AttitudeStatusCB, this);
+  attitude_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &TSlam::PitchAttitudeStatusCB, this);
   ROS_INFO("TSlam: Checking pitch error");
 }
 
-void TSlam::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &status_msg)
+// Must first validate pitch so vehicle can submerge properly
+void TSlam::PitchAttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &status_msg)
 {
-  if (validate_id == VALIDATE_PITCH)
-  { // Must first validate pitch so vehicle can submerge properly
-    if (ValidateError(status_msg->pitch.error, &error_duration, master->pitch_thresh, master->error_duration_thresh, &clock_is_ticking, &error_check_start))
-    {
-      attitude_status_sub.shutdown();
+  if (pitchValidator->Validate(status_msg->pitch.error))
+  {
+    pitchValidator->Reset();
+    attitude_status_sub.shutdown();
 
-      // Publish depth command
-      depth_cmd.active = true;
-      depth_cmd.depth = master->search_depth;
-      master->depth_pub.publish(depth_cmd);
-      depth_status_sub = master->nh.subscribe<riptide_msgs::ControlStatus>("/status/controls/depth", 1, &TSlam::DepthStatusCB, this);
-      ROS_INFO("TSlam: Pitch good. Now checking depth");
-    }
-  }
-  else if (validate_id == VALIDATE_YAW)
-  { // Validate heading after depth is reached
-    if (ValidateError(status_msg->yaw.error, &error_duration, master->yaw_thresh, master->error_duration_thresh, &clock_is_ticking, &error_check_start))
-    {
-      attitude_status_sub.shutdown();
-
-      // Drive forward
-      geometry_msgs::Vector3 msg;
-      msg.x = master->search_accel;
-      msg.y = 0;
-      msg.z = 0;
-      master->linear_accel_pub.publish(msg);
-
-      double tslam_duration = 1.5 * eta;
-      timer = master->nh.createTimer(ros::Duration(tslam_duration), &TSlam::AbortTSlamTimer, this, true);
-      ROS_INFO("TSlam: Reached heading, now moving forward. Abort timer initiated. ETA: %f", tslam_duration);
-    }
+    // Publish depth command
+    depth_cmd.active = true;
+    depth_cmd.depth = master->search_depth;
+    master->depth_pub.publish(depth_cmd);
+    depth_status_sub = master->nh.subscribe<riptide_msgs::ControlStatus>("/status/controls/depth", 1, &TSlam::DepthStatusCB, this);
+    ROS_INFO("TSlam: Pitch good. Now checking depth.");
   }
 }
 
 void TSlam::DepthStatusCB(const riptide_msgs::ControlStatus::ConstPtr &status_msg)
 {
-  if (ValidateError(status_msg->error, &error_duration, master->depth_thresh, master->error_duration_thresh, &clock_is_ticking, &error_check_start))
+  if (depthValidator->Validate(status_msg->error))
   {
+    depthValidator->Reset();
     depth_status_sub.shutdown();
-    validate_id = VALIDATE_YAW;
 
     attitude_cmd.yaw_active = true;
     master->attitude_pub.publish(attitude_cmd);
-    attitude_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &TSlam::AttitudeStatusCB, this);
-    ROS_INFO("TSlam: Reached search depth, now checking heading error");
+    attitude_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &TSlam::YawAttitudeStatusCB, this);
+    ROS_INFO("TSlam: Reached depth, now checking heading.");
+  }
+}
+
+// Validate heading after depth is reached
+void TSlam::YawAttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &status_msg)
+{
+  if (yawValidator->Validate(status_msg->yaw.error))
+  {
+    yawValidator->Reset();
+    attitude_status_sub.shutdown();
+
+    // Drive forward
+    geometry_msgs::Vector3 msg;
+    msg.x = master->search_accel;
+    msg.y = 0;
+    msg.z = 0;
+    master->linear_accel_pub.publish(msg);
+
+    double tslam_duration = 1.2 * eta;
+    timer = master->nh.createTimer(ros::Duration(tslam_duration), &TSlam::AbortTSlamTimer, this, true);
+    ROS_INFO("TSlam: Reached heading, now moving forward. Abort timer initiated. ETA: %f", tslam_duration);
   }
 }
 
@@ -266,5 +270,3 @@ void TSlam::Abort(bool apply_brake)
     master->linear_accel_pub.publish(msg);
   }
 }
-
-

@@ -1,4 +1,4 @@
-#include "riptide_autonomy/casino_gate.h"
+#include "riptide_autonomy/task_casino_gate.h"
 
 #define PI 3.141592653
 #define ALIGN_YZ 0
@@ -22,17 +22,9 @@ CasinoGate::CasinoGate(BeAutonomous *master)
 
 void CasinoGate::Initialize()
 {
-  detections_black = 0;
-  detections_red = 0;
-  attempts_black = 0;
-  attempts_red = 0;
   gate_heading = 0;
   align_id = ALIGN_YZ;
 
-  detection_duration_black = 0;
-  detection_duration_red = 0;
-  error_duration = 0;
-  clock_is_ticking = false;
   braked = false;
   passing_on_right = false;
   passing_on_left = false;
@@ -43,6 +35,13 @@ void CasinoGate::Initialize()
 
 void CasinoGate::Start()
 {
+  detectionBlackValidator = new DetectionValidator(master->detections_req, master->detection_duration_thresh);
+  detectionRedValidator = new DetectionValidator(master->detections_req, master->detection_duration_thresh);
+  xValidator = new ErrorValidator(master->bbox_thresh, master->bbox_surge_duration_thresh);
+  yValidator = new ErrorValidator(master->align_thresh, master->error_duration_thresh);
+  zValidator = new ErrorValidator(master->align_thresh, master->error_duration_thresh);
+  yawValidator = new ErrorValidator(master->yaw_thresh, master->error_duration_thresh);
+  
   object_name = (master->color == rc::COLOR_BLACK) ? master->object_names.at(0) : master->object_names.at(1); // Black side if statement true, Red otherwise
   gate_heading = master->tslam->task_map["task_map"][master->tslam->quadrant]["map"][master->task_id]["gate_heading"].as<double>();
   end_pos_offset = master->tasks["tasks"][master->task_id]["end_pos_offset"].as<double>();
@@ -80,17 +79,11 @@ void CasinoGate::IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr &b
   {
     if (bbox_msg->bounding_boxes.at(i).Class == "Casino_Gate_Black")
     {
-      detections_black++;
-      detected_black = ValidateDetections(&detections_black, &detection_duration_black, master->detections_req, master->detection_duration_thresh, &detect_black_start, &attempts_black);
-      if (!detected_black)
-        ROS_INFO("CasinoGateBlack: %i Attemps - %i detections in %f sec", attempts_black, detections_black, detection_duration_black);
+      detected_black = detectionBlackValidator->Validate();
     }
     else
     {
-      detections_red++;
-      detected_red = ValidateDetections(&detections_red, &detection_duration_red, master->detections_req, master->detection_duration_thresh, &detect_red_start, &attempts_red);
-      if (!detected_red)
-        ROS_INFO("CasinoGateBlack: %i Attemps - %i detections in %f sec", attempts_red, detections_red, detection_duration_red);
+      detected_red = detectionRedValidator->Validate();
     }
   }
 
@@ -139,52 +132,56 @@ void CasinoGate::IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr &b
     align_cmd.sway_active = true;
     align_cmd.heave_active = true;
     master->alignment_pub.publish(align_cmd);
-    alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &CasinoGate::AlignmentStatusCB, this);
+    alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &CasinoGate::PositionAlignmentStatusCB, this);
     ROS_INFO("CasinoGate: Aligning to %s. Checking sway/heave error", object_name.c_str());
   }
 }
 
-// A. Make sure the vehicle is aligned with the YZ controllers
-// B. Make sure the vehicle is aligned with the X controller
-void CasinoGate::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr &status_msg)
+// Make sure the color is aligned on the correct side of the camera frame
+void CasinoGate::PositionAlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr &status_msg)
 {
-  if (align_id == ALIGN_YZ) // Perform (A) - YZ alignment
+  if (yValidator->Validate(status_msg->y.error) && zValidator->Validate(status_msg->z.error))
   {
-    if (ValidateError2(status_msg->y.error, status_msg->z.error, &error_duration, master->align_thresh, master->error_duration_thresh, &clock_is_ticking, &error_check_start))
-    {
-      align_id = ALIGN_BBOX_WIDTH; // Verify if bbox alignment will work
-      // Activate X alignment controller
-      align_cmd.surge_active = true;
-      master->alignment_pub.publish(align_cmd);
-      ROS_INFO("CasinoGate: Color in correct spot. Aligning on bbox width");
-    }
-  }
-  else if (align_id == ALIGN_BBOX_WIDTH) // Perform (B) - X alignment
-  {
-    if (ValidateError(status_msg->x.error, &error_duration, master->bbox_thresh, master->bbox_surge_duration_thresh, &clock_is_ticking, &error_check_start))
-    {
-      alignment_status_sub.shutdown();
+    yValidator->Reset();
+    zValidator->Reset();
+    alignment_status_sub.shutdown();
 
-      // Publish attitude command
-      attitude_cmd.roll_active = true;
-      attitude_cmd.pitch_active = true;
-      attitude_cmd.yaw_active = true;
-      attitude_cmd.euler_rpy.x = 0;
-      attitude_cmd.euler_rpy.y = 0;
-      attitude_cmd.euler_rpy.z = gate_heading;
-      master->attitude_pub.publish(attitude_cmd);
-
-      attitude_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &CasinoGate::AttitudeStatusCB, this);
-      ROS_INFO("CasinoGate: Published gate heading. Checking heading.");
-    }
+    // Activate X alignment controller
+    align_cmd.surge_active = true;
+    master->alignment_pub.publish(align_cmd);
+    alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &CasinoGate::BBoxAlignmentStatusCB, this);
+    ROS_INFO("CasinoGate: Color in correct spot. Aligning on bbox width");
   }
 }
 
-// Make sure the robot is at the correct heading based on the quadrant
+// Set the bbox to desired width
+void CasinoGate::BBoxAlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr &status_msg)
+{
+  if (xValidator->Validate(status_msg->x.error))
+  {
+    xValidator->Reset();
+    alignment_status_sub.shutdown();
+
+    // Publish attitude command
+    attitude_cmd.roll_active = true;
+    attitude_cmd.pitch_active = true;
+    attitude_cmd.yaw_active = true;
+    attitude_cmd.euler_rpy.x = 0;
+    attitude_cmd.euler_rpy.y = 0;
+    attitude_cmd.euler_rpy.z = gate_heading;
+    master->attitude_pub.publish(attitude_cmd);
+
+    attitude_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &CasinoGate::AttitudeStatusCB, this);
+    ROS_INFO("CasinoGate: Aligned bbox width. Rotating to gate heading.");
+  }
+}
+
+// Rotate to correct heading based on the quadrant
 void CasinoGate::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &status_msg)
 {
-  if (ValidateError(status_msg->yaw.error, &error_duration, master->yaw_thresh, master->error_duration_thresh, &clock_is_ticking, &error_check_start))
+  if (yawValidator->Validate(status_msg->yaw.error))
   {
+    yValidator->Reset();
     attitude_status_sub.shutdown();
 
     // Disable alignment controller so vehicle can move forward
@@ -195,7 +192,6 @@ void CasinoGate::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::Cons
     ROS_INFO("CasinoGate: Aligned to CasinoGate with linear and attitude controllers");
 
     // Publish forward accel and call it a success after a few seconds
-    ROS_INFO("CasinoGate: Now going to pass thru gate");
     geometry_msgs::Vector3 linear_accel_cmd;
     linear_accel_cmd.x = master->search_accel;
     linear_accel_cmd.y = 0;
@@ -205,50 +201,6 @@ void CasinoGate::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::Cons
     pass_thru_duration = master->tasks["tasks"][master->task_id]["pass_thru_duration"].as<double>();
     timer = master->nh.createTimer(ros::Duration(pass_thru_duration), &CasinoGate::PassThruTimer, this, true);
     ROS_INFO("CasinoGate: Don't move gate, I'm coming for ya. Abort timer initiated. ETA: %f", pass_thru_duration);
-  }
-
-  // Alignment is good, now verify heading error
-  if (abs(status_msg->yaw.error) < master->yaw_thresh)
-  {
-    if (!clock_is_ticking)
-    {
-      error_check_start = ros::Time::now();
-      clock_is_ticking = true;
-    }
-    else
-      error_duration = ros::Time::now().toSec() - error_check_start.toSec();
-
-    if (error_duration >= master->error_duration_thresh)
-    {
-      // Shutdown alignment callback
-      attitude_status_sub.shutdown();
-      error_duration = 0;
-      clock_is_ticking = false;
-
-      // Disable alignment controller so vehicle can move forward
-      align_cmd.surge_active = false;
-      align_cmd.sway_active = false;
-      align_cmd.heave_active = false;
-      master->alignment_pub.publish(align_cmd);
-      ROS_INFO("CasinoGate: Aligned to CasinoGate with linear and attitude controllers");
-
-      // Publish forward accel and call it a success after a few seconds
-      ROS_INFO("CasinoGate: Now going to pass thru gate");
-      geometry_msgs::Vector3 linear_accel_cmd;
-      linear_accel_cmd.x = master->search_accel;
-      linear_accel_cmd.y = 0;
-      linear_accel_cmd.z = 0;
-      master->linear_accel_pub.publish(linear_accel_cmd);
-
-      pass_thru_duration = master->tasks["tasks"][master->task_id]["pass_thru_duration"].as<double>();
-      timer = master->nh.createTimer(ros::Duration(pass_thru_duration), &CasinoGate::PassThruTimer, this, true);
-      ROS_INFO("CasinoGate: Don't move gate, I'm coming for ya. Abort timer initiated. ETA: %f", pass_thru_duration);
-    }
-  }
-  else
-  {
-    error_duration = 0;
-    clock_is_ticking = false;
   }
 }
 
@@ -275,7 +227,6 @@ void CasinoGate::PassThruTimer(const ros::TimerEvent &event)
     CasinoGate::Abort();
     master->StartTask();
   }
-  
 }
 
 // Calculate end position based on whether vehicle passed thru on left or right side of gate

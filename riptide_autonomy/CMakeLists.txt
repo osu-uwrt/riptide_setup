@@ -21,11 +21,11 @@ roslint_cpp()
 
 set(AUTONOMY_OBJECTS
   src/tslam.cpp
-  src/roulette.cpp
-  src/object_describer.cpp
-  src/casino_gate.cpp
+  src/task_casino_gate.cpp
+  src/task_path_marker.cpp
   src/task_slots.cpp
-  src/path_marker.cpp
+  src/task_roulette.cpp
+  src/object_describer.cpp
   src/validators.cpp
 )
 

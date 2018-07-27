@@ -12,6 +12,7 @@
 #include "riptide_msgs/AttitudeCommand.h"
 #include "riptide_msgs/DepthCommand.h"
 #include "riptide_autonomy/be_autonomous.h"
+#include "riptide_autonomy/validators.h"
 #include <cmath>
 using namespace std;
 typedef riptide_msgs::Constants rc;
@@ -33,17 +34,13 @@ private:
   string task_map_file;
 
   double current_x = 420, current_y = 420;
-  
   double eta, x_vel;
-
   double delta_x, delta_y, angle, search_heading, distance;
-  ros::Time error_check_start;
-  double error_duration;
-  bool clock_is_ticking;
-  int validate_id;
 
   // Create instance to master
   BeAutonomous *master;
+
+  ErrorValidator *pitchValidator, *yawValidator, *depthValidator;
 
 public:
   YAML::Node task_map;
@@ -58,9 +55,11 @@ public:
   void EndMission();
   void CalcETA(double Ax, double dist);
   double KeepHeadingInRange(double input);
+  
   void Start();
-  void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &status_msg);
+  void PitchAttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &status_msg);
   void DepthStatusCB(const riptide_msgs::ControlStatus::ConstPtr &status_msg);
+  void YawAttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &status_msg);
   void AbortTSlamTimer(const ros::TimerEvent &event);
   void BrakeTimer(const ros::TimerEvent &event);
   void Abort(bool apply_brake);
