@@ -17,6 +17,7 @@
 */
 
 // TODO: Configure TSlam to take us back to a previous location or to a different part of the path
+// TODO: Add move forward, backwards, left, and right functionality for moving around other objects
 
 TSlam::TSlam(BeAutonomous *master)
 {

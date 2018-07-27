@@ -1,8 +1,6 @@
 #include "riptide_autonomy/task_casino_gate.h"
 
 #define PI 3.141592653
-#define ALIGN_YZ 0
-#define ALIGN_BBOX_WIDTH 1
 
 /* Casino_Gate - Order of Execution:
 1. Start. Set alignment command.
@@ -23,11 +21,12 @@ CasinoGate::CasinoGate(BeAutonomous *master)
 void CasinoGate::Initialize()
 {
   gate_heading = 0;
-  align_id = ALIGN_YZ;
 
   braked = false;
   passing_on_right = false;
   passing_on_left = false;
+  detected_black = false;
+  detected_red = false;
 
   for (int i = 0; i < sizeof(active_subs) / sizeof(active_subs[0]); i++)
     active_subs[i]->shutdown();
@@ -64,8 +63,6 @@ void CasinoGate::Start()
   master->alignment_pub.publish(align_cmd);
   ROS_INFO("CasinoGate: alignment command published (but disabled)");
 
-  detected_black = false;
-  detected_red = false;
   task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &CasinoGate::IDCasinoGate, this);
   ROS_INFO("CasinoGate: subscribed to /task/bboxes");
 }
