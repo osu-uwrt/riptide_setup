@@ -14,12 +14,13 @@
 #include "darknet_ros_msgs/BoundingBox.h"
 #include "riptide_autonomy/be_autonomous.h"
 #include "riptide_autonomy/object_describer.h"
+#include "riptide_autonomy/validators.h"
+
 #include <cmath>
 using namespace std;
 typedef riptide_msgs::Constants rc;
 
 class BeAutonomous;
-
 class ObjectDescriber;
 
 class PathMarker
@@ -48,6 +49,9 @@ private:
   // Create instance to master
   BeAutonomous *master;
   ObjectDescriber *od;
+
+  DetectionValidator *detectionValidator;
+  ErrorValidator *yawValidator, *xValidator, *yValidator;
 
 public:
   PathMarker(BeAutonomous *master);
