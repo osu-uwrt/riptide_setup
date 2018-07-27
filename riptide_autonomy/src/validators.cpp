@@ -4,6 +4,10 @@ DetectionValidator::DetectionValidator(int detections, double duration)
 {
   durationThresh = duration;
   detsReq = detections;
+  this->detections = 0;
+
+  ROS_INFO("DetsReq: %i", detsReq);
+  ROS_INFO("Duration: %f", duration);
 }
 
 bool DetectionValidator::Validate()
@@ -17,6 +21,7 @@ bool DetectionValidator::Validate()
     detections = 0;
     return valid;
   }
+  return false;
 }
 
 ErrorValidator::ErrorValidator(double errorThresh, double duration)

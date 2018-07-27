@@ -22,8 +22,6 @@ typedef riptide_msgs::Constants rc;
 
 class BeAutonomous;
 class ObjectDescriber;
-class ErrorDescriber;
-class DetectionDescriber;
 
 class PathMarker
 {
