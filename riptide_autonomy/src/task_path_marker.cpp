@@ -56,7 +56,7 @@ void PathMarker::IDPathMarker(const darknet_ros_msgs::BoundingBoxes::ConstPtr &b
   if (detectionValidator->Validate())
   {
     task_bbox_sub.shutdown();
-    master->tslam->Abort(true);
+    master->tslam->Abort(false);
 
     od->GetPathHeading(&PathMarker::GotHeading, this);
     ROS_INFO("Found path, getting heading");

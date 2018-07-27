@@ -88,7 +88,7 @@ void CasinoGate::IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr &b
   if (detected_black || detected_red)
   {
     task_bbox_sub.shutdown();
-    master->tslam->Abort(true);
+    master->tslam->Abort(false);
 
     if (master->color == left_color) // Must pass on LEFT side
     {

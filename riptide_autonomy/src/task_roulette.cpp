@@ -69,7 +69,7 @@ void Roulette::IDRoulette(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_
   if (detectionValidator->Validate())
   {
     task_bbox_sub.shutdown();
-    master->tslam->Abort(true);
+    master->tslam->Abort(false);
 
     // Send alignment command to put in center of frame (activate controllers)
     // Set points already specified in initial alignment command
