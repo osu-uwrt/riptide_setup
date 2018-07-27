@@ -17,6 +17,10 @@ PathMarker::PathMarker(BeAutonomous *master)
   this->master = master;
   od = new ObjectDescriber(master);
   PathMarker::Initialize();
+  detectionValidator = new DetectionValidator(master->detections_req, master->detection_duration_thresh);
+  yawValidator = new ErrorValidator(master->yaw_thresh, master->error_duration_thresh);
+  xValidator = new ErrorValidator(master->align_thresh, master->error_duration_thresh);
+  yValidator = new ErrorValidator(master->align_thresh, master->error_duration_thresh);
 }
 
 void PathMarker::Initialize()
@@ -49,32 +53,13 @@ void PathMarker::Start()
 // If we see the Path Marker, abort tslam & get angle
 void PathMarker::IDPathMarker(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg)
 {
-  // Get number of objects and make sure you have 'x' many within 't' seconds
-  // Simply entering this callback signifies the object was detected (unless it was a false-positive)
-  detections++;
-  if (detections == 1)
+  if (detectionValidator->Validate())
   {
-    detect_start = ros::Time::now();
-    attempts++;
-  }
+    task_bbox_sub.shutdown();
+    master->tslam->Abort(true);
 
-  if (ros::Time::now().toSec() - detect_start.toSec() > master->detection_duration_thresh)
-  {
-    if (detections >= master->detections_req)
-    {
-      task_bbox_sub.shutdown();
-      master->tslam->Abort(true);
-
-      od->GetPathHeading(&PathMarker::GotHeading, this);
-      ROS_INFO("Found path, getting heading");
-    }
-    else
-    {
-      ROS_INFO("PathMarker: Attempt %i to ID PathMarker", attempts);
-      ROS_INFO("PathMarker: %i detections", detections);
-      ROS_INFO("PathMarker: Beginning attempt %i", attempts + 1);
-      detections = 0;
-    }
+    od->GetPathHeading(&PathMarker::GotHeading, this);
+    ROS_INFO("Found path, getting heading");
   }
 }
 
@@ -118,12 +103,11 @@ void PathMarker::GotHeading(double heading)
 // Once we are at the right angle, go forward
 void PathMarker::FirstAttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &status_msg)
 {
-  heading_average = (heading_average * 99 + abs(status_msg->yaw.error)) / 100;
 
-  if (heading_average < master->yaw_thresh)
+  if (yawValidator->Validate(status_msg->yaw.error))
   {
     attitude_status_sub.shutdown();
-    heading_average = 360;
+    yawValidator->Reset();
 
     // TODO: If you dont see it, do something
 
@@ -139,10 +123,7 @@ void PathMarker::FirstAttitudeStatusCB(const riptide_msgs::ControlStatusAngular:
 // Once we are over the center, turn
 void PathMarker::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr &status_msg)
 {
-  x_average = (x_average * 9 + abs(status_msg->x.error)) / 10;
-  y_average = (y_average * 9 + abs(status_msg->y.error)) / 10;
-
-  if (x_average < master->align_thresh && y_average < master->align_thresh)
+  if (xValidator->Validate(status_msg->x.error) && yValidator->Validate(status_msg->y.error))
   {
     alignment_status_sub.shutdown();
 
@@ -154,12 +135,11 @@ void PathMarker::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::Cons
     attitude_cmd.euler_rpy.z = master->tslam->KeepHeadingInRange(attitude_cmd.euler_rpy.z);
     master->attitude_pub.publish(attitude_cmd);
 
-    x_average = 100;
-    y_average = 100;
+    xValidator->Reset();
+    yValidator->Reset();
 
     attitude_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &PathMarker::SecondAttitudeStatusCB, this);
     ROS_INFO("Now center, turning to %f", attitude_cmd.euler_rpy.z);
-
   }
 }
 
@@ -168,9 +148,11 @@ void PathMarker::SecondAttitudeStatusCB(const riptide_msgs::ControlStatusAngular
 {
   heading_average = (heading_average * 99 + abs(status_msg->yaw.error)) / 100;
 
-  if (heading_average < master->yaw_thresh)
+  if (yawValidator->Validate(status_msg->yaw.error))
   {
     attitude_status_sub.shutdown();
+
+    yawValidator->Reset();
 
     geometry_msgs::Vector3 msg;
     msg.x = 0;
