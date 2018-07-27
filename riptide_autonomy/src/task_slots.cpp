@@ -134,7 +134,7 @@ void Slots::idToAlignment()
     ROS_INFO("Target z: %f", align_cmd.target_pos.z);
     alignment_state = AST_CENTER;
     // Take control
-    master->tslam->Abort(true);
+    master->tslam->Abort(false);
     master->alignment_pub.publish(align_cmd);
     alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &Slots::AlignmentStatusCB, this);
   }
@@ -186,6 +186,7 @@ void Slots::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr 
         {
           ROS_INFO("Slots: Out of torpedoes. Let's go home, boys.");
           Slots::Abort();
+          master->tslam->SetEndPos();
           master->StartTask();
         }
       }
