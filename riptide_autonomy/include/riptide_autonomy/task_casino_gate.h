@@ -13,6 +13,7 @@
 #include "darknet_ros_msgs/BoundingBoxes.h"
 #include "darknet_ros_msgs/BoundingBox.h"
 #include "riptide_autonomy/be_autonomous.h"
+#include "riptide_autonomy/validators.h"
 #include <cmath>
 using namespace std;
 typedef riptide_msgs::Constants rc;
@@ -31,28 +32,27 @@ private:
   riptide_msgs::AlignmentCommand align_cmd;
   riptide_msgs::AttitudeCommand attitude_cmd;
 
-  double detection_duration, error_duration, pass_thru_duration;
-  int detections, attempts, align_id;
-  ros::Time acceptable_begin;
-  ros::Time detect_start;
-  bool clock_is_ticking;
+  double gate_heading, end_pos_offset, pass_thru_duration;
+  int align_id, left_color;
+  bool detected_black, detected_red, passing_on_left, passing_on_right, passed_thru_gate, braked;
   string object_name;
+
+  DetectionValidator *detectionBlackValidator, *detectionRedValidator;
+  ErrorValidator *xValidator, *yValidator, *zValidator, *yawValidator;
 
   // Create instance to master
   BeAutonomous *master;
-  bool passed_thru_gate, braked;
 
 public:
-  bool passing_on_left, passing_on_right;
-  double gate_heading, end_pos_offset;
-
   CasinoGate(BeAutonomous *master);
   void Initialize();
   void Start();
   void IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg);
-  void AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr &status_msg);
+  void PositionAlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr &status_msg);
+  void BBoxAlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr &status_msg);
   void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &status_msg);
   void PassThruTimer(const ros::TimerEvent &event);
+  void SetEndPos();
   void Abort();
 };
 

@@ -1,330 +1,86 @@
-task_map: [
+task_map: {
+  id: [0, 1, 2, 3],
+  quad: ["A", "B", "C", "D"],
+  freq: [30, 40, 25, 35], # [kHz]
+  dock_x: [0, 0, 0, 0],
+  dock_y: [0, 0, 0, 0],
+  map: [
     {
       id: 0,
-      quad: "A",
-      freq: 30,
-      dock_x: 0.0,
-      dock_y: 0.0,
-      map: [
-        {
-          id: 0,
-          name: "Casino_Gate",
-          start_x: 0.0,
-          start_y: 0.0.0,
-          end_x: 0.0,
-          end_y: 0.0,
-          heading: -80.0
-        },
-        {
-          id: 1,
-          name: "Path_Marker1",
-          start_x: 1,
-          start_y: 0,
-          end_x: 0,
-          end_y: -1
-        },
-        {
-          id: 2,
-          name: "Dice",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        },
-        {
-          id: 3,
-          name: "Buy_Gold_Chip1",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        },
-        {
-          id: 4,
-          name: "Path_Marker2",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        },
-        {
-          id: 5,
-          name: "Slots",
-          start_x: 10.0,
-          start_y: 10.0,
-          end_x: 0.0,
-          end_y: 0.0
-        },
-        {
-          id: 6,
-          name: "Buy_Gold_Chip2",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        },
-        {
-          id: 7,
-          name: "Roulette",
-          start_x: 2,
-          start_y: 2,
-          end_x: 1,
-          end_y: 1
-        },
-        {
-          id: 8,
-          name: "Cash_In",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        }
-      ]
+      name: "Casino_Gate",
+      start_x: [0, 0, 0, 0],
+      start_y: [0, 0, 0, 0],
+      end_mid_x: [0, 0, 0, 0],
+      end_mid_y: [0, 0, 0, 0],
+      end_x: [0, 0, 0, 0],
+      end_y: [0, 0, 0, 0],
+      end_pos_offset: [1, 1, 1, 1], # [m]
+      heading: [-80, -100, 80, 100], # [deg]
+      left_color: [0, 0, 1, 1] # 0 -> Black, 1 -> Red
     },
     {
       id: 1,
-      quad: "B",
-      freq: 40,
-      dock_x: 0.0,
-      dock_y: 0.0,
-      map: [
-        {
-          id: 0,
-          name: "Casino_Gate",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0,
-          heading: -100.0
-        },
-        {
-          id: 1,
-          name: "Path_Marker1",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        },
-        {
-          id: 2,
-          name: "Dice",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        },
-        {
-          id: 3,
-          name: "Buy_Gold_Chip1",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        },
-        {
-          id: 4,
-          name: "Path_Marker2",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        },
-        {
-          id: 5,
-          name: "Slots",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        },
-        {
-          id: 6,
-          name: "Buy_Gold_Chip2",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        },
-        {
-          id: 7,
-          name: "Roulette",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        },
-        {
-          id: 8,
-          name: "Cash_In",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        }
-      ]
+      name: "Path_Marker1",
+      start_x: [1, 1, 1, 1],
+      start_y: [0, 0, 0, 0],
+      end_x: [0, 0, 0, 0],
+      end_y: [-1, -1, -1, -1]
     },
     {
       id: 2,
-      quad: "C",
-      freq: 25,
-      dock_x: 0.0,
-      dock_y: 0.0,
-      map: [
-        {
-          id: 0,
-          name: "Casino_Gate",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0,
-          heading: 80.0
-        },
-        {
-          id: 1,
-          name: "Path_Marker1",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        },
-        {
-          id: 2,
-          name: "Dice",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        },
-        {
-          id: 3,
-          name: "Buy_Gold_Chip1",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        },
-        {
-          id: 4,
-          name: "Path_Marker2",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        },
-        {
-          id: 5,
-          name: "Slots",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        },
-        {
-          id: 6,
-          name: "Buy_Gold_Chip2",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        },
-        {
-          id: 7,
-          name: "Roulette",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        },
-        {
-          id: 8,
-          name: "Cash_In",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        }
-      ]
+      name: "Dice",
+      start_x: [0, 0, 0, 0],
+      start_y: [0, 0, 0, 0],
+      end_x: [0, 0, 0, 0],
+      end_y: [0, 0, 0, 0]
     },
     {
       id: 3,
-      quad: "D",
-      freq: 35,
-      dock_x: 0.0,
-      dock_y: 0.0,
-      map: [
-        {
-          id: 0,
-          name: "Casino_Gate",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0,
-          heading: 100.0
-        },
-        {
-          id: 1,
-          name: "Path_Marker1",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        },
-        {
-          id: 2,
-          name: "Dice",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        },
-        {
-          id: 3,
-          name: "Buy_Gold_Chip1",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        },
-        {
-          id: 4,
-          name: "Path_Marker2",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        },
-        {
-          id: 5,
-          name: "Slots",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        },
-        {
-          id: 6,
-          name: "Buy_Gold_Chip2",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        },
-        {
-          id: 7,
-          name: "Roulette",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        },
-        {
-          id: 8,
-          name: "Cash_In",
-          start_x: 0.0,
-          start_y: 0.0,
-          end_x: 0.0,
-          end_y: 0.0
-        }
-      ]
+      name: "Path_Marker2",
+      start_x: [0, 0, 0, 0],
+      start_y: [0, 0, 0, 0],
+      end_x: [0, 0, 0, 0],
+      end_y: [0, 0, 0, 0]
+    },
+    {
+      id: 4,
+      name: "Slots",
+      start_x: [10, 10, 10, 10],
+      start_y: [10, 10, 10, 10],
+      end_x: [10, 10, 10, 10],
+      end_y: [10, 10, 10, 10]
+    },
+    {
+      id: 5,
+      name: "Buy_Gold_Chip1",
+      start_x: [0, 0, 0, 0],
+      start_y: [0, 0, 0, 0],
+      end_x: [0, 0, 0, 0],
+      end_y: [0, 0, 0, 0]
+    },
+    {
+      id: 6,
+      name: "Roulette",
+      start_x: [2, 2, 2, 2],
+      start_y: [2, 2, 2, 2],
+      end_x: [1, 1, 1, 1],
+      end_y: [1, 1, 1, 1]
+    },
+    {
+      id: 7,
+      name: "Buy_Gold_Chip2",
+      start_x: [0, 0, 0, 0],
+      start_y: [0, 0, 0, 0],
+      end_x: [0, 0, 0, 0],
+      end_y: [0, 0, 0, 0]
+    },
+    {
+      id: 8,
+      name: "Cash_In",
+      start_x: [0, 0, 0, 0],
+      start_y: [0, 0, 0, 0],
+      end_x: [0, 0, 0, 0],
+      end_y: [0, 0, 0, 0]
     }
-    ]
+  ]
+}

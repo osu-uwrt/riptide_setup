@@ -141,7 +141,7 @@ void YoloProcessor::DarknetBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPt
     darknet_ros_msgs::BoundingBox max_detection;
 
     for(int j=0; j<bbox_msg->bounding_boxes.size(); j++) {
-      if(strcmp(object_names.at(i).c_str(), bbox_msg->bounding_boxes[j].Class.c_str()) == 0 ) {
+      if(object_names.at(i) == bbox_msg->bounding_boxes[j].Class) {
         if(bbox_msg->bounding_boxes[j].probability > max_prob) {
           max_prob = bbox_msg->bounding_boxes[j].probability;
           max_detection = bbox_msg->bounding_boxes[j];
