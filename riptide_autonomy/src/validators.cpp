@@ -17,11 +17,21 @@ bool DetectionValidator::Validate()
 
   if (ros::Time::now().toSec() - startTime.toSec() > durationThresh)
   {
-    bool valid = detections >= detsReq;
+    valid = detections >= detsReq;
     detections = 0;
     return valid;
   }
   return false;
+}
+
+bool DetectionValidator::IsValid()
+{
+  return valid;
+}
+
+void DetectionValidator::Reset()
+{
+  valid = false;
 }
 
 ErrorValidator::ErrorValidator(double errorThresh, double duration)
@@ -40,13 +50,17 @@ bool ErrorValidator::Validate(double error)
 
     outsideRange = false;
 
-    if (ros::Time::now().toSec() - startTime.toSec() > durationThresh)
-      return true;
+    return ros::Time::now().toSec() - startTime.toSec() > durationThresh;
   }
   else
     outsideRange = true;
 
   return false;
+}
+
+bool ErrorValidator::IsValid()
+{
+  return ros::Time::now().toSec() - startTime.toSec() > durationThresh;
 }
 
 void ErrorValidator::Reset()

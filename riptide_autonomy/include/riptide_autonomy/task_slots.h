@@ -13,6 +13,7 @@
 #include "darknet_ros_msgs/BoundingBoxes.h"
 #include "darknet_ros_msgs/BoundingBox.h"
 #include "riptide_autonomy/be_autonomous.h"
+#include "riptide_autonomy/validators.h"
 
 #include <cmath>
 using namespace std;
@@ -30,7 +31,7 @@ class Slots
 
 private:
   ros::Subscriber task_bbox_sub, alignment_status_sub, attitude_status_sub;
-  vector<ros::Subscriber> active_subs;
+  ros::Subscriber *active_subs[3] = {&task_bbox_sub, &alignment_status_sub, &attitude_status_sub};
 
   darknet_ros_msgs::BoundingBoxes task_bboxes;
   riptide_msgs::AlignmentCommand align_cmd;
@@ -44,27 +45,18 @@ private:
   int pneumatics_duration;
 
   // Alignment variables
-  torpedoOffset torpedo_offsets[];
+  torpedoOffset torpedo_offsets[2];
   int bbox_control;
   int bbox_dim;
   int alignment_state;
-  bool align_timer_started;
-  ros::Time align_start;
-  ros::Duration aligned_duration;
-  double aligned_duration_thresh;
 
-  // Identification variables
-  int fruit_detections;
-  int big_red_detections;
-  ros::Time id_start;
-  ros::Duration id_duration;
-  int id_attempts;
+  DetectionValidator *fruitValidator, *bigRedValidator;
+  ErrorValidator *xValidator, *yValidator, *zValidator;
 
   // Reference to master
   BeAutonomous* master;
 
   void idToAlignment();
-  void updateAlignTimer(bool stopTimer=false);
   void hitJackpot();
 
 public:
