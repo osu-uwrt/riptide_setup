@@ -63,6 +63,8 @@ void Roulette::Start()
 }
 
 // ID the roulette task
+// TODO: Add a timeout in case the vehicle did not pass over it well enough
+// TODO: Configure TSlam to take us back to a previous location or to a different part of the path
 void Roulette::IDRoulette(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg)
 {
   // Get number of objects and make sure you have 'x' many within 't' seconds
@@ -103,12 +105,12 @@ void Roulette::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstP
       //od->GetRouletteHeading(&Roulette::SetMarkerDropHeading, this);
     }
   }
-  else if (align_id == ALIGN_BBOX_HEIGHT)
-  { // Find depth for optimal bbox height
-    if (ValidateError(status_msg->z.error, &error_duration, master->bbox_thresh, master->error_duration_thresh, &clock_is_ticking, &error_check_start))
+  else if (align_id == ALIGN_BBOX_HEIGHT) // Find depth for optimal bbox height
+  { 
+    if (ValidateError(status_msg->z.error, &error_duration, master->bbox_thresh, master->bbox_heave_duration_thresh, &clock_is_ticking, &error_check_start))
     {
       alignment_status_sub.shutdown();
-      align_cmd.heave_active = false;
+      align_cmd.heave_active = false; // Disabling heave will lock in current depth
       master->alignment_pub.publish(align_cmd);
 
       // Calculate heading for roulette wheel

@@ -149,6 +149,7 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous")
   mission_running = false;
   thruster = 0;
   pre_start_duration = 0;
+  load_duration = 0;
   clock_is_ticking = false;
 
   // Load Task Info

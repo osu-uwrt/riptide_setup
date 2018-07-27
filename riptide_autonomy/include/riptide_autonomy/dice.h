@@ -1,5 +1,5 @@
-#ifndef CASINO_GATE_H
-#define CASINO_GATE_H
+#ifndef DICE_H
+#define DICE_H
 
 #include "ros/ros.h"
 #include <vector>
@@ -19,7 +19,7 @@ typedef riptide_msgs::Constants rc;
 
 class BeAutonomous;
 
-class CasinoGate
+class Dice
 {
 
 private:
@@ -35,21 +35,17 @@ private:
   int detections_black, detections_red, attempts_black, attempts_red, align_id, left_color;
   ros::Time error_check_start;
   ros::Time detect_black_start, detect_red_start;
-  bool clock_is_ticking, detected_black, detected_red;
+  bool clock_is_ticking, detected_dice1, detected_dice2, detecte_dice5, detected_dice6;
   string object_name;
 
   // Create instance to master
   BeAutonomous *master;
-  bool passed_thru_gate, braked;
-
-  bool passing_on_left, passing_on_right;
-  double gate_heading, end_pos_offset;
 
 public:
-  CasinoGate(BeAutonomous *master);
+  DIce(BeAutonomous *master);
   void Initialize();
   void Start();
-  void IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg);
+  void IDDice(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg);
   void AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr &status_msg);
   void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &status_msg);
   void PassThruTimer(const ros::TimerEvent &event);

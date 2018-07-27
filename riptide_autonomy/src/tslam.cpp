@@ -18,6 +18,8 @@
 7. Abort (brake if required).
 */
 
+// TODO: Configure TSlam to take us back to a previous location or to a different part of the path
+
 TSlam::TSlam(BeAutonomous *master)
 {
   this->master = master;
@@ -57,40 +59,23 @@ void TSlam::ReadMap()
 
   if (current_x == 420)
   {
-    current_x = task_map["task_map"][quadrant]["dock_x"].as<double>();
-    current_y = task_map["task_map"][quadrant]["dock_y"].as<double>();
+    current_x = task_map["task_map"]["dock_x"][quadrant].as<double>();
+    current_y = task_map["task_map"]["dock_y"][quadrant].as<double>();
   }
 
   ROS_INFO("Quadrant: %i", quadrant);
   if (quadrant < 4)
   {
-    start_x = task_map["task_map"][quadrant]["map"][master->task_id]["start_x"].as<double>();
-    start_y = task_map["task_map"][quadrant]["map"][master->task_id]["start_y"].as<double>();
+    start_x = task_map["task_map"]["map"][master->task_id][quadrant]["start_x"].as<double>();
+    start_y = task_map["task_map"]["map"][master->task_id][quadrant]["start_y"].as<double>();
 
-    end_x = task_map["task_map"][quadrant]["map"][master->task_id]["end_x"].as<double>();
-    end_y = task_map["task_map"][quadrant]["map"][master->task_id]["end_y"].as<double>();
+    end_x = task_map["task_map"]["map"][master->task_id][quadrant]["end_x"].as<double>();
+    end_y = task_map["task_map"]["map"][master->task_id][quadrant]["end_y"].as<double>();
 
     if (master->run_single_task && master->task_order.size() == 1)
     {
       current_x = start_x + master->relative_current_x;
       current_y = start_y + master->relative_current_y;
-    }
-
-    if (master->last_task_id == rc::TASK_CASINO_GATE)
-    { // Calculate ending pos on other side of the gate
-      double gate_heading = master->casino_gate->gate_heading;
-      bool passing_on_left = master->casino_gate->passing_on_left;
-      bool passing_on_right = master->casino_gate->passing_on_right;
-      double alpha = 0;
-      double end_pos_offset = master->casino_gate->end_pos_offset;
-
-      if (passing_on_left)
-        alpha = gate_heading + 90;
-      else if (passing_on_right)
-        alpha = gate_heading - 90;
-
-      current_x = current_x - end_pos_offset * sin(alpha * PI / 180);
-      current_y = current_y + end_pos_offset * cos(alpha * PI / 180);
     }
   }
   else
