@@ -26,6 +26,7 @@ set(AUTONOMY_OBJECTS
   src/casino_gate.cpp
   src/task_slots.cpp
   src/path_marker.cpp
+  src/validators.cpp
 )
 
 catkin_package(INCLUDE_DIRS include)

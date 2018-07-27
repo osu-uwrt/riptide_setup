@@ -15,6 +15,7 @@
 #include "darknet_ros_msgs/BoundingBox.h"
 #include "riptide_autonomy/be_autonomous.h"
 #include "riptide_autonomy/object_describer.h"
+#include "riptide_autonomy/validators.h"
 #include <cmath>
 using namespace std;
 typedef riptide_msgs::Constants rc;
@@ -36,17 +37,18 @@ private:
   riptide_msgs::Pneumatics pneumatics_cmd;
   riptide_msgs::DepthCommand depth_cmd;
 
-  double detection_duration, error_duration;
-  int detections, attempts;
+
   ros::Time acceptable_begin;
-  ros::Time detect_start;
-  bool clock_is_ticking, drop_clock_is_ticking;
+  bool drop_clock_is_ticking;
 
   // ALignment variables
   bool got_heading;
   double green_heading, marker_drop_heading, drop_duration, drop_duration_thresh;
   int align_id, num_markers_dropped;
   ros::Time drop_time;
+
+  DetectionValidator *detectionValidator;
+  ErrorValidator *xValidator, *yValidator, *zValidator, *yawValidator;
 
 
   // Create instance to master
