@@ -136,6 +136,7 @@ void AlignmentController::UpdateError() {
     last_error_dot.y = error_dot.y;
     status_msg.y.error = last_error.y;
     y_cmd.data = y_pid.computeCommand(error.y, error_dot.y, sample_duration);
+    y_pub.publish(y_cmd);
   }
 
   // If we are aligning in the YZ plane (forward cam), then X acceleration is
@@ -160,6 +161,7 @@ void AlignmentController::UpdateError() {
     last_error_dot.x = error_dot.x;
     status_msg.x.error = last_error.x;
     x_cmd.data = x_pid.computeCommand(error.x, error_dot.x, sample_duration);
+    x_pub.publish(x_cmd);
   }
 
   if(!pid_heave_reset && pid_heave_active) {
@@ -185,9 +187,6 @@ void AlignmentController::UpdateError() {
   }
 
   if(!pid_alignment_reset && pid_alignment_active) {
-    x_pub.publish(x_cmd);
-    y_pub.publish(y_cmd);
-
     status_msg.header.stamp = sample_start;
     status_pub.publish(status_msg);
   }
@@ -296,7 +295,7 @@ void AlignmentController::CommandCB(const riptide_msgs::AlignmentCommand::ConstP
   if(pid_surge_active || pid_sway_active || pid_heave_active)
     pid_alignment_active = true; // Only need one to be active
   else
-    pid_alignment_active = false;
+      pid_alignment_active = false;
 }
 
 void AlignmentController::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg) {
@@ -323,7 +322,7 @@ void AlignmentController::ResetCB(const riptide_msgs::ResetControls::ConstPtr& r
   }
   else pid_heave_reset = false;
 
-  if(pid_surge_reset && pid_sway_reset && pid_heave_reset)
+if(pid_surge_reset && pid_sway_reset && pid_heave_reset)
     pid_alignment_reset = true;
   else
     pid_alignment_reset = false;
