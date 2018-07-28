@@ -30,7 +30,8 @@ AlignmentController::AlignmentController() : nh("alignment_controller") {
     reset_sub = nh.subscribe<riptide_msgs::ResetControls>("/controls/reset", 1, &AlignmentController::ResetCB, this);
     task_info_sub = nh.subscribe<riptide_msgs::TaskInfo>("/task/info", 1, &AlignmentController::TaskInfoCB, this);
 
-    xy_pub = nh.advertise<geometry_msgs::Vector3>("/command/accel_linear", 1);
+    x_pub = nh.advertise<std_msgs::Float64>("/command/accel_x", 1);
+    y_pub = nh.advertise<std_msgs::Float64>("/command/accel_y", 1);
     depth_pub = nh.advertise<riptide_msgs::DepthCommand>("/command/depth", 1);
     status_pub = nh.advertise<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1);
 
@@ -113,10 +114,10 @@ void AlignmentController::LoadParam(string param, T &var)
 // Send zero accel if an object has not been seen for 'x' seconds to keep the
 // vehicle from moving endlessly
 void AlignmentController::DisableControllerTimer(const ros::TimerEvent& event) {
-  xy_cmd.x = 0;
-  xy_cmd.y = 0;
-  xy_cmd.z = 0;
-  xy_pub.publish(xy_cmd);
+  x_cmd.data = 0;
+  y_cmd.data = 0;
+  x_pub.publish(x_cmd);
+  y_pub.publish(y_cmd);
 }
 
 void AlignmentController::UpdateError() {
@@ -134,7 +135,7 @@ void AlignmentController::UpdateError() {
     last_error.y = error.y;
     last_error_dot.y = error_dot.y;
     status_msg.y.error = last_error.y;
-    xy_cmd.y = y_pid.computeCommand(error.y, error_dot.y, sample_duration);
+    y_cmd.data = y_pid.computeCommand(error.y, error_dot.y, sample_duration);
   }
 
   // If we are aligning in the YZ plane (forward cam), then X acceleration is
@@ -158,7 +159,7 @@ void AlignmentController::UpdateError() {
     last_error.x = error.x;
     last_error_dot.x = error_dot.x;
     status_msg.x.error = last_error.x;
-    xy_cmd.x = x_pid.computeCommand(error.x, error_dot.x, sample_duration);
+    x_cmd.data = x_pid.computeCommand(error.x, error_dot.x, sample_duration);
   }
 
   if(!pid_heave_reset && pid_heave_active) {
@@ -184,8 +185,8 @@ void AlignmentController::UpdateError() {
   }
 
   if(!pid_alignment_reset && pid_alignment_active) {
-    xy_cmd.z = 0;
-    xy_pub.publish(xy_cmd);
+    x_pub.publish(x_cmd);
+    y_pub.publish(y_cmd);
 
     status_msg.header.stamp = sample_start;
     status_pub.publish(status_msg);
@@ -341,8 +342,8 @@ void AlignmentController::ResetSurge(int id) {
   status_msg.header.stamp = ros::Time::now();
   status_pub.publish(status_msg);
 
-  xy_cmd.x = 0;
-  xy_pub.publish(xy_cmd);
+  x_cmd.data = 0;
+  x_pub.publish(x_cmd);
 
   if(id == RESET_ID)
     pid_surge_reset = true;
@@ -363,8 +364,8 @@ void AlignmentController::ResetSway(int id) {
   status_msg.header.stamp = ros::Time::now();
   status_pub.publish(status_msg);
 
-  xy_cmd.y = 0;
-  xy_pub.publish(xy_cmd);
+  y_cmd.data = 0;
+  y_pub.publish(y_cmd);
   
   if(id == RESET_ID)
     pid_sway_reset = true;

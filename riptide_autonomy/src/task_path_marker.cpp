@@ -154,11 +154,9 @@ void PathMarker::SecondAttitudeStatusCB(const riptide_msgs::ControlStatusAngular
 
     yawValidator->Reset();
 
-    geometry_msgs::Vector3 msg;
-    msg.x = 0;
-    msg.y = 0.8;
-    msg.z = 0;
-    master->linear_accel_pub.publish(msg);
+    std_msgs::Float64 msg;
+    msg.data = 0;
+    master->x_accel_pub.publish(msg);
 
     ROS_INFO("HALF SPEED AHEAD!!!");
     timer = master->nh.createTimer(ros::Duration(2), &PathMarker::Success, this, true);
@@ -168,11 +166,9 @@ void PathMarker::SecondAttitudeStatusCB(const riptide_msgs::ControlStatusAngular
 // Once we have gone, be done
 void PathMarker::Success(const ros::TimerEvent &event)
 {
-  geometry_msgs::Vector3 msg;
-  msg.x = 0;
-  msg.y = 0;
-  msg.z = 0;
-  master->linear_accel_pub.publish(msg);
+  std_msgs::Float64 msg;
+  msg.data = 0;
+  master->x_accel_pub.publish(msg);
   Abort();
   master->tslam->SetEndPos();
   master->StartTask();

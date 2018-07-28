@@ -65,11 +65,11 @@ void TSlam::ReadMap()
   ROS_INFO("Quadrant: %i", quadrant);
   if (quadrant < 4)
   {
-    start_x = task_map["task_map"]["map"][master->task_id][quadrant]["start_x"].as<double>();
-    start_y = task_map["task_map"]["map"][master->task_id][quadrant]["start_y"].as<double>();
+    start_x = task_map["task_map"]["map"][master->task_id]["start_x"][quadrant].as<double>();
+    start_y = task_map["task_map"]["map"][master->task_id]["start_y"][quadrant].as<double>();
 
-    end_x = task_map["task_map"]["map"][master->task_id][quadrant]["end_x"].as<double>();
-    end_y = task_map["task_map"]["map"][master->task_id][quadrant]["end_y"].as<double>();
+    end_x = task_map["task_map"]["map"][master->task_id]["end_x"][quadrant].as<double>();
+    end_y = task_map["task_map"]["map"][master->task_id]["end_y"][quadrant].as<double>();
 
     if (master->run_single_task && master->task_order.size() == 1)
     {
@@ -219,11 +219,9 @@ void TSlam::YawAttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstP
     attitude_status_sub.shutdown();
 
     // Drive forward
-    geometry_msgs::Vector3 msg;
-    msg.x = master->search_accel;
-    msg.y = 0;
-    msg.z = 0;
-    master->linear_accel_pub.publish(msg);
+    std_msgs::Float64 msg;
+    msg.data = master->search_accel;
+    master->x_accel_pub.publish(msg);
 
     double tslam_duration = 1.2 * eta;
     timer = master->nh.createTimer(ros::Duration(tslam_duration), &TSlam::AbortTSlamTimer, this, true);
@@ -238,11 +236,9 @@ void TSlam::AbortTSlamTimer(const ros::TimerEvent &event)
 
 void TSlam::BrakeTimer(const ros::TimerEvent &event)
 {
-  geometry_msgs::Vector3 msg;
-  msg.x = 0;
-  msg.y = 0;
-  msg.z = 0;
-  master->linear_accel_pub.publish(msg);
+  std_msgs::Float64 msg;
+  msg.data = 0;
+  master->x_accel_pub.publish(msg);
   ROS_INFO("TSlam: Thruster brake applied");
 }
 
@@ -252,21 +248,17 @@ void TSlam::Abort(bool apply_brake)
   TSlam::Initialize();
 
   timer.stop();
-  geometry_msgs::Vector3 msg;
+  std_msgs::Float64 msg;
   if (apply_brake)
   {
-    msg.x = -(master->search_accel);
-    msg.y = 0;
-    msg.z = 0;
-    master->linear_accel_pub.publish(msg);
+    msg.data = -(master->search_accel);
+    master->x_accel_pub.publish(msg);
     timer = master->nh.createTimer(ros::Duration(0.25), &TSlam::BrakeTimer, this, true);
     ROS_INFO("TSlam: Aborting. Braking now.");
   }
   else
   {
-    msg.x = 0;
-    msg.y = 0;
-    msg.z = 0;
-    master->linear_accel_pub.publish(msg);
+    msg.data = 0;
+    master->x_accel_pub.publish(msg);
   }
 }
