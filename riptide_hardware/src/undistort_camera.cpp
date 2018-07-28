@@ -23,11 +23,11 @@ UndistortCamera::UndistortCamera() : nh("undistort_camera") { // NOTE: there is 
 
   // Get image size based on video mode chosen, and set scale factor
   double scale_factor;
-  if(strcmp(video_mode.c_str(), "format7_mode0") == 0) {
+  if(video_mode == "format7_mode0") {
     img_size = Size(MAX_WIDTH, MAX_HEIGHT);
     scale_factor = 1.0;
   }
-  else if(strcmp(video_mode.c_str(), "format7_mode1") == 0) {
+  else if(video_mode == "format7_mode1") {
     img_size = Size(MAX_WIDTH/2, MAX_HEIGHT/2);
     scale_factor = 0.5;
   }

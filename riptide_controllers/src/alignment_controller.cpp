@@ -163,7 +163,7 @@ void AlignmentController::UpdateError() {
 
   if(!pid_heave_reset && pid_heave_active) {
     if (alignment_plane == rc::PLANE_YZ) { // Using fwd cam
-      error.z = (obj_pos.z - target_pos.z); // MUST subtract target pos from current pos
+      error.z = (target_pos.z - obj_pos.z); // DO NOT subtract target pos from current pos. Depth is positive DOWNWARD
       error.z = AlignmentController::Constrain(error.z, MAX_Z_ERROR);
     }
     else if(alignment_plane == rc::PLANE_XY) { // Using dwn cam

@@ -57,12 +57,20 @@ void ObjectDescriber::BBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bb
     Mat cropped = lastImage(myROI);
     if (rouletteImagesLeft > 0)
     {
-      Mat bgr[3];          //destination array
-      split(cropped, bgr); //split source
+      Mat a;
+      cropped.convertTo(a, CV_16S);
+      Mat bgr[3];    //destination array
+      split(a, bgr); //split source
 
       Mat values = bgr[0] + bgr[1];
 
-      double maxRadius = min(width, height) / 2 - 1;
+      double min, max;
+      minMaxLoc(values, &min, &max);
+
+      Mat g = ((values - min) / (max - min) * 255);
+      g.convertTo(values, CV_8U);
+
+      double maxRadius = std::min(width, height) / 2 - 1;
 
       double scores[180];
 

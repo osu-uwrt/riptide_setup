@@ -21,11 +21,13 @@ roslint_cpp()
 
 set(AUTONOMY_OBJECTS
   src/tslam.cpp
-  src/roulette.cpp
+  src/task_casino_gate.cpp
+  src/task_path_marker.cpp
+  src/task_slots.cpp
+  src/task_roulette.cpp
+  src/task_gold_chip.cpp
   src/object_describer.cpp
-  src/casino_gate.cpp
-  src/path_marker.cpp
-  src/gold_chip.cpp
+  src/validators.cpp
 )
 
 catkin_package(INCLUDE_DIRS include)
