@@ -10,10 +10,13 @@ private:
   int detsReq;
   int detections;
   ros::Time startTime;
+  bool valid;
 
 public:
   DetectionValidator(int detections, double duration);
   bool Validate();
+  bool IsValid();
+  void Reset();
 };
 
 class ErrorValidator
@@ -27,6 +30,7 @@ private:
 public:
   ErrorValidator(double errorThresh, double duration);
   bool Validate(double error);
+  bool IsValid();
   void Reset();
 };
 

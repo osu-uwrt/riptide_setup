@@ -21,13 +21,7 @@ CasinoGate::CasinoGate(BeAutonomous *master)
 void CasinoGate::Initialize()
 {
   gate_heading = 0;
-
-  braked = false;
-  passing_on_right = false;
-  passing_on_left = false;
-  detected_black = false;
-  detected_red = false;
-
+  
   for (int i = 0; i < sizeof(active_subs) / sizeof(active_subs[0]); i++)
     active_subs[i]->shutdown();
 }
@@ -42,9 +36,9 @@ void CasinoGate::Start()
   yawValidator = new ErrorValidator(master->yaw_thresh, master->error_duration_thresh);
   
   object_name = (master->color == rc::COLOR_BLACK) ? master->object_names.at(0) : master->object_names.at(1); // Black side if statement true, Red otherwise
-  gate_heading = master->tslam->task_map["task_map"][master->tslam->quadrant]["map"][master->task_id]["gate_heading"].as<double>();
-  end_pos_offset = master->tasks["tasks"][master->task_id]["end_pos_offset"].as<double>();
-  left_color = master->tslam->task_map["task_map"][master->tslam->quadrant]["map"]["left_colot"].as<int>();
+  gate_heading = master->tslam->task_map["task_map"]["map"][master->task_id]["heading"][master->tslam->quadrant].as<double>();
+  end_pos_offset = master->tslam->task_map["tasks"]["map"][master->task_id]["end_pos_offset"][master->tslam->quadrant].as<double>();
+  left_color = master->tslam->task_map["task_map"]["map"][master->task_id]["left_color"][master->tslam->quadrant].as<int>();
 
   // Set to black and just hope it's right if it doesn't load
   if (left_color != rc::COLOR_BLACK && left_color != rc::COLOR_RED)
@@ -63,6 +57,11 @@ void CasinoGate::Start()
   master->alignment_pub.publish(align_cmd);
   ROS_INFO("CasinoGate: alignment command published (but disabled)");
 
+  braked = false;
+  detected_black = false;
+  detected_red = false;
+  passing_on_right = false;
+  passing_on_left = false;
   task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &CasinoGate::IDCasinoGate, this);
   ROS_INFO("CasinoGate: subscribed to /task/bboxes");
 }
@@ -87,6 +86,8 @@ void CasinoGate::IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr &b
   // Set the side we are passing on and update the target y-pos in the frame
   if (detected_black || detected_red)
   {
+    detectionRedValidator->Reset();
+    detectionBlackValidator->Reset();
     task_bbox_sub.shutdown();
     master->tslam->Abort(false);
 
