@@ -5,6 +5,7 @@
 #include <vector>
 #include <yaml-cpp/yaml.h>
 #include "geometry_msgs/Vector3.h"
+#include "std_msgs/Float64.h"
 #include "riptide_msgs/Constants.h"
 #include "riptide_msgs/ControlStatusAngular.h"
 #include "riptide_msgs/ControlStatus.h"

@@ -13,12 +13,8 @@ bool DetectionValidator::Validate()
     startTime = ros::Time::now();
 
   if (ros::Time::now().toSec() - startTime.toSec() > durationThresh)
-  {
     valid = detections >= detsReq;
-    detections = 0;
-    return valid;
-  }
-  return false;
+  return valid;
 }
 
 bool DetectionValidator::IsValid()

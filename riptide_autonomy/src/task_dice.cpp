@@ -196,11 +196,9 @@ void Dice::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &
 
     // Publish forward accel and call it a success after a few seconds
     ROS_INFO("Dice: Now going to pass thru gate");
-    geometry_msgs::Vector3 linear_accel_cmd;
-    linear_accel_cmd.x = master->search_accel;
-    linear_accel_cmd.y = 0;
-    linear_accel_cmd.z = 0;
-    master->linear_accel_pub.publish(linear_accel_cmd);
+    std_msgs::Float64 msg;
+    msg.data = master->search_accel;
+    master->x_accel_pub.publish(msg);
 
     pass_thru_duration = master->tasks["tasks"][master->task_id]["pass_thru_duration"].as<double>();
     timer = master->nh.createTimer(ros::Duration(pass_thru_duration), &Dice::PassThruTimer, this, true);
@@ -234,11 +232,9 @@ void Dice::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &
 
       // Publish forward accel and call it a success after a few seconds
       ROS_INFO("Dice: Now going to pass thru gate");
-      geometry_msgs::Vector3 linear_accel_cmd;
-      linear_accel_cmd.x = master->search_accel;
-      linear_accel_cmd.y = 0;
-      linear_accel_cmd.z = 0;
-      master->linear_accel_pub.publish(linear_accel_cmd);
+      std_msgs::Float64 msg;
+      msg.data = master->search_accel;
+      master->x_accel_pub.publish(msg);
 
       pass_thru_duration = master->tasks["tasks"][master->task_id]["pass_thru_duration"].as<double>();
       timer = master->nh.createTimer(ros::Duration(pass_thru_duration), &Dice::PassThruTimer, this, true);
@@ -261,15 +257,15 @@ void Dice::PassThruTimer(const ros::TimerEvent &event)
   if (!passed_thru_gate)
   {
     passed_thru_gate = true;
-    msg.x = -(master->search_accel);
-    master->linear_accel_pub.publish(msg);
+    msg.data = -(master->search_accel);
+    master->x_accel_pub.publish(msg);
     timer = master->nh.createTimer(ros::Duration(0.25), &Dice::PassThruTimer, this, true);
     ROS_INFO("Dice: Passed thru gate...I think. Timer set for braking.");
   }
   else if (passed_thru_gate && !braked)
   {
     braked = true;
-    master->linear_accel_pub.publish(msg);
+    master->x_accel_pub.publish(msg);
     ROS_INFO("Dice: Completed. Thruster brake applied.");
     Dice::SetEndPos();
     Dice::Abort();

@@ -13,7 +13,8 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous")
   imu_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &BeAutonomous::ImuCB, this);
   depth_sub = nh.subscribe<riptide_msgs::Depth>("/state/depth", 1, &BeAutonomous::DepthCB, this);
 
-  linear_accel_pub = nh.advertise<geometry_msgs::Vector3>("/command/accel_linear", 1);
+  x_accel_pub = nh.advertise<std_msgs::Float64>("/command/accel_x", 1);
+  y_accel_pub = nh.advertise<std_msgs::Float64>("/command/accel_y", 1);
   attitude_pub = nh.advertise<riptide_msgs::AttitudeCommand>("/command/attitude", 1);
   alignment_pub = nh.advertise<riptide_msgs::AlignmentCommand>("/command/alignment", 1);
   depth_pub = nh.advertise<riptide_msgs::DepthCommand>("/command/depth", 1);
