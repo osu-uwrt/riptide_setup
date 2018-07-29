@@ -7,15 +7,15 @@ tasks: [
       search_accel: 0.8,
       pass_thru_duration: 4.0, # [s]
       id_correct_color_duration: 4, # [s]
-      bbox_zcenter_fraction: 0.25,
-      correct_bbox_frame_fraction: 0.6,
-      incorrect_bbox_frame_fraction: 0.4,
-      incorrect_bbox_center_fraction: 0.2,
+      gate_zcenter_offset: 0.25, # fraction of frame height
+      gate_width: 0.6, # fraction of frame width
+      incorrect_gate_ycenter_offset: 0.2, # fraction of frame width
+      incorrect_gate_width: 0.4, # fraction of frame width
       objects: ["Casino_Gate_Black", "Casino_Gate_Red"],
       thresholds: [0.3, 0.3],
       align_thresh: 30, # [pixels]
       bbox_thresh: 30, # [pixels]
-      detection_duration_thresh: 1, # [s]
+      detection_duration: 1, # [s]
       detections_req: 8 # [number]
     },
     {
@@ -28,7 +28,7 @@ tasks: [
       thresholds: [0.3],
       align_thresh: 30, # [pixels]
       bbox_thresh: 30, # [pixels]
-      detection_duration_thresh: 1, # [s]
+      detection_duration: 1, # [s]
       detections_req: 8 # [number]
     },
     {
@@ -41,7 +41,7 @@ tasks: [
       thresholds: [0.6, 0.6, 0.6, 0.6],
       align_thresh: 30, # [pixels]
       bbox_thresh: 30, # [pixels]
-      detection_duration_thresh: 1, # [s]
+      detection_duration: 1, # [s]
       detections_req: 8 # [number]
     },
     {
@@ -54,7 +54,7 @@ tasks: [
       thresholds: [0.6],
       align_thresh: 30, # [pixels]
       bbox_thresh: 30, # [pixels]
-      detection_duration_thresh: 1, # [s]
+      detection_duration: 1, # [s]
       detections_req: 8 # [number]
     },
     {
@@ -74,7 +74,7 @@ tasks: [
       thresholds: [0.5, 0.5],
       align_thresh: 30, # [pixels]
       bbox_thresh: 30, # [pixels]
-      detection_duration_thresh: 1, # [s]
+      detection_duration: 1, # [s]
       detections_req: 8 # [number]
     },
     {
@@ -87,7 +87,7 @@ tasks: [
       thresholds: [0.5],
       align_thresh: 30, # [pixels]
       bbox_thresh: 30, # [pixels]
-      detection_duration_thresh: 1, # [s]
+      detection_duration: 1, # [s]
       detections_req: 8 # [number]
     },
     {
@@ -96,12 +96,14 @@ tasks: [
       plane: 1,
       search_depth: 2.0,
       search_accel: 0.8,
+      roulette_bbox_height: 0.7, # fraction of frame height
+      roulette_ycenter_offset: 0.2, # fraction of frame width
       objects: ["Roulette"],
       thresholds: [0.1],
-      drop_duration_thresh: 4.0,
+      drop_duration: 4.0,
       align_thresh: 30, # [pixels]
       bbox_thresh: 30, # [pixels]
-      detection_duration_thresh: 1.0, # [s]
+      detection_duration: 1.0, # [s]
       detections_req: 8 # [number]
     },
     {
@@ -114,7 +116,7 @@ tasks: [
       thresholds: [0.5],
       align_thresh: 30, # [pixels]
       bbox_thresh: 30, # [pixels]
-      detection_duration_thresh: 1, # [s]
+      detection_duration: 1, # [s]
       detections_req: 8 # [number]
     },
     {
@@ -127,7 +129,7 @@ tasks: [
       thresholds: [0.5],
       align_thresh: 30, # [pixels]
       bbox_thresh: 30, # [pixels]
-      detection_duration_thresh: 1, # [s]
+      detection_duration: 1, # [s]
       detections_req: 8 # [number]
     }
   ]

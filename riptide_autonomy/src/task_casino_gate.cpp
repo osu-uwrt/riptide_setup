@@ -28,12 +28,12 @@ void CasinoGate::Initialize()
 
 void CasinoGate::Start()
 {
-  detectionBlackValidator = new DetectionValidator(master->detections_req, master->detection_duration_thresh);
-  detectionRedValidator = new DetectionValidator(master->detections_req, master->detection_duration_thresh);
-  xValidator = new ErrorValidator(master->bbox_thresh, master->bbox_surge_duration_thresh);
-  yValidator = new ErrorValidator(master->align_thresh, master->error_duration_thresh);
-  zValidator = new ErrorValidator(master->align_thresh, master->error_duration_thresh);
-  yawValidator = new ErrorValidator(master->yaw_thresh, master->error_duration_thresh);
+  detectionBlackValidator = new DetectionValidator(master->detections_req, master->detection_duration);
+  detectionRedValidator = new DetectionValidator(master->detections_req, master->detection_duration);
+  xValidator = new ErrorValidator(master->bbox_thresh, master->bbox_surge_duration);
+  yValidator = new ErrorValidator(master->align_thresh, master->error_duration);
+  zValidator = new ErrorValidator(master->align_thresh, master->error_duration);
+  yawValidator = new ErrorValidator(master->yaw_thresh, master->error_duration);
 
   object_name = (master->color == rc::COLOR_BLACK) ? master->object_names.at(0) : master->object_names.at(1); // Black side if statement true, Red otherwise
   gate_heading = master->tslam->task_map["task_map"]["map"][master->task_id]["heading"][master->tslam->quadrant].as<double>();
@@ -43,10 +43,10 @@ void CasinoGate::Start()
   pass_thru_duration = master->tasks["tasks"][master->task_id]["pass_thru_duration"].as<double>();
 
   // Alignment parameters
-  bbox_zcenter_fraction = master->tasks["tasks"][master->task_id]["bbox_zcenter_fraction"].as<double>();
-  correct_bbox_frame_fraction = master->tasks["tasks"][master->task_id]["correct_bbox_frame_fraction"].as<double>();
-  incorrect_bbox_frame_fraction = master->tasks["tasks"][master->task_id]["incorrect_bbox_frame_fraction"].as<double>();
-  incorrect_bbox_ycenter_fraction = master->tasks["tasks"][master->task_id]["incorrect_bbox_ycenter_fraction"].as<double>();
+  gate_zcenter_offset = master->tasks["tasks"][master->task_id]["gate_zcenter_offset"].as<double>();
+  gate_width = master->tasks["tasks"][master->task_id]["gate_width"].as<double>();
+  incorrect_gate_ycenter_offset = master->tasks["tasks"][master->task_id]["incorrect_gate_ycenter_offset"].as<double>();
+  incorrect_gate_width = master->tasks["tasks"][master->task_id]["incorrect_gate_width"].as<double>();
 
   // Set to black and just hope it's right if it doesn't load
   if (left_color != rc::COLOR_BLACK && left_color != rc::COLOR_RED)
@@ -58,11 +58,11 @@ void CasinoGate::Start()
   align_cmd.heave_active = false;
   align_cmd.object_name = object_name; // Casino_Gate Black/Red
   align_cmd.alignment_plane = master->alignment_plane;
-  align_cmd.bbox_dim = (int)master->frame_width * correct_bbox_frame_fraction;
+  align_cmd.bbox_dim = (int)master->frame_width * gate_width;
   align_cmd.bbox_control = rc::CONTROL_BBOX_WIDTH;
   align_cmd.target_pos.x = 0;
   align_cmd.target_pos.y = 0;
-  align_cmd.target_pos.z = (int)(master->frame_height * bbox_zcenter_fraction);
+  align_cmd.target_pos.z = (int)(master->frame_height * gate_zcenter_offset);
   master->alignment_pub.publish(align_cmd);
   ROS_INFO("CasinoGate: alignment command published (but disabled)");
 
@@ -214,19 +214,19 @@ void CasinoGate::EndSecondIDGateCB(const ros::TimerEvent &event)
 
   // YOLO could not detect correct color. Adjust alignment command target y-pos and object name
   align_cmd.object_name = master->object_names.at((master->color + 1) % 2); // Switch to detected object
-  align_cmd.bbox_dim = (int)(master->frame_width * incorrect_bbox_frame_fraction);
+  align_cmd.bbox_dim = (int)(master->frame_width * incorrect_gate_width);
   if (master->color == left_color && ((detected_black && left_color == rc::COLOR_RED) || (detected_red && left_color == rc::COLOR_BLACK)))
   {
     // Detected the right side of the gate, so put target y-pos on right side of frame using the right side
     passing_on_left = true;
-    align_cmd.target_pos.y = -(int)(master->frame_height * incorrect_bbox_ycenter_fraction);
+    align_cmd.target_pos.y = -(int)(master->frame_height * incorrect_gate_ycenter_offset);
     ROS_INFO("CasinoGate: Detected right side. Aligning to left side");
   }
   else if (master->color = right_color && ((detected_black && right_color == rc::COLOR_RED) || (detected_red && right_color == rc::COLOR_BLACK)))
   {
     // Detected the left side of the gate, so put target y-pos on left side of frame using the left side
     passing_on_right = true;
-    align_cmd.target_pos.y = (int)(master->frame_height * incorrect_bbox_ycenter_fraction);
+    align_cmd.target_pos.y = (int)(master->frame_height * incorrect_gate_ycenter_offset);
     ROS_INFO("CasinoGate: Detected left side. Aligning to right side");
   }
 

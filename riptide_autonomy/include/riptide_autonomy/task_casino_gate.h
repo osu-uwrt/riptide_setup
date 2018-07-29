@@ -33,12 +33,12 @@ private:
   riptide_msgs::AttitudeCommand attitude_cmd;
 
   double gate_heading, end_pos_offset, pass_thru_duration, id_correct_color_duration;
-  int align_id, left_color, right_color;
+  int left_color, right_color;
   bool passing_on_left, passing_on_right, passed_thru_gate, braked;
   bool detected_black, detected_red, detected_correct_color;
   string object_name;
-  double bbox_zcenter_fraction, correct_bbox_frame_fraction;
-  double incorrect_bbox_frame_fraction, incorrect_bbox_ycenter_fraction;
+  double gate_zcenter_offset, gate_width;
+  double incorrect_gate_ycenter_offset, incorrect_gate_width;
 
   DetectionValidator *detectionBlackValidator, *detectionRedValidator;
   ErrorValidator *xValidator, *yValidator, *zValidator, *yawValidator;

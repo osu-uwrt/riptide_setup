@@ -9,10 +9,10 @@
 #include "riptide_msgs/ControlStatusLinear.h"
 #include "riptide_msgs/AttitudeCommand.h"
 #include "riptide_msgs/AlignmentCommand.h"
-#include "riptide_msgs/Pneumatics.h"
 #include "darknet_ros_msgs/BoundingBoxes.h"
 #include "darknet_ros_msgs/BoundingBox.h"
 #include "riptide_autonomy/be_autonomous.h"
+#include "riptide_msgs/validators.h"
 #include <cmath>
 using namespace std;
 typedef riptide_msgs::Constants rc;
@@ -32,11 +32,12 @@ private:
   riptide_msgs::AttitudeCommand attitude_cmd;
 
   double detection_duration_black, detection_duration_red, error_duration, pass_thru_duration;
-  int detections_black, detections_red, attempts_black, attempts_red, align_id, left_color;
-  ros::Time error_check_start;
-  ros::Time detect_black_start, detect_red_start;
-  bool clock_is_ticking, detected_dice1, detected_dice2, detecte_dice5, detected_dice6;
-  string object_name;
+
+  bool detected_dice1, detected_dice2, detecte_dice5, detected_dice6;
+  int completed[2], dice_map[2][2], 
+
+  DetectionValidator *detection1Validator, *detection2Validator, *detection5Validator, *detection6Validator;
+  ErrorValidator *xValidator, *yValidator, *zValidator, *yawValidator;
 
   // Create instance to master
   BeAutonomous *master;
@@ -46,7 +47,8 @@ public:
   void Initialize();
   void Start();
   void IDDice(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg);
-  void AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr &status_msg);
+  void Align2FirstDice(const riptide_msgs::ControlStatusLinear::ConstPtr &status_msg);
+  void Align2SecondDice(const riptide_msgs::ControlStatusLinear::ConstPtr &status_msg);
   void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &status_msg);
   void PassThruTimer(const ros::TimerEvent &event);
   void SetEndPos();

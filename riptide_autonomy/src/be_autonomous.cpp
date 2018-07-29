@@ -41,9 +41,9 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous")
   BeAutonomous::LoadParam<double>("Controller_Thresholds/roll_thresh", roll_thresh);
   BeAutonomous::LoadParam<double>("Controller_Thresholds/pitch_thresh", pitch_thresh);
   BeAutonomous::LoadParam<double>("Controller_Thresholds/yaw_thresh", yaw_thresh);
-  BeAutonomous::LoadParam<double>("Controller_Thresholds/error_duration_thresh", error_duration_thresh);
-  BeAutonomous::LoadParam<double>("Controller_Thresholds/bbox_surge_duration_thresh", bbox_surge_duration_thresh);
-  BeAutonomous::LoadParam<double>("Controller_Thresholds/bbox_heave_duration_thresh", bbox_heave_duration_thresh);
+  BeAutonomous::LoadParam<double>("Controller_Thresholds/error_duration", error_duration);
+  BeAutonomous::LoadParam<double>("Controller_Thresholds/bbox_surge_duration", bbox_surge_duration);
+  BeAutonomous::LoadParam<double>("Controller_Thresholds/bbox_heave_duration", bbox_heave_duration);
 
   ROS_INFO("BE: Competition id: %i", competition_id);
 
@@ -343,7 +343,7 @@ void BeAutonomous::UpdateTaskInfo()
   search_accel = tasks["tasks"][task_id]["search_accel"].as<double>();
   align_thresh = tasks["tasks"][task_id]["align_thresh"].as<int>();
   bbox_thresh = tasks["tasks"][task_id]["bbox_thresh"].as<int>();
-  detection_duration_thresh = tasks["tasks"][task_id]["detection_duration_thresh"].as<double>();
+  detection_duration = tasks["tasks"][task_id]["detection_duration"].as<double>();
   detections_req = tasks["tasks"][task_id]["detections_req"].as<int>();
 
   // Publish new task info
