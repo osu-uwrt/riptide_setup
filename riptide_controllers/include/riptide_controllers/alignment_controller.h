@@ -4,6 +4,7 @@
 #include "ros/ros.h"
 #include "control_toolbox/pid.h"
 #include "geometry_msgs/Vector3.h"
+#include "std_msgs/Float64.h"
 #include "riptide_msgs/Object.h"
 #include "riptide_msgs/AlignmentCommand.h"
 #include "riptide_msgs/TaskInfo.h"
@@ -21,7 +22,7 @@ class AlignmentController
     // Comms
     ros::NodeHandle nh;
     ros::Subscriber alignment_cmd_sub, object_sub, depth_sub, reset_sub, task_info_sub;
-    ros::Publisher xy_pub, depth_pub, status_pub;
+    ros::Publisher x_pub, y_pub, depth_pub, status_pub;
     ros::Timer timer;
 
     // IIR Filter variables for error_dot
@@ -31,7 +32,7 @@ class AlignmentController
 
     control_toolbox::Pid x_pid, y_pid, z_pid;
     double heave_cmd;
-    geometry_msgs::Vector3 xy_cmd;
+    std_msgs::Float64 x_cmd, y_cmd;
     riptide_msgs::DepthCommand depth_cmd;
 
     riptide_msgs::ControlStatusLinear status_msg;

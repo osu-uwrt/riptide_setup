@@ -49,7 +49,7 @@ public:
   // Subscribers, Publishers, and Timers
   ros::NodeHandle nh;
   ros::Subscriber switch_sub, imu_sub, depth_sub;
-  ros::Publisher linear_accel_pub, attitude_pub, depth_pub, alignment_pub, pneumatics_pub;
+  ros::Publisher x_accel_pub, y_accel_pub, z_accel_pub, attitude_pub, depth_pub, alignment_pub, pneumatics_pub;
   ros::Publisher thrust_pub, reset_pub, task_info_pub, state_mission_pub;
   ros::Timer timer;
 

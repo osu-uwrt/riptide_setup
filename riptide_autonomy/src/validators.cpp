@@ -11,17 +11,14 @@ bool DetectionValidator::Validate()
 {
   if (++detections == 1) {
     startTime = ros::Time::now();
+  }
+
+  if (ros::Time::now().toSec() - startTime.toSec() > durationThresh) {
+    valid = detections >= detsReq;
     attempts++;
   }
 
-  if (ros::Time::now().toSec() - startTime.toSec() > durationThresh)
-  {
-    valid = detections >= detsReq;
-    detections = 0;
-    attempts = valid ? 1 : attempts + 1;
-    return valid;
-  }
-  return false;
+  return valid;
 }
 
 bool DetectionValidator::IsValid()
@@ -43,7 +40,7 @@ void DetectionValidator::Reset()
 {
   valid = false;
   detections = 0;
-  attempts = 1;
+  attempts = 0;
 }
 
 ErrorValidator::ErrorValidator(double errorThresh, double duration)

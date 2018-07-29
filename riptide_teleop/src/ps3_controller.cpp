@@ -14,7 +14,8 @@ PS3Controller::PS3Controller() : nh("ps3_controller") {
   joy_sub = nh.subscribe<sensor_msgs::Joy>("/joy", 1, &PS3Controller::JoyCB, this);
   depth_sub = nh.subscribe<riptide_msgs::Depth>("/state/depth", 1, &PS3Controller::DepthCB, this);
   attitude_pub = nh.advertise<riptide_msgs::AttitudeCommand>("/command/attitude", 1);
-  lin_accel_pub = nh.advertise<geometry_msgs::Vector3>("/command/accel_linear", 1);
+  x_accel_pub = nh.advertise<std_msgs::Float64>("/command/accel_x", 1);
+  y_accel_pub = nh.advertise<std_msgs::Float64>("/command/accel_y", 1);
   depth_pub = nh.advertise<riptide_msgs::DepthCommand>("/command/depth", 1);
   reset_pub = nh.advertise<riptide_msgs::ResetControls>("/controls/reset", 1);
   plane_pub = nh.advertise<std_msgs::Int8>("/command/ps3_plane", 1);
@@ -125,10 +126,10 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr& joy) {
       isInit = true;
       cmd_attitude.euler_rpy.z = round(euler_rpy.z);
 
-      if(isDepthWorking)
+      //if(isDepthWorking)
         cmd_depth.depth = current_depth;
-      else
-        cmd_accel.z = 0;
+      //else
+      //  cmd_accel.z = 0;
     }
     else if(isInit) {
       // Update Roll and Pitch
@@ -178,15 +179,16 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr& joy) {
         if(!isL2Init && (joy->axes[AXES_REAR_L2] != 0))
           isL2Init = true;
 
-        if(isR2Init && (1 - joy->axes[AXES_REAR_R2] != 0)) // If pressed at all, inc z-accel
+        /*if(isR2Init && (1 - joy->axes[AXES_REAR_R2] != 0)) // If pressed at all, inc z-accel
           cmd_accel.z = 0.5*(1 - joy->axes[AXES_REAR_R2])*MAX_Z_ACCEL; // Multiplied by 0.5 to scale axes value from 0 to 1
         else if(isL2Init && (1 - joy->axes[AXES_REAR_L2] != 0)) // If pressed at all, dec z-accel
           cmd_accel.z = 0.5*(1 - joy->axes[AXES_REAR_L2])*MAX_Z_ACCEL; // Multiplied by 0.5 to scale axes value from 0 to 1
+          */
       }
 
       // Update Linear XY Accel
-      cmd_accel.x = joy->axes[AXES_STICK_RIGHT_UD]*MAX_XY_ACCEL; // Surge pos. forward
-      cmd_accel.y = joy->axes[AXES_STICK_RIGHT_LR]*MAX_XY_ACCEL; // Sway pos. left
+      x_cmd.data = joy->axes[AXES_STICK_RIGHT_UD]*MAX_XY_ACCEL; // Surge pos. forward
+      y_cmd.data = joy->axes[AXES_STICK_RIGHT_LR]*MAX_XY_ACCEL; // Sway pos. left
 
       if(joy->buttons[BUTTON_SELECT])
         alignment_plane = !alignment_plane;
@@ -222,9 +224,8 @@ void PS3Controller::DisableControllers() {
   delta_attitude.y = 0;
   delta_attitude.z = 0;
 
-  cmd_accel.x = 0;
-  cmd_accel.y = 0;
-  cmd_accel.z = 0;
+  x_cmd.data = 0;
+  y_cmd.data = 0;
 
   cmd_depth.active = false;
   cmd_depth.depth = 0;
@@ -282,7 +283,8 @@ void PS3Controller::UpdateCommands() {
 
 void PS3Controller::PublishCommands() {
   attitude_pub.publish(cmd_attitude);
-  lin_accel_pub.publish(cmd_accel);
+  x_accel_pub.publish(x_cmd);
+  y_accel_pub.publish(y_cmd);
   if(isDepthWorking)
     depth_pub.publish(cmd_depth);
   plane_pub.publish(plane_msg);
