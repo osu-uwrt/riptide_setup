@@ -73,11 +73,11 @@ void Slots::Start()
 
   task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &Slots::Identify, this);
 
-  fruitValidator = new DetectionValidator(master->detections_req, master->detection_duration_thresh);
-  bigRedValidator = new DetectionValidator(master->detections_req, master->detection_duration_thresh);
-  xValidator = new ErrorValidator(master->align_thresh, master->error_duration_thresh);
-  yValidator = new ErrorValidator(master->bbox_thresh, master->bbox_surge_duration_thresh);
-  zValidator = new ErrorValidator(master->align_thresh, master->error_duration_thresh);
+  fruitValidator = new DetectionValidator(master->detections_req, master->detection_duration);
+  bigRedValidator = new DetectionValidator(master->detections_req, master->detection_duration);
+  xValidator = new ErrorValidator(master->align_thresh, master->error_duration);
+  yValidator = new ErrorValidator(master->bbox_thresh, master->bbox_surge_duration);
+  zValidator = new ErrorValidator(master->align_thresh, master->error_duration);
 
   fruitValidator->Reset();
   bigRedValidator->Reset();

@@ -81,14 +81,14 @@ void Dice::IDDice(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg)
     if (bbox_msg->bounding_boxes.at(i).Class == "Casino_Gate_Black")
     {
       detections_black++;
-      detected_black = ValidateDetections(&detections_black, &detection_duration_black, master->detections_req, master->detection_duration_thresh, &detect_black_start, &attempts_black);
+      detected_black = ValidateDetections(&detections_black, &detection_duration_black, master->detections_req, master->detection_duration, &detect_black_start, &attempts_black);
       if (!detected_black)
         ROS_INFO("DiceBlack: %i Attemps - %i detections in %f sec", attempts_black, detections_black, detection_duration_black);
     }
     else
     {
       detections_red++;
-      detected_red = ValidateDetections(&detections_red, &detection_duration_red, master->detections_req, master->detection_duration_thresh, &detect_red_start, &attempts_red);
+      detected_red = ValidateDetections(&detections_red, &detection_duration_red, master->detections_req, master->detection_duration, &detect_red_start, &attempts_red);
       if (!detected_red)
         ROS_INFO("DiceBlack: %i Attemps - %i detections in %f sec", attempts_red, detections_red, detection_duration_red);
     }
@@ -150,7 +150,7 @@ void Dice::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr &
 {
   if (align_id == ALIGN_YZ) // Perform (A) - YZ alignment
   {
-    if (ValidateError2(status_msg->y.error, status_msg->z.error, &error_duration, master->align_thresh, master->error_duration_thresh, &clock_is_ticking, &error_check_start))
+    if (ValidateError2(status_msg->y.error, status_msg->z.error, &error_duration, master->align_thresh, master->error_duration, &clock_is_ticking, &error_check_start))
     {
       align_id = ALIGN_BBOX_WIDTH; // Verify if bbox alignment will work
       // Activate X alignment controller
@@ -161,7 +161,7 @@ void Dice::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr &
   }
   else if (align_id == ALIGN_BBOX_WIDTH) // Perform (B) - X alignment
   {
-    if (ValidateError(status_msg->x.error, &error_duration, master->bbox_thresh, master->bbox_surge_duration_thresh, &clock_is_ticking, &error_check_start))
+    if (ValidateError(status_msg->x.error, &error_duration, master->bbox_thresh, master->bbox_surge_duration, &clock_is_ticking, &error_check_start))
     {
       alignment_status_sub.shutdown();
 
@@ -183,7 +183,7 @@ void Dice::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr &
 // Make sure the robot is at the correct heading based on the quadrant
 void Dice::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &status_msg)
 {
-  if (ValidateError(status_msg->yaw.error, &error_duration, master->yaw_thresh, master->error_duration_thresh, &clock_is_ticking, &error_check_start))
+  if (ValidateError(status_msg->yaw.error, &error_duration, master->yaw_thresh, master->error_duration, &clock_is_ticking, &error_check_start))
   {
     attitude_status_sub.shutdown();
 
@@ -216,7 +216,7 @@ void Dice::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &
     else
       error_duration = ros::Time::now().toSec() - error_check_start.toSec();
 
-    if (error_duration >= master->error_duration_thresh)
+    if (error_duration >= master->error_duration)
     {
       // Shutdown alignment callback
       attitude_status_sub.shutdown();

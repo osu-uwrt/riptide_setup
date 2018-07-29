@@ -23,8 +23,8 @@ Roulette::Roulette(BeAutonomous *master)
 void Roulette::Initialize()
 {
   num_markers_dropped = 0;
+  drop_time = 0;
   drop_duration = 0;
-  drop_duration_thresh = 0;
   drop_clock_is_ticking = false;
 
   for (int i = 0; i < sizeof(active_subs) / sizeof(active_subs[0]); i++)
@@ -33,20 +33,23 @@ void Roulette::Initialize()
 
 void Roulette::Start()
 {
-  drop_duration_thresh = master->tasks["tasks"][master->task_id]["drop_duration_thresh"].as<double>();
+  drop_duration = master->tasks["tasks"][master->task_id]["drop_duration"].as<double>();
 
-  detectionValidator = new DetectionValidator(master->detections_req, master->detection_duration_thresh);
-  xValidator = new ErrorValidator(master->align_thresh, master->error_duration_thresh);
-  yValidator = new ErrorValidator(master->align_thresh, master->error_duration_thresh);
-  zValidator = new ErrorValidator(master->bbox_thresh, master->bbox_heave_duration_thresh);
-  yawValidator = new ErrorValidator(master->yaw_thresh, master->error_duration_thresh);
+  detectionValidator = new DetectionValidator(master->detections_req, master->detection_duration);
+  xValidator = new ErrorValidator(master->align_thresh, master->error_duration);
+  yValidator = new ErrorValidator(master->align_thresh, master->error_duration);
+  zValidator = new ErrorValidator(master->bbox_thresh, master->bbox_heave_duration);
+  yawValidator = new ErrorValidator(master->yaw_thresh, master->error_duration);
+
+  roulette_bbox_height = master->tasks["tasks"][master->task_id]["roulette_bbox_height"].as<double>();
+  roulette_ycenter_offset = master->tasks["tasks"][master->task_id]["roulette_ycenter_offset"].as<double>();
 
   align_cmd.surge_active = false;
   align_cmd.sway_active = false;
   align_cmd.heave_active = false;
   align_cmd.object_name = master->object_names.at(0); // Roulette
   align_cmd.alignment_plane = master->alignment_plane;
-  align_cmd.bbox_dim = (int)(master->frame_height * 0.7);
+  align_cmd.bbox_dim = (int)(master->frame_height * roulette_bbox_height);
   align_cmd.bbox_control = rc::CONTROL_BBOX_HEIGHT;
   align_cmd.target_pos.x = 0;
   align_cmd.target_pos.y = 0;
@@ -69,7 +72,7 @@ void Roulette::IDRoulette(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_
   if (detectionValidator->Validate())
   {
     task_bbox_sub.shutdown();
-    master->tslam->Abort(true);
+    master->tslam->Abort(false);
 
     // Send alignment command to put in center of frame (activate controllers)
     // Set points already specified in initial alignment command
@@ -155,7 +158,7 @@ void Roulette::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstP
 
     // Now align to a bit left of the roulette center
     align_cmd.target_pos.x = 0;
-    align_cmd.target_pos.y = -(master->frame_width / 6);
+    align_cmd.target_pos.y = -(int)(master->frame_width * roulette_ycenter_offset);
     align_cmd.target_pos.z = 0;
     master->alignment_pub.publish(align_cmd);
     //align_id = ALIGN_OFFSET;
@@ -179,9 +182,9 @@ void Roulette::OffsetAlignmentStatusCB(const riptide_msgs::ControlStatusLinear::
       pneumatics_cmd.manipulator = false;
       pneumatics_cmd.duration = 300; // [ms]
 
-      if (!drop_clock_is_ticking || drop_duration > drop_duration_thresh)
+      if (!drop_clock_is_ticking || drop_time > drop_duration)
       {
-        drop_time = ros::Time::now();
+        drop_start_time = ros::Time::now();
         drop_clock_is_ticking = true;
         master->pneumatics_pub.publish(pneumatics_cmd);
         num_markers_dropped++;
@@ -189,7 +192,7 @@ void Roulette::OffsetAlignmentStatusCB(const riptide_msgs::ControlStatusLinear::
       }
       else
       {
-        drop_duration = ros::Time::now().toSec() - drop_time.toSec();
+        drop_time = ros::Time::now().toSec() - drop_start_time.toSec();
       }
     }
     else
