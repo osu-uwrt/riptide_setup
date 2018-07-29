@@ -17,6 +17,8 @@ public:
   DetectionValidator(int detections, double duration);
   bool Validate();
   bool IsValid();
+  int GetDetections();
+  int GetAttempts();
   void Reset();
 };
 

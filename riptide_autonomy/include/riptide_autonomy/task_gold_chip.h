@@ -41,17 +41,26 @@ private:
   ros::Duration aligned_duration;
   double aligned_duration_thresh;
 
-  DetectionValidator chip_detector;
-  ErrorValidator x_validator;
-  ErrorValidator y_validator;
-  ErrorValidator bbox_validator;
+  DetectionValidator* chip_detector;
+  ErrorValidator* x_validator;
+  ErrorValidator* y_validator;
+  ErrorValidator* bbox_validator;
+
+  std_msgs::Float64 burn_accel_msg;
+  double burn_time;
+  double back_off_time;
+  ros::Timer timer;
 
   // Reference to master
   BeAutonomous* master;
 
+  void idToAlignment();
+  void StrikeGold();
+
 public:
 
-  Slots(BeAutonomous* master);
+  GoldChip(BeAutonomous* master);
+  void BurnCompleteCB(const ros::TimerEvent &event);
   void Initialize();
   void Start();
   void Identify(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_msg);

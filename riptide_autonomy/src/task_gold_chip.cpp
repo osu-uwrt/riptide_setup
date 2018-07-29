@@ -1,4 +1,8 @@
 // Gold chip, what it does:
+// 1. Identify gold chip
+// 2. Align to gold chip
+// 3. Burn towards gold chip
+// 4. Back off gold chip
 #include "riptide_autonomy/task_gold_chip.h"
 
 #define AST_CENTER 0
@@ -20,6 +24,9 @@ void GoldChip::Initialize() {
 }
 
 void GoldChip::Start() {
+  burn_time = master->tasks["tasks"][master->task_id]["burn_time"].as<double>();
+  back_off_time = master->tasks["tasks"][master->task_id]["back_off_time"].as<double>();
+  burn_accel_msg.data = master->search_accel;
   align_cmd.surge_active = false;
   align_cmd.sway_active = false;
   align_cmd.heave_active = false;
@@ -31,7 +38,7 @@ void GoldChip::Start() {
   align_cmd.target_pos.y = 0;
   align_cmd.target_pos.z = 0;
   master->alignment_pub.publish(align_cmd);
-  ROS_INFO("GoldChip: alignment command published (but disabled)");
+  ROS_INFO("GoldChip: Alignment controller disabled. Awaiting detections...");
 
   task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &GoldChip::Identify, this);
   active_subs.push_back(task_bbox_sub);
@@ -51,20 +58,21 @@ void GoldChip::idToAlignment() {
   alignment_state = AST_CENTER;
 
   // Take control
-  master->tslam->Abort(true);
   master->alignment_pub.publish(align_cmd);
   alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &GoldChip::AlignmentStatusCB, this);
   active_subs.push_back(alignment_status_sub);
 }
 
 void GoldChip::Identify(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_msg) {
-  int attempts = chip_detector.GetAttempts();
+  int attempts = chip_detector->GetAttempts();
   if (chip_detector->GetDetections() == 0) {
-    ROS_INFO("GoldChip: Beginning chip identificaion. Attempt %d", attempts);
+    ROS_INFO("GoldChip: Beginning target identificaion. Previous attempts: %d", attempts);
+    if (attempts == 0)
+      master->tslam->Abort(true);
   }
 
   if (chip_detector->Validate()) {
-    ROS_INFO("GoldChip: Detection complete. Identified Gold Chip after after %d attempts. Aligning to Gold Chip.", attempts);
+    ROS_INFO("GoldChip: Identification complete. Identified target after after %d attempts. Aligning to target.", chip_detector->GetAttempts());
     chip_detector->Reset();
     GoldChip::idToAlignment();
   }
@@ -81,11 +89,11 @@ void GoldChip::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstP
       align_cmd.surge_active = true;
       master->alignment_pub.publish(align_cmd);
       alignment_state = AST_BBOX;
-      ROS_INFO("GoldChip: Aligned to target. Depth locked in. Approaching the Gold Chip.");
+      ROS_INFO("GoldChip: Aligned to target. Depth locked in. Approaching target.");
     }
   } else if (alignment_state == AST_BBOX) {
     if (bbox_validator->Validate(status_msg->z.error)) {
-      ROS_INFO("GoldChip: Gold Chip within reach. Beginning push maneuver.");
+      ROS_INFO("GoldChip: Target within reach. Beginning push maneuver.");
       GoldChip::StrikeGold();
     }
   }
@@ -95,6 +103,21 @@ void GoldChip::StrikeGold() {
   mission_state = BURN_BABY_BURN;
   align_cmd.surge_active = false;
   master->alignment_pub.publish(align_cmd);
+  master->x_accel_pub.publish(burn_accel_msg);
+  ROS_INFO("GoldChip: Push burn start.");
+  timer = master->nh.createTimer(ros::Duration(burn_time), &GoldChip::BurnCompleteCB, this, true);
+}
+
+void GoldChip::BurnCompleteCB(const ros::TimerEvent &event) {
+  if (mission_state == BURN_BABY_BURN) {
+    mission_state = BACK_OFF_MAN;
+    timer = master->nh.createTimer(ros::Duration(back_off_time), &GoldChip::BurnCompleteCB, this, true);
+    ROS_INFO("GoldChip: Push burn complete. Backing off.");
+  } else if (mission_state == BACK_OFF_MAN) {
+    master->x_accel_pub.publish(burn_accel_msg);
+    ROS_INFO("GoldChip: Backed off. Task complete. Ending...");
+    GoldChip::Abort();
+  }
 }
 
 // Shutdown all active subscribers
@@ -102,11 +125,12 @@ void GoldChip::Abort() {
   GoldChip::Initialize();
 
   if(active_subs.size() > 0) {
-    for(int i=0; i<active_subs.size(); i++) {
+    for(int i = 0; i < active_subs.size(); i++) {
       active_subs.at(i).shutdown();
     }
     active_subs.clear();
   }
+
   align_cmd.surge_active = false;
   align_cmd.sway_active = false;
   align_cmd.heave_active = false;
