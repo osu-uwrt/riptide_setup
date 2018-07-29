@@ -32,11 +32,13 @@ private:
   riptide_msgs::AlignmentCommand align_cmd;
   riptide_msgs::AttitudeCommand attitude_cmd;
 
-  double gate_heading, end_pos_offset, pass_thru_duration;
-  int align_id, left_color;
+  double gate_heading, end_pos_offset, pass_thru_duration, id_correct_color_duration;
+  int align_id, left_color, right_color;
   bool passing_on_left, passing_on_right, passed_thru_gate, braked;
   bool detected_black, detected_red, detected_correct_color;
   string object_name;
+  double bbox_zcenter_fraction, correct_bbox_frame_fraction;
+  double incorrect_bbox_frame_fraction, incorrect_bbox_ycenter_fraction;
 
   DetectionValidator *detectionBlackValidator, *detectionRedValidator;
   ErrorValidator *xValidator, *yValidator, *zValidator, *yawValidator;
@@ -49,6 +51,8 @@ public:
   void Initialize();
   void Start();
   void IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg);
+  void IDCasinoGateCorrectly(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg);
+  void EndSecondIDGateCB(const ros::TimerEvent &event);
   void PositionAlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr &status_msg);
   void BBoxAlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr &status_msg);
   void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &status_msg);

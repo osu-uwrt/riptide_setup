@@ -6,6 +6,11 @@ tasks: [
       search_depth: 1,
       search_accel: 0.8,
       pass_thru_duration: 4.0, # [s]
+      id_correct_color_duration: 4, # [s]
+      bbox_zcenter_fraction: 0.25,
+      correct_bbox_frame_fraction: 0.6,
+      incorrect_bbox_frame_fraction: 0.4,
+      incorrect_bbox_center_fraction: 0.2,
       objects: ["Casino_Gate_Black", "Casino_Gate_Red"],
       thresholds: [0.3, 0.3],
       align_thresh: 30, # [pixels]
