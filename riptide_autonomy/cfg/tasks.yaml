@@ -92,7 +92,7 @@ tasks: [
       search_depth: 2.0,
       search_accel: 0.8,
       objects: ["Roulette"],
-      thresholds: [0.5],
+      thresholds: [0.1],
       drop_duration_thresh: 4.0,
       align_thresh: 30, # [pixels]
       bbox_thresh: 30, # [pixels]

@@ -197,11 +197,9 @@ void CasinoGate::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::Cons
     ROS_INFO("CasinoGate: Aligned to CasinoGate with linear and attitude controllers");
 
     // Publish forward accel and call it a success after a few seconds
-    geometry_msgs::Vector3 linear_accel_cmd;
-    linear_accel_cmd.x = master->search_accel;
-    linear_accel_cmd.y = 0;
-    linear_accel_cmd.z = 0;
-    master->linear_accel_pub.publish(linear_accel_cmd);
+    std_msgs::Float64 msg;
+    msg.data = master->search_accel;
+    master->x_accel_pub.publish(msg);
 
     pass_thru_duration = master->tasks["tasks"][master->task_id]["pass_thru_duration"].as<double>();
     timer = master->nh.createTimer(ros::Duration(pass_thru_duration), &CasinoGate::PassThruTimer, this, true);
@@ -211,22 +209,20 @@ void CasinoGate::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::Cons
 
 void CasinoGate::PassThruTimer(const ros::TimerEvent &event)
 {
-  geometry_msgs::Vector3 msg;
-  msg.x = 0;
-  msg.y = 0;
-  msg.z = 0;
+  std_msgs::Float64 msg;
+  msg.data = 0;
   if (!passed_thru_gate)
   {
     passed_thru_gate = true;
-    msg.x = -(master->search_accel);
-    master->linear_accel_pub.publish(msg);
+    msg.data = -(master->search_accel);
+    master->x_accel_pub.publish(msg);
     timer = master->nh.createTimer(ros::Duration(0.25), &CasinoGate::PassThruTimer, this, true);
     ROS_INFO("CasinoGate: Passed thru gate...I think. Timer set for braking.");
   }
   else if (passed_thru_gate && !braked)
   {
     braked = true;
-    master->linear_accel_pub.publish(msg);
+    master->x_accel_pub.publish(msg);
     ROS_INFO("CasinoGate: Completed. Thruster brake applied.");
     CasinoGate::SetEndPos();
     CasinoGate::Abort();
