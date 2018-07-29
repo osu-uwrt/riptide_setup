@@ -60,6 +60,7 @@ void CasinoGate::Start()
   braked = false;
   detected_black = false;
   detected_red = false;
+  detected_correct_color = false;
   passing_on_right = false;
   passing_on_left = false;
   task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &CasinoGate::IDCasinoGate, this);
@@ -86,7 +87,13 @@ void CasinoGate::IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr &b
   // Set the side we are passing on and update the target y-pos in the frame
   if (detected_black || detected_red)
   {
-    detectionRedValidator->Reset();
+    master->tslam->Abort(false);
+    if((detected_black && master->color == rc::COLOR_BLACK)) && (detected_red && master->color == rc::COLOR_RED))
+    {
+
+      
+    }
+    /*detectionRedValidator->Reset();
     detectionBlackValidator->Reset();
     task_bbox_sub.shutdown();
     master->tslam->Abort(false);
@@ -124,7 +131,7 @@ void CasinoGate::IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr &b
       }
       else
         ROS_INFO("CasinoGate: Detected right side. Aligning to center");
-    }
+    }*/
 
     align_cmd.surge_active = false;
     align_cmd.sway_active = true;

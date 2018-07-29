@@ -188,6 +188,8 @@ void BeAutonomous::EndMission()
 
     tslam->EndMission();
     tslam->Abort(false); // Don't apply thruster brake
+    casino_gate->Abort();
+    slots->Abort();
     roulette->Abort();
     path->Abort();
 

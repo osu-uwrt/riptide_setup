@@ -34,7 +34,8 @@ private:
 
   double gate_heading, end_pos_offset, pass_thru_duration;
   int align_id, left_color;
-  bool detected_black, detected_red, passing_on_left, passing_on_right, passed_thru_gate, braked;
+  bool passing_on_left, passing_on_right, passed_thru_gate, braked;
+  bool detected_black, detected_red, detected_correct_color;
   string object_name;
 
   DetectionValidator *detectionBlackValidator, *detectionRedValidator;

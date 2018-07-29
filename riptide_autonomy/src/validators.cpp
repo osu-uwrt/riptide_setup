@@ -56,6 +56,7 @@ bool ErrorValidator::Validate(double error)
   return false;
 }
 
+// FIX: This will not always mean the error is valid if you only look at the time difference
 bool ErrorValidator::IsValid()
 {
   return ros::Time::now().toSec() - startTime.toSec() > durationThresh;
