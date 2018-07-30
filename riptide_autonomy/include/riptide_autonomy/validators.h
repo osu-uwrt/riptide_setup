@@ -9,6 +9,7 @@ private:
   double durationThresh;
   int detsReq;
   int detections;
+  int attempts;
   ros::Time startTime;
   bool valid;
 
@@ -16,6 +17,8 @@ public:
   DetectionValidator(int detections, double duration);
   bool Validate();
   bool IsValid();
+  int GetDetections();
+  int GetAttempts();
   void Reset();
 };
 
@@ -31,6 +34,8 @@ public:
   ErrorValidator(double errorThresh, double duration);
   bool Validate(double error);
   bool IsValid();
+  int GetDetections();
+  int GetAttempts();
   void Reset();
 };
 

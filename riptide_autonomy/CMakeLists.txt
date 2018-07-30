@@ -25,6 +25,7 @@ set(AUTONOMY_OBJECTS
   src/task_path_marker.cpp
   src/task_slots.cpp
   src/task_roulette.cpp
+  src/task_gold_chip.cpp
   src/object_describer.cpp
   src/validators.cpp
 )

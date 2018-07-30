@@ -31,6 +31,7 @@
 #include "riptide_autonomy/task_path_marker.h"
 #include "riptide_autonomy/task_slots.h"
 #include "riptide_autonomy/task_roulette.h"
+#include "riptide_autonomy/task_gold_chip.h"
 
 using namespace std;
 typedef riptide_msgs::Constants rc;

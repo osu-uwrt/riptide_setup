@@ -66,12 +66,12 @@ tasks: [
       search_depth: 3,
       search_accel: 0.8,
       objects: ["Slots_Fruit", "Slots_Big_Red"],
-      torpedo_offset: { 
-        port: { y: 100, z: 0 }, 
-        stbd: { y: -100, z: 0 } 
+      torpedo_offset: {
+        port: { y: 100, z: 0 },
+        stbd: { y: -100, z: 0 }
       },
-      bbox_dim: 300,
-      bbox_control: 0,
+      big_red_bbox_height: 0.5,
+      fruit_bbox_height: 0.2,
       pneumatics_duration: 200,
       thresholds: [0.5, 0.5],
       align_thresh: 30, # [pixels]
@@ -85,6 +85,9 @@ tasks: [
       plane: 0,
       search_depth: 3,
       search_accel: 0.8,
+      burn_time: 2.5,
+      back_off_time: 2.5,
+      bbox_height: 0.5, # fraction of frame height
       objects: ["Buy_Gold_Chip"],
       thresholds: [0.5],
       align_thresh: 30, # [pixels]
@@ -114,6 +117,8 @@ tasks: [
       plane: 0,
       search_depth: 3,
       search_accel: 0.8,
+      burn_time: 2.5,
+      back_off_time: 2.5,
       objects: ["Buy_Gold_Chip"],
       thresholds: [0.5],
       align_thresh: 30, # [pixels]
