@@ -6,9 +6,9 @@
   <!--<include file="$(find riptide_vision)/launch/vision_jetson.launch" />-->
 
   <!-- If you want to rosbag these topics, then set competition to true -->
-  <arg name="competition" default="false" />
+  <arg name="log" default="false" />
   <node pkg="rosbag" type="record" name="record_autonomy" 
-        args="record -o /rosout_agg /darknet_ros/image_hud /task/bboxes" 
-        if="$(arg competition)" />
+        args="record -o ../mission /rosout_agg /darknet_ros/image_hud /task/bboxes" 
+        if="$(arg log)" />
         
 </launch>
