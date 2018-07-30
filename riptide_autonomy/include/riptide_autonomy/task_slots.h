@@ -47,7 +47,8 @@ private:
   // Alignment variables
   torpedoOffset torpedo_offsets[2];
   int bbox_control;
-  int bbox_dim;
+  double big_red_bbox_height;
+  double fruit_bbox_height;
   int alignment_state;
 
   DetectionValidator *fruitValidator, *bigRedValidator;

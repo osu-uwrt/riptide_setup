@@ -26,13 +26,14 @@ void GoldChip::Initialize() {
 void GoldChip::Start() {
   burn_time = master->tasks["tasks"][master->task_id]["burn_time"].as<double>();
   back_off_time = master->tasks["tasks"][master->task_id]["back_off_time"].as<double>();
+  bbox_height = master->tasks["tasks"][master->task_id]["bbox_height"].as<double>();
   burn_accel_msg.data = master->search_accel;
   align_cmd.surge_active = false;
   align_cmd.sway_active = false;
   align_cmd.heave_active = false;
   align_cmd.object_name = master->object_names.at(0);
   align_cmd.alignment_plane = master->alignment_plane;
-  align_cmd.bbox_dim = (int)(master->frame_height*0.7);
+  align_cmd.bbox_dim = (int)(master->frame_height * bbox_height);
   align_cmd.bbox_control = rc::CONTROL_BBOX_HEIGHT;
   align_cmd.target_pos.x = 0;
   align_cmd.target_pos.y = 0;
@@ -42,10 +43,10 @@ void GoldChip::Start() {
 
   task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &GoldChip::Identify, this);
   active_subs.push_back(task_bbox_sub);
-  chip_detector = new DetectionValidator(master->detections_req, master->detection_duration_thresh);
-  x_validator = new ErrorValidator(master->align_thresh, master->error_duration_thresh);
-  y_validator = new ErrorValidator(master->align_thresh, master->error_duration_thresh);
-  bbox_validator = new ErrorValidator(master->bbox_thresh, master->error_duration_thresh);
+  chip_detector = new DetectionValidator(master->detections_req, master->detection_duration);
+  x_validator = new ErrorValidator(master->align_thresh, master->error_duration);
+  y_validator = new ErrorValidator(master->align_thresh, master->error_duration);
+  bbox_validator = new ErrorValidator(master->bbox_thresh, master->error_duration);
 }
 
 void GoldChip::idToAlignment() {
@@ -67,11 +68,10 @@ void GoldChip::Identify(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_ms
   int attempts = chip_detector->GetAttempts();
   if (chip_detector->GetDetections() == 0) {
     ROS_INFO("GoldChip: Beginning target identificaion. Previous attempts: %d", attempts);
-    if (attempts == 0)
-      master->tslam->Abort(true);
   }
 
   if (chip_detector->Validate()) {
+    master->tslam->Abort(true);
     ROS_INFO("GoldChip: Identification complete. Identified target after after %d attempts. Aligning to target.", chip_detector->GetAttempts());
     chip_detector->Reset();
     GoldChip::idToAlignment();
@@ -117,6 +117,7 @@ void GoldChip::BurnCompleteCB(const ros::TimerEvent &event) {
     master->x_accel_pub.publish(burn_accel_msg);
     ROS_INFO("GoldChip: Backed off. Task complete. Ending...");
     GoldChip::Abort();
+    master->tslam->SetEndPos();
   }
 }
 

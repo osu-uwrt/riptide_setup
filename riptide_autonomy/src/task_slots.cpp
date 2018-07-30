@@ -54,16 +54,16 @@ void Slots::Start()
   torpedo_offsets[STBD_TORPEDO].y = master->tasks["tasks"][master->task_id]["torpedo_offset"]["stbd"]["y"].as<int>();
   torpedo_offsets[STBD_TORPEDO].z = master->tasks["tasks"][master->task_id]["torpedo_offset"]["stbd"]["z"].as<int>();
   pneumatics_duration = master->tasks["tasks"][master->task_id]["pneumatics_duration"].as<double>();
-  bbox_control = master->tasks["tasks"][master->task_id]["bbox_control"].as<int>();
-  bbox_dim = master->tasks["tasks"][master->task_id]["bbox_dim"].as<int>();
-  //aligned_duration_thresh = master->tasks["tasks"][master->task_id]["aligned_duration_thresh"].as<double>();
+  big_red_bbox_height = master->tasks["tasks"][master->task_id]["big_red_bbox_height"].as<double>();
+  fruit_bbox_height = master->tasks["tasks"][master->task_id]["fruit_bbox_height"].as<double>();
+
 
   align_cmd.surge_active = false;
   align_cmd.sway_active = false;
   align_cmd.heave_active = false;
   align_cmd.object_name = master->object_names.at(0);
   align_cmd.alignment_plane = master->alignment_plane;
-  align_cmd.bbox_dim = (int)(master->frame_height * 0.7);
+  align_cmd.bbox_dim = (int)(master->frame_height * big_red_bbox_height);
   align_cmd.bbox_control = rc::CONTROL_BBOX_HEIGHT;
   align_cmd.target_pos.x = 0;
   align_cmd.target_pos.y = 0;
@@ -124,10 +124,10 @@ void Slots::idToAlignment()
   align_cmd.sway_active = true;
   align_cmd.heave_active = true;
   align_cmd.object_name = master->object_names.at(mission_state);
-  align_cmd.bbox_dim = bbox_dim;
-  align_cmd.bbox_control = bbox_control;
+
   if (mission_state == MST_BIG_RED)
   {
+    align_cmd.bbox_dim = big_red_bbox_height;
     align_cmd.target_pos.y = torpedo_offsets[active_torpedo].y;
     align_cmd.target_pos.z = torpedo_offsets[active_torpedo].z;
     ROS_INFO("Target y: %f", align_cmd.target_pos.y);

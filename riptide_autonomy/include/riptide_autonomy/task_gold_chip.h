@@ -38,8 +38,7 @@ private:
   int alignment_state;
   bool align_timer_started;
   ros::Time align_start;
-  ros::Duration aligned_duration;
-  double aligned_duration_thresh;
+  double aligned_duration;
 
   DetectionValidator* chip_detector;
   ErrorValidator* x_validator;
@@ -49,6 +48,7 @@ private:
   std_msgs::Float64 burn_accel_msg;
   double burn_time;
   double back_off_time;
+  double bbox_height;
   ros::Timer timer;
 
   // Reference to master
