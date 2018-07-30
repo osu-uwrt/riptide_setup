@@ -24,6 +24,7 @@ tasks: [
       plane: 1,
       search_depth: 1,
       search_accel: 0.8,
+      path_angle: 135,
       objects: ["Path_Marker"],
       thresholds: [0.3],
       align_thresh: 30, # [pixels]
@@ -50,6 +51,7 @@ tasks: [
       plane: 1,
       search_depth: 2,
       search_accel: 0.8,
+      path_angle: 135,
       objects: ["Path_Marker"],
       thresholds: [0.6],
       align_thresh: 30, # [pixels]

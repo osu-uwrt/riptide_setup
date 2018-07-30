@@ -37,7 +37,7 @@ void CasinoGate::Start()
 
   object_name = (master->color == rc::COLOR_BLACK) ? master->object_names.at(0) : master->object_names.at(1); // Black side if statement true, Red otherwise
   gate_heading = master->tslam->task_map["task_map"]["map"][master->task_id]["heading"][master->tslam->quadrant].as<double>();
-  end_pos_offset = master->tslam->task_map["tasks"]["map"][master->task_id]["end_pos_offset"][master->tslam->quadrant].as<double>();
+  end_pos_offset = master->tslam->task_map["task_map"]["map"][master->task_id]["end_pos_offset"][master->tslam->quadrant].as<double>();
   left_color = master->tslam->task_map["task_map"]["map"][master->task_id]["left_color"][master->tslam->quadrant].as<int>();
   id_correct_color_duration = master->tasks["tasks"][master->task_id]["id_correct_color_duration"].as<double>();
   pass_thru_duration = master->tasks["tasks"][master->task_id]["pass_thru_duration"].as<double>();
@@ -69,9 +69,9 @@ void CasinoGate::Start()
   braked = false;
   detected_black = false;
   detected_red = false;
-  detected_correct_color = false;
   passing_on_right = false;
   passing_on_left = false;
+  passed_thru_gate = false;
   task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &CasinoGate::IDCasinoGate, this);
   ROS_INFO("CasinoGate: subscribed to /task/bboxes");
 }
@@ -114,46 +114,7 @@ void CasinoGate::IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr &b
     else
       passing_on_right = true;
 
-    // PLEASE KEEP just in case we need it!!!!!!!!!
-    /*detectionRedValidator->Reset();
-    detectionBlackValidator->Reset();
-    task_bbox_sub.shutdown();
-    master->tslam->Abort(false);
-
-    if (master->color == left_color) // Must pass on LEFT side
-    {
-      passing_on_left = true;
-      if (detected_black && detected_red) // Both detected - align object to center of frame
-      {
-        ROS_INFO("CasinoGate: Detected both sides. Aligning left side in center");
-      }
-      else if ((detected_red && left_color == rc::COLOR_BLACK) || (detected_black && left_color == rc::COLOR_RED))
-      {
-        // Detected the right side of the gate, so put target y-pos on right side of frame using the right side
-        align_cmd.object_name = master->object_names.at((master->color + 1) % 2); // Switch to detected object
-        align_cmd.target_pos.y = -(int)(master->frame_height / 3);
-        ROS_INFO("CasinoGate: Detected right side. Aligning to left side");
-      }
-      else
-        ROS_INFO("CasinoGate: Detected left side. Aligning to center");
-    }
-    else // Must pass on RIGHT side
-    {
-      passing_on_right = true;
-      if (detected_black && detected_red) // Both detected - align object to center of frame
-      {
-        ROS_INFO("CasinoGate: Detected both sides. Aligning right side in center");
-      }
-      else if ((detected_black && left_color == rc::COLOR_BLACK) || (detected_black && left_color == rc::COLOR_RED))
-      {
-        // Detected the left side of the gate, so put target y-pos on left side of frame using the left side
-        align_cmd.object_name = master->object_names.at((master->color + 1) % 2); // Switch to detected object
-        align_cmd.target_pos.y = (int)(master->frame_height / 3);
-        ROS_INFO("CasinoGate: Detected left side. Aligning to right side");
-      }
-      else
-        ROS_INFO("CasinoGate: Detected right side. Aligning to center");
-    }*/
+    
 
     // Correct color detected. Proceed
     align_cmd.surge_active = false;
@@ -222,7 +183,7 @@ void CasinoGate::EndSecondIDGateCB(const ros::TimerEvent &event)
     align_cmd.target_pos.y = -(int)(master->frame_height * incorrect_gate_ycenter_offset);
     ROS_INFO("CasinoGate: Detected right side. Aligning to left side");
   }
-  else if (master->color = right_color && ((detected_black && right_color == rc::COLOR_RED) || (detected_red && right_color == rc::COLOR_BLACK)))
+  else if (master->color == right_color && ((detected_black && right_color == rc::COLOR_RED) || (detected_red && right_color == rc::COLOR_BLACK)))
   {
     // Detected the left side of the gate, so put target y-pos on left side of frame using the left side
     passing_on_right = true;

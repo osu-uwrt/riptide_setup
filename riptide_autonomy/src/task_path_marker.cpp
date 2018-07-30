@@ -21,9 +21,6 @@ PathMarker::PathMarker(BeAutonomous *master)
 
 void PathMarker::Initialize()
 {
-  detections = 0;
-  attempts = 0;
-
   for (int i = 0; i < sizeof(active_subs) / sizeof(active_subs[0]); i++)
     active_subs[i]->shutdown();
 }
@@ -48,6 +45,8 @@ void PathMarker::Start()
   yawValidator = new ErrorValidator(master->yaw_thresh, master->error_duration);
   xValidator = new ErrorValidator(master->align_thresh, master->error_duration);
   yValidator = new ErrorValidator(master->align_thresh, master->error_duration);
+
+  path_angle = master->tasks["tasks"][master->task_id]["path_angle"].as<double>();
 }
 
 // If we see the Path Marker, abort tslam & get angle
@@ -55,6 +54,7 @@ void PathMarker::IDPathMarker(const darknet_ros_msgs::BoundingBoxes::ConstPtr &b
 {
   if (detectionValidator->Validate())
   {
+    detectionValidator->Reset();
     task_bbox_sub.shutdown();
     master->tslam->Abort(false);
 
@@ -78,13 +78,13 @@ void PathMarker::GotHeading(double heading)
   {
     pathDirection = right;
     ROS_INFO("Path Right");
-    path_heading = master->euler_rpy.z + (heading - (-22.5));
+    path_heading = master->euler_rpy.z + (heading - (-90 + path_angle / 2));
   }
   else
   {
     pathDirection = left;
     ROS_INFO("Path Left");
-    path_heading = master->euler_rpy.z + (heading - (-157.5));
+    path_heading = master->euler_rpy.z + (heading - (-90 - path_angle / 2));
   }
 
   path_heading = master->tslam->KeepHeadingInRange(path_heading);
@@ -128,9 +128,9 @@ void PathMarker::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::Cons
     alignment_status_sub.shutdown();
 
     if (pathDirection == right)
-      attitude_cmd.euler_rpy.z = path_heading - 45;
+      attitude_cmd.euler_rpy.z = path_heading - (180 - path_angle);
     else
-      attitude_cmd.euler_rpy.z = path_heading + 45;
+      attitude_cmd.euler_rpy.z = path_heading + (180 - path_angle);
 
     attitude_cmd.euler_rpy.z = master->tslam->KeepHeadingInRange(attitude_cmd.euler_rpy.z);
     master->attitude_pub.publish(attitude_cmd);
@@ -146,16 +146,13 @@ void PathMarker::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::Cons
 // Once we have turned, go
 void PathMarker::SecondAttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &status_msg)
 {
-  heading_average = (heading_average * 99 + abs(status_msg->yaw.error)) / 100;
-
   if (yawValidator->Validate(status_msg->yaw.error))
   {
     attitude_status_sub.shutdown();
-
     yawValidator->Reset();
 
     std_msgs::Float64 msg;
-    msg.data = 0;
+    msg.data = master->search_accel;
     master->x_accel_pub.publish(msg);
 
     ROS_INFO("HALF SPEED AHEAD!!!");
