@@ -20,7 +20,6 @@ void GoldChip::Initialize() {
   active_subs.clear();
 
   mission_state = -1;
-  delete chip_detector;
 }
 
 void GoldChip::Start() {
@@ -49,21 +48,6 @@ void GoldChip::Start() {
   bbox_validator = new ErrorValidator(master->bbox_thresh, master->error_duration);
 }
 
-void GoldChip::idToAlignment() {
-  task_bbox_sub.shutdown();
-  active_subs.erase(active_subs.end());
-
-  align_cmd.surge_active = false;
-  align_cmd.sway_active = true;
-  align_cmd.heave_active = true;
-  alignment_state = AST_CENTER;
-
-  // Take control
-  master->alignment_pub.publish(align_cmd);
-  alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &GoldChip::AlignmentStatusCB, this);
-  active_subs.push_back(alignment_status_sub);
-}
-
 void GoldChip::Identify(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_msg) {
   int attempts = chip_detector->GetAttempts();
   if (chip_detector->GetDetections() == 0) {
@@ -76,6 +60,20 @@ void GoldChip::Identify(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_ms
     chip_detector->Reset();
     GoldChip::idToAlignment();
   }
+}
+
+void GoldChip::idToAlignment() {
+  task_bbox_sub.shutdown();
+
+  align_cmd.surge_active = false;
+  align_cmd.sway_active = true;
+  align_cmd.heave_active = true;
+  alignment_state = AST_CENTER;
+
+  // Take control
+  master->alignment_pub.publish(align_cmd);
+  alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &GoldChip::AlignmentStatusCB, this);
+  active_subs.push_back(alignment_status_sub);
 }
 
 void GoldChip::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr& status_msg) {

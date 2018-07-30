@@ -29,6 +29,7 @@
 #include "riptide_autonomy/tslam.h"
 #include "riptide_autonomy/task_casino_gate.h"
 #include "riptide_autonomy/task_path_marker.h"
+#include "riptide_autonomy/task_gold_chip.h"
 #include "riptide_autonomy/task_slots.h"
 #include "riptide_autonomy/task_roulette.h"
 #include "riptide_autonomy/task_gold_chip.h"
@@ -41,6 +42,7 @@ class Roulette;
 class CasinoGate;
 class Slots;
 class PathMarker;
+class GoldChip;
 
 class BeAutonomous
 {
@@ -93,6 +95,7 @@ public:
   PathMarker* path;
   Roulette* roulette;
   Slots* slots;
+  GoldChip* gold_chip;
 
   BeAutonomous();
   template <typename T>

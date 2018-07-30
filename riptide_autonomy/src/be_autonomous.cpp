@@ -100,6 +100,7 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous")
   path = new PathMarker(this);
   slots = new Slots(this);
   roulette = new Roulette(this);
+  gold_chip = new GoldChip(this);
 
   ROS_INFO("BE: Created task objects. Awaiting mission start.");
 }
@@ -142,32 +143,32 @@ void BeAutonomous::StartTask()
       casino_gate->Start();
       break;
     case rc::TASK_PATH_MARKER1:
-      ROS_INFO("BE: Path Marker 1 unimplemented. Ending mission.");
-      BeAutonomous::EndMission();
+      ROS_INFO("BE: Starting Path Marker 1.");
+      path->Start();
       break;
     case rc::TASK_DICE:
       ROS_INFO("BE: Dice unimplemented. Ending mission.");
       BeAutonomous::EndMission();
       break;
     case rc::TASK_PATH_MARKER2:
-      ROS_INFO("BE: Path Marker 2 unimplemented. Ending mission.");
-      BeAutonomous::EndMission();
+      ROS_INFO("BE: Starting Path Marker 2.");
+      path->Start();
       break;
     case rc::TASK_SLOTS:
       ROS_INFO("BE: Starting slots task");
       slots->Start();
       break;
     case rc::TASK_BUY_GOLD_CHIP1:
-      ROS_INFO("BE: Buy Gold Chip 1 unimplemented. Ending mission.");
-      BeAutonomous::EndMission();
+      ROS_INFO("BE: Starting Buy Gold Chip 1.");
+      gold_chip->Start();
       break;
     case rc::TASK_ROULETTE:
-      ROS_INFO("BE: Starting roulette task");
+      ROS_INFO("BE: Starting Roulette Task.");
       roulette->Start();
       break;
     case rc::TASK_BUY_GOLD_CHIP2:
-      ROS_INFO("BE: Buy Gold Chip 2 unimplemented. Ending mission.");
-      BeAutonomous::EndMission();
+      ROS_INFO("BE: Starting Buy Gold Chip 2.");
+      gold_chip->Start();
       break;
     case rc::TASK_CASH_IN:
       ROS_INFO("BE: Cash In unimplemented. Ending mission.");
