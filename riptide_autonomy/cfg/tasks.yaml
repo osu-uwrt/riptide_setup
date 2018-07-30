@@ -37,7 +37,11 @@ tasks: [
       plane: 0,
       search_depth: 3,
       search_accel: 0.8,
+      bump_duration: 4, # [s]
+      dice_bbox_width: 0.25, # fraction of frame width
+      upper_dice_zcenter_offset: 0.25,
       objects: ["Dice1", "Dice2", "Dice5", "Dice6"],
+      preferred_objects: ["Dice6", "Dice5"],
       thresholds: [0.6, 0.6, 0.6, 0.6],
       align_thresh: 30, # [pixels]
       bbox_thresh: 30, # [pixels]

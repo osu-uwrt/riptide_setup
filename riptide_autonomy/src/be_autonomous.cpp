@@ -92,6 +92,8 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous")
   depth = 0;
   frame_width = 644;
   frame_height = 482;
+  cam_center_x = frame_width/2;
+  cam_center_y = frame_height/2;
 
   // Initialize class objects and pointers
   // The "new" keyword creates a pointer to the object
@@ -519,4 +521,6 @@ void BeAutonomous::ImageCB(const sensor_msgs::Image::ConstPtr &msg)
 
   frame_width = cv_ptr->image.size().width;
   frame_height = cv_ptr->image.size().height;
+  cam_center_x = frame_width/2;
+  cam_center_y = frame_height/2;
 }

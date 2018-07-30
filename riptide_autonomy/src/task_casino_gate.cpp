@@ -20,8 +20,6 @@ CasinoGate::CasinoGate(BeAutonomous *master)
 
 void CasinoGate::Initialize()
 {
-  gate_heading = 0;
-
   for (int i = 0; i < sizeof(active_subs) / sizeof(active_subs[0]); i++)
     active_subs[i]->shutdown();
 }
@@ -37,7 +35,7 @@ void CasinoGate::Start()
 
   object_name = (master->color == rc::COLOR_BLACK) ? master->object_names.at(0) : master->object_names.at(1); // Black side if statement true, Red otherwise
   gate_heading = master->tslam->task_map["task_map"]["map"][master->task_id]["heading"][master->tslam->quadrant].as<double>();
-  end_pos_offset = master->tslam->task_map["tasks"]["map"][master->task_id]["end_pos_offset"][master->tslam->quadrant].as<double>();
+  end_pos_offset = master->tslam->task_map["task_map"]["map"][master->task_id]["end_pos_offset"][master->tslam->quadrant].as<double>();
   left_color = master->tslam->task_map["task_map"]["map"][master->task_id]["left_color"][master->tslam->quadrant].as<int>();
   id_correct_color_duration = master->tasks["tasks"][master->task_id]["id_correct_color_duration"].as<double>();
   pass_thru_duration = master->tasks["tasks"][master->task_id]["pass_thru_duration"].as<double>();
@@ -96,13 +94,12 @@ void CasinoGate::IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr &b
   // Set the side we are passing on and update the target y-pos in the frame
   if (detected_black || detected_red)
   {
+    task_bbox_sub.shutdown();
     master->tslam->Abort(false);
 
     // If detected wrong color, give chance to detect the correct color
     if ((detected_black && master->color == rc::COLOR_RED) || (detected_red && master->color == rc::COLOR_BLACK))
     {
-      task_bbox_sub.shutdown();
-      master->tslam->Abort(false);
       task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &CasinoGate::IDCasinoGateCorrectly, this);
       timer = master->nh.createTimer(ros::Duration(id_correct_color_duration), &CasinoGate::EndSecondIDGateCB, this, true);
     }

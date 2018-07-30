@@ -31,10 +31,13 @@ private:
   riptide_msgs::AlignmentCommand align_cmd;
   riptide_msgs::AttitudeCommand attitude_cmd;
 
-  double detection_duration_black, detection_duration_red, error_duration, pass_thru_duration;
+  double bump_duration, dice_bbox_width, upper_dice_zcenter_offset;
+  int num_preferred_objects;
+  string preferred_objects, object_name;
 
   bool detected_dice1, detected_dice2, detecte_dice5, detected_dice6;
-  int completed[2], dice_map[2][2], 
+  int completed[2], dice_map[2][2], num_dice_detections;
+  int yCenters[4], zCenters[4];
 
   DetectionValidator *detection1Validator, *detection2Validator, *detection5Validator, *detection6Validator;
   ErrorValidator *xValidator, *yValidator, *zValidator, *yawValidator;
@@ -47,6 +50,8 @@ public:
   void Initialize();
   void Start();
   void IDDice(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg);
+  void MapDiceField(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg);
+  void UpdateDiceXCenter(int* value, int max, int min);
   void Align2FirstDice(const riptide_msgs::ControlStatusLinear::ConstPtr &status_msg);
   void Align2SecondDice(const riptide_msgs::ControlStatusLinear::ConstPtr &status_msg);
   void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &status_msg);

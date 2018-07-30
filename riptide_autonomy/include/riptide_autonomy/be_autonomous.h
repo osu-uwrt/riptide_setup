@@ -71,7 +71,7 @@ public:
   double search_depth, search_accel, detection_duration;
   int num_objects, align_thresh, bbox_thresh, detections_req;
   int competition_id, quadrant, task_id, last_task_id, total_tasks, task_order_index;
-  int alignment_plane, color, frame_width, frame_height;
+  int alignment_plane, color, frame_width, frame_height, cam_center_x, cam_center_y;
   vector<int> task_order;
   vector<string> object_names;
   bool run_single_task;
