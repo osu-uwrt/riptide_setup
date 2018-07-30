@@ -17,6 +17,7 @@
 */
 
 // TODO: Configure TSlam to take us back to a previous location or to a different part of the path
+// TODO: Add move forward, backwards, left, and right functionality for moving around other objects
 
 TSlam::TSlam(BeAutonomous *master)
 {
@@ -144,9 +145,9 @@ double TSlam::KeepHeadingInRange(double input)
 
 void TSlam::Start()
 {
-  pitchValidator = new ErrorValidator(master->pitch_thresh, master->error_duration_thresh);
-  yawValidator = new ErrorValidator(master->yaw_thresh, master->error_duration_thresh);
-  depthValidator = new ErrorValidator(master->depth_thresh, master->error_duration_thresh);
+  pitchValidator = new ErrorValidator(master->pitch_thresh, master->error_duration);
+  yawValidator = new ErrorValidator(master->yaw_thresh, master->error_duration);
+  depthValidator = new ErrorValidator(master->depth_thresh, master->error_duration);
   
   // Calculate heading to point towards next task
   TSlam::ReadMap();

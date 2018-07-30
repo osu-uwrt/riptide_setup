@@ -69,7 +69,7 @@ public:
   // Task Info
   YAML::Node tasks;
   string task_file, task_name, object_name;
-  double search_depth, search_accel, detection_duration_thresh;
+  double search_depth, search_accel, detection_duration;
   int num_objects, align_thresh, bbox_thresh, detections_req;
   int competition_id, quadrant, task_id, last_task_id, total_tasks, task_order_index;
   int alignment_plane, color, frame_width, frame_height;
@@ -82,8 +82,8 @@ public:
   double depth;
 
   // Task Parameters
-  double depth_thresh, roll_thresh, pitch_thresh, yaw_thresh, error_duration_thresh;
-  double bbox_surge_duration_thresh, bbox_heave_duration_thresh;
+  double depth_thresh, roll_thresh, pitch_thresh, yaw_thresh, error_duration;
+  double bbox_surge_duration, bbox_heave_duration;
 
   // Task Specific Objects
   TSlam* tslam;

@@ -44,10 +44,10 @@ void PathMarker::Start()
   ROS_INFO("PathMarker: alignment command published (but disabled)");
 
   task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &PathMarker::IDPathMarker, this);
-  detectionValidator = new DetectionValidator(master->detections_req, master->detection_duration_thresh);
-  yawValidator = new ErrorValidator(master->yaw_thresh, master->error_duration_thresh);
-  xValidator = new ErrorValidator(master->align_thresh, master->error_duration_thresh);
-  yValidator = new ErrorValidator(master->align_thresh, master->error_duration_thresh);
+  detectionValidator = new DetectionValidator(master->detections_req, master->detection_duration);
+  yawValidator = new ErrorValidator(master->yaw_thresh, master->error_duration);
+  xValidator = new ErrorValidator(master->align_thresh, master->error_duration);
+  yValidator = new ErrorValidator(master->align_thresh, master->error_duration);
 }
 
 // If we see the Path Marker, abort tslam & get angle
@@ -56,7 +56,7 @@ void PathMarker::IDPathMarker(const darknet_ros_msgs::BoundingBoxes::ConstPtr &b
   if (detectionValidator->Validate())
   {
     task_bbox_sub.shutdown();
-    master->tslam->Abort(true);
+    master->tslam->Abort(false);
 
     od->GetPathHeading(&PathMarker::GotHeading, this);
     ROS_INFO("Found path, getting heading");

@@ -41,9 +41,11 @@ private:
 
   // ALignment variables
   bool got_heading;
-  double green_heading, marker_drop_heading, drop_duration, drop_duration_thresh;
+  double green_heading, marker_drop_heading, drop_time, drop_duration;
   int num_markers_dropped;
-  ros::Time drop_time;
+  ros::Time drop_start_time;
+
+  double roulette_bbox_height, roulette_ycenter_offset;
 
   DetectionValidator *detectionValidator;
   ErrorValidator *xValidator, *yValidator, *zValidator, *yawValidator;
