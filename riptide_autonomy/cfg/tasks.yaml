@@ -3,7 +3,7 @@ tasks: [
       id: 0,
       name: "Casino_Gate",
       plane: 0,
-      search_depth: 1,
+      search_depth: 1.5,
       search_accel: 0.8,
       pass_thru_duration: 4.0, # [s]
       id_correct_color_duration: 4, # [s]

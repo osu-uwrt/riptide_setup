@@ -9,8 +9,8 @@ task_map: {
     {
       id: 0,
       name: "Casino_Gate",
-      start_x: [0, 0, -10, 0],
-      start_y: [0, 0, 2, 0],
+      start_x: [0, 0, -10, 10],
+      start_y: [0, 0, 1.5, 1.5],
       end_mid_x: [0, 0, -13, 0],
       end_mid_y: [0, 0, 2, 0],
       end_x: [0, 0, -12, 0],
