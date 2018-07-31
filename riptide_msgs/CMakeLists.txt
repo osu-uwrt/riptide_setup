@@ -38,6 +38,7 @@ add_message_files(
     TaskInfo.msg
     Object.msg
     MissionState.msg
+    StatusLight.msg
 )
 
 generate_messages(DEPENDENCIES std_msgs geometry_msgs darknet_ros_msgs)

@@ -4,7 +4,15 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "object_processor");
   ObjectProcessor yp;
-  ros::spin();
+  try
+  {
+    ros::spin();
+  }
+  catch (exception &e)
+  {
+    ROS_ERROR("Obj Pro Error: %s", e.what());
+    ROS_ERROR("Obj Pro: Shutting Down");
+  }
 }
 
 ObjectProcessor::ObjectProcessor() : nh("object_processor") {

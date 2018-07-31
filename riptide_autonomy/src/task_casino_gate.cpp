@@ -97,6 +97,12 @@ void CasinoGate::IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr &b
   if (detected_black || detected_red)
   {
     master->tslam->Abort(false);
+    detectionRedValidator->Reset();
+    detectionBlackValidator->Reset();
+    if (master->color == left_color)
+      passing_on_left = true;
+    else
+      passing_on_right = true;
 
     // If detected wrong color, give chance to detect the correct color
     if ((detected_black && master->color == rc::COLOR_RED) || (detected_red && master->color == rc::COLOR_BLACK))
@@ -106,23 +112,16 @@ void CasinoGate::IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr &b
       task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &CasinoGate::IDCasinoGateCorrectly, this);
       timer = master->nh.createTimer(ros::Duration(id_correct_color_duration), &CasinoGate::EndSecondIDGateCB, this, true);
     }
-
-    detectionRedValidator->Reset();
-    detectionBlackValidator->Reset();
-    if (master->color == left_color)
-      passing_on_left = true;
     else
-      passing_on_right = true;
-
-    
-
-    // Correct color detected. Proceed
-    align_cmd.surge_active = false;
-    align_cmd.sway_active = true;
-    align_cmd.heave_active = true;
-    master->alignment_pub.publish(align_cmd);
-    alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &CasinoGate::PositionAlignmentStatusCB, this);
-    ROS_INFO("CasinoGate: Aligning to %s. Checking sway/heave error", object_name.c_str());
+    {
+      // Correct color detected. Proceed
+      align_cmd.surge_active = false;
+      align_cmd.sway_active = true;
+      align_cmd.heave_active = true;
+      master->alignment_pub.publish(align_cmd);
+      alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &CasinoGate::PositionAlignmentStatusCB, this);
+      ROS_INFO("CasinoGate: Aligning to %s. Checking sway/heave error", object_name.c_str());
+    }
   }
 }
 
@@ -266,7 +265,6 @@ void CasinoGate::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::Cons
 void CasinoGate::PassThruTimer(const ros::TimerEvent &event)
 {
   std_msgs::Float64 msg;
-  msg.data = 0;
   if (!passed_thru_gate)
   {
     passed_thru_gate = true;
@@ -277,6 +275,7 @@ void CasinoGate::PassThruTimer(const ros::TimerEvent &event)
   }
   else if (passed_thru_gate && !braked)
   {
+    msg.data = 0;
     braked = true;
     master->x_accel_pub.publish(msg);
     ROS_INFO("CasinoGate: Completed. Thruster brake applied.");
