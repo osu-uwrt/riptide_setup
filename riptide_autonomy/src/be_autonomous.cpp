@@ -100,6 +100,7 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous")
   tslam = new TSlam(this);
   casino_gate = new CasinoGate(this);
   path = new PathMarker(this);
+  dice = new Dice(this);
   slots = new Slots(this);
   roulette = new Roulette(this);
 
@@ -148,8 +149,8 @@ void BeAutonomous::StartTask()
       BeAutonomous::EndMission();
       break;
     case rc::TASK_DICE:
-      ROS_INFO("BE: Dice unimplemented. Ending mission.");
-      BeAutonomous::EndMission();
+      ROS_INFO("BE: Starting dice task.");
+      dice->Start();
       break;
     case rc::TASK_PATH_MARKER2:
       ROS_INFO("BE: Path Marker 2 unimplemented. Ending mission.");
@@ -472,7 +473,7 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr &switch_ms
     }
     else if (load_id < rc::MISSION_TEST)
     {
-      ROS_INFO("Starting mission. Maelstrom goin' under in %f sec.", start_timer - pre_start_duration);
+      ROS_INFO("Starting mission. Maelstrom sinking to bottom of ocean in %f sec.", start_timer - pre_start_duration);
       if (!clock_is_ticking)
       {
         pre_start_time = ros::Time::now();
@@ -483,7 +484,7 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr &switch_ms
 
       if (pre_start_duration > start_timer)
       {
-        ROS_INFO("About to call Starttask()");
+        ROS_INFO("About to call StartTask()");
         // Set these back to '0' or 'true' so it doesn't run again
         BeAutonomous::ResetSwitchPanel();
         BeAutonomous::SendInitMsgs();

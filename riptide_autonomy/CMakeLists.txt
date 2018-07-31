@@ -23,6 +23,7 @@ set(AUTONOMY_OBJECTS
   src/tslam.cpp
   src/task_casino_gate.cpp
   src/task_path_marker.cpp
+  src/task_dice.cpp
   src/task_slots.cpp
   src/task_roulette.cpp
   src/object_describer.cpp

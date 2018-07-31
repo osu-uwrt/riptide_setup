@@ -83,11 +83,13 @@ void CasinoGate::IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr &b
   {
     if (bbox_msg->bounding_boxes.at(i).Class == "Casino_Gate_Black")
     {
-      detected_black = detectionBlackValidator->Validate();
+      if(detectionBlackValidator->Validate())
+        detected_black = true;
     }
     else
     {
-      detected_red = detectionRedValidator->Validate();
+      if(detectionRedValidator->Validate())
+        detected_red = true;
     }
   }
 
@@ -170,11 +172,13 @@ void CasinoGate::IDCasinoGateCorrectly(const darknet_ros_msgs::BoundingBoxes::Co
   {
     if (bbox_msg->bounding_boxes.at(i).Class == master->object_name && master->color == rc::COLOR_BLACK)
     {
-      detected_black = detectionBlackValidator->Validate();
+      if(detectionBlackValidator->Validate())
+        detected_black = true;
     }
     else
     {
-      detected_red = detectionRedValidator->Validate();
+      if(detectionRedValidator->Validate())
+        detected_red = true;
     }
   }
 

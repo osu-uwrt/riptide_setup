@@ -29,6 +29,7 @@
 #include "riptide_autonomy/tslam.h"
 #include "riptide_autonomy/task_casino_gate.h"
 #include "riptide_autonomy/task_path_marker.h"
+#include "riptide_autonomy/task_dice.h"
 #include "riptide_autonomy/task_slots.h"
 #include "riptide_autonomy/task_roulette.h"
 
@@ -36,10 +37,11 @@ using namespace std;
 typedef riptide_msgs::Constants rc;
 
 class TSlam;
-class Roulette;
 class CasinoGate;
-class Slots;
 class PathMarker;
+class Dice;
+class Slots;
+class Roulette;
 
 class BeAutonomous
 {
@@ -90,6 +92,7 @@ public:
 
   CasinoGate* casino_gate;
   PathMarker* path;
+  Dice* dice;
   Roulette* roulette;
   Slots* slots;
 
