@@ -1,5 +1,5 @@
-#ifndef SLOTS_H
-#define SLOTS_H
+#ifndef GOLD_CHIP_H
+#define GOLD_CHIP_H
 
 #include "ros/ros.h"
 #include <vector>
@@ -21,12 +21,7 @@ typedef riptide_msgs::Constants rc;
 
 class BeAutonomous;
 
-struct torpedoOffset {
-  int y;
-  int z;
-};
-
-class Slots
+class GoldChip
 {
 
 private:
@@ -35,34 +30,37 @@ private:
 
   darknet_ros_msgs::BoundingBoxes task_bboxes;
   riptide_msgs::AlignmentCommand align_cmd;
-  riptide_msgs::AttitudeCommand attitude_cmd;
-  riptide_msgs::Pneumatics pneumatics_cmd;
 
   // Mission variables
   int mission_state;
-  int active_torpedo;
-  int torpedo_count;
-  int pneumatics_duration;
 
   // Alignment variables
-  torpedoOffset torpedo_offsets[2];
-  int bbox_control;
-  double big_red_bbox_height;
-  double fruit_bbox_height;
   int alignment_state;
+  bool align_timer_started;
+  ros::Time align_start;
+  double aligned_duration;
 
-  DetectionValidator *fruitValidator, *bigRedValidator;
-  ErrorValidator *xValidator, *yValidator, *zValidator;
+  DetectionValidator* chip_detector;
+  ErrorValidator* x_validator;
+  ErrorValidator* y_validator;
+  ErrorValidator* bbox_validator;
+
+  std_msgs::Float64 burn_accel_msg;
+  double burn_time;
+  double back_off_time;
+  double bbox_height;
+  ros::Timer timer;
 
   // Reference to master
   BeAutonomous* master;
 
   void idToAlignment();
-  void hitJackpot();
+  void StrikeGold();
 
 public:
 
-  Slots(BeAutonomous* master);
+  GoldChip(BeAutonomous* master);
+  void BurnCompleteCB(const ros::TimerEvent &event);
   void Initialize();
   void Start();
   void Identify(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_msg);

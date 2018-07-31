@@ -4,7 +4,15 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "yolo_processor");
   YoloProcessor yp;
-  ros::spin();
+  try
+  {
+    ros::spin();
+  }
+  catch (exception &e)
+  {
+    ROS_ERROR("YOLO Pro Error: %s", e.what());
+    ROS_ERROR("YOLO Pro: Shutting Down");
+  }
 }
 
 YoloProcessor::YoloProcessor() : nh("yolo_processor") {

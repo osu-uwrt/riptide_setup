@@ -15,7 +15,15 @@ float round(float d) {
 int main(int argc, char **argv) {
   ros::init(argc, argv, "attitude_controller");
   AttitudeController ac;
-  ros::spin();
+  try
+  {
+    ros::spin();
+  }
+  catch (exception &e)
+  {
+    ROS_ERROR("Attitude Error: %s", e.what());
+    ROS_ERROR("Attitude: Shutting Down");
+  }
 }
 
 AttitudeController::AttitudeController() : nh("attitude_controller") {

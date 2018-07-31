@@ -42,9 +42,7 @@ private:
   riptide_msgs::AttitudeCommand attitude_cmd;
   ros::Time detect_start;
 
-  int detections, attempts;
-  double path_heading;
-  double heading_average = 360, y_average = 100, x_average = 100;
+  double path_heading, path_angle;
 
   // Create instance to master
   BeAutonomous *master;

@@ -9,7 +9,15 @@
 int main(int argc, char** argv) {
   ros::init(argc, argv, "bag_to_csv");
   Acoustics ac;
-  ros::spin();
+  try
+  {
+    ros::spin();
+  }
+  catch (exception &e)
+  {
+    ROS_ERROR("Bag2Csv Error: %s", e.what());
+    ROS_ERROR("Bag2Csv Pro: Shutting Down");
+  }
 }
 
 Acoustics::Acoustics() : nh("bag_to_csv") { // NOTE: there is no namespace declared in nh()

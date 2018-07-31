@@ -20,6 +20,7 @@
 #include "riptide_msgs/DepthCommand.h"
 #include "riptide_msgs/AlignmentCommand.h"
 #include "riptide_msgs/Pneumatics.h"
+#include "riptide_msgs/StatusLight.h"
 
 #include "sensor_msgs/image_encodings.h"
 #include "opencv2/opencv.hpp"
@@ -30,8 +31,10 @@
 #include "riptide_autonomy/task_casino_gate.h"
 #include "riptide_autonomy/task_path_marker.h"
 #include "riptide_autonomy/task_dice.h"
+#include "riptide_autonomy/task_gold_chip.h"
 #include "riptide_autonomy/task_slots.h"
 #include "riptide_autonomy/task_roulette.h"
+#include "riptide_autonomy/task_gold_chip.h"
 
 using namespace std;
 typedef riptide_msgs::Constants rc;
@@ -42,6 +45,7 @@ class PathMarker;
 class Dice;
 class Slots;
 class Roulette;
+class GoldChip;
 
 class BeAutonomous
 {
@@ -51,7 +55,7 @@ public:
   ros::NodeHandle nh;
   ros::Subscriber switch_sub, imu_sub, depth_sub;
   ros::Publisher x_accel_pub, y_accel_pub, z_accel_pub, attitude_pub, depth_pub, alignment_pub, pneumatics_pub;
-  ros::Publisher thrust_pub, reset_pub, task_info_pub, state_mission_pub;
+  ros::Publisher thrust_pub, reset_pub, task_info_pub, state_mission_pub, status_light_pub;
   ros::Timer timer;
 
   // Mission End/System Check
@@ -60,6 +64,7 @@ public:
   riptide_msgs::ThrustStamped thrust_msg;
   riptide_msgs::AlignmentCommand align_cmd;
   riptide_msgs::AttitudeCommand attitude_cmd;
+  riptide_msgs::StatusLight light_msg;
 
   // Mission Info
   int execute_id, load_id, last_load_id, last_kill_switch_value;
@@ -95,6 +100,7 @@ public:
   Dice* dice;
   Roulette* roulette;
   Slots* slots;
+  GoldChip* gold_chip;
 
   BeAutonomous();
   template <typename T>

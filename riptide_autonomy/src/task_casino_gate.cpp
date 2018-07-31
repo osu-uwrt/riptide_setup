@@ -67,9 +67,9 @@ void CasinoGate::Start()
   braked = false;
   detected_black = false;
   detected_red = false;
-  detected_correct_color = false;
   passing_on_right = false;
   passing_on_left = false;
+  passed_thru_gate = false;
   task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &CasinoGate::IDCasinoGate, this);
   ROS_INFO("CasinoGate: subscribed to /task/bboxes");
 }
@@ -98,14 +98,6 @@ void CasinoGate::IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr &b
   {
     task_bbox_sub.shutdown();
     master->tslam->Abort(false);
-
-    // If detected wrong color, give chance to detect the correct color
-    if ((detected_black && master->color == rc::COLOR_RED) || (detected_red && master->color == rc::COLOR_BLACK))
-    {
-      task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &CasinoGate::IDCasinoGateCorrectly, this);
-      timer = master->nh.createTimer(ros::Duration(id_correct_color_duration), &CasinoGate::EndSecondIDGateCB, this, true);
-    }
-
     detectionRedValidator->Reset();
     detectionBlackValidator->Reset();
     if (master->color == left_color)
@@ -113,54 +105,22 @@ void CasinoGate::IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr &b
     else
       passing_on_right = true;
 
-    // PLEASE KEEP just in case we need it!!!!!!!!!
-    /*detectionRedValidator->Reset();
-    detectionBlackValidator->Reset();
-    task_bbox_sub.shutdown();
-    master->tslam->Abort(false);
-
-    if (master->color == left_color) // Must pass on LEFT side
+    // If detected wrong color, give chance to detect the correct color
+    if ((detected_black && master->color == rc::COLOR_RED) || (detected_red && master->color == rc::COLOR_BLACK))
     {
-      passing_on_left = true;
-      if (detected_black && detected_red) // Both detected - align object to center of frame
-      {
-        ROS_INFO("CasinoGate: Detected both sides. Aligning left side in center");
-      }
-      else if ((detected_red && left_color == rc::COLOR_BLACK) || (detected_black && left_color == rc::COLOR_RED))
-      {
-        // Detected the right side of the gate, so put target y-pos on right side of frame using the right side
-        align_cmd.object_name = master->object_names.at((master->color + 1) % 2); // Switch to detected object
-        align_cmd.target_pos.y = -(int)(master->frame_height / 3);
-        ROS_INFO("CasinoGate: Detected right side. Aligning to left side");
-      }
-      else
-        ROS_INFO("CasinoGate: Detected left side. Aligning to center");
+      task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &CasinoGate::IDCasinoGateCorrectly, this);
+      timer = master->nh.createTimer(ros::Duration(id_correct_color_duration), &CasinoGate::EndSecondIDGateCB, this, true);
     }
-    else // Must pass on RIGHT side
+    else
     {
-      passing_on_right = true;
-      if (detected_black && detected_red) // Both detected - align object to center of frame
-      {
-        ROS_INFO("CasinoGate: Detected both sides. Aligning right side in center");
-      }
-      else if ((detected_black && left_color == rc::COLOR_BLACK) || (detected_black && left_color == rc::COLOR_RED))
-      {
-        // Detected the left side of the gate, so put target y-pos on left side of frame using the left side
-        align_cmd.object_name = master->object_names.at((master->color + 1) % 2); // Switch to detected object
-        align_cmd.target_pos.y = (int)(master->frame_height / 3);
-        ROS_INFO("CasinoGate: Detected left side. Aligning to right side");
-      }
-      else
-        ROS_INFO("CasinoGate: Detected right side. Aligning to center");
-    }*/
-
-    // Correct color detected. Proceed
-    align_cmd.surge_active = false;
-    align_cmd.sway_active = true;
-    align_cmd.heave_active = true;
-    master->alignment_pub.publish(align_cmd);
-    alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &CasinoGate::PositionAlignmentStatusCB, this);
-    ROS_INFO("CasinoGate: Aligning to %s. Checking sway/heave error", object_name.c_str());
+      // Correct color detected. Proceed
+      align_cmd.surge_active = false;
+      align_cmd.sway_active = true;
+      align_cmd.heave_active = true;
+      master->alignment_pub.publish(align_cmd);
+      alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &CasinoGate::PositionAlignmentStatusCB, this);
+      ROS_INFO("CasinoGate: Aligning to %s. Checking sway/heave error", object_name.c_str());
+    }
   }
 }
 
@@ -223,7 +183,7 @@ void CasinoGate::EndSecondIDGateCB(const ros::TimerEvent &event)
     align_cmd.target_pos.y = -(int)(master->frame_height * incorrect_gate_ycenter_offset);
     ROS_INFO("CasinoGate: Detected right side. Aligning to left side");
   }
-  else if (master->color = right_color && ((detected_black && right_color == rc::COLOR_RED) || (detected_red && right_color == rc::COLOR_BLACK)))
+  else if (master->color == right_color && ((detected_black && right_color == rc::COLOR_RED) || (detected_red && right_color == rc::COLOR_BLACK)))
   {
     // Detected the left side of the gate, so put target y-pos on left side of frame using the left side
     passing_on_right = true;
@@ -306,7 +266,6 @@ void CasinoGate::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::Cons
 void CasinoGate::PassThruTimer(const ros::TimerEvent &event)
 {
   std_msgs::Float64 msg;
-  msg.data = 0;
   if (!passed_thru_gate)
   {
     passed_thru_gate = true;
@@ -317,6 +276,7 @@ void CasinoGate::PassThruTimer(const ros::TimerEvent &event)
   }
   else if (passed_thru_gate && !braked)
   {
+    msg.data = 0;
     braked = true;
     master->x_accel_pub.publish(msg);
     ROS_INFO("CasinoGate: Completed. Thruster brake applied.");
