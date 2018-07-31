@@ -52,7 +52,7 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous")
   BeAutonomous::LoadParam<bool>("Task_Execution/run_single_task", run_single_task);
   BeAutonomous::LoadParam<double>("Task_Execution/relative_current_x", relative_current_x);
   BeAutonomous::LoadParam<double>("Task_Execution/relative_current_y", relative_current_y);
-  BeAutonomous::LoadParam<double>("Task_Execution/global_y_axis_heading", global_y_axis_heading);
+  BeAutonomous::LoadParam<double>("Task_Execution/tslam_brake_duration", brake_duration);
 
   // Load Task Runtime Parameters
   BeAutonomous::LoadParam<double>("Controller_Thresholds/depth_thresh", depth_thresh);
@@ -110,12 +110,15 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous")
   depth = 0;
   frame_width = 644;
   frame_height = 482;
+  cam_center_x = frame_width/2;
+  cam_center_y = frame_height/2;
 
   // Initialize class objects and pointers
   // The "new" keyword creates a pointer to the object
   tslam = new TSlam(this);
   casino_gate = new CasinoGate(this);
   path = new PathMarker(this);
+  dice = new Dice(this);
   slots = new Slots(this);
   roulette = new Roulette(this);
   gold_chip = new GoldChip(this);
@@ -165,8 +168,8 @@ void BeAutonomous::StartTask()
       path->Start();
       break;
     case rc::TASK_DICE:
-      ROS_INFO("BE: Dice unimplemented. Ending mission.");
-      BeAutonomous::EndMission();
+      ROS_INFO("BE: Starting dice task.");
+      dice->Start();
       break;
     case rc::TASK_PATH_MARKER2:
       ROS_INFO("BE: Starting Path Marker 2.");
@@ -524,7 +527,7 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr &switch_ms
     }
     else if (load_id < rc::MISSION_TEST)
     {
-      ROS_INFO("Starting mission. Maelstrom goin' under in %f sec.", start_timer - pre_start_duration);
+      ROS_INFO("Starting mission. Maelstrom sinking to bottom of ocean in %f sec.", start_timer - pre_start_duration);
       if (!clock_is_ticking)
       {
         pre_start_time = ros::Time::now();
@@ -535,7 +538,7 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr &switch_ms
 
       if (pre_start_duration > start_timer)
       {
-        ROS_INFO("About to call Starttask()");
+        ROS_INFO("About to call StartTask()");
         // Set these back to '0' or 'true' so it doesn't run again
         BeAutonomous::ResetSwitchPanel();
         BeAutonomous::SendInitMsgs();
@@ -573,4 +576,6 @@ void BeAutonomous::ImageCB(const sensor_msgs::Image::ConstPtr &msg)
 
   frame_width = cv_ptr->image.size().width;
   frame_height = cv_ptr->image.size().height;
+  cam_center_x = frame_width/2;
+  cam_center_y = frame_height/2;
 }

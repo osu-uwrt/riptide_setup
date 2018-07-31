@@ -29,6 +29,7 @@ class Roulette
 private:
   ros::Subscriber task_bbox_sub, alignment_status_sub, attitude_status_sub;
   ros::Subscriber *active_subs[3] = {&task_bbox_sub, &alignment_status_sub, &attitude_status_sub};
+  ros::Timer timer;
 
   darknet_ros_msgs::BoundingBoxes task_bboxes;
   riptide_msgs::AlignmentCommand align_cmd;
@@ -60,6 +61,7 @@ public:
   void Initialize();
   void Start();
   void IDRoulette(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_msg);
+  void EndTSlamTimer(const ros::TimerEvent &event);
   void CenterAlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr& status_msg);
   void BBoxAlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr& status_msg);
   void SetMarkerDropHeading(double heading);

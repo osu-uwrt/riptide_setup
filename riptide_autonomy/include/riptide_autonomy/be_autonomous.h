@@ -30,6 +30,7 @@
 #include "riptide_autonomy/tslam.h"
 #include "riptide_autonomy/task_casino_gate.h"
 #include "riptide_autonomy/task_path_marker.h"
+#include "riptide_autonomy/task_dice.h"
 #include "riptide_autonomy/task_gold_chip.h"
 #include "riptide_autonomy/task_slots.h"
 #include "riptide_autonomy/task_roulette.h"
@@ -39,10 +40,11 @@ using namespace std;
 typedef riptide_msgs::Constants rc;
 
 class TSlam;
-class Roulette;
 class CasinoGate;
-class Slots;
 class PathMarker;
+class Dice;
+class Slots;
+class Roulette;
 class GoldChip;
 
 class BeAutonomous
@@ -73,10 +75,10 @@ public:
   // Task Info
   YAML::Node tasks;
   string task_file, task_name, object_name;
-  double search_depth, search_accel, detection_duration;
+  double search_depth, search_accel, brake_duration, detection_duration;
   int num_objects, align_thresh, bbox_thresh, detections_req;
   int competition_id, quadrant, task_id, last_task_id, total_tasks, task_order_index;
-  int alignment_plane, color, frame_width, frame_height;
+  int alignment_plane, color, frame_width, frame_height, cam_center_x, cam_center_y;
   vector<int> task_order;
   vector<string> object_names;
   bool run_single_task;
@@ -91,10 +93,11 @@ public:
 
   // Task Specific Objects
   TSlam* tslam;
-  double relative_current_x, relative_current_y, global_y_axis_heading;
+  double relative_current_x, relative_current_y;
 
   CasinoGate* casino_gate;
   PathMarker* path;
+  Dice* dice;
   Roulette* roulette;
   Slots* slots;
   GoldChip* gold_chip;

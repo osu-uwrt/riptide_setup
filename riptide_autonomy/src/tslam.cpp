@@ -149,13 +149,20 @@ void TSlam::Start()
   yawValidator = new ErrorValidator(master->yaw_thresh, master->error_duration);
   depthValidator = new ErrorValidator(master->depth_thresh, master->error_duration);
   
+  quadrant = floor(master->load_id / 2.0);
+  ROS_INFO("TSlam: Quadrant %i", quadrant);
+
+  user_defined_y_axis_heading = task_map["task_map"]["user_defined_y_axis_heading"][quadrant].as<double>();
+  brake_duration = master->brake_duration;
+  ROS_INFO("TSlam: Loaded a few variables from task_map");
+
   // Calculate heading to point towards next task
   TSlam::ReadMap();
   delta_x = start_x - current_x;
   delta_y = start_y - current_y;
   angle = atan2(delta_y, delta_x) * 180 / PI;
   double offset = angle - 90;
-  search_heading = master->global_y_axis_heading + offset; // Center about global_y_axis_heading
+  search_heading = user_defined_y_axis_heading + offset; // Center about global_y_axis_heading
   search_heading = TSlam::KeepHeadingInRange(search_heading);
 
   ROS_INFO("Cur X: %f", current_x);
@@ -254,7 +261,7 @@ void TSlam::Abort(bool apply_brake)
   {
     msg.data = -(master->search_accel);
     master->x_accel_pub.publish(msg);
-    timer = master->nh.createTimer(ros::Duration(0.25), &TSlam::BrakeTimer, this, true);
+    timer = master->nh.createTimer(ros::Duration(brake_duration), &TSlam::BrakeTimer, this, true);
     ROS_INFO("TSlam: Aborting. Braking now.");
   }
   else
