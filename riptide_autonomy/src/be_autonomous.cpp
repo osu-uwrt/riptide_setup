@@ -4,7 +4,24 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "be_autonomous");
   BeAutonomous ba;
-  ros::spin();
+  try
+  {
+    ros::spin();
+  }
+  catch (exception &e)
+  {
+    ROS_ERROR("BE ERROR: %s", e.what());
+    ba.light_msg.green1 = false;
+    ba.light_msg.red1 = true;
+    ba.light_msg.green2 = false;
+    ba.light_msg.red2 = true;
+    ba.light_msg.green3 = false;
+    ba.light_msg.red3 = true;
+    ba.light_msg.green4 = false;
+    ba.light_msg.red4 = true;
+    ba.status_light_pub.publish(ba.light_msg);
+    ROS_ERROR("BE: Shutting Down");
+  }
 }
 
 BeAutonomous::BeAutonomous() : nh("be_autonomous")
@@ -24,6 +41,7 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous")
   thrust_pub = nh.advertise<riptide_msgs::ThrustStamped>("/command/thrust", 1);
   task_info_pub = nh.advertise<riptide_msgs::TaskInfo>("/task/info", 1);
   state_mission_pub = nh.advertise<riptide_msgs::MissionState>("/state/mission", 1);
+  status_light_pub = nh.advertise<riptide_msgs::StatusLight>("/status/light", 1);
 
   BeAutonomous::LoadParam<int>("competition_id", competition_id);
   BeAutonomous::LoadParam<double>("loader_timer", loader_timer);
@@ -186,6 +204,16 @@ void BeAutonomous::EndMission()
 {
   if (mission_running)
   {
+    light_msg.green1 = false;
+    light_msg.red1 = false;
+    light_msg.green2 = false;
+    light_msg.red2 = false;
+    light_msg.green3 = false;
+    light_msg.red3 = false;
+    light_msg.green4 = false;
+    light_msg.red4 = false;
+    status_light_pub.publish(light_msg);
+
     ROS_INFO("ENDING MISSION!!!");
 
     tslam->EndMission();
@@ -395,39 +423,64 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr &switch_ms
       if (switch_msg->sw1 && !switch_msg->sw5)
       {
         load_id = rc::MISSION_A_BLACK; //Quad A Black
+        light_msg.green1 = true;
+        status_light_pub.publish(light_msg);
       }
       else if (switch_msg->sw1 && switch_msg->sw5)
       {
         load_id = rc::MISSION_A_RED; //Quad A Red
+        light_msg.red1 = true;
+        status_light_pub.publish(light_msg);
       }
       else if (switch_msg->sw2 && !switch_msg->sw5)
       {
         load_id = rc::MISSION_B_BLACK; //Quad B Black
+        light_msg.green2 = true;
+        status_light_pub.publish(light_msg);
       }
       else if (switch_msg->sw2 && switch_msg->sw5)
       {
         load_id = rc::MISSION_B_RED; //Quad B Red
+        light_msg.red2 = true;
+        status_light_pub.publish(light_msg);
       }
       else if (switch_msg->sw3 && !switch_msg->sw5)
       {
         load_id = rc::MISSION_C_BLACK; //Quad C Black
+        light_msg.green3 = true;
+        status_light_pub.publish(light_msg);
       }
       else if (switch_msg->sw3 && switch_msg->sw5)
       {
         load_id = rc::MISSION_C_RED; //Quad C Red
+        light_msg.red3 = true;
+        status_light_pub.publish(light_msg);
       }
       else if (switch_msg->sw4 && !switch_msg->sw5)
       {
         load_id = rc::MISSION_D_BLACK; //Quad D Black
+        light_msg.green4 = true;
+        status_light_pub.publish(light_msg);
       }
       else if (switch_msg->sw4 && switch_msg->sw5)
       {
         load_id = rc::MISSION_D_RED; //Quad D Red
+        light_msg.red4 = true;
+        status_light_pub.publish(light_msg);
       }
     }
     else if (quad_sum == 0 && switch_msg->sw5)
     {                             // Only test switch is engaged
       load_id = rc::MISSION_TEST; // Do system check
+      light_msg.green1 = true;
+      light_msg.red1 = true;
+      light_msg.green2 = true;
+      light_msg.red2 = true;
+      light_msg.green3 = true;
+      light_msg.red3 = true;
+      light_msg.green4 = true;
+      light_msg.red4 = true;
+      status_light_pub.publish(light_msg);
     }
 
     if (load_id != last_load_id)

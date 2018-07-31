@@ -11,7 +11,15 @@
 int main(int argc, char **argv) {
   ros::init(argc, argv, "alignment_controller");
   AlignmentController ac;
-  ros::spin();
+  try
+  {
+    ros::spin();
+  }
+  catch (exception &e)
+  {
+    ROS_ERROR("Alignment Error: %s", e.what());
+    ROS_ERROR("Alignment: Shutting Down");
+  }
 }
 
 // Constructor: AlignmentController()

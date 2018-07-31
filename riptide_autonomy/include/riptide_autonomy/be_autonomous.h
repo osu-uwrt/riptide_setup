@@ -20,6 +20,7 @@
 #include "riptide_msgs/DepthCommand.h"
 #include "riptide_msgs/AlignmentCommand.h"
 #include "riptide_msgs/Pneumatics.h"
+#include "riptide_msgs/StatusLight.h"
 
 #include "sensor_msgs/image_encodings.h"
 #include "opencv2/opencv.hpp"
@@ -52,7 +53,7 @@ public:
   ros::NodeHandle nh;
   ros::Subscriber switch_sub, imu_sub, depth_sub;
   ros::Publisher x_accel_pub, y_accel_pub, z_accel_pub, attitude_pub, depth_pub, alignment_pub, pneumatics_pub;
-  ros::Publisher thrust_pub, reset_pub, task_info_pub, state_mission_pub;
+  ros::Publisher thrust_pub, reset_pub, task_info_pub, state_mission_pub, status_light_pub;
   ros::Timer timer;
 
   // Mission End/System Check
@@ -61,6 +62,7 @@ public:
   riptide_msgs::ThrustStamped thrust_msg;
   riptide_msgs::AlignmentCommand align_cmd;
   riptide_msgs::AttitudeCommand attitude_cmd;
+  riptide_msgs::StatusLight light_msg;
 
   // Mission Info
   int execute_id, load_id, last_load_id, last_kill_switch_value;

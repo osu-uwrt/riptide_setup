@@ -91,7 +91,6 @@ void GoldChip::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstP
       x_validator->Reset();
       y_validator->Reset();
 
-      // Unsure if this is how we lock in depth, copied from roulette
       align_cmd.heave_active = false;
       align_cmd.surge_active = true;
       master->alignment_pub.publish(align_cmd);
@@ -113,6 +112,7 @@ void GoldChip::StrikeGold()
 {
   mission_state = BURN_BABY_BURN;
   align_cmd.surge_active = false;
+  align_cmd.sway_active = false;
   master->alignment_pub.publish(align_cmd);
   master->x_accel_pub.publish(burn_accel_msg);
   ROS_INFO("GoldChip: Push burn start.");
