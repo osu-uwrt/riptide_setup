@@ -31,6 +31,8 @@ void GoldChip::Start()
   back_off_time = master->tasks["tasks"][master->task_id]["back_off_time"].as<double>();
   bbox_height = master->tasks["tasks"][master->task_id]["bbox_height"].as<double>();
   burn_accel_msg.data = master->search_accel;
+  ROS_INFO("GoldChip: Loaded variables from tasks yaml");
+  
   align_cmd.surge_active = false;
   align_cmd.sway_active = false;
   align_cmd.heave_active = false;
@@ -44,14 +46,14 @@ void GoldChip::Start()
   master->alignment_pub.publish(align_cmd);
   ROS_INFO("GoldChip: Alignment controller disabled. Awaiting detections...");
 
-  task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &GoldChip::Identify, this);
+  task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &GoldChip::IDGoldChip, this);
   chip_detector = new DetectionValidator(master->detections_req, master->detection_duration);
   x_validator = new ErrorValidator(master->align_thresh, master->error_duration);
   y_validator = new ErrorValidator(master->align_thresh, master->error_duration);
   bbox_validator = new ErrorValidator(master->bbox_thresh, master->error_duration);
 }
 
-void GoldChip::Identify(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg)
+void GoldChip::IDGoldChip(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg)
 {
   int attempts = chip_detector->GetAttempts();
   if (chip_detector->GetDetections() == 0)
@@ -61,17 +63,22 @@ void GoldChip::Identify(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_ms
 
   if (chip_detector->Validate())
   {
-    master->tslam->Abort(true);
-    ROS_INFO("GoldChip: Identification complete. Identified target after after %d attempts. Aligning to target.", chip_detector->GetAttempts());
     chip_detector->Reset();
-    GoldChip::idToAlignment();
+    task_bbox_sub.shutdown();
+    master->tslam->Abort(true);
+    
+    // Wait for TSlam to finish braking before proceeding
+    timer = master->nh.createTimer(ros::Duration(master->brake_duration), &GoldChip::EndTSlamTimer, this, true);
+    ROS_INFO("GoldChip; Found gold chip. Your MINE!! Awaiting TSlam to end.");
+    ROS_INFO("GoldChip: Identification complete. Identified target after after %d attempts. Aligning to target.", chip_detector->GetAttempts());
+    
+    //GoldChip::idToAlignment();
   }
 }
 
-void GoldChip::idToAlignment()
+// Put rest of IDGoldChip code here
+void GoldChip::EndTSlamTimer(const ros::TimerEvent &event)
 {
-  task_bbox_sub.shutdown();
-
   align_cmd.surge_active = false;
   align_cmd.sway_active = true;
   align_cmd.heave_active = true;
@@ -81,6 +88,18 @@ void GoldChip::idToAlignment()
   master->alignment_pub.publish(align_cmd);
   alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &GoldChip::AlignmentStatusCB, this);
 }
+
+/*void GoldChip::IDToAlignment()
+{
+  align_cmd.surge_active = false;
+  align_cmd.sway_active = true;
+  align_cmd.heave_active = true;
+  alignment_state = AST_CENTER;
+
+  // Take control
+  master->alignment_pub.publish(align_cmd);
+  alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &GoldChip::AlignmentStatusCB, this);
+}*/
 
 void GoldChip::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr &status_msg)
 {

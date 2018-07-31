@@ -35,8 +35,8 @@ private:
   string task_map_file;
 
   double current_x = 420, current_y = 420;
-  double eta, x_vel;
-  double delta_x, delta_y, angle, search_heading, distance;
+  double eta, x_vel, brake_duration;
+  double delta_x, delta_y, angle, search_heading, distance, user_defined_y_axis_heading;
 
   // Create instance to master
   BeAutonomous *master;

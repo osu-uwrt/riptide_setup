@@ -56,6 +56,7 @@ public:
   void Initialize();
   void Start();
   void IDPathMarker(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg);
+  void EndTSlamTimer(const ros::TimerEvent &event);
   void GotHeading(double heading);
   void FirstAttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr &status_msg);
   void AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr &status_msg);

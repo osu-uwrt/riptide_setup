@@ -47,6 +47,7 @@ void PathMarker::Start()
   yValidator = new ErrorValidator(master->align_thresh, master->error_duration);
 
   path_angle = master->tasks["tasks"][master->task_id]["path_angle"].as<double>();
+  ROS_INFO("PathMarker: Loaded variables from tasks yaml");
 }
 
 // If we see the Path Marker, abort tslam & get angle
@@ -56,11 +57,22 @@ void PathMarker::IDPathMarker(const darknet_ros_msgs::BoundingBoxes::ConstPtr &b
   {
     detectionValidator->Reset();
     task_bbox_sub.shutdown();
-    master->tslam->Abort(false);
+    master->tslam->Abort(true);
 
-    od->GetPathHeading(&PathMarker::GotHeading, this);
-    ROS_INFO("Found path, getting heading");
+    // Wait for TSlam to finish braking before proceeding
+    timer = master->nh.createTimer(ros::Duration(master->brake_duration), &PathMarker::EndTSlamTimer, this, true);
+    ROS_INFO("Pathmarker; Found path. Awaiting TSlam to end.");
+
+    /*od->GetPathHeading(&PathMarker::GotHeading, this);
+    ROS_INFO("Found path, getting heading");*/
   }
+}
+
+// Put rest of IDPathMarker code here
+void PathMarker::EndTSlamTimer(const ros::TimerEvent &event)
+{
+  od->GetPathHeading(&PathMarker::GotHeading, this);
+  ROS_INFO("PathMarker: Getting heading");
 }
 
 // Once we have determined the heading start aligning

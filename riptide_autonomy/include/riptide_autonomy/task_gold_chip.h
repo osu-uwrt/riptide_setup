@@ -27,6 +27,7 @@ class GoldChip
 private:
   ros::Subscriber task_bbox_sub, alignment_status_sub, attitude_status_sub;
   ros::Subscriber *active_subs[3] = {&task_bbox_sub, &alignment_status_sub, &attitude_status_sub};
+  ros::Timer timer;
 
   darknet_ros_msgs::BoundingBoxes task_bboxes;
   riptide_msgs::AlignmentCommand align_cmd;
@@ -49,7 +50,6 @@ private:
   double burn_time;
   double back_off_time;
   double bbox_height;
-  ros::Timer timer;
 
   // Reference to master
   BeAutonomous* master;
@@ -63,7 +63,8 @@ public:
   void BurnCompleteCB(const ros::TimerEvent &event);
   void Initialize();
   void Start();
-  void Identify(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_msg);
+  void IDGoldChip(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_msg);
+  void EndTSlamTimer(const ros::TimerEvent &event);
   void AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr& status_msg);
   void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr& status_msg);
   void Abort();

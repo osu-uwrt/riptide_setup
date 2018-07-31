@@ -1,7 +1,7 @@
 <launch>
     <arg name="name" default="imu_front" />
-    <arg name="city" default="delaware"/>
-    <arg name="location" default="blaine_house"/>
+    <arg name="city" default="san_diego"/>
+    <arg name="location" default="hotel"/>
     <arg name="device" default="/dev/imu_front" />
     <arg name="mag_LPF_bandwidth" default="15" />
     <arg name="accel_LPF_bandwidth" default="50" />
