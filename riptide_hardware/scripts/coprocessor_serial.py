@@ -32,7 +32,7 @@ def pwm_callback(pwm_message):
     ser.write(final_pwm)
 
 def light_callback(light_msg):
-    #The Start and End bytes for a PWM Message
+    '''#The Start and End bytes for a PWM Message
     lightStart = "LLLL"
     lightEnd = "@@@@"
 
@@ -49,7 +49,7 @@ def light_callback(light_msg):
     #The pwm values and start and end bytes are added to a String and written
     final_light = lightStart + g1 + r1 + g2 + r2 + g3 + r3 + g4 + r4 + lightEnd
     final_light = bytes(final_light)
-    #ser.write(final_light)
+    #ser.write(final_light)'''
 
 def main():
     rospy.init_node('coprocessor_serial')

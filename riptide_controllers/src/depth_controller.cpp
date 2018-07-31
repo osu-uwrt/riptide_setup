@@ -116,10 +116,6 @@ void DepthController::UpdateError()
     accel.x = output * R_w2b.getRow(0).z() * -1;
     accel.y = output * R_w2b.getRow(1).z() * -1;
     accel.z = output * R_w2b.getRow(2).z() * -1;
-  }
-
-  if (!pid_depth_reset && pid_depth_active)
-  {
     status_msg.header.stamp = ros::Time::now();
     status_pub.publish(status_msg);
     cmd_pub.publish(accel);
