@@ -122,6 +122,8 @@ void GoldChip::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstP
     if (bbox_validator->Validate(status_msg->z.error))
     {
       ROS_INFO("GoldChip: Target within reach. Beginning push maneuver.");
+      bbox_validator->Reset();
+      alignment_status_sub.shutdown();
       GoldChip::StrikeGold();
     }
   }
@@ -143,12 +145,14 @@ void GoldChip::BurnCompleteCB(const ros::TimerEvent &event)
   if (mission_state == BURN_BABY_BURN)
   {
     mission_state = BACK_OFF_MAN;
+    timer.stop();
     timer = master->nh.createTimer(ros::Duration(back_off_time), &GoldChip::BurnCompleteCB, this, true);
     ROS_INFO("GoldChip: Push burn complete. Backing off.");
   }
   else if (mission_state == BACK_OFF_MAN)
   {
     master->x_accel_pub.publish(burn_accel_msg);
+    timer.stop();
     ROS_INFO("GoldChip: Backed off. Task complete. Ending...");
     GoldChip::Abort();
     master->tslam->SetEndPos();

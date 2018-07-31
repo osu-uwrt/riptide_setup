@@ -32,8 +32,8 @@ def pwm_callback(pwm_message):
     ser.write(final_pwm)
 
 def light_callback(light_msg):
-    #The Start and End bytes for a PWM Message
-    '''lightStart = "LLLL"
+    '''#The Start and End bytes for a PWM Message
+    lightStart = "LLLL"
     lightEnd = "@@@@"
 
     #Each thruster's pwm value is stored
