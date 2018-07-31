@@ -51,6 +51,7 @@ public:
   void Initialize();
   void Start();
   void IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg);
+  void EndTSlamTimer(const ros::TimerEvent &event);
   void IDCasinoGateCorrectly(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg);
   void EndSecondIDGateCB(const ros::TimerEvent &event);
   void PositionAlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr &status_msg);

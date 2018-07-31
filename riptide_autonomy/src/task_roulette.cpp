@@ -43,6 +43,7 @@ void Roulette::Start()
 
   roulette_bbox_height = master->tasks["tasks"][master->task_id]["roulette_bbox_height"].as<double>();
   roulette_ycenter_offset = master->tasks["tasks"][master->task_id]["roulette_ycenter_offset"].as<double>();
+  ROS_INFO("Roulette: Loaded variables from tasks yaml");
 
   align_cmd.surge_active = false;
   align_cmd.sway_active = false;
@@ -72,17 +73,34 @@ void Roulette::IDRoulette(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_
   if (detectionValidator->Validate())
   {
     task_bbox_sub.shutdown();
-    master->tslam->Abort(false);
+    master->tslam->Abort(true);
 
-    // Send alignment command to put in center of frame (activate controllers)
+    // Wait for TSlam to finish braking before proceeding
+    timer = master->nh.createTimer(ros::Duration(master->brake_duration), &Roulette::EndTSlamTimer, this, true);
+    ROS_INFO("Roulette; Identified Roulette. Awaiting TSlam to end.");
+    
+    /*// Send alignment command to put in center of frame (activate controllers)
     // Set points already specified in initial alignment command
     align_cmd.surge_active = true;
     align_cmd.sway_active = true;
     align_cmd.heave_active = false;
     master->alignment_pub.publish(align_cmd);
     alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &Roulette::CenterAlignmentStatusCB, this);
-    ROS_INFO("Roulette: Identified roulette. Now aligning to center");
+    ROS_INFO("Roulette: Identified roulette. Now aligning to center");*/
   }
+}
+
+// Put rest of IDRoulette code here
+void Roulette::EndTSlamTimer(const ros::TimerEvent &event)
+{
+  // Send alignment command to put in center of frame (activate controllers)
+  // Set points already specified in initial alignment command
+  align_cmd.surge_active = true;
+  align_cmd.sway_active = true;
+  align_cmd.heave_active = false;
+  master->alignment_pub.publish(align_cmd);
+  alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &Roulette::CenterAlignmentStatusCB, this);
+  ROS_INFO("Roulette: TSlam ended. Now aligning to center");
 }
 
 // Make sure the vehicle is aligned to the center of the roulette wheel

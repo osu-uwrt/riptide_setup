@@ -45,6 +45,7 @@ void CasinoGate::Start()
   gate_width = master->tasks["tasks"][master->task_id]["gate_width"].as<double>();
   incorrect_gate_ycenter_offset = master->tasks["tasks"][master->task_id]["incorrect_gate_ycenter_offset"].as<double>();
   incorrect_gate_width = master->tasks["tasks"][master->task_id]["incorrect_gate_width"].as<double>();
+  ROS_INFO("CasinoGate: Loaded variables from tasks yaml");
 
   // Set to black and just hope it's right if it doesn't load
   if (left_color != rc::COLOR_BLACK && left_color != rc::COLOR_RED)
@@ -83,12 +84,12 @@ void CasinoGate::IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr &b
   {
     if (bbox_msg->bounding_boxes.at(i).Class == "Casino_Gate_Black")
     {
-      if(detectionBlackValidator->Validate())
+      if (detectionBlackValidator->Validate())
         detected_black = true;
     }
     else
     {
-      if(detectionRedValidator->Validate())
+      if (detectionRedValidator->Validate())
         detected_red = true;
     }
   }
@@ -97,9 +98,42 @@ void CasinoGate::IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr &b
   if (detected_black || detected_red)
   {
     task_bbox_sub.shutdown();
-    master->tslam->Abort(false);
+    master->tslam->Abort(true);
     detectionRedValidator->Reset();
     detectionBlackValidator->Reset();
+
+    // Wait for TSlam to finish braking before proceeding
+    timer = master->nh.createTimer(ros::Duration(master->brake_duration), &CasinoGate::EndTSlamTimer, this, true);
+    ROS_INFO("CasinoGate: Identified casino gate. Awaiting TSlam to end.");
+
+    /*if (master->color == left_color)
+      passing_on_left = true;
+    else
+      passing_on_right = true;
+
+    // If detected wrong color, give chance to detect the correct color
+    if ((detected_black && master->color == rc::COLOR_RED) || (detected_red && master->color == rc::COLOR_BLACK))
+    {
+      task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &CasinoGate::IDCasinoGateCorrectly, this);
+      timer = master->nh.createTimer(ros::Duration(id_correct_color_duration), &CasinoGate::EndSecondIDGateCB, this, true);
+    }
+    else
+    {
+      // Correct color detected. Proceed
+      align_cmd.surge_active = false;
+      align_cmd.sway_active = true;
+      align_cmd.heave_active = true;
+      master->alignment_pub.publish(align_cmd);
+      alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &CasinoGate::PositionAlignmentStatusCB, this);
+      ROS_INFO("CasinoGate: Aligning to %s. Checking sway/heave error", object_name.c_str());*/
+  }
+}
+
+// Put rest of IDCasinoGate code here
+void CasinoGate::EndTSlamTimer(const ros::TimerEvent &event)
+{
+  if (detected_black || detected_red)
+  {
     if (master->color == left_color)
       passing_on_left = true;
     else
@@ -110,6 +144,7 @@ void CasinoGate::IDCasinoGate(const darknet_ros_msgs::BoundingBoxes::ConstPtr &b
     {
       task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &CasinoGate::IDCasinoGateCorrectly, this);
       timer = master->nh.createTimer(ros::Duration(id_correct_color_duration), &CasinoGate::EndSecondIDGateCB, this, true);
+      ROS_INFO("CasinoGate: Trying again to ID correct color.");
     }
     else
     {
@@ -132,12 +167,12 @@ void CasinoGate::IDCasinoGateCorrectly(const darknet_ros_msgs::BoundingBoxes::Co
   {
     if (bbox_msg->bounding_boxes.at(i).Class == master->object_name && master->color == rc::COLOR_BLACK)
     {
-      if(detectionBlackValidator->Validate())
+      if (detectionBlackValidator->Validate())
         detected_black = true;
     }
     else
     {
-      if(detectionRedValidator->Validate())
+      if (detectionRedValidator->Validate())
         detected_red = true;
     }
   }

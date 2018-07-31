@@ -74,6 +74,7 @@ public:
   void Initialize();
   void Start();
   void IDDiceTask(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg);
+  void EndTSlamTimer(const ros::TimerEvent &event);
   void UpdateDiceYCenter(int* value, int max, int min);
   void UpdateDiceZCenter(int* value, int max, int min);
   void MapDiceField(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg);

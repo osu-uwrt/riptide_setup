@@ -48,6 +48,7 @@ class ThrusterController
   ThrusterController(char **argv);
   template <typename T>
   void LoadParam(std::string param, T &var);
+  void InitThrustMsg();
   void DynamicReconfigCallback(riptide_controllers::VehiclePropertiesConfig &config, uint32_t levels);
   void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
   void DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg);

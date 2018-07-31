@@ -143,6 +143,7 @@ void Dice::Start()
   backup_duration = master->tasks["tasks"][master->task_id]["backup_duration"].as<double>();
   dice_bbox_width = master->tasks["tasks"][master->task_id]["dice_bbox_width"].as<double>();
   upper_dice_zcenter_offset = master->tasks["tasks"][master->task_id]["upper_dice_zcenter_offset"].as<double>();
+  ROS_INFO("Dice: Loaded variables from tasks yaml");
 
   align_cmd.surge_active = false;
   align_cmd.sway_active = false;
@@ -188,22 +189,22 @@ void Dice::IDDiceTask(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg)
   {
     if (bbox_msg->bounding_boxes.at(i).Class == "Dice1")
     {
-      if(detection1Validator->Validate())
+      if (detection1Validator->Validate())
         detected_dice1 = true;
     }
     else if (bbox_msg->bounding_boxes.at(i).Class == "Dice2")
     {
-      if(detection2Validator->Validate())
+      if (detection2Validator->Validate())
         detected_dice2 = true;
     }
     else if (bbox_msg->bounding_boxes.at(i).Class == "Dice5")
     {
-      if(detection5Validator->Validate())
+      if (detection5Validator->Validate())
         detected_dice5 = true;
     }
     else if (bbox_msg->bounding_boxes.at(i).Class == "Dice6")
     {
-      if(detection6Validator->Validate())
+      if (detection6Validator->Validate())
         detected_dice6 = true;
     }
   }
@@ -212,9 +213,23 @@ void Dice::IDDiceTask(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg)
   {
     task_bbox_sub.shutdown();
     master->tslam->Abort(false);
-    task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &Dice::MapDiceField, this);
-    ROS_INFO("Dice: Found some crap floating around in TRANSDEC.");
+
+    // Wait for TSlam to finish braking before proceeding
+    timer = master->nh.createTimer(ros::Duration(master->brake_duration), &Dice::EndTSlamTimer, this, true);
+    ROS_INFO("Dice; Found Dice field. Awaiting TSlam to end.");
+
+    /*task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &Dice::MapDiceField, this);
+    ROS_INFO("Dice: Found some crap floating around in TRANSDEC.");*/
   }
+}
+
+// Put rest of IDDiceTask code here
+void Dice::EndTSlamTimer(const ros::TimerEvent &event)
+{
+  // Now try to detect at least 3 dice
+  task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &Dice::MapDiceField, this);
+  ROS_INFO("Dice: Nvm, It's just some crap floating around in TRANSDEC.");
+  ROS_INFO("Dice: Now trying to detect at least 3 dice.");
 }
 
 // Perform running avg of dice y-center positions (center of camera is (0,0))
@@ -246,7 +261,7 @@ void Dice::MapDiceField(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_ms
   {
     if (bbox_msg->bounding_boxes.at(i).Class == "Dice1")
     {
-      if(detection1Validator->Validate())
+      if (detection1Validator->Validate())
         detected_dice1 = true;
       Dice::UpdateDiceYCenter(&yCenters[0], bbox_msg->bounding_boxes.at(i).xmax, bbox_msg->bounding_boxes.at(i).xmin);
       Dice::UpdateDiceZCenter(&zCenters[0], bbox_msg->bounding_boxes.at(i).ymax, bbox_msg->bounding_boxes.at(i).ymin);
@@ -463,7 +478,7 @@ void Dice::DepthStatusCB(const riptide_msgs::ControlStatus::ConstPtr &status_msg
       msg.data = master->search_accel;
     else if (IsDiceOnLeft(prev_dice) && !IsDiceOnLeft(current_dice)) // Second dice is on the right
       msg.data = -(master->search_accel);
-    
+
     if (msg.data != 0) // Need to move over
     {
       master->y_accel_pub.publish(msg);

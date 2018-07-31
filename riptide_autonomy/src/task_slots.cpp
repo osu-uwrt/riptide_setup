@@ -56,7 +56,7 @@ void Slots::Start()
   pneumatics_duration = master->tasks["tasks"][master->task_id]["pneumatics_duration"].as<double>();
   big_red_bbox_height = master->tasks["tasks"][master->task_id]["big_red_bbox_height"].as<double>();
   fruit_bbox_height = master->tasks["tasks"][master->task_id]["fruit_bbox_height"].as<double>();
-
+  ROS_INFO("Slots: Loaded variables from tasks yaml");
 
   align_cmd.surge_active = false;
   align_cmd.sway_active = false;
@@ -71,7 +71,7 @@ void Slots::Start()
   master->alignment_pub.publish(align_cmd);
   ROS_INFO("Slots: alignment command published (but disabled)");
 
-  task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &Slots::Identify, this);
+  task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &Slots::IDSlots, this);
 
   fruitValidator = new DetectionValidator(master->detections_req, master->detection_duration);
   bigRedValidator = new DetectionValidator(master->detections_req, master->detection_duration);
@@ -89,7 +89,7 @@ void Slots::Start()
 // Requires mission_state be either MST_FRUIT or MST_BIG_RED
 // Only MST_BIG_RED is implemented for now
 
-void Slots::Identify(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg)
+void Slots::IDSlots(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg)
 {
   // Process the bbox_msg and determine what we're seeing
   for (int i = 0; i < bbox_msg->bounding_boxes.size(); i++)
@@ -100,23 +100,50 @@ void Slots::Identify(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg)
       bigRedValidator->Validate();
   }
 
+  if (bigRedValidator->IsValid() || fruitValidator->IsValid())
+  {
+    task_bbox_sub.shutdown();
+    master->tslam->Abort(true);
+
+    // Wait for TSlam to finish braking before proceeding
+    timer = master->nh.createTimer(ros::Duration(master->brake_duration), &Slots::EndTSlamTimer, this, true);
+    ROS_INFO("Slots: Identified Fruit and/or Big Red. Awaiting TSlam to end.");
+
+    /*if (bigRedValidator->IsValid())
+    {
+      mission_state = MST_BIG_RED;
+      ROS_INFO("Slots: Detection complete. Identified Big Red. Aligning to Big Red.");
+      Slots::IDToAlignment();
+    }
+    else if (fruitValidator->IsValid())
+    {
+      mission_state = MST_FRUIT;
+      ROS_INFO("Slots: Detection complete. Identified Fruit. Aligning to Fruit.");
+      Slots::IDToAlignment();
+    }*/
+  }
+}
+
+// Put rest of IDSlots code here
+void Slots::EndTSlamTimer(const ros::TimerEvent &event)
+{
   if (bigRedValidator->IsValid())
   {
     mission_state = MST_BIG_RED;
     ROS_INFO("Slots: Detection complete. Identified Big Red. Aligning to Big Red.");
-    Slots::idToAlignment();
+    Slots::IDToAlignment();
   }
   else if (fruitValidator->IsValid())
   {
     mission_state = MST_FRUIT;
     ROS_INFO("Slots: Detection complete. Identified Fruit. Aligning to Fruit.");
-    Slots::idToAlignment();
+    Slots::IDToAlignment();
   }
 }
 
-void Slots::idToAlignment()
+void Slots::IDToAlignment()
 {
-  task_bbox_sub.shutdown();
+  //task_bbox_sub.shutdown();
   bigRedValidator->Reset();
   fruitValidator->Reset();
 

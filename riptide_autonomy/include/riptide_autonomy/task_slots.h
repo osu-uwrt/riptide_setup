@@ -32,6 +32,7 @@ class Slots
 private:
   ros::Subscriber task_bbox_sub, alignment_status_sub, attitude_status_sub;
   ros::Subscriber *active_subs[3] = {&task_bbox_sub, &alignment_status_sub, &attitude_status_sub};
+  ros::Timer timer;
 
   darknet_ros_msgs::BoundingBoxes task_bboxes;
   riptide_msgs::AlignmentCommand align_cmd;
@@ -65,7 +66,9 @@ public:
   Slots(BeAutonomous* master);
   void Initialize();
   void Start();
-  void Identify(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_msg);
+  void IDSlots(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_msg);
+  void EndTSlamTimer(const ros::TimerEvent &event);
+  void IDToAlignment();
   void AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr& status_msg);
   void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr& status_msg);
   void Abort();

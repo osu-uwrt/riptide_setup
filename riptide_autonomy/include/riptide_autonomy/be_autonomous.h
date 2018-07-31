@@ -75,7 +75,7 @@ public:
   // Task Info
   YAML::Node tasks;
   string task_file, task_name, object_name;
-  double search_depth, search_accel, detection_duration;
+  double search_depth, search_accel, brake_duration, detection_duration;
   int num_objects, align_thresh, bbox_thresh, detections_req;
   int competition_id, quadrant, task_id, last_task_id, total_tasks, task_order_index;
   int alignment_plane, color, frame_width, frame_height, cam_center_x, cam_center_y;
@@ -93,7 +93,7 @@ public:
 
   // Task Specific Objects
   TSlam* tslam;
-  double relative_current_x, relative_current_y, global_y_axis_heading;
+  double relative_current_x, relative_current_y;
 
   CasinoGate* casino_gate;
   PathMarker* path;

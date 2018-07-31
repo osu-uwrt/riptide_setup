@@ -52,7 +52,7 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous")
   BeAutonomous::LoadParam<bool>("Task_Execution/run_single_task", run_single_task);
   BeAutonomous::LoadParam<double>("Task_Execution/relative_current_x", relative_current_x);
   BeAutonomous::LoadParam<double>("Task_Execution/relative_current_y", relative_current_y);
-  BeAutonomous::LoadParam<double>("Task_Execution/global_y_axis_heading", global_y_axis_heading);
+  BeAutonomous::LoadParam<double>("Task_Execution/tslam_brake_duration", brake_duration);
 
   // Load Task Runtime Parameters
   BeAutonomous::LoadParam<double>("Controller_Thresholds/depth_thresh", depth_thresh);
