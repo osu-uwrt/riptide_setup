@@ -163,7 +163,8 @@ void TSlam::Start()
 
   ROS_INFO("Cur X: %f", current_x);
   ROS_INFO("Cur Y: %f", current_y);
-  ROS_INFO("TSlam: Vehicle search heading: %f", search_heading);
+  ROS_INFO("TSlam: Quadrant search heading: %f", angle);
+  ROS_INFO("TSlam: Global search heading: %f", search_heading);
 
   // Calculate distance and ETA
   distance = sqrt(delta_x * delta_x + delta_y * delta_y);

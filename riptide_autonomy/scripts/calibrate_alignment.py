@@ -163,7 +163,7 @@ def CalibrateAlignmentCB(msg):
 
 
 if __name__ == "__main__":
-    with open("/home/benji/osu-uwrt/riptide_software/src/riptide_autonomy/cfg/tasks.yaml", 'r') as stream:
+    with open("../osu-uwrt/riptide_software/src/riptide_autonomy/cfg/tasks.yaml", 'r') as stream:
         try:
             task_info = yaml.load(stream)
             print 'Loaded task info'

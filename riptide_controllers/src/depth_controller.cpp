@@ -204,4 +204,8 @@ void DepthController::ResetDepth()
   accel.y = 0;
   accel.z = 0;
   cmd_pub.publish(accel);
+
+  // Disable depth controller
+  pid_depth_reset = true;
+  pid_depth_active = false;
 }

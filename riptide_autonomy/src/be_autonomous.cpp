@@ -76,7 +76,6 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous")
   task_file = rc::FILE_TASKS;
   task_id = -1;
   last_task_id = -1;
-  color = rc::COLOR_BLACK;
   quadrant = rc::QUAD_A;
   tasks = YAML::LoadFile(task_file);
   task_order_index = -1;
@@ -231,9 +230,10 @@ void BeAutonomous::EndMission()
     task_id = -1;
     last_task_id = -1;
     load_duration = 0;
-
-    BeAutonomous::SendResetMsgs();
   }
+  
+  BeAutonomous::SendResetMsgs();
+  quadrant = 0;
   mission_running = false;
 }
 
@@ -340,7 +340,7 @@ void BeAutonomous::SystemCheckTimer(const ros::TimerEvent &event)
       thruster_name = "SWAFT";
     }
 
-    ROS_INFO("SystemCheckTimer: thruster %s, depth %f m", thruster_name.c_str(), depth);
+    ROS_INFO("SystemCheckTimer: thruster %s, depth %f m, yaw: %.5f", thruster_name.c_str(), depth, euler_rpy.z);
     thrust_pub.publish(thrust_msg);
     thruster++;
     timer = nh.createTimer(ros::Duration(2), &BeAutonomous::SystemCheckTimer, this, true);
@@ -351,6 +351,7 @@ void BeAutonomous::SystemCheckTimer(const ros::TimerEvent &event)
     SendInitMsgs();
     thrust_pub.publish(thrust_msg); // Publish zero
     thruster = 0;
+    timer.stop();
   }
 }
 
@@ -395,8 +396,8 @@ void BeAutonomous::ResetSwitchPanel()
   load_duration = 0;
   last_load_id = -1;
   mission_loaded = false;
-  color = 0;
   thruster = 0;
+  timer.stop();
 }
 
 void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr &switch_msg)
@@ -517,7 +518,6 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr &switch_ms
       if (pre_start_duration > start_timer)
       {
         ROS_INFO("About to call StartTask()");
-        // Set these back to '0' or 'true' so it doesn't run again
         BeAutonomous::ResetSwitchPanel();
         BeAutonomous::SendInitMsgs();
         BeAutonomous::StartTask();
