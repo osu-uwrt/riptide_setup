@@ -51,6 +51,10 @@ if(NOT _host_name MATCHES "riptide")
   target_link_libraries(object_processor ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} yaml-cpp)
   add_dependencies(object_processor ${catkin_EXPORTED_TARGETS})
 
+  add_executable(bbox_pub src/bbox_pub.cpp)
+  target_link_libraries(bbox_pub ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+  add_dependencies(bbox_pub ${catkin_EXPORTED_TARGETS})
+
 else()
     message("-- Skipping jetson code on riptide")
 endif()
