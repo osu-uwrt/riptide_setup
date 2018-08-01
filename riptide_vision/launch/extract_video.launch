@@ -1,7 +1,7 @@
 <launch>
   <arg name="topic" default="/forward/image_undistorted" />
-  <arg name="username" default="blaine" />
-  <arg name="file_name" default="dice_7-31-18-10" />
+  <arg name="username" default="ros" />
+  <arg name="file_name" default="gate_7-31-18-10" />
   <arg name="ext" default=".avi" /> <!--Leave as .avi-->
   <arg name="frame_rate" default="14" />
   <arg name="width" default="644" /> <!--max = 1288-->

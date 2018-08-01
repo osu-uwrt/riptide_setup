@@ -29,6 +29,7 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous")
   switch_sub = nh.subscribe<riptide_msgs::SwitchState>("/state/switches", 1, &BeAutonomous::SwitchCB, this);
   imu_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &BeAutonomous::ImuCB, this);
   depth_sub = nh.subscribe<riptide_msgs::Depth>("/state/depth", 1, &BeAutonomous::DepthCB, this);
+  mission_sub = nh.subscribe<std_msgs::Int8>("/remote/mission", 1, &BeAutonomous::StartMissionCB, this);
 
   x_accel_pub = nh.advertise<std_msgs::Float64>("/command/accel_x", 1);
   y_accel_pub = nh.advertise<std_msgs::Float64>("/command/accel_y", 1);
@@ -110,8 +111,8 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous")
   depth = 0;
   frame_width = 644;
   frame_height = 482;
-  cam_center_x = frame_width/2;
-  cam_center_y = frame_height/2;
+  cam_center_x = frame_width / 2;
+  cam_center_y = frame_height / 2;
 
   // Initialize class objects and pointers
   // The "new" keyword creates a pointer to the object
@@ -348,8 +349,16 @@ void BeAutonomous::SystemCheckTimer(const ros::TimerEvent &event)
   else
   {
     ROS_INFO("SystemCheckTimer: thrusters tested, depth %f m", depth);
-    SendInitMsgs();
     thrust_pub.publish(thrust_msg); // Publish zero
+    reset_msg.reset_surge = true;
+    reset_msg.reset_sway = true;
+    reset_msg.reset_heave = true;
+    reset_msg.reset_roll = true;
+    reset_msg.reset_pitch = true;
+    reset_msg.reset_yaw = true;
+    reset_msg.reset_depth = true;
+    reset_msg.reset_pwm = true;
+    reset_pub.publish(reset_msg);
     thruster = 0;
   }
 }
@@ -397,6 +406,15 @@ void BeAutonomous::ResetSwitchPanel()
   mission_loaded = false;
   color = 0;
   thruster = 0;
+}
+
+void BeAutonomous::StartMissionCB(const std_msgs::Int8::ConstPtr &missionMsg)
+{
+  ROS_INFO("Remote start");
+  load_id = missionMsg->data;
+  BeAutonomous::ResetSwitchPanel();
+  BeAutonomous::SendInitMsgs();
+  BeAutonomous::StartTask();
 }
 
 void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr &switch_msg)
@@ -554,6 +572,6 @@ void BeAutonomous::ImageCB(const sensor_msgs::Image::ConstPtr &msg)
 
   frame_width = cv_ptr->image.size().width;
   frame_height = cv_ptr->image.size().height;
-  cam_center_x = frame_width/2;
-  cam_center_y = frame_height/2;
+  cam_center_x = frame_width / 2;
+  cam_center_y = frame_height / 2;
 }

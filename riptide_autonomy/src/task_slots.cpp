@@ -78,6 +78,7 @@ void Slots::Start()
   xValidator = new ErrorValidator(master->align_thresh, master->error_duration);
   yValidator = new ErrorValidator(master->bbox_thresh, master->bbox_surge_duration);
   zValidator = new ErrorValidator(master->align_thresh, master->error_duration);
+  yawValidator = new ErrorValidator(master->yaw_thresh, master->error_duration);
 
   fruitValidator->Reset();
   bigRedValidator->Reset();
@@ -154,7 +155,7 @@ void Slots::IDToAlignment()
 
   if (mission_state == MST_BIG_RED)
   {
-    align_cmd.bbox_dim = big_red_bbox_height;
+    align_cmd.bbox_dim = (int)(master->frame_height * big_red_bbox_height);
     align_cmd.target_pos.y = torpedo_offsets[active_torpedo].y;
     align_cmd.target_pos.z = torpedo_offsets[active_torpedo].z;
     ROS_INFO("Target y: %f", align_cmd.target_pos.y);
@@ -181,7 +182,7 @@ void Slots::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr 
     {
       yValidator->Reset();
       zValidator->Reset();
-      ROS_INFO("Slots: Aligned. Approaching target.");
+      ROS_INFO("Slots: Aligned. Approaching.");
       // Change alignment state, stop timer, activate surge alignment.
       if (mission_state == MST_BIG_RED)
       {
@@ -198,33 +199,33 @@ void Slots::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr 
       xValidator->Reset();
       if (mission_state == MST_BIG_RED)
       {
-        ROS_INFO("Slots: Bounding Box aligned. Attempting to fire.");
-        Slots::hitJackpot();
-        // Update target alignment (next torpedo)
-        if (torpedo_count > 0)
-        {
-          ROS_INFO("Slots: Aligning to next torpedo");
-          alignment_state = AST_CENTER;
-          align_cmd.target_pos.y = torpedo_offsets[active_torpedo].y;
-          align_cmd.target_pos.z = torpedo_offsets[active_torpedo].z;
-          master->alignment_pub.publish(align_cmd);
-        }
-        else
-        {
-          ROS_INFO("Slots: Out of torpedoes. Let's go home, boys.");
-          Slots::Abort();
-          master->tslam->SetEndPos();
-          master->StartTask();
-        }
+        ROS_INFO("Slots: Bounding Box aligned. Turning.");
+        alignment_status_sub.shutdown();
+        port_heading = master->tslam->KeepHeadingInRange(master->euler_rpy.z - 15);
+        stbd_heading = master->tslam->KeepHeadingInRange(master->euler_rpy.z + 15);
+        riptide_msgs::AttitudeCommand cmd;
+        cmd.roll_active = true;
+        cmd.pitch_active = true;
+        cmd.yaw_active = true;
+        cmd.euler_rpy.x = 0;
+        cmd.euler_rpy.y = 0;
+        cmd.euler_rpy.z = port_heading;
+
+        ros::Publisher pub = master->nh.advertise<riptide_msgs::AttitudeCommand>("/command/attitude", 1);
+        pub.publish(cmd);
+        attitude_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &Slots::ImuCB, this);
+
+
       }
     }
   }
 }
 
-void Slots::hitJackpot()
+void Slots::ImuCB(const riptide_msgs::ControlStatusAngular::ConstPtr &msg)
 {
-  if (torpedo_count > 0)
+  if (yawValidator->Validate(msg->yaw.error))
   {
+    yawValidator->Reset();
     pneumatics_cmd.header.stamp = ros::Time::now();
     pneumatics_cmd.torpedo_port = active_torpedo == PORT_TORPEDO;
     pneumatics_cmd.torpedo_stbd = active_torpedo == STBD_TORPEDO;
@@ -232,16 +233,29 @@ void Slots::hitJackpot()
     pneumatics_cmd.manipulator = false;
     pneumatics_cmd.duration = pneumatics_duration;
     master->pneumatics_pub.publish(pneumatics_cmd);
-    torpedo_count--;
-    ROS_INFO("Slots: Torpedo %d fired. Toggling active. %d torpedoes remaining.", active_torpedo, torpedo_count);
+    ROS_INFO("BOOM");
     if (active_torpedo == PORT_TORPEDO)
+    {
       active_torpedo = STBD_TORPEDO;
+      riptide_msgs::AttitudeCommand cmd;
+      cmd.roll_active = true;
+      cmd.pitch_active = true;
+      cmd.yaw_active = true;
+      cmd.euler_rpy.x = 0;
+      cmd.euler_rpy.y = 0;
+      cmd.euler_rpy.z = stbd_heading;
+
+      ROS_INFO("Aligning to next");
+
+      ros::Publisher pub = master->nh.advertise<riptide_msgs::AttitudeCommand>("/command/attitude", 1);
+      pub.publish(cmd);
+    }
     else
-      active_torpedo = PORT_TORPEDO;
-  }
-  else
-  {
-    ROS_INFO("Slots: CRITICAL! Tried to fire with no torpedoes.");
+    {
+      Abort();
+      master->tslam->SetEndPos();
+      master->StartTask();
+    }
   }
 }
 
