@@ -480,7 +480,7 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr &switch_ms
         ROS_INFO("Mission Loaded: %i", load_id);
         if (load_id < rc::MISSION_TEST)
         {
-          color == load_id % 2;
+          quadrant = load_id;
         }
       }
     }

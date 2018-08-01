@@ -145,7 +145,7 @@ void TSlam::Start()
   yawValidator = new ErrorValidator(master->yaw_thresh, master->error_duration);
   depthValidator = new ErrorValidator(master->depth_thresh, master->error_duration);
   
-  quadrant = master->load_id;
+  quadrant = master->quadrant;
   ROS_INFO("TSlam: Quadrant %i", quadrant);
 
   user_defined_y_axis_heading = task_map["task_map"]["user_defined_y_axis_heading"][quadrant].as<double>();
@@ -227,8 +227,8 @@ void TSlam::YawAttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstP
     msg.data = master->search_accel;
     master->x_accel_pub.publish(msg);
 
-    double tslam_duration = 1.5 * eta;
-    timer = master->nh.createTimer(ros::Duration(eta), &TSlam::AbortTSlamTimer, this, true);
+    double tslam_duration = 1.25 * eta;
+    timer = master->nh.createTimer(ros::Duration(tslam_duration), &TSlam::AbortTSlamTimer, this, true);
     ROS_INFO("TSlam: Reached heading, now moving forward. Abort timer initiated. ETA: %f", tslam_duration);
   }
 }

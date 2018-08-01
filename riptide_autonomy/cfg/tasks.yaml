@@ -43,8 +43,8 @@ tasks: [
       objects: ["Dice1", "Dice2", "Dice5", "Dice6"],
       preferred_objects: [6, 5], # Just use actual dice block number
       thresholds: [0.6, 0.6, 0.6, 0.6],
-      align_thresh: 30, # [pixels]
-      bbox_thresh: 30, # [pixels]
+      align_thresh: 50, # [pixels]
+      bbox_thresh: 50, # [pixels]
       detection_duration: 1, # [s]
       detections_req: 8 # [number]
     },
@@ -57,8 +57,8 @@ tasks: [
       path_angle: 135,
       objects: ["Path_Marker"],
       thresholds: [0.6],
-      align_thresh: 30, # [pixels]
-      bbox_thresh: 30, # [pixels]
+      align_thresh: 50, # [pixels]
+      bbox_thresh: 50, # [pixels]
       detection_duration: 1, # [s]
       detections_req: 8 # [number]
     },
@@ -66,7 +66,7 @@ tasks: [
       id: 4,
       name: "Slots",
       plane: 0,
-      search_depth: .5,
+      search_depth: 2.5,
       search_accel: 0.8,
       objects: ["Slots_Fruit", "Slots_Big_Red"],
       torpedo_offset: {
@@ -77,8 +77,8 @@ tasks: [
       fruit_bbox_height: 0.5,
       pneumatics_duration: 200,
       thresholds: [0.1, 0.1],
-      align_thresh: 30, # [pixels]
-      bbox_thresh: 30, # [pixels]
+      align_thresh: 50, # [pixels]
+      bbox_thresh: 50, # [pixels]
       detection_duration: 1, # [s]
       detections_req: 8 # [number]
     },
@@ -93,8 +93,8 @@ tasks: [
       bbox_height: 0.3, # fraction of frame height
       objects: ["Buy_Gold_Chip"],
       thresholds: [0.1],
-      align_thresh: 30, # [pixels]
-      bbox_thresh: 30, # [pixels]
+      align_thresh: 50, # [pixels]
+      bbox_thresh: 50, # [pixels]
       detection_duration: 1, # [s]
       detections_req: 8 # [number]
     },
@@ -102,15 +102,13 @@ tasks: [
       id: 6,
       name: "Roulette",
       plane: 1,
-      search_depth: 2.0,
+      search_depth: 1.0,
       search_accel: 0.8,
-      roulette_bbox_height: 0.7, # fraction of frame height
-      roulette_ycenter_offset: 0.2, # fraction of frame width
+      marker_drop_depth: 1.8, # [m]
       objects: ["Roulette"],
       thresholds: [0.1],
-      drop_duration: 4.0,
-      align_thresh: 30, # [pixels]
-      bbox_thresh: 30, # [pixels]
+      align_thresh: 50, # [pixels]
+      bbox_thresh: 50, # [pixels]
       detection_duration: 1.0, # [s]
       detections_req: 8 # [number]
     },
@@ -124,8 +122,8 @@ tasks: [
       back_off_time: 2.5,
       objects: ["Buy_Gold_Chip"],
       thresholds: [0.5],
-      align_thresh: 30, # [pixels]
-      bbox_thresh: 30, # [pixels]
+      align_thresh: 50, # [pixels]
+      bbox_thresh: 50, # [pixels]
       detection_duration: 1, # [s]
       detections_req: 8 # [number]
     },
@@ -137,8 +135,8 @@ tasks: [
       search_accel: 0.8,
       objects: ["Cash_In"],
       thresholds: [0.5],
-      align_thresh: 30, # [pixels]
-      bbox_thresh: 30, # [pixels]
+      align_thresh: 50, # [pixels]
+      bbox_thresh: 50, # [pixels]
       detection_duration: 1, # [s]
       detections_req: 8 # [number]
     }
