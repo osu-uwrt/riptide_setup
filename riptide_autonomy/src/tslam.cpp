@@ -228,7 +228,7 @@ void TSlam::YawAttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstP
     master->x_accel_pub.publish(msg);
 
     double tslam_duration = 1.5 * eta;
-    timer = master->nh.createTimer(ros::Duration(tslam_duration), &TSlam::AbortTSlamTimer, this, true);
+    timer = master->nh.createTimer(ros::Duration(eta), &TSlam::AbortTSlamTimer, this, true);
     ROS_INFO("TSlam: Reached heading, now moving forward. Abort timer initiated. ETA: %f", tslam_duration);
   }
 }

@@ -3,13 +3,13 @@ tasks: [
       id: 0,
       name: "Casino_Gate",
       plane: 0,
-      search_depth: 1.5,
+      search_depth: 1,
       search_accel: 0.8,
       pass_thru_duration: 6.0, # [s]
       gate_zcenter_offset: 0.25, # fraction of frame height 
       gate_width: 0.6, # fraction of frame width
       objects: ["Casino_Gate_Black"],
-      thresholds: [0.7],
+      thresholds: [0.5],
       align_thresh: 50, # [pixels]
       bbox_thresh: 50, # [pixels]
       detection_duration: 1, # [s]
