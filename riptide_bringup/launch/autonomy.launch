@@ -7,7 +7,7 @@
   <!--<include file="$(find riptide_vision)/launch/vision.launch" />-->
 
   <!-- If you want to rosbag these topics, then set competition to true -->
-  <arg name="log" default="true" />
+  <arg name="log" default="false" />
   <node pkg="rosbag" type="record" name="record_autonomy" 
         args="record -o ../mission /rosout_agg /darknet_ros/image_hud /task/bboxes" 
         if="$(arg log)" />
