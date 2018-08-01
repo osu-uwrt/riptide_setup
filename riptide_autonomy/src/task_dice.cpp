@@ -604,3 +604,14 @@ void Dice::SecondDiceBumpTimer(const ros::TimerEvent &event)
     ROS_INFO("Dice: The bank of benji may or may not be bankrupt by the end of this run.");
   }
 }
+
+void Dice::Abort()
+{
+  Dice::Initialize();
+  timer.stop();
+  align_cmd.surge_active = false;
+  align_cmd.sway_active = false;
+  align_cmd.heave_active = false;
+  master->alignment_pub.publish(align_cmd);
+  ROS_INFO("Dice: Aborting");
+}

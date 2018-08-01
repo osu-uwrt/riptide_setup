@@ -34,14 +34,10 @@ uint8 QUAD_D = 3
 
 # Mission IDs
 uint8 MISSION_A_BLACK = 0
-uint8 MISSION_A_RED = 1
-uint8 MISSION_B_BLACK = 2
-uint8 MISSION_B_RED = 3
-uint8 MISSION_C_BLACK = 4
-uint8 MISSION_C_RED = 5
-uint8 MISSION_D_BLACK = 6
-uint8 MISSION_D_RED = 7
-uint8 MISSION_TEST = 8
+uint8 MISSION_B_BLACK = 1
+uint8 MISSION_C_BLACK = 2
+uint8 MISSION_D_BLACK = 3
+uint8 MISSION_TEST = 4
 uint8 MISSION_NONE = 255
 
 # Competition Round IDs

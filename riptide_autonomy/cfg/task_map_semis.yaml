@@ -4,20 +4,15 @@ task_map: {
   freq: [30, 40, 25, 35], # [kHz]
   dock_x: [0, 0, 0, 0],
   dock_y: [0, 0, 0, 0],
-  user_defined_y_axis_heading: [2, 0, 2, 180], # MUST save values from compeition, do NOT overwrite. Allows user to specify where world positive y-axis points [deg]
+  user_defined_y_axis_heading: [2, 180, 2, 180], # MUST save values from compeition, do NOT overwrite. Allows user to specify where world positive y-axis points [deg]
   map: [
     {
       id: 0,
       name: "Casino_Gate",
-      start_x: [0, 0, -10, 10],
-      start_y: [0, 0, 1.5, 1.5],
-      end_mid_x: [0, 0, -13, 0],
-      end_mid_y: [0, 0, 2, 0],
-      end_x: [0, 0, -12, 0],
-      end_y: [0, 0, 2, 0],
-      end_pos_offset: [1, 1, 1, 1], # [m]
-      heading: [-80, -100, 80, 100], # [deg]
-      left_color: [0, 0, 1, 1] # 0 -> Black, 1 -> Red
+      start_x: [10, 0, -10, 10],
+      start_y: [5, 0, 1.5, 3.0],
+      end_x: [0, 0, -13, 13],
+      end_y: [0, 0, 3, 3],
     },
     {
       id: 1,

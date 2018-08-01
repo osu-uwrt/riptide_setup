@@ -5,18 +5,15 @@ tasks: [
       plane: 0,
       search_depth: 1.5,
       search_accel: 0.8,
-      pass_thru_duration: 4.0, # [s]
-      id_correct_color_duration: 4, # [s]
-      gate_zcenter_offset: 0.25, # fraction of frame height
+      pass_thru_duration: 6.0, # [s]
+      gate_zcenter_offset: 0.25, # fraction of frame height 
       gate_width: 0.6, # fraction of frame width
-      incorrect_gate_ycenter_offset: 0.2, # fraction of frame width
-      incorrect_gate_width: 0.4, # fraction of frame width
-      objects: ["Casino_Gate_Black", "Casino_Gate_Red"],
-      thresholds: [0.3, 0.3],
-      align_thresh: 30, # [pixels]
-      bbox_thresh: 30, # [pixels]
+      objects: ["Casino_Gate_Black"],
+      thresholds: [0.7],
+      align_thresh: 50, # [pixels]
+      bbox_thresh: 50, # [pixels]
       detection_duration: 1, # [s]
-      detections_req: 8 # [number]
+      detections_req: 5 # [number]
     },
     {
       id: 1,
