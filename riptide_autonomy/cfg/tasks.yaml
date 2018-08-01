@@ -68,7 +68,6 @@ tasks: [
       plane: 0,
       search_depth: 2.5,
       search_accel: 0.8,
-      objects: ["Slots_Fruit", "Slots_Big_Red"],
       torpedo_offset: {
         port: { y: 100, z: 0 },
         stbd: { y: -100, z: 0 }
@@ -76,7 +75,8 @@ tasks: [
       big_red_bbox_height: 0.5,
       fruit_bbox_height: 0.5,
       pneumatics_duration: 200,
-      thresholds: [0.1, 0.1],
+      objects: ["Slots_Fruit", "Slots_Big_Red"],
+      thresholds: [0.5, 0.5],
       align_thresh: 50, # [pixels]
       bbox_thresh: 50, # [pixels]
       detection_duration: 1, # [s]
