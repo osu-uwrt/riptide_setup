@@ -27,8 +27,8 @@ class Roulette
 {
 
 private:
-  ros::Subscriber task_bbox_sub, alignment_status_sub, attitude_status_sub;
-  ros::Subscriber *active_subs[3] = {&task_bbox_sub, &alignment_status_sub, &attitude_status_sub};
+  ros::Subscriber task_bbox_sub, alignment_status_sub, attitude_status_sub, depth_status_sub;
+  ros::Subscriber *active_subs[4] = {&task_bbox_sub, &alignment_status_sub, &attitude_status_sub, &depth_status_sub};
   ros::Timer timer;
 
   darknet_ros_msgs::BoundingBoxes task_bboxes;
@@ -37,19 +37,13 @@ private:
   riptide_msgs::Pneumatics pneumatics_cmd;
   riptide_msgs::DepthCommand depth_cmd;
 
-  ros::Time acceptable_begin;
-  bool drop_clock_is_ticking;
-
-  // ALignment variables
+  // Alignment variables
   bool got_heading;
-  double green_heading, marker_drop_heading, drop_time, drop_duration;
+  double green_heading, marker_drop_heading, marker_drop_depth;
   int num_markers_dropped;
-  ros::Time drop_start_time;
-
-  double roulette_bbox_height, roulette_ycenter_offset;
 
   DetectionValidator *detectionValidator;
-  ErrorValidator *xValidator, *yValidator, *zValidator, *yawValidator;
+  ErrorValidator *xValidator, *yValidator, *zValidator, *yawValidator, *depthValidator;
 
   // Create instance to master
   BeAutonomous* master;
@@ -63,10 +57,9 @@ public:
   void IDRoulette(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox_msg);
   void EndTSlamTimer(const ros::TimerEvent &event);
   void CenterAlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr& status_msg);
-  void BBoxAlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr& status_msg);
+  void DepthStatusCB(const riptide_msgs::ControlStatus::ConstPtr& status_msg);
   void SetMarkerDropHeading(double heading);
   void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr& status_msg);
-  void OffsetAlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr& status_msg);
   void Abort();
 };
 
