@@ -22,7 +22,7 @@ class PS3Controller
  private:
   ros::NodeHandle nh;
   ros::Publisher attitude_pub, depth_pub, x_accel_pub, y_accel_pub, reset_pub, plane_pub, pneumatics_pub;
-  ros::Subscriber joy_sub, depth_sub;
+  ros::Subscriber joy_sub, depth_sub, imu_sub;
 
   geometry_msgs::Vector3 delta_attitude, euler_rpy, cmd_accel;
   std_msgs::Float64 x_cmd, y_cmd; 
