@@ -13,6 +13,7 @@ int main(int argc, char** argv)
 PS3Controller::PS3Controller() : nh("ps3_controller") {
   joy_sub = nh.subscribe<sensor_msgs::Joy>("/joy", 1, &PS3Controller::JoyCB, this);
   depth_sub = nh.subscribe<riptide_msgs::Depth>("/state/depth", 1, &PS3Controller::DepthCB, this);
+  imu_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &PS3Controller::ImuCB, this);
   attitude_pub = nh.advertise<riptide_msgs::AttitudeCommand>("/command/attitude", 1);
   x_accel_pub = nh.advertise<std_msgs::Float64>("/command/accel_x", 1);
   y_accel_pub = nh.advertise<std_msgs::Float64>("/command/accel_y", 1);
@@ -124,7 +125,7 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr& joy) {
   else if(isStarted) {
     if(!isInit) { // Initialize to roll and pitch of 0 [deg], and set yaw to current heading
       isInit = true;
-      cmd_attitude.euler_rpy.z = round(euler_rpy.z);
+      cmd_attitude.euler_rpy.z = (int)euler_rpy.z;
 
       //if(isDepthWorking)
         cmd_depth.depth = current_depth;
