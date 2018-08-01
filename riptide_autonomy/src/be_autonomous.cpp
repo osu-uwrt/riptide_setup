@@ -222,13 +222,15 @@ void BeAutonomous::EndMission()
     tslam->EndMission();
     tslam->Abort(false); // Don't apply thruster brake
     casino_gate->Abort();
+    path->Abort();
+    dice->Abort();
     slots->Abort();
     roulette->Abort();
-    path->Abort();
 
     task_order_index = -1;
     task_id = -1;
     last_task_id = -1;
+    load_duration = 0;
 
     BeAutonomous::SendResetMsgs();
   }
@@ -429,22 +431,10 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr &switch_ms
         light_msg.green1 = true;
         status_light_pub.publish(light_msg);
       }
-      else if (switch_msg->sw1 && switch_msg->sw5)
-      {
-        load_id = rc::MISSION_A_RED; //Quad A Red
-        light_msg.red1 = true;
-        status_light_pub.publish(light_msg);
-      }
       else if (switch_msg->sw2 && !switch_msg->sw5)
       {
         load_id = rc::MISSION_B_BLACK; //Quad B Black
         light_msg.green2 = true;
-        status_light_pub.publish(light_msg);
-      }
-      else if (switch_msg->sw2 && switch_msg->sw5)
-      {
-        load_id = rc::MISSION_B_RED; //Quad B Red
-        light_msg.red2 = true;
         status_light_pub.publish(light_msg);
       }
       else if (switch_msg->sw3 && !switch_msg->sw5)
@@ -453,22 +443,10 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr &switch_ms
         light_msg.green3 = true;
         status_light_pub.publish(light_msg);
       }
-      else if (switch_msg->sw3 && switch_msg->sw5)
-      {
-        load_id = rc::MISSION_C_RED; //Quad C Red
-        light_msg.red3 = true;
-        status_light_pub.publish(light_msg);
-      }
       else if (switch_msg->sw4 && !switch_msg->sw5)
       {
         load_id = rc::MISSION_D_BLACK; //Quad D Black
         light_msg.green4 = true;
-        status_light_pub.publish(light_msg);
-      }
-      else if (switch_msg->sw4 && switch_msg->sw5)
-      {
-        load_id = rc::MISSION_D_RED; //Quad D Red
-        light_msg.red4 = true;
         status_light_pub.publish(light_msg);
       }
     }
