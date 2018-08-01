@@ -47,7 +47,7 @@ class DepthController
     void UpdateError();
     double Constrain(double current, double max);
     double SmoothErrorIIR(double input, double prev);
-    void ResetDepth(int id);
+    void ResetDepth();
 
   public:
     DepthController();

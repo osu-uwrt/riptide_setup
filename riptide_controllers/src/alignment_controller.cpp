@@ -5,8 +5,6 @@
 #undef progress
 
 #define PI 3.141592653
-#define RESET_ID 0
-#define DISABLE_ID 1
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "alignment_controller");
@@ -73,9 +71,9 @@ AlignmentController::AlignmentController() : nh("alignment_controller") {
     dt_iir = 1.0/imu_filter_rate;
     alpha = 2*PI*dt_iir*fc / (2*PI*dt_iir*fc + 1); // Multiplier
 
-    AlignmentController::ResetSurge(RESET_ID);
-    AlignmentController::ResetSway(RESET_ID);
-    AlignmentController::ResetHeave(RESET_ID);
+    AlignmentController::ResetSurge();
+    AlignmentController::ResetSway();
+    AlignmentController::ResetHeave();
 
     timer = nh.createTimer(ros::Duration(max_zero_detect_duration/2.0), &AlignmentController::DisableControllerTimer, this, true);
 }
@@ -265,14 +263,14 @@ void AlignmentController::CommandCB(const riptide_msgs::AlignmentCommand::ConstP
     status_msg.y.reference = target_pos.y;
   }
   else {
-    AlignmentController::ResetSway(DISABLE_ID);
+    AlignmentController::ResetSway();
   }
   if(alignment_plane == rc::PLANE_YZ) { // Using fwd cam
     if(!pid_surge_reset && pid_surge_active) { // Surge
       status_msg.x.reference = target_bbox_dim;
     }
     else {
-      AlignmentController::ResetSurge(DISABLE_ID);
+      AlignmentController::ResetSurge();
     }
 
     if(!pid_heave_reset && pid_heave_active) { // Heave
@@ -280,7 +278,7 @@ void AlignmentController::CommandCB(const riptide_msgs::AlignmentCommand::ConstP
       status_msg.z.reference = target_pos.z;
     }
     else {
-      AlignmentController::ResetHeave(DISABLE_ID);
+      AlignmentController::ResetHeave();
     }
   }
   else if(alignment_plane == rc::PLANE_XY) { // Using dwn cam
@@ -289,14 +287,14 @@ void AlignmentController::CommandCB(const riptide_msgs::AlignmentCommand::ConstP
       status_msg.x.reference = target_pos.x;
     }
     else {
-      AlignmentController::ResetSurge(DISABLE_ID);
+      AlignmentController::ResetSurge();
     }
 
     if(!pid_heave_reset && pid_heave_active) { // heave
       status_msg.z.reference = target_bbox_dim;
     }
     else {
-      AlignmentController::ResetHeave(DISABLE_ID);
+      AlignmentController::ResetHeave();
     }
   }
 
@@ -316,27 +314,27 @@ void AlignmentController::TaskInfoCB(const riptide_msgs::TaskInfo::ConstPtr& tas
 
 void AlignmentController::ResetCB(const riptide_msgs::ResetControls::ConstPtr& reset_msg) {
   if(reset_msg->reset_surge) {
-    AlignmentController::ResetSurge(RESET_ID);
+    AlignmentController::ResetSurge();
   }
   else pid_surge_reset = false;
 
   if(reset_msg->reset_sway) {
-    AlignmentController::ResetSway(RESET_ID);
+    AlignmentController::ResetSway();
   }
   else pid_sway_reset = false;
 
   if(reset_msg->reset_heave) {
-    AlignmentController::ResetHeave(RESET_ID);
+    AlignmentController::ResetHeave();
   }
   else pid_heave_reset = false;
 
-if(pid_surge_reset && pid_sway_reset && pid_heave_reset)
+  if(pid_surge_reset && pid_sway_reset && pid_heave_reset)
     pid_alignment_reset = true;
   else
     pid_alignment_reset = false;
 }
 
-void AlignmentController::ResetSurge(int id) {
+void AlignmentController::ResetSurge() {
   x_pid.reset();
   target_pos.x = 0;
   error.x = 0;
@@ -351,14 +349,9 @@ void AlignmentController::ResetSurge(int id) {
 
   x_cmd.data = 0;
   x_pub.publish(x_cmd);
-
-  if(id == RESET_ID)
-    pid_surge_reset = true;
-  else if(id == DISABLE_ID)
-    pid_surge_active = false;
 }
 
-void AlignmentController::ResetSway(int id) {
+void AlignmentController::ResetSway() {
   y_pid.reset();
   target_pos.y = 0;
   error.y = 0;
@@ -373,14 +366,9 @@ void AlignmentController::ResetSway(int id) {
 
   y_cmd.data = 0;
   y_pub.publish(y_cmd);
-  
-  if(id == RESET_ID)
-    pid_sway_reset = true;
-  else if(id == DISABLE_ID)
-    pid_sway_active = false;
 }
 
-void AlignmentController::ResetHeave(int id) {
+void AlignmentController::ResetHeave() {
   z_pid.reset();
   target_pos.z = 0;
   error.z = 0;
@@ -397,9 +385,4 @@ void AlignmentController::ResetHeave(int id) {
   depth_cmd.active = true;
   depth_cmd.depth = current_depth + heave_cmd;
   depth_pub.publish(depth_cmd);
-
-  if(id == RESET_ID)
-    pid_heave_reset = true;
-  else if(id == DISABLE_ID)
-    pid_heave_active = false;
 }

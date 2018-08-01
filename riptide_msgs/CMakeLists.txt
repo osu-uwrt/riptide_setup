@@ -39,6 +39,7 @@ add_message_files(
     Object.msg
     MissionState.msg
     StatusLight.msg
+    CalibrateAlignment.msg
 )
 
 generate_messages(DEPENDENCIES std_msgs geometry_msgs darknet_ros_msgs)
