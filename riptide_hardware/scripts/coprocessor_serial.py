@@ -72,28 +72,38 @@ def main():
     while not rospy.is_shutdown():
         if ser is not None:
             data = ser.readline()[:-2]
-            if data is not None and data[-1:] == "@":
+            if data is not None and data[-4:] == "@@@@":
                 packet = data[5:-4]
 
                 # Check if depth (%) or switch ($)
                 if (len(packet) > 0 and data[1] == "%"):
-                    depthList = packet.split("!");
-                    depth_msg.header.stamp = rospy.Time.now()
-                    depth_msg.temp = float(depthList[0].replace("\x00", ""))
-                    depth_msg.pressure = float(depthList[1].replace("\x00", ""))
-                    depth_msg.depth = float(depthList[2].replace("\x00",""))
-                    depth_msg.altitude = 0.0
-                    depthPub.publish(depth_msg)
+                    try:
+                        depthList = packet.split("!");
+                        depth_msg.header.stamp = rospy.Time.now()
+                        depth_msg.temp = float(depthList[0].replace("\x00", ""))
+                        depth_msg.pressure = float(depthList[1].replace("\x00", ""))
+                        depth_msg.depth = float(depthList[2].replace("\x00",""))
+                        depth_msg.altitude = 0.0
+                        depthPub.publish(depth_msg)
+                        pass
+                    except:
+                        pass
                 elif (len(packet) > 0 and data[1] == "$"):
                     # Populate switch message. Start at 1 to ignore line break
-                    sw_msg.header.stamp = rospy.Time.now()
-                    sw_msg.kill = True if packet[0] is '1' else False
-                    sw_msg.sw1 = True if packet[1] is '1' else False
-                    sw_msg.sw2 = True if packet[2] is '1' else False
-                    sw_msg.sw3 = True if packet[3] is '1' else False
-                    sw_msg.sw4 = True if packet[4] is '1' else False
-                    sw_msg.sw5 = True if packet[5] is '1' else False
-                    swPub.publish(sw_msg)
+                    try:
+                        sw_msg.header.stamp = rospy.Time.now()
+                        sw_msg.kill = True if packet[0] is '1' else False
+                        sw_msg.sw1 = True if packet[1] is '1' else False
+                        sw_msg.sw2 = True if packet[2] is '1' else False
+                        sw_msg.sw3 = True if packet[3] is '1' else False
+                        sw_msg.sw4 = True if packet[4] is '1' else False
+                        sw_msg.sw5 = True if packet[5] is '1' else False
+                        swPub.publish(sw_msg)
+                        pass
+                    except:
+                        pass
+
+                        
 
         rate.sleep()
     rospy.loginfo("Stopping thrusters")

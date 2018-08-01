@@ -63,7 +63,8 @@ void CasinoGate::Start()
   align_cmd.target_pos.y = 0;
   align_cmd.target_pos.z = (int)(master->frame_height * gate_zcenter_offset);
   master->alignment_pub.publish(align_cmd);
-  ROS_INFO("CasinoGate: alignment command published (but disabled)");
+  ROS_INFO("CasinoGate: Alignment command published (but disabled)");
+  ROS_INFO("CasinoGate: Color is %i", master->color);
 
   braked = false;
   detected_black = false;
@@ -331,8 +332,8 @@ void CasinoGate::SetEndPos()
   else if (passing_on_right)
     alpha = gate_heading - 90;
 
-  double end_mid_x = master->tslam->task_map["task_map"][master->task_id]["end_mid_x"][master->tslam->quadrant].as<double>();
-  double end_mid_y = master->tslam->task_map["task_map"][master->task_id]["end_mid_y"][master->tslam->quadrant].as<double>();
+  double end_mid_x = master->tslam->task_map["task_map"]["map"][master->task_id]["end_mid_x"][master->tslam->quadrant].as<double>();
+  double end_mid_y = master->tslam->task_map["task_map"]["map"][master->task_id]["end_mid_y"][master->tslam->quadrant].as<double>();
 
   double current_x = end_mid_x - end_pos_offset * sin(alpha * PI / 180);
   double current_y = end_mid_y + end_pos_offset * cos(alpha * PI / 180);
