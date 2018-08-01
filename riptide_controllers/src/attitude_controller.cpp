@@ -262,6 +262,10 @@ void AttitudeController::ResetRoll() {
 
   ang_accel_cmd.x = 0;
   cmd_pub.publish(ang_accel_cmd);
+
+  // Disable roll controller
+  pid_roll_reset = true;
+  pid_roll_active = false;
 }
 
 void AttitudeController::ResetPitch() {
@@ -278,6 +282,10 @@ void AttitudeController::ResetPitch() {
 
   ang_accel_cmd.y = 0;
   cmd_pub.publish(ang_accel_cmd);
+
+  // Disable pitch controller
+  pid_pitch_reset = true;
+  pid_pitch_active = false;
 }
 
 void AttitudeController::ResetYaw() {
@@ -294,4 +302,8 @@ void AttitudeController::ResetYaw() {
 
   ang_accel_cmd.z = 0;
   cmd_pub.publish(ang_accel_cmd);
+
+  // Disable yaw controller
+  pid_yaw_reset = true;
+  pid_yaw_active = false;
 }
