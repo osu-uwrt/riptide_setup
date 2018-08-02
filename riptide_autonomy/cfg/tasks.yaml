@@ -66,7 +66,7 @@ tasks: [
       id: 4,
       name: "Slots",
       plane: 0,
-      search_depth: 2.5,
+      search_depth: .5,
       search_accel: 0.8,
       torpedo_offset: {
         port: { y: 0, z: 50 },
@@ -78,7 +78,7 @@ tasks: [
       objects: ["Slots_Fruit", "Slots_Big_Red"],
       thresholds: [0.99, 0.1],
       align_thresh: 50, # [pixels]
-      bbox_thresh: 50, # [pixels]
+      bbox_thresh: 30, # [pixels]
       detection_duration: 1, # [s]
       detections_req: 8 # [number]
     },
