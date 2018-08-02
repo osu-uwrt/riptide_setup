@@ -51,15 +51,15 @@ private:
   double big_red_bbox_height;
   double fruit_bbox_height;
   int alignment_state;
+  int port_heading, stbd_heading;
 
   DetectionValidator *fruitValidator, *bigRedValidator;
-  ErrorValidator *xValidator, *yValidator, *zValidator;
+  ErrorValidator *xValidator, *yValidator, *zValidator, *yawValidator;
 
   // Reference to master
   BeAutonomous* master;
 
   void idToAlignment();
-  void hitJackpot();
 
 public:
 
@@ -71,6 +71,7 @@ public:
   void IDToAlignment();
   void AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr& status_msg);
   void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr& status_msg);
+  void ImuCB(const riptide_msgs::ControlStatusAngular::ConstPtr &msg);
   void Abort();
 };
 
