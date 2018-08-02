@@ -224,15 +224,19 @@ void TSlam::YawAttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstP
     yawValidator->Reset();
     attitude_status_sub.shutdown();
 
-    // Drive forward
-    std_msgs::Float64 msg;
-    msg.data = master->search_accel;
-    master->x_accel_pub.publish(msg);
 
+    double tslam_duration = 1 * eta;
     timer = master->nh.createTimer(ros::Duration(tslam_duration), &TSlam::AbortTSlamTimer, this, true);
     master->StartTask(); // Start next task
     ROS_INFO("TSlam: Reached heading, StartTask called.");
     ROS_INFO("Moving forward. Abort timer initiated. ETA: %f", tslam_duration);
+
+    // Drive forward
+    std_msgs::Float64 msg;
+    msg.data = master->search_accel;
+    master->x_accel_pub.publish(msg);
+    ROS_INFO("Search accel: %f", master->search_accel);
+
   }
 }
 
