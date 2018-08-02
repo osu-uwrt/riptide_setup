@@ -1,10 +1,9 @@
 Task_Execution:
-  task_order: [4]
+  task_order: [0] #[4,6] or [0]
   run_single_task: false
   relative_current_x: 0.0 #  Where the vehicle starts relative to task [m]
   relative_current_y: 0.0 # Where the vehicle starts relative to task [m]
-  global_y_axis_heading: 80 # Allows user to specify where world positive y-axis points [deg]
-  tslam_brake_duration: 0.3 # [s]
+  tslam_brake_duration: 0.5 # [s]
 Controller_Thresholds:
   depth_thresh: 0.3 # [m]
   roll_thresh: 5 # [deg]

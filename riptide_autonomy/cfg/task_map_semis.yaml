@@ -2,16 +2,16 @@ task_map: {
   id: [0, 1, 2, 3],
   quad: ["A", "B", "C", "D"],
   freq: [30, 40, 25, 35], # [kHz]
-  dock_x: [0, 0, 0, 0],
-  dock_y: [0, 0, 0, 0],
-  user_defined_y_axis_heading: [0, 180, 2, 180], # MUST save values from compeition, do NOT overwrite. Allows user to specify where world positive y-axis points [deg]
+  dock_x: [0, 0, 0, 0], #B -34.2
+  dock_y: [0, 0, 0, 0], #B 10.2
+  user_defined_y_axis_heading: [5, 200, 5, 180], # MUST save values from compeition, do NOT overwrite. Allows user to specify where world positive y-axis points [deg]
   map: [
     {
       id: 0,
-      name: "Casino_Gate",
-      start_x: [10, -10, -10, 14],
-      start_y: [5, 2, 2, 5.0],
-      end_x: [13, -13, -13, 16],
+      name: "GFlap",
+      start_x: [10, -21.4, -10, 14],
+      start_y: [5, 3, 2, 5.0],
+      end_x: [13, -21.4, -13, 16],
       end_y: [3, 3, 3, 6],
     },
     {
@@ -25,10 +25,10 @@ task_map: {
     {
       id: 2,
       name: "Dice",
-      start_x: [0, 0, 0, 0],
-      start_y: [0, 0, 0, 0],
-      end_x: [0, 0, 0, 0],
-      end_y: [0, 0, 0, 0]
+      start_x: [0, -33.2, 0, 0],
+      start_y: [0, 9.2, 0, 0],
+      end_x: [0, -33.2, 0, 0],
+      end_y: [0, 9.2, 0, 0]
     },
     {
       id: 3,
@@ -41,10 +41,10 @@ task_map: {
     {
       id: 4,
       name: "Slots",
-      start_x: [0, -2, -2, -2],
-      start_y: [-1, -2, -2, -2], # D (2, 2)
-      end_x: [0, 10, 10, 10],
-      end_y: [0, 10, 10, 10]
+      start_x: [0, -39.9, -2, -2],
+      start_y: [-1, 12.5, -2, -2], # D (2, 2)
+      end_x: [0, -39.9, 10, 10],
+      end_y: [0, 12.5, 10, 10]
     },
     {
       id: 5,
@@ -57,10 +57,10 @@ task_map: {
     {
       id: 6,
       name: "Roulette",
-      start_x: [0, 0, 0, 0], # D (30, 20)
-      start_y: [2, 2, 2, 2],
-      end_x: [1, 1, 1, 0], # D (30, 20)
-      end_y: [1, 1, 1, 2]
+      start_x: [0, -39.5, 0, 0], # D (30, 20)
+      start_y: [2, 17.5, 2, 2],
+      end_x: [1, -39.5, 1, 0], # D (30, 20)
+      end_y: [1, 17.5, 1, 2]
     },
     {
       id: 7,
@@ -77,6 +77,14 @@ task_map: {
       start_y: [0, 0, 0, 0],
       end_x: [0, 0, 0, 0],
       end_y: [0, 0, 0, 0]
+    },
+    {
+      id: 9,
+      name: "Dice_Hop",
+      start_x: [0, -30.6, 0, 0],
+      start_y: [0, 7.8, 0, 0],
+      end_x: [0, -30.6, 0, 0],
+      end_y: [0, 7.8, 0, 0]
     }
   ]
 }
