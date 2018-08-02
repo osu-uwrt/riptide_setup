@@ -51,7 +51,7 @@ private:
   double big_red_bbox_height;
   double fruit_bbox_height;
   int alignment_state;
-  int port_heading, stbd_heading;
+  int normal_heading;
 
   DetectionValidator *fruitValidator, *bigRedValidator;
   ErrorValidator *xValidator, *yValidator, *zValidator, *yawValidator;
