@@ -228,6 +228,8 @@ void TSlam::YawAttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstP
     msg.data = master->search_accel;
     master->x_accel_pub.publish(msg);
 
+    ROS_INFO("Search accel: %i", master->search_accel);
+
     double tslam_duration = 1.25 * eta;
     timer = master->nh.createTimer(ros::Duration(tslam_duration), &TSlam::AbortTSlamTimer, this, true);
     master->StartTask(); // Start next task
