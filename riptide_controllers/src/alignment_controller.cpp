@@ -5,6 +5,8 @@
 #undef progress
 
 #define PI 3.141592653
+#define RESET_ID 0
+#define DISABLE_ID 1
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "alignment_controller");
@@ -71,9 +73,9 @@ AlignmentController::AlignmentController() : nh("alignment_controller") {
     dt_iir = 1.0/imu_filter_rate;
     alpha = 2*PI*dt_iir*fc / (2*PI*dt_iir*fc + 1); // Multiplier
 
-    AlignmentController::ResetSurge();
-    AlignmentController::ResetSway();
-    AlignmentController::ResetHeave();
+    AlignmentController::ResetSurge(RESET_ID);
+    AlignmentController::ResetSway(RESET_ID);
+    AlignmentController::ResetHeave(RESET_ID);
 
     timer = nh.createTimer(ros::Duration(max_zero_detect_duration/2.0), &AlignmentController::DisableControllerTimer, this, true);
 }
@@ -263,7 +265,7 @@ void AlignmentController::CommandCB(const riptide_msgs::AlignmentCommand::ConstP
     status_msg.y.reference = target_pos.y;
   }
   else {
-    AlignmentController::ResetSway();
+    AlignmentController::ResetSway(DISABLE_ID);
   }
   if(alignment_plane == rc::PLANE_YZ) { // Using fwd cam
     if(!pid_surge_reset && pid_surge_active) { // Surge
@@ -271,7 +273,7 @@ void AlignmentController::CommandCB(const riptide_msgs::AlignmentCommand::ConstP
       ROS_INFO("Target BBox: %i", target_bbox_dim);
     }
     else {
-      AlignmentController::ResetSurge();
+      AlignmentController::ResetSurge(DISABLE_ID);
     }
 
     if(!pid_heave_reset && pid_heave_active) { // Heave
@@ -279,7 +281,7 @@ void AlignmentController::CommandCB(const riptide_msgs::AlignmentCommand::ConstP
       status_msg.z.reference = target_pos.z;
     }
     else {
-      AlignmentController::ResetHeave();
+      AlignmentController::ResetHeave(DISABLE_ID);
     }
   }
   else if(alignment_plane == rc::PLANE_XY) { // Using dwn cam
@@ -288,14 +290,14 @@ void AlignmentController::CommandCB(const riptide_msgs::AlignmentCommand::ConstP
       status_msg.x.reference = target_pos.x;
     }
     else {
-      AlignmentController::ResetSurge();
+      AlignmentController::ResetSurge(DISABLE_ID);
     }
 
     if(!pid_heave_reset && pid_heave_active) { // heave
       status_msg.z.reference = target_bbox_dim;
     }
     else {
-      AlignmentController::ResetHeave();
+      AlignmentController::ResetHeave(DISABLE_ID);
     }
   }
 
@@ -315,17 +317,17 @@ void AlignmentController::TaskInfoCB(const riptide_msgs::TaskInfo::ConstPtr& tas
 
 void AlignmentController::ResetCB(const riptide_msgs::ResetControls::ConstPtr& reset_msg) {
   if(reset_msg->reset_surge) {
-    AlignmentController::ResetSurge();
+    AlignmentController::ResetSurge(RESET_ID);
   }
   else pid_surge_reset = false;
 
   if(reset_msg->reset_sway) {
-    AlignmentController::ResetSway();
+    AlignmentController::ResetSway(RESET_ID);
   }
   else pid_sway_reset = false;
 
   if(reset_msg->reset_heave) {
-    AlignmentController::ResetHeave();
+    AlignmentController::ResetHeave(RESET_ID);
   }
   else pid_heave_reset = false;
 
@@ -335,7 +337,7 @@ void AlignmentController::ResetCB(const riptide_msgs::ResetControls::ConstPtr& r
     pid_alignment_reset = false;
 }
 
-void AlignmentController::ResetSurge() {
+void AlignmentController::ResetSurge(int id) {
   x_pid.reset();
   target_pos.x = 0;
   error.x = 0;
@@ -352,9 +354,13 @@ void AlignmentController::ResetSurge() {
   x_pub.publish(x_cmd);
 
   // Disable surge controller
+  if (id == RESET_ID)
+    pid_surge_reset = true;
+  else if (id == DISABLE_ID)
+    pid_surge_active = false;
 }
 
-void AlignmentController::ResetSway() {
+void AlignmentController::ResetSway(int id) {
   y_pid.reset();
   target_pos.y = 0;
   error.y = 0;
@@ -371,9 +377,13 @@ void AlignmentController::ResetSway() {
   y_pub.publish(y_cmd);
 
   // Disable sway controller
+  if (id == RESET_ID)
+    pid_sway_reset = true;
+  else if (id == DISABLE_ID)
+    pid_sway_active = false;
 }
 
-void AlignmentController::ResetHeave() {
+void AlignmentController::ResetHeave(int id) {
   z_pid.reset();
   target_pos.z = 0;
   error.z = 0;
@@ -392,4 +402,8 @@ void AlignmentController::ResetHeave() {
   depth_pub.publish(depth_cmd);
 
   // Disable heave controller
+  if (id == RESET_ID)
+    pid_heave_reset = true;
+  else if (id == DISABLE_ID)
+    pid_heave_active = false;
 }

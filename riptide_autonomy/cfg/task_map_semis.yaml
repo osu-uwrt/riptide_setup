@@ -4,7 +4,7 @@ task_map: {
   freq: [30, 40, 25, 35], # [kHz]
   dock_x: [0, 0, 0, 0],
   dock_y: [0, 0, 0, 0],
-  user_defined_y_axis_heading: [2, 180, 2, 180], # MUST save values from compeition, do NOT overwrite. Allows user to specify where world positive y-axis points [deg]
+  user_defined_y_axis_heading: [20, 180, 2, 180], # MUST save values from compeition, do NOT overwrite. Allows user to specify where world positive y-axis points [deg]
   map: [
     {
       id: 0,
@@ -41,8 +41,8 @@ task_map: {
     {
       id: 4,
       name: "Slots",
-      start_x: [0, 10, 10, 2],
-      start_y: [-1, 10, 10, 0], # D (2, 2)
+      start_x: [-2, -2, -2, -2],
+      start_y: [-2, -2, -2, -2], # D (2, 2)
       end_x: [0, 10, 10, 10],
       end_y: [0, 10, 10, 10]
     },

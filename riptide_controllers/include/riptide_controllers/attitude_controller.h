@@ -51,9 +51,9 @@ class AttitudeController
     void UpdateError();
     double Constrain(double current, double max);
     double SmoothErrorIIR(double input, double prev);
-    void ResetRoll();
-    void ResetPitch();
-    void ResetYaw();
+    void ResetRoll(int id);
+    void ResetPitch(int id);
+    void ResetYaw(int id);
 
   public:
     AttitudeController();
