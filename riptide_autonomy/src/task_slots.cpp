@@ -268,7 +268,7 @@ void Slots::ImuCB(const riptide_msgs::ControlStatusAngular::ConstPtr &msg)
     {
       Abort();
       master->tslam->SetEndPos();
-      master->StartTask();
+      master->LaunchTSlam();
     }
   }
 }

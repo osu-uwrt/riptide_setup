@@ -146,7 +146,8 @@ void BeAutonomous::LoadParam(string param, T &var)
   }
 }
 
-void BeAutonomous::StartTask()
+// TSlam gets launched first, and it will call StartTask when ready
+void BeAutonomous::LaunchTSlam()
 {
   mission_running = true;
   task_order_index++;
@@ -156,50 +157,58 @@ void BeAutonomous::StartTask()
     ROS_INFO("New task ID: %i", task_id);
     BeAutonomous::UpdateTaskInfo();
     tslam->Start();
+  }
+  else{
+    ROS_INFO("BE: No more tasks to load. Collecting all rewards and will skidaddle");
+    ROS_INFO("BE: Ending mission");
+    BeAutonomous::EndMission();
+  }
+}
 
-    switch (task_id)
-    {
-    case rc::TASK_CASINO_GATE:
-      ROS_INFO("BE: Starting Casino Gate.");
-      casino_gate->Start();
-      break;
-    case rc::TASK_PATH_MARKER1:
-      ROS_INFO("BE: Starting Path Marker 1.");
-      path->Start();
-      break;
-    case rc::TASK_DICE:
-      ROS_INFO("BE: Starting dice task.");
-      dice->Start();
-      break;
-    case rc::TASK_PATH_MARKER2:
-      ROS_INFO("BE: Starting Path Marker 2.");
-      path->Start();
-      break;
-    case rc::TASK_SLOTS:
-      ROS_INFO("BE: Starting slots task");
-      slots->Start();
-      break;
-    case rc::TASK_BUY_GOLD_CHIP1:
-      ROS_INFO("BE: Starting Buy Gold Chip 1.");
-      gold_chip->Start();
-      break;
-    case rc::TASK_ROULETTE:
-      ROS_INFO("BE: Starting Roulette Task.");
-      roulette->Start();
-      break;
-    case rc::TASK_BUY_GOLD_CHIP2:
-      ROS_INFO("BE: Starting Buy Gold Chip 2.");
-      gold_chip->Start();
-      break;
-    case rc::TASK_CASH_IN:
-      ROS_INFO("BE: Cash In unimplemented. Ending mission.");
-      BeAutonomous::EndMission();
-      break;
-    default:
-      ROS_INFO("BE: Invalid Task ID. Ending mission.");
-      BeAutonomous::EndMission();
-      break;
-    }
+void BeAutonomous::StartTask()
+{
+  switch (task_id)
+  {
+  case rc::TASK_CASINO_GATE:
+    ROS_INFO("BE: Starting Casino Gate.");
+    casino_gate->Start();
+    break;
+  case rc::TASK_PATH_MARKER1:
+    ROS_INFO("BE: Starting Path Marker 1.");
+    path->Start();
+    break;
+  case rc::TASK_DICE:
+    ROS_INFO("BE: Starting dice task.");
+    dice->Start();
+    break;
+  case rc::TASK_PATH_MARKER2:
+    ROS_INFO("BE: Starting Path Marker 2.");
+    path->Start();
+    break;
+  case rc::TASK_SLOTS:
+    ROS_INFO("BE: Starting slots task");
+    slots->Start();
+    break;
+  case rc::TASK_BUY_GOLD_CHIP1:
+    ROS_INFO("BE: Starting Buy Gold Chip 1.");
+    gold_chip->Start();
+    break;
+  case rc::TASK_ROULETTE:
+    ROS_INFO("BE: Starting Roulette Task.");
+    roulette->Start();
+    break;
+  case rc::TASK_BUY_GOLD_CHIP2:
+    ROS_INFO("BE: Starting Buy Gold Chip 2.");
+    gold_chip->Start();
+    break;
+  case rc::TASK_CASH_IN:
+    ROS_INFO("BE: Cash In unimplemented. Ending mission.");
+    BeAutonomous::EndMission();
+    break;
+  default:
+    ROS_INFO("BE: Invalid Task ID. Ending mission.");
+    BeAutonomous::EndMission();
+    break;
   }
 }
 
@@ -548,7 +557,7 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr &switch_ms
         ROS_INFO("About to call StartTask()");
         BeAutonomous::ResetSwitchPanel();
         BeAutonomous::SendInitMsgs();
-        BeAutonomous::StartTask();
+        BeAutonomous::LaunchTSlam();
       }
     }
   }

@@ -190,7 +190,7 @@ void Roulette::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstP
       ROS_INFO("Roulette is DONE!!!");
       master->tslam->SetEndPos();
       Roulette::Abort();
-      master->StartTask();
+      master->LaunchTSlam();
     }
   }
 }

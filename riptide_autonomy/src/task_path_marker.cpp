@@ -180,7 +180,7 @@ void PathMarker::Success(const ros::TimerEvent &event)
   master->x_accel_pub.publish(msg);
   Abort();
   master->tslam->SetEndPos();
-  master->StartTask();
+  master->LaunchTSlam();
 }
 
 // Shutdown all active subscribers
