@@ -118,6 +118,7 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous")
   tslam = new TSlam(this);
   casino_gate = new CasinoGate(this);
   path = new PathMarker(this);
+  dice_hop = new DiceHop(this);
   dice = new Dice(this);
   slots = new Slots(this);
   roulette = new Roulette(this);
@@ -158,7 +159,8 @@ void BeAutonomous::LaunchTSlam()
     BeAutonomous::UpdateTaskInfo();
     tslam->Start();
   }
-  else{
+  else
+  {
     ROS_INFO("BE: No more tasks to load. Collecting all rewards and will skidaddle");
     ROS_INFO("BE: Ending mission");
     BeAutonomous::EndMission();
@@ -176,6 +178,10 @@ void BeAutonomous::StartTask()
   case rc::TASK_PATH_MARKER1:
     ROS_INFO("BE: Starting Path Marker 1.");
     path->Start();
+    break;
+  case rc::TASK_DICE_HOP:
+    ROS_INFO("BE: Starting dice hop task.");
+    dice_hop->Start();
     break;
   case rc::TASK_DICE:
     ROS_INFO("BE: Starting dice task.");
@@ -430,7 +436,7 @@ void BeAutonomous::StartMissionCB(const std_msgs::Int8::ConstPtr &missionMsg)
         quadrant = load_id;
       BeAutonomous::ResetSwitchPanel();
       BeAutonomous::SendInitMsgs();
-      BeAutonomous::StartTask();
+      BeAutonomous::LaunchTSlam();
     }
   }
   else
