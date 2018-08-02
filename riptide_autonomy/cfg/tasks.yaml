@@ -69,10 +69,10 @@ tasks: [
       search_depth: 2.5,
       search_accel: 0.8,
       torpedo_offset: {
-        port: { y: 100, z: 0 },
-        stbd: { y: -100, z: 0 }
+        port: { y: 0, z: 50 },
+        stbd: { y: 0, z: 50 }
       },
-      big_red_bbox_height: 0.5,
+      big_red_bbox_height: 0.4,
       fruit_bbox_height: 0.5,
       pneumatics_duration: 200,
       objects: ["Slots_Fruit", "Slots_Big_Red"],

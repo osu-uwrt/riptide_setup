@@ -9,6 +9,7 @@
 #include "riptide_msgs/Constants.h"
 #include "riptide_msgs/TaskInfo.h"
 #include "riptide_msgs/MissionState.h"
+#include "std_msgs/Int8.h"
 
 #include "riptide_msgs/SwitchState.h"
 #include "riptide_msgs/ResetControls.h"
@@ -36,6 +37,7 @@
 #include "riptide_autonomy/task_roulette.h"
 #include "riptide_autonomy/task_gold_chip.h"
 
+
 using namespace std;
 typedef riptide_msgs::Constants rc;
 
@@ -53,7 +55,7 @@ class BeAutonomous
 public:
   // Subscribers, Publishers, and Timers
   ros::NodeHandle nh;
-  ros::Subscriber switch_sub, imu_sub, depth_sub;
+  ros::Subscriber switch_sub, imu_sub, depth_sub, mission_sub;
   ros::Publisher x_accel_pub, y_accel_pub, z_accel_pub, attitude_pub, depth_pub, alignment_pub, pneumatics_pub;
   ros::Publisher thrust_pub, reset_pub, task_info_pub, state_mission_pub, status_light_pub;
   ros::Timer timer;
@@ -115,6 +117,7 @@ public:
   void EndTSlamTimer(const ros::TimerEvent& event);
   void EndTSlam();
   void ResetSwitchPanel();
+  void StartMissionCB(const std_msgs::Int8::ConstPtr &msg);
   void SwitchCB(const riptide_msgs::SwitchState::ConstPtr& switch_msg);
   void ImuCB(const riptide_msgs::Imu::ConstPtr & imu_msg);
   void DepthCB(const riptide_msgs::Depth::ConstPtr& depth_msg);

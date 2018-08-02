@@ -268,6 +268,7 @@ void AlignmentController::CommandCB(const riptide_msgs::AlignmentCommand::ConstP
   if(alignment_plane == rc::PLANE_YZ) { // Using fwd cam
     if(!pid_surge_reset && pid_surge_active) { // Surge
       status_msg.x.reference = target_bbox_dim;
+      ROS_INFO("Target BBox: %i", target_bbox_dim);
     }
     else {
       AlignmentController::ResetSurge();
