@@ -121,7 +121,7 @@ void TSlam::CalcETA(double Ax, double dist)
 {
   if (Ax >= 0.6 && Ax <= 1.25)
   { // Eqn only valid for Ax=[0.6, 1.25] m/s^2
-    x_vel = A2V_SLOPE * Ax + A2V_INT;
+    //x_vel = A2V_SLOPE * Ax + A2V_INT;
     eta = dist / x_vel;
   }
   else
@@ -149,6 +149,7 @@ void TSlam::Start()
   ROS_INFO("TSlam: Quadrant %i", quadrant);
 
   user_defined_y_axis_heading = task_map["task_map"]["user_defined_y_axis_heading"][quadrant].as<double>();
+  x_vel = master->tslam_velocity;
   brake_duration = master->brake_duration;
   ROS_INFO("TSlam: Loaded a few variables from task_map");
 
@@ -223,6 +224,7 @@ void TSlam::YawAttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstP
   {
     yawValidator->Reset();
     attitude_status_sub.shutdown();
+    master->StartTask(); // Start next task - will override accelerations if placed after
 
     // Drive forward
     std_msgs::Float64 msg;
@@ -230,7 +232,6 @@ void TSlam::YawAttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstP
     master->x_accel_pub.publish(msg);
 
     timer = master->nh.createTimer(ros::Duration(tslam_duration), &TSlam::AbortTSlamTimer, this, true);
-    master->StartTask(); // Start next task
     ROS_INFO("TSlam: Reached heading, StartTask called.");
     ROS_INFO("Moving forward. Abort timer initiated. ETA: %f", tslam_duration);
   }

@@ -4,6 +4,7 @@ Task_Execution:
   relative_current_x: 0.0 #  Where the vehicle starts relative to task [m]
   relative_current_y: 0.0 # Where the vehicle starts relative to task [m]
   tslam_brake_duration: 0.5 # [s]
+  tslam_velocity: 0.7 # [m/s] MUST use with accel of 0.8 m/s
 Controller_Thresholds:
   depth_thresh: 0.3 # [m]
   roll_thresh: 5 # [deg]
