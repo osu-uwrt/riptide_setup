@@ -352,8 +352,6 @@ void AlignmentController::ResetSurge() {
   x_pub.publish(x_cmd);
 
   // Disable surge controller
-  pid_surge_reset = true;
-  pid_surge_active = false;
 }
 
 void AlignmentController::ResetSway() {
@@ -373,8 +371,6 @@ void AlignmentController::ResetSway() {
   y_pub.publish(y_cmd);
 
   // Disable sway controller
-  pid_sway_reset = true;
-  pid_sway_active = false;
 }
 
 void AlignmentController::ResetHeave() {
@@ -396,6 +392,4 @@ void AlignmentController::ResetHeave() {
   depth_pub.publish(depth_cmd);
 
   // Disable heave controller
-  pid_heave_reset = true;
-  pid_heave_active = false;
 }
