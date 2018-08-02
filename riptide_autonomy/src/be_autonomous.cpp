@@ -411,7 +411,7 @@ void BeAutonomous::ResetSwitchPanel()
 
 void BeAutonomous::StartMissionCB(const std_msgs::Int8::ConstPtr &missionMsg)
 {
-  ROS_INFO("Remote start");
+  ROS_INFO("Remote start: %i", missionMsg->data);
   load_id = missionMsg->data;
   if(load_id < rc::MISSION_TEST)
     quadrant = load_id;
