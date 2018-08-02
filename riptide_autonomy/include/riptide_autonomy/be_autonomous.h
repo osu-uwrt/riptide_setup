@@ -107,6 +107,7 @@ public:
   BeAutonomous();
   template <typename T>
   void LoadParam(string param, T &var);
+  void LaunchTSlam();
   void StartTask();
   void EndMission();
   void SendInitMsgs();

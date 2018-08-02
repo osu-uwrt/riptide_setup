@@ -598,7 +598,7 @@ void Dice::SecondDiceBumpTimer(const ros::TimerEvent &event)
     master->x_accel_pub.publish(msg);
 
     master->tslam->SetEndPos();
-    master->StartTask();
+    master->LaunchTSlam();
 
     ROS_INFO("Dice: Backed up from %s. Finished playing craps.", object_name.c_str());
     ROS_INFO("Dice: The bank of benji may or may not be bankrupt by the end of this run.");

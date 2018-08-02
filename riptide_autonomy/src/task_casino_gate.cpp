@@ -142,7 +142,7 @@ void CasinoGate::PassThruTimer(const ros::TimerEvent &event)
     ROS_INFO("CasinoGate: Completed. Thruster brake applied.");
     master->tslam->SetEndPos();
     CasinoGate::Abort();
-    master->StartTask();
+    master->LaunchTSlam();
   }
 }
 

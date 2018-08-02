@@ -156,7 +156,7 @@ void GoldChip::BurnCompleteCB(const ros::TimerEvent &event)
     ROS_INFO("GoldChip: Backed off. Task complete. Ending...");
     GoldChip::Abort();
     master->tslam->SetEndPos();
-    master->StartTask();
+    master->LaunchTSlam();
   }
 }
 
