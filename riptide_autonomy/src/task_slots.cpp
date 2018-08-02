@@ -170,7 +170,7 @@ void Slots::IDToAlignment()
   {
 
     // TODO: Write fruit code
-    Slots::Abort();
+    //Slots::Abort();
   }
 }
 
@@ -201,21 +201,26 @@ void Slots::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr 
       {
         ROS_INFO("Slots: Bounding Box aligned. Turning.");
         alignment_status_sub.shutdown();
-        port_heading = master->tslam->KeepHeadingInRange(master->euler_rpy.z - 15);
-        stbd_heading = master->tslam->KeepHeadingInRange(master->euler_rpy.z + 15);
+        align_cmd.surge_active = false;
+        align_cmd.sway_active = false;
+        align_cmd.heave_active = false;
+        master->alignment_pub.publish(align_cmd);
+
+        normal_heading = master->euler_rpy.z;
         riptide_msgs::AttitudeCommand cmd;
         cmd.roll_active = true;
         cmd.pitch_active = true;
         cmd.yaw_active = true;
         cmd.euler_rpy.x = 0;
         cmd.euler_rpy.y = 0;
-        cmd.euler_rpy.z = port_heading;
-
+        if (active_torpedo == PORT_TORPEDO)
+          cmd.euler_rpy.z = master->tslam->KeepHeadingInRange(master->euler_rpy.z - 15);
+        else
+          cmd.euler_rpy.z = master->tslam->KeepHeadingInRange(master->euler_rpy.z + 15);
         ros::Publisher pub = master->nh.advertise<riptide_msgs::AttitudeCommand>("/command/attitude", 1);
         pub.publish(cmd);
+
         attitude_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &Slots::ImuCB, this);
-
-
       }
     }
   }
@@ -234,21 +239,35 @@ void Slots::ImuCB(const riptide_msgs::ControlStatusAngular::ConstPtr &msg)
     pneumatics_cmd.duration = pneumatics_duration;
     master->pneumatics_pub.publish(pneumatics_cmd);
     ROS_INFO("BOOM");
+
     if (active_torpedo == PORT_TORPEDO)
     {
       active_torpedo = STBD_TORPEDO;
+      ROS_INFO("Aligning to next");
+
+      align_cmd.bbox_dim = (int)(master->frame_height * big_red_bbox_height);
+      align_cmd.target_pos.y = torpedo_offsets[active_torpedo].y;
+      align_cmd.target_pos.z = torpedo_offsets[active_torpedo].z;
+      align_cmd.surge_active = false;
+      align_cmd.sway_active = true;
+      align_cmd.heave_active = true;
+      master->alignment_pub.publish(align_cmd);
+      ROS_INFO("Target y: %f", align_cmd.target_pos.y);
+      ROS_INFO("Target z: %f", align_cmd.target_pos.z);
+      alignment_state = AST_CENTER;
+
       riptide_msgs::AttitudeCommand cmd;
       cmd.roll_active = true;
       cmd.pitch_active = true;
       cmd.yaw_active = true;
       cmd.euler_rpy.x = 0;
       cmd.euler_rpy.y = 0;
-      cmd.euler_rpy.z = stbd_heading;
-
-      ROS_INFO("Aligning to next");
-
+      cmd.euler_rpy.z = normal_heading;
       ros::Publisher pub = master->nh.advertise<riptide_msgs::AttitudeCommand>("/command/attitude", 1);
       pub.publish(cmd);
+
+      master->alignment_pub.publish(align_cmd);
+      alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &Slots::AlignmentStatusCB, this);
     }
     else
     {
