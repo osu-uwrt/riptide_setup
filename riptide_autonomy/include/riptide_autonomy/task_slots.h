@@ -72,6 +72,7 @@ public:
   void AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr& status_msg);
   void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr& status_msg);
   void ImuCB(const riptide_msgs::ControlStatusAngular::ConstPtr &msg);
+  void BackupTimer(const ros::TimerEvent &event);
   void Abort();
 };
 
