@@ -8,8 +8,8 @@ tasks: [
       pass_thru_duration: 6.0, # [s]
       gate_zcenter_offset: 0.25, # fraction of frame height 
       gate_width: 0.6, # fraction of frame width
-      objects: ["Casino_Gate_Black"],
-      thresholds: [0.5],
+      objects: ["Casino_Gate_Black, Casino_Gate_Red"],
+      thresholds: [0.99],
       align_thresh: 50, # [pixels]
       bbox_thresh: 50, # [pixels]
       detection_duration: 1, # [s]
@@ -40,9 +40,9 @@ tasks: [
       move_over_duration: 1, # [s]
       dice_bbox_width: 0.25, # fraction of frame width
       upper_dice_zcenter_offset: 0.25, # fraction of frame height
-      objects: ["Dice1", "Dice2", "Dice5", "Dice6"],
+      objects: ["Dice5", "Dice6"],
       preferred_objects: [6, 5], # Just use actual dice block number
-      thresholds: [0.6, 0.6, 0.6, 0.6],
+      thresholds: [ 0.6, 0.6],
       align_thresh: 50, # [pixels]
       bbox_thresh: 50, # [pixels]
       detection_duration: 1, # [s]
@@ -66,7 +66,7 @@ tasks: [
       id: 4,
       name: "Slots",
       plane: 0,
-      search_depth: .5,
+      search_depth: 3,
       search_accel: 0.8,
       torpedo_offset: {
         port: { y: 0, z: 50 },
@@ -78,7 +78,7 @@ tasks: [
       objects: ["Slots_Fruit", "Slots_Big_Red"],
       thresholds: [0.99, 0.1],
       align_thresh: 50, # [pixels]
-      bbox_thresh: 30, # [pixels]
+      bbox_thresh: 10, # [pixels]
       detection_duration: 1, # [s]
       detections_req: 8 # [number]
     },
@@ -134,6 +134,19 @@ tasks: [
       search_depth: 2,
       search_accel: 0.8,
       objects: ["Cash_In"],
+      thresholds: [0.5],
+      align_thresh: 50, # [pixels]
+      bbox_thresh: 50, # [pixels]
+      detection_duration: 1, # [s]
+      detections_req: 8 # [number]
+    },
+    {
+      id: 9,
+      name: "Dice_Hop",
+      plane: 0,
+      search_depth: 1,
+      search_accel: 0.8,
+      objects: ["Dice_Hop"], # There aren't any objects, but leave them here to avoid run time errors
       thresholds: [0.5],
       align_thresh: 50, # [pixels]
       bbox_thresh: 50, # [pixels]

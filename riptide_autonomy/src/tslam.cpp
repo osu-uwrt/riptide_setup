@@ -3,7 +3,7 @@
 #define PI 3.141592653
 
 // Slope and y-int for Maelstrom x-accel to x-velocity
-#define A2V_SLOPE 0.2546
+#define A2V_SLOPE 0.5 //0.2546
 #define A2V_INT .1090
 
 /* TSlam - Order of Execution:
@@ -158,7 +158,7 @@ void TSlam::Start()
   delta_y = start_y - current_y;
   angle = atan2(delta_y, delta_x) * 180 / PI;
   double offset = angle - 90;
-  search_heading = user_defined_y_axis_heading + offset; // Center about global_y_axis_heading
+  search_heading = user_defined_y_axis_heading + offset; // Center about user_defined_y_axis_heading
   search_heading = TSlam::KeepHeadingInRange(search_heading);
 
   ROS_INFO("Cur X: %f", current_x);
@@ -169,6 +169,7 @@ void TSlam::Start()
   // Calculate distance and ETA
   distance = sqrt(delta_x * delta_x + delta_y * delta_y);
   TSlam::CalcETA(master->search_accel, distance);
+  tslam_duration = 1 * eta;
   ROS_INFO("TSlam: Distance %f with eta of %f sec at %f m/s", distance, eta, x_vel);
 
   // Publish attitude command
@@ -228,9 +229,9 @@ void TSlam::YawAttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstP
     msg.data = master->search_accel;
     master->x_accel_pub.publish(msg);
 
-    ROS_INFO("Search accel: %i", master->search_accel);
+    ROS_INFO("Search accel: %f", master->search_accel);
 
-    double tslam_duration = 1.25 * eta;
+    double tslam_duration = 1 * eta;
     timer = master->nh.createTimer(ros::Duration(tslam_duration), &TSlam::AbortTSlamTimer, this, true);
     master->StartTask(); // Start next task
     ROS_INFO("TSlam: Reached heading, StartTask called.");

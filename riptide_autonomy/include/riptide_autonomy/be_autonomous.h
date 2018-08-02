@@ -31,6 +31,7 @@
 #include "riptide_autonomy/tslam.h"
 #include "riptide_autonomy/task_casino_gate.h"
 #include "riptide_autonomy/task_path_marker.h"
+#include "riptide_autonomy/task_dice_hop.h"
 #include "riptide_autonomy/task_dice.h"
 #include "riptide_autonomy/task_gold_chip.h"
 #include "riptide_autonomy/task_slots.h"
@@ -44,6 +45,7 @@ typedef riptide_msgs::Constants rc;
 class TSlam;
 class CasinoGate;
 class PathMarker;
+class DiceHop;
 class Dice;
 class Slots;
 class Roulette;
@@ -99,6 +101,7 @@ public:
 
   CasinoGate* casino_gate;
   PathMarker* path;
+  DiceHop* dice_hop;
   Dice* dice;
   Roulette* roulette;
   Slots* slots;

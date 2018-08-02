@@ -46,7 +46,7 @@ private:
 public:
   YAML::Node task_map;
   int quadrant;
-  double start_x, start_y, end_x, end_y;
+  double start_x, start_y, end_x, end_y, tslam_duration;
 
   TSlam(BeAutonomous *master);
   void Initialize();
