@@ -411,13 +411,18 @@ void BeAutonomous::ResetSwitchPanel()
 
 void BeAutonomous::StartMissionCB(const std_msgs::Int8::ConstPtr &missionMsg)
 {
-  ROS_INFO("Remote start: %i", missionMsg->data);
-  load_id = missionMsg->data;
-  if(load_id < rc::MISSION_TEST)
-    quadrant = load_id;
-  BeAutonomous::ResetSwitchPanel();
-  BeAutonomous::SendInitMsgs();
-  BeAutonomous::StartTask();
+  if(!mission_running)
+  {
+    ROS_INFO("Remote start: %i", missionMsg->data);
+    load_id = missionMsg->data;
+    if(load_id < rc::MISSION_TEST)
+      quadrant = load_id;
+    BeAutonomous::ResetSwitchPanel();
+    BeAutonomous::SendInitMsgs();
+    BeAutonomous::StartTask();
+  }
+  else if(mission_running && missionMsg->data == -1)
+    BeAutonomous::EndMission();
 }
 
 void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr &switch_msg)
