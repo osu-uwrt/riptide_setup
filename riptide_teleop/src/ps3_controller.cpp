@@ -194,18 +194,20 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr& joy) {
       if(joy->buttons[BUTTON_SELECT])
         alignment_plane = !alignment_plane;
 
-      publish_pneumatics = false;
-      if(joy->buttons[BUTTON_REAR_L2]) {
+      if(joy->buttons[BUTTON_REAR_L1]) {
         pneumatics_cmd.torpedo_port = true;
         publish_pneumatics = true;
+        ROS_INFO("port");
       }
-      if(joy->buttons[BUTTON_REAR_R2]) {
+      if(joy->buttons[BUTTON_REAR_R1]) {
         pneumatics_cmd.torpedo_stbd = true;
         publish_pneumatics = true;
+        ROS_INFO("stbd");
       }
-      if(joy->buttons[BUTTON_REAR_L1]) {
+      if(joy->buttons[BUTTON_PAIRING]) {
         pneumatics_cmd.markerdropper = true;
         publish_pneumatics = true;
+        ROS_INFO("marker");
       }
     }
   }
@@ -293,10 +295,12 @@ void PS3Controller::PublishCommands() {
 
   if(publish_pneumatics)
     pneumatics_pub.publish(pneumatics_cmd);
+
   pneumatics_cmd.torpedo_port = false;
   pneumatics_cmd.torpedo_stbd = false;
   pneumatics_cmd.manipulator = false;
   pneumatics_cmd.markerdropper = false;
+  publish_pneumatics = false;
 }
 
 // This loop function is critical because it allows for different command rates

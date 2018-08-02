@@ -348,7 +348,7 @@ void BeAutonomous::SystemCheckTimer(const ros::TimerEvent &event)
   }
   else
   {
-    ROS_INFO("SystemCheckTimer: thrusters tested, depth %f m", depth);
+    ROS_INFO("SystemCheckTimer: thrusters tested, depth %f m, yaw: %.5f", depth, euler_rpy.z);
     thrust_pub.publish(thrust_msg); // Publish zero
     reset_msg.reset_surge = true;
     reset_msg.reset_sway = true;
@@ -360,7 +360,7 @@ void BeAutonomous::SystemCheckTimer(const ros::TimerEvent &event)
     reset_msg.reset_pwm = true;
     reset_pub.publish(reset_msg);
     thruster = 0;
-    timer.stop();
+    //timer.stop();
   }
 }
 
@@ -411,13 +411,18 @@ void BeAutonomous::ResetSwitchPanel()
 
 void BeAutonomous::StartMissionCB(const std_msgs::Int8::ConstPtr &missionMsg)
 {
-  ROS_INFO("Remote start: %i", missionMsg->data);
-  load_id = missionMsg->data;
-  if(load_id < rc::MISSION_TEST)
-    quadrant = load_id;
-  BeAutonomous::ResetSwitchPanel();
-  BeAutonomous::SendInitMsgs();
-  BeAutonomous::StartTask();
+  if(!mission_running)
+  {
+    ROS_INFO("Remote start: %i", missionMsg->data);
+    load_id = missionMsg->data;
+    if(load_id < rc::MISSION_TEST)
+      quadrant = load_id;
+    BeAutonomous::ResetSwitchPanel();
+    BeAutonomous::SendInitMsgs();
+    BeAutonomous::StartTask();
+  }
+  else if(mission_running && missionMsg->data == -1)
+    BeAutonomous::EndMission();
 }
 
 void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr &switch_msg)
