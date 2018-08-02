@@ -57,9 +57,9 @@ class AlignmentController
     void UpdateError();
     double Constrain(double current, double max);
     double SmoothErrorIIR(double input, double prev);
-    void ResetSurge();
-    void ResetSway();
-    void ResetHeave();
+    void ResetSurge(int id);
+    void ResetSway(int id);
+    void ResetHeave(int id);
 
   public:
     AlignmentController();
