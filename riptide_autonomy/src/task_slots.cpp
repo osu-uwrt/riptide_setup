@@ -75,9 +75,8 @@ void Slots::Start()
 
   fruitValidator = new DetectionValidator(master->detections_req, master->detection_duration);
   bigRedValidator = new DetectionValidator(master->detections_req, master->detection_duration);
-  xValidator = new ErrorValidator(master->align_thresh, master->error_duration);
-  ROS_INFO("Align thresh: %f", master->align_thresh);
-  yValidator = new ErrorValidator(master->bbox_thresh, master->bbox_surge_duration);
+  xValidator = new ErrorValidator(master->bbox_thresh, master->bbox_surge_duration);
+  yValidator = new ErrorValidator(master->align_thresh, master->error_duration);
   zValidator = new ErrorValidator(master->align_thresh, master->error_duration);
   yawValidator = new ErrorValidator(master->yaw_thresh, master->error_duration);
 
