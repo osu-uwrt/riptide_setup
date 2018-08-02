@@ -3,7 +3,7 @@ tasks: [
       id: 0,
       name: "Casino_Gate",
       plane: 0,
-      search_depth: 1,
+      search_depth: 0,
       search_accel: 0.8,
       pass_thru_duration: 6.0, # [s]
       gate_zcenter_offset: 0.25, # fraction of frame height 
@@ -66,19 +66,19 @@ tasks: [
       id: 4,
       name: "Slots",
       plane: 0,
-      search_depth: 3,
+      search_depth: 0,
       search_accel: 0.8,
       torpedo_offset: {
         port: { y: 0, z: 50 },
         stbd: { y: 0, z: 50 }
       },
-      big_red_bbox_height: 0.4,
+      big_red_bbox_height: 0.1,
       fruit_bbox_height: 0.5,
       pneumatics_duration: 200,
       objects: ["Slots_Fruit", "Slots_Big_Red"],
       thresholds: [0.99, 0.1],
       align_thresh: 50, # [pixels]
-      bbox_thresh: 10, # [pixels]
+      bbox_thresh: 0, # [pixels]
       detection_duration: 1, # [s]
       detections_req: 8 # [number]
     },

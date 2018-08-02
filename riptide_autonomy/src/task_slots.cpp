@@ -76,6 +76,7 @@ void Slots::Start()
   fruitValidator = new DetectionValidator(master->detections_req, master->detection_duration);
   bigRedValidator = new DetectionValidator(master->detections_req, master->detection_duration);
   xValidator = new ErrorValidator(master->align_thresh, master->error_duration);
+  ROS_INFO("Align thresh: %f", master->align_thresh);
   yValidator = new ErrorValidator(master->bbox_thresh, master->bbox_surge_duration);
   zValidator = new ErrorValidator(master->align_thresh, master->error_duration);
   yawValidator = new ErrorValidator(master->yaw_thresh, master->error_duration);
@@ -178,7 +179,7 @@ void Slots::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr 
 {
   if (alignment_state == AST_CENTER)
   {
-    if (yValidator->Validate(status_msg->y.error) && zValidator->Validate(status_msg->z.error))
+    if (true || yValidator->Validate(status_msg->y.error) && zValidator->Validate(status_msg->z.error))
     {
       yValidator->Reset();
       zValidator->Reset();
@@ -194,6 +195,7 @@ void Slots::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr 
   }
   else if (alignment_state == AST_BBOX)
   {
+    ROS_INFO("X Error: %f", status_msg->x.error);
     if (xValidator->Validate(status_msg->x.error))
     {
       xValidator->Reset();
