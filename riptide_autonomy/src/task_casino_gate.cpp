@@ -84,24 +84,57 @@ void CasinoGate::EndTSlamTimer(const ros::TimerEvent &event)
 {
   // Align gate to correct y-position
   align_cmd.sway_active = true;
+  align_cmd.surge_active = true; // Do BOTH surge and sway
   master->alignment_pub.publish(align_cmd);
   alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &CasinoGate::CenterAlignmentStatusCB, this);
-  ROS_INFO("CasinoGate: Starting y-alignment. Checking sway error");
+  ROS_INFO("CasinoGate: Starting y-alignment. Checking sway/surge error");
 }
 
-// Make sure the color is aligned on the correct side of the camera frame
+// Make sure the color is aligned correctly (centered AND correct bbox width)
 void CasinoGate::CenterAlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr &status_msg)
 {
-  if (yValidator->Validate(status_msg->y.error))
+  if (yValidator->Validate(status_msg->y.error) && xValidator->Validate(status_msg->x.error))
   {
     yValidator->Reset();
+    xValidator->Reset();
     alignment_status_sub.shutdown();
 
-    // Activate X alignment controller
+    // Add bbox code here
+    // Stop aligning on bbox
+    align_cmd.surge_active = false;
+    align_cmd.sway_active = false;
+    master->alignment_pub.publish(align_cmd);
+
+    // Set new attitude
+    if (black_side == rc::LEFT) // ADD offset if black is on left
+      pass_thru_heading = master->euler_rpy.z + heading_offset; // ADD
+    else // SUBTRACT offset if black is on right
+      pass_thru_heading = master->euler_rpy.z - heading_offset; // SUBTRACT
+    
+    pass_thru_heading = master->tslam->KeepHeadingInRange(pass_thru_heading);
+    attitude_cmd.roll_active = true;
+    attitude_cmd.pitch_active = true;
+    attitude_cmd.yaw_active = true;
+    attitude_cmd.euler_rpy.x = 0;
+    attitude_cmd.euler_rpy.y = 0;
+    attitude_cmd.euler_rpy.z = pass_thru_heading;
+    master->attitude_pub.publish(attitude_cmd);
+    ROS_INFO("CasinoGate: Published pass thru heading. Checking heading error.");
+
+    double pass_thru_depth = master->search_depth + depth_offset;
+    depth_cmd.active = true;
+    depth_cmd.depth = pass_thru_depth;
+    master->depth_pub.publish(depth_cmd);
+    ROS_INFO("CasinoGate: pass thru depth: %f", pass_thru_depth);
+
+    attitude_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &CasinoGate::YawAttitudeStatusCB, this);
+    ROS_INFO("CasinoGate: Published new depth. Will check after heading is good.");
+
+    /*// Activate X alignment controller
     align_cmd.surge_active = true;
     master->alignment_pub.publish(align_cmd);
     alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &CasinoGate::BBoxAlignmentStatusCB, this);
-    ROS_INFO("CasinoGate: %s in center of frame. Aligning on bbox width", object_name.c_str());
+    ROS_INFO("CasinoGate: %s in center of frame. Aligning on bbox width", object_name.c_str());*/
   }
 }
 

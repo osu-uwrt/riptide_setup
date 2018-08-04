@@ -39,7 +39,7 @@ private:
 
   // Alignment variables
   bool got_heading;
-  double green_heading, marker_drop_heading, marker_drop_depth;
+  double green_heading, marker_drop_heading, marker_drop_depth, timeout_duration;
   int num_markers_dropped;
 
   DetectionValidator *detectionValidator;
@@ -60,6 +60,7 @@ public:
   void DepthStatusCB(const riptide_msgs::ControlStatus::ConstPtr& status_msg);
   void SetMarkerDropHeading(double heading);
   void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr& status_msg);
+  void TimeOutTimer(const ros::TimerEvent &event);
   void Abort();
 };
 

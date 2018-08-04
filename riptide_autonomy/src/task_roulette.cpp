@@ -24,6 +24,8 @@ void Roulette::Initialize()
 {
   for (int i = 0; i < sizeof(active_subs) / sizeof(active_subs[0]); i++)
     active_subs[i]->shutdown();
+
+  timer.stop();
 }
 
 void Roulette::Start()
@@ -55,6 +57,9 @@ void Roulette::Start()
 
   task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &Roulette::IDRoulette, this);
   ROS_INFO("Roulette: Subscribed to /task/bboxes");
+
+  timeout_duration = master->tslam->tslam_duration + 1;
+  timer = master->nh.createTimer(ros::Duration(timeout_duration), &Roulette::TimeOutTimer, this, true);
 }
 
 // ID the roulette task
@@ -69,6 +74,7 @@ void Roulette::IDRoulette(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_
   {
     task_bbox_sub.shutdown();
     master->tslam->Abort(true);
+    timer.stop();
 
     // Wait for TSlam to finish braking before proceeding
     timer = master->nh.createTimer(ros::Duration(master->brake_duration), &Roulette::EndTSlamTimer, this, true);
@@ -199,6 +205,15 @@ void Roulette::AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstP
       master->LaunchTSlam();
     }
   }
+}
+
+// If TSlam aborts, then abort the task for now so we can attempt the next task
+void Roulette::TimeOutTimer(const ros::TimerEvent &event)
+{
+  Abort();
+  master->tslam->SetEndPos();
+  master->LaunchTSlam();
+  ROS_INFO("Roulette: Timeout reached. Aborting and moving on");
 }
 
 // Shutdown all active subscribers

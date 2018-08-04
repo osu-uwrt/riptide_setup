@@ -48,8 +48,7 @@ private:
   // Alignment variables
   torpedoOffset torpedo_offsets[2];
   int bbox_control;
-  double big_red_bbox_height;
-  double fruit_bbox_height;
+  double big_red_bbox_height, fruit_bbox_height, timeout_duration;
   int alignment_state;
   int normal_heading;
 
@@ -73,6 +72,7 @@ public:
   void AttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstPtr& status_msg);
   void ImuCB(const riptide_msgs::ControlStatusAngular::ConstPtr &msg);
   void BackupTimer(const ros::TimerEvent &event);
+  void TimeOutTimer(const ros::TimerEvent &event);
   void Abort();
 };
 

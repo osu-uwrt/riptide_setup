@@ -45,10 +45,25 @@ void Slots::Initialize()
 
   for (int i = 0; i < sizeof(active_subs) / sizeof(active_subs[0]); i++)
     active_subs[i]->shutdown();
+
+  timer.stop();
 }
 
 void Slots::Start()
 {
+  fruitValidator = new DetectionValidator(master->detections_req, master->detection_duration);
+  bigRedValidator = new DetectionValidator(master->detections_req, master->detection_duration);
+  xValidator = new ErrorValidator(master->bbox_thresh, master->bbox_surge_duration);
+  yValidator = new ErrorValidator(master->align_thresh, master->error_duration);
+  zValidator = new ErrorValidator(master->align_thresh, master->error_duration);
+  yawValidator = new ErrorValidator(master->yaw_thresh, master->error_duration);
+
+  fruitValidator->Reset();
+  bigRedValidator->Reset();
+  xValidator->Reset();
+  yValidator->Reset();
+  zValidator->Reset();
+
   torpedo_offsets[PORT_TORPEDO].y = master->tasks["tasks"][master->task_id]["torpedo_offset"]["port"]["y"].as<int>();
   torpedo_offsets[PORT_TORPEDO].z = master->tasks["tasks"][master->task_id]["torpedo_offset"]["port"]["z"].as<int>();
   torpedo_offsets[STBD_TORPEDO].y = master->tasks["tasks"][master->task_id]["torpedo_offset"]["stbd"]["y"].as<int>();
@@ -72,24 +87,14 @@ void Slots::Start()
   ROS_INFO("Slots: alignment command published (but disabled)");
 
   task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &Slots::IDSlots, this);
+  ROS_INFO("Slots: Subscribed to /task/bboxes");
 
-  fruitValidator = new DetectionValidator(master->detections_req, master->detection_duration);
-  bigRedValidator = new DetectionValidator(master->detections_req, master->detection_duration);
-  xValidator = new ErrorValidator(master->bbox_thresh, master->bbox_surge_duration);
-  yValidator = new ErrorValidator(master->align_thresh, master->error_duration);
-  zValidator = new ErrorValidator(master->align_thresh, master->error_duration);
-  yawValidator = new ErrorValidator(master->yaw_thresh, master->error_duration);
-
-  fruitValidator->Reset();
-  bigRedValidator->Reset();
-  xValidator->Reset();
-  yValidator->Reset();
-  zValidator->Reset();
+  timeout_duration = master->tslam->tslam_duration + 1;
+  timer = master->nh.createTimer(ros::Duration(timeout_duration), &Slots::TimeOutTimer, this, true);
 }
 
 // Requires mission_state be either MST_FRUIT or MST_BIG_RED
 // Only MST_BIG_RED is implemented for now
-
 void Slots::IDSlots(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg)
 {
   // Process the bbox_msg and determine what we're seeing
@@ -105,6 +110,7 @@ void Slots::IDSlots(const darknet_ros_msgs::BoundingBoxes::ConstPtr &bbox_msg)
   {
     task_bbox_sub.shutdown();
     master->tslam->Abort(true);
+    timer.stop(); // End timeout timer
 
     // Wait for TSlam to finish braking before proceeding
     timer = master->nh.createTimer(ros::Duration(master->brake_duration), &Slots::EndTSlamTimer, this, true);
@@ -293,6 +299,15 @@ void Slots::BackupTimer(const ros::TimerEvent &event)
 
   master->alignment_pub.publish(align_cmd);
   alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &Slots::AlignmentStatusCB, this);
+}
+
+// If TSlam aborts, then abort the task for now so we can attempt the next task
+void Slots::TimeOutTimer(const ros::TimerEvent &event)
+{
+  Abort();
+  master->tslam->SetEndPos();
+  master->LaunchTSlam();
+  ROS_INFO("Slots: Timeout reached. Aborting and moving on");
 }
 
 // Shutdown all active subscribers
