@@ -248,34 +248,39 @@ void Slots::ImuCB(const riptide_msgs::ControlStatusAngular::ConstPtr &msg)
     master->pneumatics_pub.publish(pneumatics_cmd);
     ROS_INFO("BOOM");
 
-    if (active_torpedo == PORT_TORPEDO)
-    {
-      active_torpedo = STBD_TORPEDO;
-      ROS_INFO("Aligning to next");
+    timer = master->nh.createTimer(ros::Duration(1), &Slots::FireTimer, this, true);
+  }
+}
 
-      riptide_msgs::AttitudeCommand cmd;
-      cmd.roll_active = true;
-      cmd.pitch_active = true;
-      cmd.yaw_active = true;
-      cmd.euler_rpy.x = 0;
-      cmd.euler_rpy.y = 0;
-      cmd.euler_rpy.z = normal_heading;
-      ros::Publisher pub = master->nh.advertise<riptide_msgs::AttitudeCommand>("/command/attitude", 1);
-      pub.publish(cmd);
+void Slots::FireTimer(const ros::TimerEvent &event)
+{
+  if (active_torpedo == PORT_TORPEDO)
+  {
+    active_torpedo = STBD_TORPEDO;
+    ROS_INFO("Aligning to next");
 
-      ROS_INFO("Backing up");
-      std_msgs::Float64 accel;
-      accel.data = -.35;
-      ros::Publisher accel_pub = master->nh.advertise<std_msgs::Float64>("/command/accel_x", 1);
-      accel_pub.publish(accel);
-      timer = master->nh.createTimer(ros::Duration(1), &Slots::BackupTimer, this, true);
-    }
-    else
-    {
-      Abort();
-      master->tslam->SetEndPos();
-      master->LaunchTSlam();
-    }
+    riptide_msgs::AttitudeCommand cmd;
+    cmd.roll_active = true;
+    cmd.pitch_active = true;
+    cmd.yaw_active = true;
+    cmd.euler_rpy.x = 0;
+    cmd.euler_rpy.y = 0;
+    cmd.euler_rpy.z = normal_heading;
+    ros::Publisher pub = master->nh.advertise<riptide_msgs::AttitudeCommand>("/command/attitude", 1);
+    pub.publish(cmd);
+
+    ROS_INFO("Backing up");
+    std_msgs::Float64 accel;
+    accel.data = -.35;
+    ros::Publisher accel_pub = master->nh.advertise<std_msgs::Float64>("/command/accel_x", 1);
+    accel_pub.publish(accel);
+    timer = master->nh.createTimer(ros::Duration(1), &Slots::BackupTimer, this, true);
+  }
+  else
+  {
+    Abort();
+    master->tslam->SetEndPos();
+    master->LaunchTSlam();
   }
 }
 

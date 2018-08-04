@@ -75,13 +75,13 @@ tasks: [
         port: { y: 0, z: 50 },
         stbd: { y: 0, z: 50 }
       },
-      big_red_bbox_height: 0.4,
+      big_red_bbox_height: 0.5,
       fruit_bbox_height: 0.5,
       pneumatics_duration: 200,
       objects: ["Slots_Fruit", "Slots_Big_Red"],
       thresholds: [0.99, 0.1],
       align_thresh: 50, # [pixels]
-      bbox_thresh: 30, # [pixels]
+      bbox_thresh: 25, # [pixels]
       detection_duration: 1, # [s]
       detections_req: 8 # [number]
     },

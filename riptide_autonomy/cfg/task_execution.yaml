@@ -11,5 +11,5 @@ Controller_Thresholds:
   pitch_thresh: 5 # [deg]
   yaw_thresh: 5 # [deg]
   error_duration: 3 # [s]
-  bbox_surge_duration: 1 # [s]
+  bbox_surge_duration: 3 # [s]
   bbox_heave_duration: 1 # [s]
