@@ -3,17 +3,20 @@ tasks: [
       id: 0,
       name: "Casino_Gate",
       plane: 0,
-      search_depth: 0,
+      search_depth: 0.75,
       search_accel: 0.8,
-      pass_thru_duration: 6.0, # [s]
+      pass_thru_duration: 12.0, # [s]
+      heading_offset: 10, # [deg]
+      depth_offset: 0.5, # [m]
       gate_zcenter_offset: 0.25, # fraction of frame height 
-      gate_width: 0.6, # fraction of frame width
-      objects: ["Casino_Gate_Black, Casino_Gate_Red"],
-      thresholds: [0.99],
+      gate_ycenter_offset: 0.25, # fraction of frame width
+      gate_width: 0.3, # fraction of frame width
+      objects: ["GFlap"],
+      thresholds: [0.1],
       align_thresh: 50, # [pixels]
-      bbox_thresh: 50, # [pixels]
-      detection_duration: 1, # [s]
-      detections_req: 5 # [number]
+      bbox_thresh: 30, # [pixels]
+      detection_duration: 10, # [s]
+      detections_req: 20 # [number]
     },
     {
       id: 1,
@@ -33,8 +36,8 @@ tasks: [
       id: 2,
       name: "Dice",
       plane: 0,
-      search_depth: 3,
-      search_accel: 0.8,
+      search_depth: 2,
+      search_accel: 0.6,
       bump_duration: 4, # [s]
       backup_duration: 6, # [s]
       move_over_duration: 1, # [s]
@@ -44,7 +47,7 @@ tasks: [
       preferred_objects: [6, 5], # Just use actual dice block number
       thresholds: [ 0.6, 0.6],
       align_thresh: 50, # [pixels]
-      bbox_thresh: 50, # [pixels]
+      bbox_thresh: 30, # [pixels]
       detection_duration: 1, # [s]
       detections_req: 8 # [number]
     },
@@ -53,12 +56,12 @@ tasks: [
       name: "Path_Marker2",
       plane: 1,
       search_depth: 2,
-      search_accel: 0.8,
+      search_accel: 0.6,
       path_angle: 135,
       objects: ["Path_Marker"],
       thresholds: [0.6],
       align_thresh: 50, # [pixels]
-      bbox_thresh: 50, # [pixels]
+      bbox_thresh: 30, # [pixels]
       detection_duration: 1, # [s]
       detections_req: 8 # [number]
     },
@@ -66,8 +69,8 @@ tasks: [
       id: 4,
       name: "Slots",
       plane: 0,
-      search_depth: 0.2,
-      search_accel: 0.8,
+      search_depth: 2.5,
+      search_accel: 0.6,
       torpedo_offset: {
         port: { y: 0, z: 50 },
         stbd: { y: 0, z: 50 }
@@ -87,14 +90,14 @@ tasks: [
       name: "Buy_Gold_Chip1",
       plane: 0,
       search_depth: .5,
-      search_accel: 0.8,
+      search_accel: 0.6,
       burn_time: 2.5,
       back_off_time: 2.5,
       bbox_height: 0.3, # fraction of frame height
       objects: ["Buy_Gold_Chip"],
       thresholds: [0.1],
       align_thresh: 50, # [pixels]
-      bbox_thresh: 50, # [pixels]
+      bbox_thresh: 30, # [pixels]
       detection_duration: 1, # [s]
       detections_req: 8 # [number]
     },
@@ -102,13 +105,13 @@ tasks: [
       id: 6,
       name: "Roulette",
       plane: 1,
-      search_depth: .2,
-      search_accel: 0.8,
+      search_depth: 1,
+      search_accel: 0.6,
       marker_drop_depth: 1.8, # [m]
       objects: ["Roulette"],
       thresholds: [0.1],
       align_thresh: 50, # [pixels]
-      bbox_thresh: 50, # [pixels]
+      bbox_thresh: 30, # [pixels]
       detection_duration: 1.0, # [s]
       detections_req: 8 # [number]
     },
@@ -117,13 +120,13 @@ tasks: [
       name: "Buy_Gold_Chip2",
       plane: 0,
       search_depth: 3,
-      search_accel: 0.8,
+      search_accel: 0.6,
       burn_time: 2.5,
       back_off_time: 2.5,
       objects: ["Buy_Gold_Chip"],
       thresholds: [0.5],
       align_thresh: 50, # [pixels]
-      bbox_thresh: 50, # [pixels]
+      bbox_thresh: 30, # [pixels]
       detection_duration: 1, # [s]
       detections_req: 8 # [number]
     },
@@ -132,11 +135,11 @@ tasks: [
       name: "Cash_In",
       plane: 0,
       search_depth: 2,
-      search_accel: 0.8,
+      search_accel: 0.6,
       objects: ["Cash_In"],
       thresholds: [0.5],
       align_thresh: 50, # [pixels]
-      bbox_thresh: 50, # [pixels]
+      bbox_thresh: 30, # [pixels]
       detection_duration: 1, # [s]
       detections_req: 8 # [number]
     },
@@ -144,12 +147,12 @@ tasks: [
       id: 9,
       name: "Dice_Hop",
       plane: 0,
-      search_depth: 1,
-      search_accel: 0.8,
+      search_depth: 1.5,
+      search_accel: 0.6,
       objects: ["Dice_Hop"], # There aren't any objects, but leave them here to avoid run time errors
       thresholds: [0.5],
       align_thresh: 50, # [pixels]
-      bbox_thresh: 50, # [pixels]
+      bbox_thresh: 30, # [pixels]
       detection_duration: 1, # [s]
       detections_req: 8 # [number]
     }

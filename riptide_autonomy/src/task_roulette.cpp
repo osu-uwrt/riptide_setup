@@ -134,13 +134,19 @@ void Roulette::SetMarkerDropHeading(double heading)
 {
   ROS_INFO("Roulette angle in camera frame: %f", heading);
 
-  double offset = 0;
-  if (heading <= 90)
+  double offset = heading;
+
+  if (heading > 90)
+    offset = heading - 180;
+
+  offset += 15;
+
+  /*if (heading <= 90)
     green_heading = heading + 90;
   else if (heading > 90)
     green_heading = heading - 90;
 
-  offset = green_heading - 90;
+  offset = green_heading - 90;*/
 
   marker_drop_heading = master->euler_rpy.z + offset; // Center about current heading
   marker_drop_heading = master->tslam->KeepHeadingInRange(marker_drop_heading);

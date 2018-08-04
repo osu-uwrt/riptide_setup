@@ -24,6 +24,7 @@ class DiceHop
 {
 private:
   ros::Timer timer;
+  double duration;
 
   // Reference to master
   BeAutonomous* master;

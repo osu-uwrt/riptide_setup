@@ -1,17 +1,9 @@
 tasks: [
   {
-    class: "Casino_Gate_Black",
+    class: "GFlap",
     probability: 0.6,
     xmin: 25,
     ymin: 25,
-    xmax: 325,
-    ymax: 325
-  },
-  {
-    class: "Casino_Gate_Black",
-    probability: 0.2,
-    xmin: 5,
-    ymin: 5,
     xmax: 325,
     ymax: 325
   },

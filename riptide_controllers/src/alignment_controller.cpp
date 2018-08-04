@@ -137,12 +137,12 @@ void AlignmentController::UpdateError() {
 
   if(!pid_sway_reset && pid_sway_active) {
     error.y = (obj_pos.y - target_pos.y); // MUST subtract target pos from current pos
+    status_msg.y.error = error.y;
     error.y = AlignmentController::Constrain(error.y, MAX_Y_ERROR);
     error_dot.y = (error.y - last_error.y) / dt;
     error_dot.y = AlignmentController::SmoothErrorIIR(error_dot.y, last_error_dot.y);
     last_error.y = error.y;
     last_error_dot.y = error_dot.y;
-    status_msg.y.error = last_error.y;
     y_cmd.data = y_pid.computeCommand(error.y, error_dot.y, sample_duration);
     y_pub.publish(y_cmd);
   }
@@ -156,10 +156,12 @@ void AlignmentController::UpdateError() {
   if(!pid_surge_reset && pid_surge_active) {
     if (alignment_plane == rc::PLANE_YZ) { // Using fwd cam
       error.x = (target_bbox_dim - obj_bbox_dim);
+      status_msg.x.error = error.x;
       error.x = AlignmentController::Constrain(error.x, MAX_BBOX_SURGE_ERROR);
     }
     else if(alignment_plane == rc::PLANE_XY) { // Using dwn cam
       error.x = (obj_pos.x - target_pos.x); // MUST subtract target pos from current pos
+      status_msg.x.error = error.x;
       error.x = AlignmentController::Constrain(error.x, MAX_X_ERROR);
     }
 
@@ -167,7 +169,6 @@ void AlignmentController::UpdateError() {
     error_dot.x = AlignmentController::SmoothErrorIIR(error_dot.x, last_error_dot.x);
     last_error.x = error.x;
     last_error_dot.x = error_dot.x;
-    status_msg.x.error = last_error.x;
     x_cmd.data = x_pid.computeCommand(error.x, error_dot.x, sample_duration);
     x_pub.publish(x_cmd);
   }
@@ -175,10 +176,12 @@ void AlignmentController::UpdateError() {
   if(!pid_heave_reset && pid_heave_active) {
     if (alignment_plane == rc::PLANE_YZ) { // Using fwd cam
       error.z = (target_pos.z - obj_pos.z); // DO NOT subtract target pos from current pos. Depth is positive DOWNWARD
+      status_msg.z.error = error.z;
       error.z = AlignmentController::Constrain(error.z, MAX_Z_ERROR);
     }
     else if(alignment_plane == rc::PLANE_XY) { // Using dwn cam
       error.z = (target_bbox_dim - obj_bbox_dim);
+      status_msg.z.error = error.z;
       error.z = AlignmentController::Constrain(error.z, MAX_BBOX_DEPTH_ERROR);
     }
 
@@ -186,7 +189,6 @@ void AlignmentController::UpdateError() {
     error_dot.z = AlignmentController::SmoothErrorIIR(error_dot.z, last_error_dot.z);
     last_error.z = error.z;
     last_error_dot.z = error_dot.z;
-    status_msg.z.error = last_error.z;
     heave_cmd = z_pid.computeCommand(error.z, error_dot.z, sample_duration);
 
     depth_cmd.active = true;
@@ -384,22 +386,25 @@ void AlignmentController::ResetSway(int id) {
 }
 
 void AlignmentController::ResetHeave(int id) {
-  z_pid.reset();
-  target_pos.z = 0;
-  error.z = 0;
-  error_dot.z = 0;
-  last_error.z = 0;
-  last_error_dot.z = 0;
+  if((id == RESET_ID && !pid_heave_reset) || (id == DISABLE_ID && pid_heave_active))
+  {
+    z_pid.reset();
+    target_pos.z = 0;
+    error.z = 0;
+    error_dot.z = 0;
+    last_error.z = 0;
+    last_error_dot.z = 0;
 
-  status_msg.z.reference = 0;
-  status_msg.z.error = 0;
-  status_msg.header.stamp = ros::Time::now();
-  status_pub.publish(status_msg);
+    status_msg.z.reference = 0;
+    status_msg.z.error = 0;
+    status_msg.header.stamp = ros::Time::now();
+    status_pub.publish(status_msg);
 
-  heave_cmd = 0;
-  depth_cmd.active = true;
-  depth_cmd.depth = current_depth + heave_cmd;
-  depth_pub.publish(depth_cmd);
+    heave_cmd = 0;
+    depth_cmd.active = true;
+    depth_cmd.depth = current_depth + heave_cmd;
+    depth_pub.publish(depth_cmd);
+  }
 
   // Disable heave controller
   if (id == RESET_ID)

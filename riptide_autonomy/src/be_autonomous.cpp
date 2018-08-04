@@ -85,6 +85,8 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous")
   search_accel = 0;
   bbox_thresh = 0;
 
+  black_side = rc::LEFT;
+
   // Verify number of objects and thresholds match
   total_tasks = (int)tasks["tasks"].size();
   for (int i = 0; i < total_tasks; i++)
@@ -470,30 +472,35 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr &switch_ms
   { // Ready to load new mission
     if (quad_sum == 1)
     { // No kill switch and one quadrant selected
-      if (switch_msg->sw1 && !switch_msg->sw5)
+      if (switch_msg->sw1)
       {
         load_id = rc::MISSION_A_BLACK; //Quad A Black
         light_msg.green1 = true;
         status_light_pub.publish(light_msg);
       }
-      else if (switch_msg->sw2 && !switch_msg->sw5)
+      else if (switch_msg->sw2)
       {
         load_id = rc::MISSION_B_BLACK; //Quad B Black
         light_msg.green2 = true;
         status_light_pub.publish(light_msg);
       }
-      else if (switch_msg->sw3 && !switch_msg->sw5)
+      else if (switch_msg->sw3)
       {
         load_id = rc::MISSION_C_BLACK; //Quad C Black
         light_msg.green3 = true;
         status_light_pub.publish(light_msg);
       }
-      else if (switch_msg->sw4 && !switch_msg->sw5)
+      else if (switch_msg->sw4)
       {
         load_id = rc::MISSION_D_BLACK; //Quad D Black
         light_msg.green4 = true;
         status_light_pub.publish(light_msg);
       }
+
+      if(switch_msg->sw5) // In -> Black on right
+        black_side = rc::RIGHT;
+      else // In -> Black on left
+        black_side = rc::LEFT;
     }
     else if (quad_sum == 0 && switch_msg->sw5)
     {                             // Only test switch is engaged

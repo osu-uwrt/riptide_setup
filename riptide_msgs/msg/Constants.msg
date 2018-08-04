@@ -2,6 +2,9 @@
 uint8 COLOR_BLACK = 0
 uint8 COLOR_RED = 1
 
+# Orientation Code
+uint8 LEFT = 0
+uint8 RIGHT = 1
 
 # Safety Measure Codes
 uint8 SAFETY_BAT_VOLT_LOW = 0

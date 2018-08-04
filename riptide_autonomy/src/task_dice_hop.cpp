@@ -3,12 +3,15 @@
 DiceHop::DiceHop(BeAutonomous *master)
 {
   this->master = master;
+  duration = 0;
 }
 
 void DiceHop::Start()
 {
-  timer = master->nh.createTimer(ros::Duration(master->tslam->tslam_duration), &DiceHop::DiceHopTimer, this, true);
-  ROS_INFO("DiceHop: Timer initiated until Tslam ends");
+  // MUST add 1 second to prevent issues due to function call timing
+  duration = master->tslam->tslam_duration + 1;
+  timer = master->nh.createTimer(ros::Duration(duration), &DiceHop::DiceHopTimer, this, true);
+  ROS_INFO("DiceHop: Timer initiated until Tslam ends in %f seconds", duration);
 }
 
 void DiceHop::DiceHopTimer(const ros::TimerEvent &event)
@@ -22,4 +25,5 @@ void DiceHop::DiceHopTimer(const ros::TimerEvent &event)
 void DiceHop::Abort()
 {
   ROS_INFO("DiceHop: Aborting");
+  duration = 0;
 }

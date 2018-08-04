@@ -178,7 +178,7 @@ void Slots::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr 
 {
   if (alignment_state == AST_CENTER)
   {
-    if (true || yValidator->Validate(status_msg->y.error) && zValidator->Validate(status_msg->z.error))
+    if (yValidator->Validate(status_msg->y.error) && zValidator->Validate(status_msg->z.error))
     {
       yValidator->Reset();
       zValidator->Reset();
@@ -194,7 +194,6 @@ void Slots::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr 
   }
   else if (alignment_state == AST_BBOX)
   {
-    ROS_INFO("X Error: %f", status_msg->x.error);
     if (xValidator->Validate(status_msg->x.error))
     {
       xValidator->Reset();
