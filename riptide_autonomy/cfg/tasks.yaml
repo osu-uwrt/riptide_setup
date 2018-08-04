@@ -5,8 +5,8 @@ tasks: [
       plane: 0,
       search_depth: 0.75,
       search_accel: 0.8,
-      pass_thru_duration: 16.0, # [s]
-      heading_offset: 10, # [deg]
+      pass_thru_duration: 9.0, # [s]
+      heading_offset: 15, # [deg]
       depth_offset: 0.5, # [m]
       gate_zcenter_offset: 0.25, # fraction of frame height 
       gate_ycenter_offset: 0.25, # fraction of frame width

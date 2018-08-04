@@ -106,11 +106,11 @@ void CasinoGate::CenterAlignmentStatusCB(const riptide_msgs::ControlStatusLinear
     master->alignment_pub.publish(align_cmd);
 
     // Set new attitude
-    if (black_side == rc::LEFT) // ADD offset if black is on left
+    if (black_side == rc::LEFT)                                 // ADD offset if black is on left
       pass_thru_heading = master->euler_rpy.z + heading_offset; // ADD
-    else // SUBTRACT offset if black is on right
+    else                                                        // SUBTRACT offset if black is on right
       pass_thru_heading = master->euler_rpy.z - heading_offset; // SUBTRACT
-    
+
     pass_thru_heading = master->tslam->KeepHeadingInRange(pass_thru_heading);
     attitude_cmd.roll_active = true;
     attitude_cmd.pitch_active = true;
@@ -153,11 +153,11 @@ void CasinoGate::BBoxAlignmentStatusCB(const riptide_msgs::ControlStatusLinear::
     master->alignment_pub.publish(align_cmd);
 
     // Set new attitude
-    if (black_side == rc::LEFT) // ADD offset if black is on left
+    if (black_side == rc::LEFT)                                 // ADD offset if black is on left
       pass_thru_heading = master->euler_rpy.z + heading_offset; // ADD
-    else // SUBTRACT offset if black is on right
+    else                                                        // SUBTRACT offset if black is on right
       pass_thru_heading = master->euler_rpy.z - heading_offset; // SUBTRACT
-    
+
     pass_thru_heading = master->tslam->KeepHeadingInRange(pass_thru_heading);
     attitude_cmd.roll_active = true;
     attitude_cmd.pitch_active = true;

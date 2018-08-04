@@ -17,14 +17,17 @@ void CashIn::Start()
 
 void CashIn::CashInTimer(const ros::TimerEvent &event)
 {
-    timer.stop();
-    master->EndMission();
-    ROS_INFO("CashIn: Ending mission. Will hopefully surface within square.");
+  timer.stop();
+  master->tslam->SetEndPos();
+  CashIn::Abort();
+  master->EndMission();
+  ROS_INFO("CashIn: Ending mission. Will hopefully surface within square.");
 }
 
 // Shutdown all active subscribers
 void CashIn::Abort()
 {
+  timer.stop();
   ROS_INFO("CashIn: Aborting");
   duration = 0;
 }

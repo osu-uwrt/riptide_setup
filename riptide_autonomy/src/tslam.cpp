@@ -225,6 +225,7 @@ void TSlam::YawAttitudeStatusCB(const riptide_msgs::ControlStatusAngular::ConstP
     yawValidator->Reset();
     attitude_status_sub.shutdown();
     master->StartTask(); // Start next task - will override accelerations if placed after
+    ROS_INFO("TSlam: starting next task %i", master->task_id);
     
     // Drive forward
     std_msgs::Float64 msg;

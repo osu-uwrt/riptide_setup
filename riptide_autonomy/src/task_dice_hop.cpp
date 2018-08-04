@@ -17,14 +17,17 @@ void DiceHop::Start()
 
 void DiceHop::DiceHopTimer(const ros::TimerEvent &event)
 {
-    timer.stop();
-    master->LaunchTSlam();
-    ROS_INFO("DiceHop: Launching TSlam for next task");
+  timer.stop();
+  master->tslam->SetEndPos();
+  DiceHop::Abort();
+  master->LaunchTSlam();
+  ROS_INFO("DiceHop: Launching TSlam for next task");
 }
 
 // Shutdown all active subscribers
 void DiceHop::Abort()
 {
+  timer.stop();
   ROS_INFO("DiceHop: Aborting");
   duration = 0;
 }
