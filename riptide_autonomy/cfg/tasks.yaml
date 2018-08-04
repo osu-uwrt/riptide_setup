@@ -5,7 +5,7 @@ tasks: [
       plane: 0,
       search_depth: 0.75,
       search_accel: 0.8,
-      pass_thru_duration: 12.0, # [s]
+      pass_thru_duration: 16.0, # [s]
       heading_offset: 10, # [deg]
       depth_offset: 0.5, # [m]
       gate_zcenter_offset: 0.25, # fraction of frame height 
@@ -15,7 +15,7 @@ tasks: [
       thresholds: [0.1],
       align_thresh: 50, # [pixels]
       bbox_thresh: 30, # [pixels]
-      detection_duration: 10, # [s]
+      detection_duration: 8, # [s]
       detections_req: 20 # [number]
     },
     {
@@ -105,7 +105,7 @@ tasks: [
       id: 6,
       name: "Roulette",
       plane: 1,
-      search_depth: 1,
+      search_depth: 0.5,
       search_accel: 0.6,
       marker_drop_depth: 1.8, # [m]
       objects: ["Roulette"],
@@ -134,7 +134,7 @@ tasks: [
       id: 8,
       name: "Cash_In",
       plane: 0,
-      search_depth: 2,
+      search_depth: 1,
       search_accel: 0.6,
       objects: ["Cash_In"],
       thresholds: [0.5],
@@ -155,5 +155,5 @@ tasks: [
       bbox_thresh: 30, # [pixels]
       detection_duration: 1, # [s]
       detections_req: 8 # [number]
-    }
+    },
   ]

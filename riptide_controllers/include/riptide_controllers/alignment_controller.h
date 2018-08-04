@@ -65,8 +65,8 @@ class AlignmentController
     AlignmentController();
     template <typename T>
     void LoadParam(string param, T &var);
-    void DisableControllerTimer(const ros::TimerEvent& event);
     void ObjectCB(const riptide_msgs::Object::ConstPtr &obj_msg);
+    void DisableControllerTimer(const ros::TimerEvent& event);
     void CommandCB(const riptide_msgs::AlignmentCommand::ConstPtr &cmd);
     void DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg);
     void TaskInfoCB(const riptide_msgs::TaskInfo::ConstPtr& task_msg);

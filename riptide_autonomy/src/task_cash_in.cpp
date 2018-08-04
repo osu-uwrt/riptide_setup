@@ -1,21 +1,21 @@
-#include "riptide_autonomy/task_dice_hop.h"
+#include "riptide_autonomy/task_cash_in.h"
 
-DiceHop::DiceHop(BeAutonomous *master)
+CashIn::CashIn(BeAutonomous *master)
 {
   this->master = master;
   duration = 0;
 }
 
-void DiceHop::Start()
+void CashIn::Start()
 {
   // MUST add 1 second to prevent issues due to function call timing
-  duration = master->tslam->tslam_duration + 1;
+  duration = master->tslam->tslam_duration;
   timer = master->nh.createTimer(ros::Duration(duration), &DiceHop::DiceHopTimer, this, true);
-  ROS_INFO("DiceHop: Timer initiated until Tslam ends in %f seconds", duration);
-  ROS_INFO("DiceHop: Current x accel: %f", master->linear_accel.x);
+  ROS_INFO("CashIn: Timer initiated until Tslam ends in %f seconds", duration);
+  ROS_INFO("CashIn: Current x accel: %f", master->linear_accel.x);
 }
 
-void DiceHop::DiceHopTimer(const ros::TimerEvent &event)
+void CashIn::CashInTimer(const ros::TimerEvent &event)
 {
     timer.stop();
     master->LaunchTSlam();
@@ -23,7 +23,7 @@ void DiceHop::DiceHopTimer(const ros::TimerEvent &event)
 }
 
 // Shutdown all active subscribers
-void DiceHop::Abort()
+void CashIn::Abort()
 {
   ROS_INFO("DiceHop: Aborting");
   duration = 0;

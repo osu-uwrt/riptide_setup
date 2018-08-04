@@ -251,19 +251,22 @@ void AttitudeController::ResetCB(const riptide_msgs::ResetControls::ConstPtr& re
 }
 
 void AttitudeController::ResetRoll(int id) {
-  roll_controller_pid.reset();
-  roll_cmd = 0;
-  roll_error = 0;
-  roll_error_dot = 0;
-  last_error.x = 0;
+  if((id == RESET_ID && !pid_roll_reset) || (id == DISABLE_ID && pid_roll_active))
+  {
+    roll_controller_pid.reset();
+    roll_cmd = 0;
+    roll_error = 0;
+    roll_error_dot = 0;
+    last_error.x = 0;
 
-  status_msg.roll.reference = 0;
-  status_msg.roll.error = 0;
-  status_msg.header.stamp = ros::Time::now();
-  status_pub.publish(status_msg);
+    status_msg.roll.reference = 0;
+    status_msg.roll.error = 0;
+    status_msg.header.stamp = ros::Time::now();
+    status_pub.publish(status_msg);
 
-  ang_accel_cmd.x = 0;
-  cmd_pub.publish(ang_accel_cmd);
+    ang_accel_cmd.x = 0;
+    cmd_pub.publish(ang_accel_cmd);
+  }
 
   // Disable roll controller
   if (id == RESET_ID)
@@ -273,19 +276,22 @@ void AttitudeController::ResetRoll(int id) {
 }
 
 void AttitudeController::ResetPitch(int id) {
-  pitch_controller_pid.reset();
-  pitch_cmd = 0;
-  pitch_error = 0;
-  pitch_error_dot = 0;
-  last_error.y = 0;
+  if((id == RESET_ID && !pid_pitch_reset) || (id == DISABLE_ID && pid_pitch_active))
+  {
+    pitch_controller_pid.reset();
+    pitch_cmd = 0;
+    pitch_error = 0;
+    pitch_error_dot = 0;
+    last_error.y = 0;
 
-  status_msg.pitch.reference = 0;
-  status_msg.pitch.error = 0;
-  status_msg.header.stamp = ros::Time::now();
-  status_pub.publish(status_msg);
+    status_msg.pitch.reference = 0;
+    status_msg.pitch.error = 0;
+    status_msg.header.stamp = ros::Time::now();
+    status_pub.publish(status_msg);
 
-  ang_accel_cmd.y = 0;
-  cmd_pub.publish(ang_accel_cmd);
+    ang_accel_cmd.y = 0;
+    cmd_pub.publish(ang_accel_cmd);
+  }
 
   // Disable pitch controller
   if (id == RESET_ID)
@@ -295,19 +301,22 @@ void AttitudeController::ResetPitch(int id) {
 }
 
 void AttitudeController::ResetYaw(int id) {
-  yaw_controller_pid.reset();
-  yaw_cmd = 0;
-  yaw_error = 0;
-  yaw_error_dot = 0;
-  last_error.z = 0;
+  if((id == RESET_ID && !pid_yaw_reset) || (id == DISABLE_ID && pid_yaw_active))
+  {
+    yaw_controller_pid.reset();
+    yaw_cmd = 0;
+    yaw_error = 0;
+    yaw_error_dot = 0;
+    last_error.z = 0;
 
-  status_msg.yaw.reference = 0;
-  status_msg.yaw.error = 0;
-  status_msg.header.stamp = ros::Time::now();
-  status_pub.publish(status_msg);
+    status_msg.yaw.reference = 0;
+    status_msg.yaw.error = 0;
+    status_msg.header.stamp = ros::Time::now();
+    status_pub.publish(status_msg);
 
-  ang_accel_cmd.z = 0;
-  cmd_pub.publish(ang_accel_cmd);
+    ang_accel_cmd.z = 0;
+    cmd_pub.publish(ang_accel_cmd);
+  }
 
   // Disable yaw controller
   if (id == RESET_ID)

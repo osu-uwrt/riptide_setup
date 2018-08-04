@@ -119,15 +119,6 @@ void AlignmentController::LoadParam(string param, T &var)
   }
 }
 
-// Send zero accel if an object has not been seen for 'x' seconds to keep the
-// vehicle from moving endlessly
-void AlignmentController::DisableControllerTimer(const ros::TimerEvent& event) {
-  x_cmd.data = 0;
-  y_cmd.data = 0;
-  x_pub.publish(x_cmd);
-  y_pub.publish(y_cmd);
-}
-
 void AlignmentController::UpdateError() {
   sample_duration = ros::Time::now() - sample_start;
   dt = sample_duration.toSec();
@@ -246,6 +237,19 @@ void AlignmentController::ObjectCB(const riptide_msgs::Object::ConstPtr &obj_msg
   timer = nh.createTimer(ros::Duration(max_zero_detect_duration), &AlignmentController::DisableControllerTimer, this, true);
 }
 
+// Send zero accel if an object has not been seen for 'x' seconds to keep the
+// vehicle from moving endlessly
+void AlignmentController::DisableControllerTimer(const ros::TimerEvent& event) {
+  x_cmd.data = 0;
+  y_cmd.data = 0;
+
+  // MUST be active and NOT reset to publish the zero
+  if(!pid_surge_reset && pid_surge_active)
+    x_pub.publish(x_cmd);
+  if(!pid_sway_reset && pid_sway_active) 
+    y_pub.publish(y_cmd);
+}
+
 // Do NOT call UpdateError in this callback.
 void AlignmentController::CommandCB(const riptide_msgs::AlignmentCommand::ConstPtr &cmd) {
   pid_surge_active = cmd->surge_active;
@@ -306,7 +310,7 @@ void AlignmentController::CommandCB(const riptide_msgs::AlignmentCommand::ConstP
   if(pid_surge_active || pid_sway_active || pid_heave_active)
     pid_alignment_active = true; // Only need one to be active
   else
-      pid_alignment_active = false;
+    pid_alignment_active = false;
 }
 
 void AlignmentController::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg) {
@@ -340,20 +344,23 @@ void AlignmentController::ResetCB(const riptide_msgs::ResetControls::ConstPtr& r
 }
 
 void AlignmentController::ResetSurge(int id) {
-  x_pid.reset();
-  target_pos.x = 0;
-  error.x = 0;
-  error_dot.x = 0;
-  last_error.x = 0;
-  last_error_dot.x = 0;
+  if((id == RESET_ID && !pid_surge_reset) || (id == DISABLE_ID && pid_surge_active))
+  {
+    x_pid.reset();
+    target_pos.x = 0;
+    error.x = 0;
+    error_dot.x = 0;
+    last_error.x = 0;
+    last_error_dot.x = 0;
 
-  status_msg.x.reference = 0;
-  status_msg.x.error = 0;
-  status_msg.header.stamp = ros::Time::now();
-  status_pub.publish(status_msg);
+    status_msg.x.reference = 0;
+    status_msg.x.error = 0;
+    status_msg.header.stamp = ros::Time::now();
+    status_pub.publish(status_msg);
 
-  x_cmd.data = 0;
-  x_pub.publish(x_cmd);
+    x_cmd.data = 0;
+    x_pub.publish(x_cmd);
+  }
 
   // Disable surge controller
   if (id == RESET_ID)
@@ -363,20 +370,23 @@ void AlignmentController::ResetSurge(int id) {
 }
 
 void AlignmentController::ResetSway(int id) {
-  y_pid.reset();
-  target_pos.y = 0;
-  error.y = 0;
-  error_dot.y = 0;
-  last_error.y = 0;
-  last_error_dot.y = 0;
+  if((id == RESET_ID && !pid_sway_reset) || (id == DISABLE_ID && pid_sway_active))
+  {
+    y_pid.reset();
+    target_pos.y = 0;
+    error.y = 0;
+    error_dot.y = 0;
+    last_error.y = 0;
+    last_error_dot.y = 0;
 
-  status_msg.y.reference = 0;
-  status_msg.y.error = 0;
-  status_msg.header.stamp = ros::Time::now();
-  status_pub.publish(status_msg);
+    status_msg.y.reference = 0;
+    status_msg.y.error = 0;
+    status_msg.header.stamp = ros::Time::now();
+    status_pub.publish(status_msg);
 
-  y_cmd.data = 0;
-  y_pub.publish(y_cmd);
+    y_cmd.data = 0;
+    y_pub.publish(y_cmd);
+  }
 
   // Disable sway controller
   if (id == RESET_ID)
