@@ -174,6 +174,7 @@ void TSlam::Start()
   ROS_INFO("TSlam: Distance %f with eta of %f sec at %f m/s", distance, eta, x_vel);
 
   // Publish attitude command
+  // TODO: either keep current heading or go to heading at same time so yaw is not disabled
   attitude_cmd.roll_active = true;
   attitude_cmd.pitch_active = true;
   attitude_cmd.yaw_active = false; // Rotate to heading once search depth is reached

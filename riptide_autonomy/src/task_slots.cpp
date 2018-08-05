@@ -167,7 +167,8 @@ void Slots::IDToAlignment()
   {
     align_cmd.bbox_dim = (int)(master->frame_height * big_red_bbox_height);
     align_cmd.target_pos.y = torpedo_offsets[active_torpedo].y;
-    align_cmd.target_pos.z = torpedo_offsets[active_torpedo].z;
+    //align_cmd.target_pos.z = torpedo_offsets[active_torpedo].z;
+    align_cmd.target_pos.z = 0;
     ROS_INFO("Target y: %f", align_cmd.target_pos.y);
     ROS_INFO("Target z: %f", align_cmd.target_pos.z);
     alignment_state = AST_CENTER;
@@ -198,15 +199,17 @@ void Slots::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr 
       {
         alignment_state = AST_BBOX;
         align_cmd.surge_active = true;
+        align_cmd.target_pos.z = torpedo_offsets[active_torpedo].z; // Align to bbox and z-offset
         master->alignment_pub.publish(align_cmd);
       }
     }
   }
-  else if (alignment_state == AST_BBOX)
+  else if (alignment_state == AST_BBOX) // Align to bbox AND z-offset
   {
-    if (xValidator->Validate(status_msg->x.error))
+    if (xValidator->Validate(status_msg->x.error) && zValidator->Validate(status_msg->z.error))
     {
       xValidator->Reset();
+      zValidator->Reset();
       if (mission_state == MST_BIG_RED)
       {
         ROS_INFO("Slots: Bounding Box aligned. Turning.");
@@ -250,7 +253,7 @@ void Slots::ImuCB(const riptide_msgs::ControlStatusAngular::ConstPtr &msg)
     pneumatics_cmd.manipulator = false;
     pneumatics_cmd.duration = pneumatics_duration;
     master->pneumatics_pub.publish(pneumatics_cmd);
-    ROS_INFO("BOOM");
+    ROS_INFO("Slots: BOOM");
 
     timer = master->nh.createTimer(ros::Duration(1), &Slots::FireTimer, this, true);
   }
@@ -261,7 +264,7 @@ void Slots::FireTimer(const ros::TimerEvent &event)
   if (active_torpedo == PORT_TORPEDO)
   {
     active_torpedo = STBD_TORPEDO;
-    ROS_INFO("Aligning to next");
+    ROS_INFO("Slots: Aligning to next");
 
     riptide_msgs::AttitudeCommand cmd;
     cmd.roll_active = true;
@@ -273,7 +276,7 @@ void Slots::FireTimer(const ros::TimerEvent &event)
     ros::Publisher pub = master->nh.advertise<riptide_msgs::AttitudeCommand>("/command/attitude", 1);
     pub.publish(cmd);
 
-    ROS_INFO("Backing up");
+    ROS_INFO("Slots: Backing up");
     std_msgs::Float64 accel;
     accel.data = -.35;
     ros::Publisher accel_pub = master->nh.advertise<std_msgs::Float64>("/command/accel_x", 1);
@@ -297,7 +300,8 @@ void Slots::BackupTimer(const ros::TimerEvent &event)
 
   align_cmd.bbox_dim = (int)(master->frame_height * big_red_bbox_height);
   align_cmd.target_pos.y = torpedo_offsets[active_torpedo].y;
-  align_cmd.target_pos.z = torpedo_offsets[active_torpedo].z;
+  //align_cmd.target_pos.z = torpedo_offsets[active_torpedo].z;
+  align_cmd.target_pos.z = 0;
   align_cmd.surge_active = false;
   align_cmd.sway_active = true;
   align_cmd.heave_active = true;

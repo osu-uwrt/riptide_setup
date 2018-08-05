@@ -17,4 +17,3 @@
     <param name="width" type="int" value="$(arg width)" />
   </node>
 </launch>
-z
