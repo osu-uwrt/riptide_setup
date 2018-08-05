@@ -6,7 +6,7 @@ tasks: [
       search_depth: 0.75,
       search_accel: 0.8,
       pass_thru_duration: 9.0, # [s]
-      heading_offset: 15, # [deg]
+      heading_offset: 14, # [deg]
       depth_offset: 0.5, # [m]
       gate_zcenter_offset: 0.25, # fraction of frame height 
       gate_ycenter_offset: 0.25, # fraction of frame width
@@ -15,7 +15,7 @@ tasks: [
       thresholds: [0.1],
       align_thresh: 50, # [pixels]
       bbox_thresh: 30, # [pixels]
-      detection_duration: 8, # [s]
+      detection_duration: 5, # [s]
       detections_req: 20 # [number]
     },
     {
@@ -82,8 +82,8 @@ tasks: [
       thresholds: [0.99, 0.1],
       align_thresh: 50, # [pixels]
       bbox_thresh: 25, # [pixels]
-      detection_duration: 1, # [s]
-      detections_req: 8 # [number]
+      detection_duration: 2, # [s]
+      detections_req: 6 # [number]
     },
     {
       id: 5,

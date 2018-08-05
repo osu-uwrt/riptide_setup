@@ -91,6 +91,10 @@ void Slots::Start()
 
   timeout_duration = master->tslam->tslam_duration + 1;
   timer = master->nh.createTimer(ros::Duration(timeout_duration), &Slots::TimeOutTimer, this, true);
+
+  /*master->tslam->SetEndPos();
+  Slots::Abort();
+  master->LaunchTSlam();*/
 }
 
 // Requires mission_state be either MST_FRUIT or MST_BIG_RED
@@ -222,7 +226,7 @@ void Slots::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr 
         if (active_torpedo == PORT_TORPEDO)
           cmd.euler_rpy.z = master->tslam->KeepHeadingInRange(master->euler_rpy.z - 12);
         else
-          cmd.euler_rpy.z = master->tslam->KeepHeadingInRange(master->euler_rpy.z + 12);
+          cmd.euler_rpy.z = master->tslam->KeepHeadingInRange(master->euler_rpy.z + 6);
         ros::Publisher pub = master->nh.advertise<riptide_msgs::AttitudeCommand>("/command/attitude", 1);
         pub.publish(cmd);
 

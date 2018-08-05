@@ -173,7 +173,6 @@ void BeAutonomous::LaunchTSlam()
 void BeAutonomous::StartTask()
 {
   ROS_INFO("BE: Start task id: %i", task_id);
-  ROS_INFO("BE: roulette constant: %i", rc::TASK_ROULETTE);
   switch (task_id)
   {
   case rc::TASK_CASINO_GATE:

@@ -12,7 +12,10 @@ void DiceHop::Start()
   duration = master->tslam->tslam_duration + 1;
   timer = master->nh.createTimer(ros::Duration(duration), &DiceHop::DiceHopTimer, this, true);
   ROS_INFO("DiceHop: Timer initiated until Tslam ends in %f seconds", duration);
-  ROS_INFO("DiceHop: Current x accel: %f", master->linear_accel.x);
+
+  /*master->tslam->SetEndPos();
+  DiceHop::Abort();
+  master->LaunchTSlam();*/
 }
 
 void DiceHop::DiceHopTimer(const ros::TimerEvent &event)

@@ -1,6 +1,6 @@
 max_x_error: 100 # [pixels]
 max_y_error: 100 # [pixels]
 max_z_error: 100 # [pixels]
-max_bbox_surge_error: 150 # [pixels]
+max_bbox_surge_error: 200 # [pixels]
 max_bbox_depth_error: 75 # [picels]
 max_zero_detect_duration: 0.5 # [s]

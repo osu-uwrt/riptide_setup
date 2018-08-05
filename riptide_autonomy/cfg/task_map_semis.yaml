@@ -4,15 +4,15 @@ task_map: {
   freq: [30, 40, 25, 35], # [kHz]
   dock_x: [0, 0, 0, 0], #B -34.2
   dock_y: [0, 0, 0, 0], #B 10.2
-  user_defined_y_axis_heading: [10, -170, 10, -170], # MUST save values from compeition, do NOT overwrite. Allows user to specify where world positive y-axis points [deg]
+  user_defined_y_axis_heading: [10, -170, -5, -170], # MUST save values from compeition, do NOT overwrite. Allows user to specify where world positive y-axis points [deg]
   map: [
     {
       id: 0,
       name: "GFlap",
-      start_x: [20.14, -19.4, -19.5, 19],
-      start_y: [4, 6.3, 6, 4],
-      end_x: [20.14, -19.4, -19.5, 21],
-      end_y: [4, 6.3, 6, 12],
+      start_x: [20.14, -19.4, -10.1, 19],
+      start_y: [4, 4.5, 5.1, 4],
+      end_x: [20.14, -19.4, -10.1, 21],
+      end_y: [4, 4.5, 5.1, 12],
     },
     {
       id: 1,
@@ -41,10 +41,10 @@ task_map: {
     {
       id: 4,
       name: "Slots",
-      start_x: [35.3, -32.7, -33.6, 36],
-      start_y: [17, 16.4, 16.7, 16], # D (2, 2)
-      end_x: [35.3, -32.7, -33.6, 36],
-      end_y: [17, 16.4, 16.7, 16]
+      start_x: [35.3, -32.7, -26.2, 36],
+      start_y: [17, 9.4, 17.7, 16], # D (2, 2)
+      end_x: [35.3, -32.7, -26.2, 36],
+      end_y: [17, 9.4, 17.7, 16]
     },
     {
       id: 5,
@@ -57,10 +57,10 @@ task_map: {
     {
       id: 6,
       name: "Roulette",
-      start_x: [25.3, -27.9, -23.9, 28.5], # D (30, 20)
-      start_y: [20.9, 21.2, 23.5, 23.3],
-      end_x: [25.3, -27.9, -23.9, 28.5], # D (30, 20)
-      end_y: [20.9, 21.2, 23.5, 23.3]
+      start_x: [25.3, -17.9, -22.6, 28.5], # D (30, 20)
+      start_y: [20.9, 31.2, 20.2, 23.3],
+      end_x: [25.3, -17.9, -22.6, 28.5], # D (30, 20)
+      end_y: [20.9, 31.2, 20.2, 23.3]
     },
     {
       id: 7,
@@ -73,18 +73,18 @@ task_map: {
     {
       id: 8,
       name: "Cash_In",
-      start_x: [0, -36, -35.1, 38],
-      start_y: [0, 22.7, 25.9, 23.3],
-      end_x: [0, -36, -35.1, 38],
-      end_y: [0, 22.7, 25.9, 23.3]
+      start_x: [0, -28, -33.6, 38],
+      start_y: [0, 32.7, 20.6, 23.3],
+      end_x: [0, -28, -33.6, 38],
+      end_y: [0, 32.7, 20.6, 23.3]
     },
     {
       id: 9,
       name: "Dice_Hop",
-      start_x: [33, -26.5, -26.2, 28],
-      start_y: [4.29, 6.8, 8, 13],
-      end_x: [33, -26.5, -26.2, 28],
-      end_y: [4.29, 6.8, 8, 7]
+      start_x: [33, -26.5, -20.9, 28],
+      start_y: [4.29, 10.3, 11.4, 13],
+      end_x: [33, -26.5, -20.9, 28],
+      end_y: [4.29, 10.3, 11.4, 7]
     }
   ]
 }

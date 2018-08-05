@@ -13,6 +13,10 @@ void CashIn::Start()
   timer = master->nh.createTimer(ros::Duration(duration), &CashIn::CashInTimer, this, true);
   ROS_INFO("CashIn: Timer initiated until Tslam ends in %f seconds", duration);
   ROS_INFO("CashIn: Current x accel: %f", master->linear_accel.x);
+
+  /*master->tslam->SetEndPos();
+  CashIn::Abort();
+  master->LaunchTSlam();*/
 }
 
 void CashIn::CashInTimer(const ros::TimerEvent &event)

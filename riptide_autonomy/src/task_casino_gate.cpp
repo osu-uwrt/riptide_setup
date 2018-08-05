@@ -61,6 +61,10 @@ void CasinoGate::Start()
   passed_thru_gate = false;
   task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &CasinoGate::IDCasinoGate, this);
   ROS_INFO("CasinoGate: Looking for %s. Subscribed to /task/bboxes", object_name.c_str());
+
+  /*master->tslam->SetEndPos();
+  CasinoGate::Abort();
+  master->LaunchTSlam();*/
 }
 
 // ID the CasinoGate task and set update target y-pos based on the detected object(s)

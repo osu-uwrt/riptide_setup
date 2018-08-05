@@ -60,6 +60,10 @@ void Roulette::Start()
 
   timeout_duration = master->tslam->tslam_duration + 1;
   timer = master->nh.createTimer(ros::Duration(timeout_duration), &Roulette::TimeOutTimer, this, true);
+
+  /*master->tslam->SetEndPos();
+  Roulette::Abort();
+  master->LaunchTSlam();*/
 }
 
 // ID the roulette task
