@@ -95,14 +95,14 @@ void YoloObjectDetector::init()
 
   // Path to weights file.
   nodeHandle_.param("yolo_model/weight_file/name", weightsModel,
-                    std::string("yolov2-tiny.weights"));
+                    std::string("yolov3-tiny_RoboSub18.weights"));
   nodeHandle_.param("weights_path", weightsPath, std::string("/default"));
   weightsPath += "/" + weightsModel;
   weights = new char[weightsPath.length() + 1];
   strcpy(weights, weightsPath.c_str());
 
   // Path to config file.
-  nodeHandle_.param("yolo_model/config_file/name", configModel, std::string("yolov2-tiny.cfg"));
+  nodeHandle_.param("yolo_model/config_file/name", configModel, std::string("yolov3-tiny_RoboSub18.cfg"));
   nodeHandle_.param("config_path", configPath, std::string("/default"));
   configPath += "/" + configModel;
   cfg = new char[configPath.length() + 1];
@@ -178,9 +178,10 @@ void YoloObjectDetector::init()
       boost::bind(&YoloObjectDetector::checkForObjectsActionPreemptCB, this));
   checkForObjectsActionServer_->start();
 
-  // Subscribe to alignment command so yolo can switch between appropriate camera
-  alignmentSubscriber_ = nodeHandle_.subscribe<riptide_msgs::AlignmentCommand>("/command/alignment", 1, &YoloObjectDetector::AlignmentCommandCB, this);
-  alignment_plane = riptide_msgs::AlignmentCommand::YZ;
+  // Subscribe to PS3 Plane command so yolo can switch between appropriate camera
+  ps3Subscriber_ = nodeHandle_.subscribe<std_msgs::Int8>("/command/ps3_plane", 1, &YoloObjectDetector::PS3CB, this);
+  taskSubscriber_ = nodeHandle_.subscribe<riptide_msgs::TaskInfo>("/task/info", 1, &YoloObjectDetector::TaskInfoCB, this);
+  alignment_plane = riptide_msgs::Constants::PLANE_YZ;
   prev_alignment_plane = alignment_plane;
 }
 
@@ -276,11 +277,27 @@ bool YoloObjectDetector::publishDetectionImage(const cv::Mat& detectionImage)
   return true;
 }
 
-void YoloObjectDetector::AlignmentCommandCB(const riptide_msgs::AlignmentCommand::ConstPtr &cmd) {
+void YoloObjectDetector::TaskInfoCB(const riptide_msgs::TaskInfo::ConstPtr &task_msg) {
   // Adjust alignemnt plane so Yolo can subscribe to correct camera topic
-  alignment_plane = cmd->alignment_plane;
-  if(alignment_plane != riptide_msgs::AlignmentCommand::YZ && alignment_plane != riptide_msgs::AlignmentCommand::YX)
-    alignment_plane = riptide_msgs::AlignmentCommand::YZ; // Default to YZ-plane (fwd cam)
+  alignment_plane = task_msg->alignment_plane;
+  if(alignment_plane != riptide_msgs::Constants::PLANE_YZ && alignment_plane != riptide_msgs::Constants::PLANE_XY)
+    alignment_plane = riptide_msgs::Constants::PLANE_YZ; // Default to YZ-plane (fwd cam)
+
+  if(alignment_plane != prev_alignment_plane) {
+    imageSubscriber_.shutdown(); // Unsubscribe from old camera topic
+    cameraTopicName = camera_topics[alignment_plane]; // 0 -> (fwd) YZ plane, 1 -> (dwn) XY plane
+    imageSubscriber_ = imageTransport_.subscribe(cameraTopicName, cameraQueueSize,
+                                                 &YoloObjectDetector::cameraCallback, this);
+    ROS_INFO("Subscribed to new camera topic: %s", cameraTopicName.c_str());
+  }
+  prev_alignment_plane = alignment_plane;
+}
+
+void YoloObjectDetector::PS3CB(const std_msgs::Int8::ConstPtr& cmd) {
+  // Adjust alignemnt plane so Yolo can subscribe to correct camera topic
+  alignment_plane = cmd->data;
+  if(alignment_plane != riptide_msgs::Constants::PLANE_YZ && alignment_plane != riptide_msgs::Constants::PLANE_XY)
+    alignment_plane = riptide_msgs::Constants::PLANE_YZ; // Default to YZ-plane (fwd cam)
 
   if(alignment_plane != prev_alignment_plane) {
     imageSubscriber_.shutdown(); // Unsubscribe from old camera topic

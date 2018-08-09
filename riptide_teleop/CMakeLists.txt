@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(riptide_teleop)
+add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED
     COMPONENTS
@@ -8,10 +9,13 @@ find_package(catkin REQUIRED
     roscpp
     roslint
     tf
+    sensor_msgs
+    cv_bridge
 )
 
 catkin_package(INCLUDE_DIRS include)
-include_directories(include ${catkin_INCLUDE_DIRS})
+find_package(OpenCV REQUIRED) # To include, OpenCV, this MUST go BEFORE include_directories()
+include_directories(include ${catkin_INCLUDE_DIRS} $(OpenCV_INCLUDE_DIRS))
 roslint_cpp()
 
 add_executable(ps3_controller src/ps3_controller.cpp)

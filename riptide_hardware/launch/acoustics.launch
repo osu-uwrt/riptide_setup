@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="riptide_hardware" type="acoustics" name="acoustics" output="screen">
+  </node>
+</launch>

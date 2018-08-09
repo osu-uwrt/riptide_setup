@@ -23,11 +23,11 @@ UndistortCamera::UndistortCamera() : nh("undistort_camera") { // NOTE: there is 
 
   // Get image size based on video mode chosen, and set scale factor
   double scale_factor;
-  if(strcmp(video_mode.c_str(), "format7_mode0") == 0) {
+  if(video_mode == "format7_mode0") {
     img_size = Size(MAX_WIDTH, MAX_HEIGHT);
     scale_factor = 1.0;
   }
-  else if(strcmp(video_mode.c_str(), "format7_mode1") == 0) {
+  else if(video_mode == "format7_mode1") {
     img_size = Size(MAX_WIDTH/2, MAX_HEIGHT/2);
     scale_factor = 0.5;
   }
@@ -141,6 +141,11 @@ void UndistortCamera::ImageCB(const sensor_msgs::Image::ConstPtr &msg) {
   Mat imageUndistorted;
   // This replaces the second function call in cv::undistort(). Only takes about 10 ms
   remap(cv_ptr->image, imageUndistorted, map1, map2, INTER_LINEAR);
+
+  // Rotate image 180 degrees for downward camera based on how its plositioned
+  if(strcmp(camera_name.c_str(), "downward") == 0) {
+    rotate(imageUndistorted, imageUndistorted, ROTATE_180);
+  }
 
   sensor_msgs::ImagePtr out_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", imageUndistorted).toImageMsg();
   undistorted_pub.publish(out_msg);

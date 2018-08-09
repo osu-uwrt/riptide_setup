@@ -17,14 +17,14 @@ class DepthController
   private:
     // Comms
     ros::NodeHandle nh;
-    ros::Subscriber depth_sub, imu_sub, auto_cmd_sub, man_cmd_sub, reset_sub;
+    ros::Subscriber depth_sub, imu_sub, cmd_sub, reset_sub;
     ros::Publisher cmd_pub, status_pub;
 
     control_toolbox::Pid depth_controller_pid;
     geometry_msgs::Vector3 accel;
     double output, MAX_DEPTH, MAX_DEPTH_ERROR;
 
-    // IIR Filter variables for D-term
+    // IIR Filter variables for error_dot
     double PID_IIR_LPF_bandwidth, dt_iir, alpha, sensor_rate;
 
     riptide_msgs::ControlStatus status_msg;
@@ -34,31 +34,29 @@ class DepthController
 
     //PID
     double depth_error, depth_error_dot;
-    double current_depth;
-    double depth_cmd, last_depth_cmd_absolute;
+    double current_depth, depth_cmd;
     double last_error, last_error_dot;
     double dt;
 
-    bool pid_depth_init, auto_enabled;
+    ros::Time sample_start;
+    ros::Duration sample_duration;
 
-    ros::Time sample_start, auto_time;
-    ros::Duration sample_duration, auto_disable_duration;
+    bool pid_depth_reset, pid_depth_active;
 
+    void InitMsgs();
     void UpdateError();
     double Constrain(double current, double max);
     double SmoothErrorIIR(double input, double prev);
-    void ResetController(const riptide_msgs::ResetControls::ConstPtr &reset_msg);
-    void ResetDepth();
+    void ResetDepth(int id);
 
   public:
     DepthController();
     template <typename T>
     void LoadParam(string param, T &var);
-    void ManualCommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd);
-    void AutoCommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd);
+    void CommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd);
     void DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg);
     void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
-    void Loop();
+    void ResetCB(const riptide_msgs::ResetControls::ConstPtr &reset_msg);
  };
 
  #endif

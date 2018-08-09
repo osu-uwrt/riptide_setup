@@ -6,6 +6,7 @@ SWA:
   NEG:
     SLOPE: -8.004653
     XINT: 1519
+  ENABLE: true
 SWF:
   POS:
     SLOPE: 7.132864
@@ -13,6 +14,7 @@ SWF:
   NEG:
     SLOPE: 8.081880
     XINT: 1465
+  ENABLE: true
 SPL:
   POS:
     SLOPE: -8.191769
@@ -20,13 +22,15 @@ SPL:
   NEG:
     SLOPE: -7.039311
     XINT: 1517
+  ENABLE: true
 SSL:
   POS:
     SLOPE: 7.982523
-    XINT: 1466
+    XINT: 1517 #1466 in original file
   NEG:
     SLOPE: 7.829684
-    XINT: 1517
+    XINT: 1466 #1517 in original file
+  ENABLE: true
 HPF: # Previously HSA on old Riptide
   POS:
     SLOPE: -7.954310
@@ -34,6 +38,7 @@ HPF: # Previously HSA on old Riptide
   NEG:
     SLOPE: -6.814752
     XINT: 1519
+  ENABLE: true
 HPA:
   POS:
     SLOPE: 7.334681
@@ -41,6 +46,7 @@ HPA:
   NEG:
     SLOPE: 8.067786
     XINT: 1460
+  ENABLE: true
 HSA: # Previously HPF on old Riptide
   POS:
     SLOPE: -7.900563
@@ -48,6 +54,7 @@ HSA: # Previously HPF on old Riptide
   NEG:
     SLOPE: -7.168297
     XINT: 1519
+  ENABLE: true
 HSF:
   POS:
     SLOPE: 7.372538
@@ -55,3 +62,4 @@ HSF:
   NEG:
     SLOPE: 8.461324
     XINT: 1463
+  ENABLE: true

@@ -1,11 +1,13 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(riptide_msgs)
+add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED
     COMPONENTS
-    geometry_msgs
     message_generation
     std_msgs
+    geometry_msgs
+    darknet_ros_msgs
 )
 
 add_message_files(
@@ -28,9 +30,19 @@ add_message_files(
     ControlStatusLinear.msg
     AlignmentCommand.msg
     DepthCommand.msg
+    AttitudeCommand.msg
+    Acoustics.msg
+    Pneumatics.msg
+    Constants.msg
+    ThrusterResiduals.msg
+    TaskInfo.msg
+    Object.msg
+    MissionState.msg
+    StatusLight.msg
+    CalibrateAlignment.msg
 )
 
-generate_messages(DEPENDENCIES std_msgs geometry_msgs)
+generate_messages(DEPENDENCIES std_msgs geometry_msgs darknet_ros_msgs)
 
 catkin_package(CATKIN_DEPENDS message_runtime)
 

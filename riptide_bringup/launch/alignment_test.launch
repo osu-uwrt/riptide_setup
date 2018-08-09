@@ -1,15 +1,6 @@
 <launch>
-  <arg name="debug" default="false" />
-
-  <include file="$(find riptide_controllers)/launch/pwm_controller.launch" />
-  <include file="$(find riptide_controllers)/launch/thruster_controller.launch" >
-    <arg name="debug" value="$(arg debug)" />
-  </include>
-
-  <include file="$(find riptide_controllers)/launch/command_combinator.launch" />
-  <include file="$(find riptide_controllers)/launch/depth_controller.launch" />
-  <include file="$(find riptide_controllers)/launch/attitude_controller.launch" />
-  <include file="$(find riptide_controllers)/launch/alignment_controller.launch" />
-  <include file="$(find riptide_vision)/launch/qualification_vision.launch" />
-  <include file="$(find riptide_hardware)/launch/cameras.launch" />
+  <include file="$(find riptide_hardware)/launch/hardware.launch" />
+  <include file="$(find riptide_hardware)/launch/darknet_ros_jetson.launch" />
+  <include file="$(find riptide_controllers)/launch/controllers.launch" />
+  <include file="$(find riptide_vision)/launch/vision_jetson.launch" />  
 </launch>

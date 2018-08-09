@@ -4,6 +4,7 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Accel.h"
 #include "geometry_msgs/Vector3.h"
+#include "std_msgs/Float64.h"
 using namespace std;
 
 class CommandCombinator
@@ -11,12 +12,10 @@ class CommandCombinator
   private:
     // Comms
     ros::NodeHandle nh;
-    ros::Subscriber auto_linear_sub, manual_linear_sub;
-    ros::Subscriber auto_angular_sub, manual_angular_sub;
-    ros::Subscriber depth_sub;
+    ros::Subscriber x_sub, y_sub, angular_sub, depth_sub;
     ros::Publisher cmd_pub;
 
-    geometry_msgs::Accel cmd_accel, auto_accel, manual_accel;
+    geometry_msgs::Accel cmd_accel, accel;
     geometry_msgs::Vector3 depth_accel;
 
     double MAX_X_ACCEL, MAX_Y_ACCEL, MAX_Z_ACCEL; // [m/s^2]
@@ -27,14 +26,12 @@ class CommandCombinator
     template <typename T>
     void LoadParam(string param, T &var);
     void InitMsgs();
-    void AutoLinearCB(const geometry_msgs::Vector3::ConstPtr &lin_accel);
-    void ManualLinearCB(const geometry_msgs::Vector3::ConstPtr &lin_accel);
+    void XCB(const std_msgs::Float64::ConstPtr &lin_accel);
+    void YCB(const std_msgs::Float64::ConstPtr &lin_accel);
     void DepthCB(const geometry_msgs::Vector3::ConstPtr &d_accel);
-    void AutoAngularCB(const geometry_msgs::Vector3::ConstPtr &ang_accel);
-    void ManualAngularCB(const geometry_msgs::Vector3::ConstPtr &ang_accel);
+    void AngularCB(const geometry_msgs::Vector3::ConstPtr &ang_accel);
     double Constrain(double current, double max);
     void Combine();
-    void Loop();
  };
 
  #endif

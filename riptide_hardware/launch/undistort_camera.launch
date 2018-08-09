@@ -1,7 +1,9 @@
 <launch>
   <arg name="camera_name" default="forward"/>
   <arg name="frame_rate" default="30" />
-  <arg name="video_mode" default="format7_mode1" /> <!--mode0: (max res) 1288 x 964 -->
+  <arg name="video_mode" default="format7_mode1" />
+  <!--mode0: Max res at 1288 x 964-->
+  <!--mode1: Half res at 644 x 482-->
 
     <node pkg="riptide_hardware" type="undistort_camera" name="undistort_camera" output="screen" >
       <rosparam command="load" file="$(find riptide_hardware)/cfg/camera_$(arg camera_name)_cal.yaml" />

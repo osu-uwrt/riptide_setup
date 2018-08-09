@@ -1,18 +1,11 @@
-std_msgs/Header header
+bool surge_active
+bool sway_active
+bool heave_active
 
-int8 YZ=0 # Forward cameras
-int8 YX=1 # Downward cameras
-
-# Plane in which we are aligning
+string object_name
 int8 alignment_plane
 
 # Relative position in pixels
+int32 bbox_dim
+int8 bbox_control # 0 for width, 1 for height
 geometry_msgs/Point target_pos
-
-# Bounding Box width in pixels. Useful for controlling
-# an approximate distance.
-int32 bbox_width
-boolean bbox_control
-float32 target_approach_accel
-
-int8 task_id

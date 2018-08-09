@@ -1,0 +1,186 @@
+tasks: [
+  {
+    class: "GFlap",
+    probability: 0.6,
+    xmin: 25,
+    ymin: 25,
+    xmax: 325,
+    ymax: 325
+  },
+  {
+    class: "Casino_Gate_Red",
+    probability: 0.7,
+    xmin: 325,
+    ymin: 325,
+    xmax: 600,
+    ymax: 600
+  },
+  {
+    class: "Casino_Gate_Red",
+    probability: 0.15,
+    xmin: 225,
+    ymin: 225,
+    xmax: 500,
+    ymax: 500
+  },
+  {
+    class: "Path_Marker1",
+    probability: 0.75,
+    xmin: 50,
+    ymin: 50,
+    xmax: 200,
+    ymax: 200
+  },
+  {
+    class: "Path_Marker1",
+    probability: 0.43,
+    xmin: 50,
+    ymin: 50,
+    xmax: 200,
+    ymax: 200
+  },
+  {
+    class: "Dice1",
+    probability: 0.73,
+    xmin: 70,
+    ymin: 300,
+    xmax: 120,
+    ymax: 350
+  },
+  {
+    class: "Dice1",
+    probability: 0.57,
+    xmin: 70,
+    ymin: 300,
+    xmax: 120,
+    ymax: 350
+  },
+  {
+    class: "Dice2",
+    probability: 0.95,
+    xmin: 50,
+    ymin: 50,
+    xmax: 150,
+    ymax: 150
+  },
+  {
+    class: "Dice2",
+    probability: 0.77,
+    xmin: 50,
+    ymin: 50,
+    xmax: 150,
+    ymax: 150
+  },
+  {
+    class: "Dice5",
+    probability: 0.9,
+    xmin: 75,
+    ymin: 75,
+    xmax: 150,
+    ymax: 150
+  },
+  {
+    class: "Dice5",
+    probability: 0.83,
+    xmin: 75,
+    ymin: 75,
+    xmax: 150,
+    ymax: 150
+  },
+  {
+    class: "Dice6",
+    probability: 0.97,
+    xmin: 250,
+    ymin: 250,
+    xmax: 450,
+    ymax: 450
+  },
+  {
+    class: "Dice6",
+    probability: 0.86,
+    xmin: 150,
+    ymin: 150,
+    xmax: 310,
+    ymax: 310
+  },
+  {
+    class: "Gold_Chip1",
+    probability: 0.96,
+    xmin: 50,
+    ymin: 50,
+    xmax: 100,
+    ymax: 100
+  },
+  {
+    class: "Gold_Chip1",
+    probability: 0.87,
+    xmin: 50,
+    ymin: 50,
+    xmax: 100,
+    ymax: 100
+  },
+  {
+    class: "Slots_Fruit",
+    probability: 0.99,
+    xmin: 50,
+    ymin: 50,
+    xmax: 200,
+    ymax: 100
+  },
+  {
+    class: "Slots_Fruit",
+    probability: 0.89,
+    xmin: 50,
+    ymin: 50,
+    xmax: 200,
+    ymax: 100
+  },
+  {
+    class: "Path_Marker2",
+    probability: 0.75,
+    xmin: 70,
+    ymin: 70,
+    xmax: 200,
+    ymax: 200
+  },
+  {
+    class: "Path_Marker2",
+    probability: 0.43,
+    xmin: 70,
+    ymin: 70,
+    xmax: 200,
+    ymax: 200
+  },
+  {
+    class: "Gold_Chip2",
+    probability: 0.96,
+    xmin: 50,
+    ymin: 50,
+    xmax: 100,
+    ymax: 100
+  },
+  {
+    class: "Gold_Chip2",
+    probability: 0.87,
+    xmin: 50,
+    ymin: 50,
+    xmax: 100,
+    ymax: 100
+  },
+  {
+    class: "Roulette",
+    probability: 0.95,
+    xmin: 50,
+    ymin: 50,
+    xmax: 150,
+    ymax: 150
+  },
+  {
+    class: "Roulette",
+    probability: 0.77,
+    xmin: 50,
+    ymin: 50,
+    xmax: 150,
+    ymax: 150
+  },
+]

@@ -9,6 +9,8 @@
 #include "std_msgs/Header.h"
 #include "opencv2/opencv.hpp"
 #include <string>
+using namespace cv;
+using namespace std;
 
 /*extern "C" {
 #include <libavutil/imgutils.h>
@@ -29,13 +31,15 @@ private:
   //  3. An image of type cv::Mat - this is the actual image object in c++
   cv_bridge::CvImagePtr cv_ptr;
 
-  cv::VideoWriter videoWriter;
-  std::string topic, file_name, ext, file_path, camera, username;
+  VideoWriter videoWriter;
+  string topic, file_name, ext, file_path, camera, username;
   int width, height, frame_rate, frames;
 
 public:
   ExtractVideo();
   ~ExtractVideo();
+  template <typename T>
+  void LoadParam(string param, T &var);
   void WriteVideo(const sensor_msgs::ImageConstPtr& msg); // Image callback
   void Loop();
 };
