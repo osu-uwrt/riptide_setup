@@ -1,11 +1,13 @@
-## Riptide  
-*2017-2018 AUV*
+## The Riptide AUV Software Platform   
+
+This repository is the main codebase for the Underwater Robotics Team at The Ohio State University. Our mission is to develop the software which powers our Autonomous Underwater Vehicles. The software in this repository handles low level controls, computer vision, mission-specific programs, and everything in between. All built on the Robot Operating System framework.
+
+
 
 **The Underwater Robotics Team**  
 The Ohio State University
 
-![Riptide](http://underwaterrov.org.ohio-state.edu/img/renders/riptide_180.png)
+[Website](https://uwrt.engineering.osu.edu) | [RoboSub](https://www.auvsifoundation.org/competition/robosub) | [License](LICENSE)
 
-[Website](http://go.osu.edu/uwrt) | [Competition](http://www.auvsifoundation.org/foundation/competitions/competition-central/robosub) | [License](LICENSE)
 
-[![Build Status](https://travis-ci.org/osu-uwrt/riptide-ros.svg?branch=master)](https://travis-ci.org/osu-uwrt/riptide-ros)
+![OSU UWRT Logo](logos/UWRT_Logo_small.png)
