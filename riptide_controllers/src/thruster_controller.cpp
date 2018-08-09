@@ -465,6 +465,8 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller") 
     buoyancy_pos.vector.z = 0;
   }
 
+  ThrusterController::InitThrustMsg();
+
   google::InitGoogleLogging(argv[0]);
 
   // PROBLEM SETUP
@@ -560,6 +562,21 @@ void ThrusterController::LoadParam(std::string param, T &var)
     ROS_ERROR("Critical! Param \"%s/%s\" does not exist or is not accessed correctly. Shutting down.", ns.c_str(), param.c_str());
     ros::shutdown();
   }
+}
+
+void ThrusterController::InitThrustMsg()
+{
+  riptide_msgs::ThrustStamped thrust;
+  thrust.header.stamp = ros::Time::now();
+  thrust.force.surge_port_lo = 0;
+  thrust.force.surge_stbd_lo = 0;
+  thrust.force.sway_fwd = 0;
+  thrust.force.sway_aft = 0;
+  thrust.force.heave_port_aft = 0;
+  thrust.force.heave_stbd_aft = 0;
+  thrust.force.heave_stbd_fwd = 0;
+  thrust.force.heave_port_fwd = 0;
+  cmd_pub.publish(thrust);
 }
 
 // Callback for dynamic reconfigure

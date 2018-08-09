@@ -37,6 +37,9 @@ add_message_files(
     ThrusterResiduals.msg
     TaskInfo.msg
     Object.msg
+    MissionState.msg
+    StatusLight.msg
+    CalibrateAlignment.msg
 )
 
 generate_messages(DEPENDENCIES std_msgs geometry_msgs darknet_ros_msgs)

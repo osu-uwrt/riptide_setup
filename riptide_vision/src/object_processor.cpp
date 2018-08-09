@@ -4,7 +4,15 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "object_processor");
   ObjectProcessor yp;
-  yp.Loop();
+  try
+  {
+    ros::spin();
+  }
+  catch (exception &e)
+  {
+    ROS_ERROR("Obj Pro Error: %s", e.what());
+    ROS_ERROR("Obj Pro: Shutting Down");
+  }
 }
 
 ObjectProcessor::ObjectProcessor() : nh("object_processor") {
@@ -21,13 +29,12 @@ ObjectProcessor::ObjectProcessor() : nh("object_processor") {
   colors.push_back(Scalar(255, 128, 0)); // Orange
   colors.push_back(Scalar(255, 0, 255)); // Purple
 
-  ObjectProcessor::LoadParam<string>("task_file", task_file);
-
   // Initialize task info to Casino Gate
+  task_file = rc::FILE_TASKS;
   task_id = 0;
   task_name = "Casino_Gate";
   object_name = "Casino_Gate_Black";
-  alignment_plane = riptide_msgs::Constants::PLANE_YZ;
+  alignment_plane = rc::PLANE_YZ;
 
   tasks = YAML::LoadFile(task_file);
 
@@ -44,13 +51,17 @@ ObjectProcessor::ObjectProcessor() : nh("object_processor") {
     }
   }
 
-    // Update task info
-    ObjectProcessor::UpdateTaskInfo();
+  // Update task info
+  ObjectProcessor::UpdateTaskInfo();
 
-    current_attitude.x = 0;
-    current_attitude.y = 0;
-    current_attitude.z = 0;
-    object.object_headings.clear();
+  current_attitude.x = 0;
+  current_attitude.y = 0;
+  current_attitude.z = 0;
+
+  width = 644;
+  height = 482;
+  cam_center_x = width/2;
+  cam_center_y = height/2;
 }
 
 // Load parameter from namespace
@@ -78,8 +89,8 @@ void ObjectProcessor::UpdateTaskInfo() {
   num_objects = (int)tasks["tasks"][task_id]["objects"].size();
 
   alignment_plane = tasks["tasks"][task_id]["plane"].as<int>();
-  if(alignment_plane != riptide_msgs::Constants::PLANE_YZ && alignment_plane != riptide_msgs::Constants::PLANE_XY)
-    alignment_plane = riptide_msgs::Constants::PLANE_YZ; // Default to YZ-plane (fwd cam)
+  if(alignment_plane != rc::PLANE_YZ && alignment_plane != rc::PLANE_XY)
+    alignment_plane = rc::PLANE_YZ; // Default to YZ-plane (fwd cam)
 
   object_names.clear();
   thresholds.clear();
@@ -104,20 +115,6 @@ void ObjectProcessor::ImageCB(const sensor_msgs::Image::ConstPtr &msg) {
   cam_center_x = width/2;
   cam_center_y = height/2;
 
-  // Process image depending on task requirements
-  // Append any headings to object_headings vector
-  if(task_id == riptide_msgs::Constants::TASK_PATH_MARKER1 || task_id == riptide_msgs::Constants::TASK_PATH_MARKER2) {
-    // Process Path Marker (seg1_heading followed by seg2_heading)
-
-  }
-  else if(task_id == riptide_msgs::Constants::TASK_ROULETTE) {
-    // Process Roulette Wheel
-
-  }
-  else {
-    object_headings.clear();
-  }
-
   // Uncomment when ready
   //sensor_msgs::ImagePtr out_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", object_image).toImageMsg();
   //object_image_pub.publish(out_msg);
@@ -129,7 +126,7 @@ void ObjectProcessor::TaskBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPtr
 
   // Search for bbox with object name
   for(int i=0; i<bbox_msg->bounding_boxes.size(); i++) {
-    if(strcmp(object_name.c_str(), bbox_msg->bounding_boxes[i].Class.c_str()) == 0 ) {
+    if(object_name == bbox_msg->bounding_boxes[i].Class) {
       found = true;
       object_bbox = bbox_msg->bounding_boxes[i];
 
@@ -137,7 +134,7 @@ void ObjectProcessor::TaskBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPtr
       object.bbox_width = abs(object_bbox.xmax - object_bbox.xmin);
       object.bbox_height = abs(object_bbox.ymax - object_bbox.ymin);
 
-      // Centers are relative to the CAMERA's center using standard frame axes
+      // Adjust positions so they are relative to the center of the CAMERA FRAME
       // Cam x-axis is pos. right; Cam y-axis is pos. down
       int xcenter = (object_bbox.xmin + object_bbox.xmax)/2 - cam_center_x;
       int ycenter = (object_bbox.ymin + object_bbox.ymax)/2 - cam_center_y;
@@ -145,27 +142,18 @@ void ObjectProcessor::TaskBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPtr
       if(alignment_plane == riptide_msgs::Constants::PLANE_YZ) {
         object.pos.x = 0; // AUV x-axis is pos. fwd
         object.pos.y = -xcenter; // AUV y-axis is pos. port-side
-        object.pos.z = -ycenter; // AUV z-axi is pos. up
+        object.pos.z = -ycenter; // AUV z-axis is pos. up
       }
       else if(alignment_plane == riptide_msgs::Constants::PLANE_XY) {
         object.pos.x = -ycenter; // AUV x-axis is pos. fwd
         object.pos.y = -xcenter; // AUV y-axis is pos. port-side
-        object.pos.z = 0; // AUV z-axi is pos. up
+        object.pos.z = 0; // AUV z-axis is pos. up
       }
       break;
     }
   }
 
   if(found) {
-    if(task_id == riptide_msgs::Constants::TASK_PATH_MARKER1 || task_id == riptide_msgs::Constants::TASK_PATH_MARKER2) {
-      // Append heading of each path segment to object msg (seg1 then seg2)
-    }
-    else if(task_id == riptide_msgs::Constants::TASK_ROULETTE) {
-      // Append heading of roulette wheel to object msg
-    }
-    else {
-      object_headings.clear();
-    }
     object_pub.publish(object);
   }
 }
@@ -186,23 +174,7 @@ void ObjectProcessor::TaskInfoCB(const riptide_msgs::TaskInfo::ConstPtr& task_ms
   last_alignment_plane = alignment_plane;
 }
 
-
 void ObjectProcessor::AlignmentCmdCB(const riptide_msgs::AlignmentCommand::ConstPtr& cmd) {
   if(strcmp(cmd->object_name.c_str(), object_name.c_str()) != 0 ) // If name does not match, then update
     object_name = cmd->object_name;
-}
-
-// Subscribe to state/imu
-void ObjectProcessor::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg) {
-  current_attitude = imu_msg->euler_rpy;
-}
-
-void ObjectProcessor::Loop()
-{
-  ros::Rate rate(50);
-  while(ros::ok())
-  {
-    ros::spinOnce();
-    rate.sleep();
-  }
 }

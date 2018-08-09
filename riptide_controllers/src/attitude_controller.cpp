@@ -5,6 +5,8 @@
 #undef progress
 
 #define PI 3.141592653
+#define RESET_ID 0
+#define DISABLE_ID 1
 
 float round(float d) {
   return floor(d + 0.5);
@@ -13,7 +15,15 @@ float round(float d) {
 int main(int argc, char **argv) {
   ros::init(argc, argv, "attitude_controller");
   AttitudeController ac;
-  ac.Loop();
+  try
+  {
+    ros::spin();
+  }
+  catch (exception &e)
+  {
+    ROS_ERROR("Attitude Error: %s", e.what());
+    ROS_ERROR("Attitude: Shutting Down");
+  }
 }
 
 AttitudeController::AttitudeController() : nh("attitude_controller") {
@@ -27,7 +37,7 @@ AttitudeController::AttitudeController() : nh("attitude_controller") {
 
     cmd_sub = nh.subscribe<riptide_msgs::AttitudeCommand>("/command/attitude", 1, &AttitudeController::CommandCB, this);
     imu_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &AttitudeController::ImuCB, this);
-    reset_sub = nh.subscribe<riptide_msgs::ResetControls>("/controls/reset", 1, &AttitudeController::ResetController, this);
+    reset_sub = nh.subscribe<riptide_msgs::ResetControls>("/controls/reset", 1, &AttitudeController::ResetCB, this);
 
     cmd_pub = nh.advertise<geometry_msgs::Vector3>("/command/accel_angular", 1);
     status_pub = nh.advertise<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1);
@@ -50,18 +60,6 @@ AttitudeController::AttitudeController() : nh("attitude_controller") {
     pid_yaw_active = false;
     pid_attitude_active = false;
 
-    reset_angX_sent = true;
-    reset_angY_sent = true;
-    reset_angZ_sent = true;
-    inactive_angX_sent = true;
-    inactive_angY_sent = true;
-    inactive_angZ_sent = true;
-
-    R_b2w.setIdentity();
-    R_w2b.setIdentity();
-    tf.setValue(0, 0, 0);
-    ang_vel.setValue(0, 0, 0);
-
     // IIR LPF Variables
     double fc = PID_IIR_LPF_bandwidth; // Shorthand variable for IIR bandwidth
     dt_iir = 1.0/imu_filter_rate;
@@ -70,9 +68,9 @@ AttitudeController::AttitudeController() : nh("attitude_controller") {
     sample_start = ros::Time::now();
 
     AttitudeController::InitMsgs();
-    AttitudeController::ResetRoll();
-    AttitudeController::ResetPitch();
-    AttitudeController::ResetYaw();
+    AttitudeController::ResetRoll(RESET_ID);
+    AttitudeController::ResetPitch(RESET_ID);
+    AttitudeController::ResetYaw(RESET_ID);
 }
 
 void AttitudeController::InitMsgs() {
@@ -121,9 +119,8 @@ void AttitudeController::UpdateError() {
   if(!pid_roll_reset && pid_roll_active) {
     roll_error = roll_cmd - current_attitude.x;
     roll_error = AttitudeController::Constrain(roll_error, MAX_ROLL_ERROR);
-    roll_error_dot = -ang_vel.x(); // Negative sign is necesary to account for correct sign of error_dot
+    roll_error_dot = -ang_vel.x; // Negative sign is necesary to account for correct sign of error_dot
     last_error.x = roll_error;
-    last_error_dot.x = roll_error_dot;
     status_msg.roll.error = roll_error;
 
     ang_accel_cmd.x = roll_controller_pid.computeCommand(roll_error, roll_error_dot, sample_duration);
@@ -133,9 +130,8 @@ void AttitudeController::UpdateError() {
   if(!pid_pitch_reset && pid_pitch_active) {
     pitch_error = pitch_cmd - current_attitude.y;
     pitch_error = AttitudeController::Constrain(pitch_error, MAX_PITCH_ERROR);
-    pitch_error_dot = -ang_vel.y(); // Negative sign is necesary to account for correct sign of error_dot
+    pitch_error_dot = -ang_vel.y; // Negative sign is necesary to account for correct sign of error_dot
     last_error.y = pitch_error;
-    last_error_dot.y = pitch_error_dot;
     status_msg.pitch.error = pitch_error;
 
     ang_accel_cmd.y = pitch_controller_pid.computeCommand(pitch_error, pitch_error_dot, sample_duration);
@@ -151,18 +147,18 @@ void AttitudeController::UpdateError() {
         yaw_error += 360;
     yaw_error = AttitudeController::Constrain(yaw_error, MAX_YAW_ERROR);
 
-    yaw_error_dot = -ang_vel.z(); // Negative sign is necesary to account for correct sign of error_dot
+    yaw_error_dot = -ang_vel.z; // Negative sign is necesary to account for correct sign of error_dot
     last_error.z = yaw_error;
-    last_error_dot.z = yaw_error_dot;
     status_msg.yaw.error = yaw_error;
 
     ang_accel_cmd.z = yaw_controller_pid.computeCommand(yaw_error, yaw_error_dot, sample_duration);
   }
 
-  // ALWAYS Publish status and command messages
-  cmd_pub.publish(ang_accel_cmd);
-  status_msg.header.stamp = sample_start;
-  status_pub.publish(status_msg);
+  if(!pid_attitude_reset && pid_attitude_active) {
+    cmd_pub.publish(ang_accel_cmd);
+    status_msg.header.stamp = sample_start;
+    status_pub.publish(status_msg);
+  }
 
   sample_start = ros::Time::now();
 }
@@ -178,7 +174,7 @@ double AttitudeController::Constrain(double current, double max) {
   return current;
 }
 
-// Apply IIR LPF to error
+// Apply IIR LPF to error_dot
 double AttitudeController::SmoothErrorIIR(double input, double prev) {
   return (alpha*input + (1-alpha)*prev);
 }
@@ -191,7 +187,8 @@ void AttitudeController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg) {
   status_msg.yaw.current = current_attitude.z;
 
   //Get angular velocity (leave in [deg/s])
-  vector3MsgToTF(imu_msg->ang_vel, ang_vel);
+  ang_vel = imu_msg->ang_vel;
+  AttitudeController::UpdateError();
 }
 
 void AttitudeController::CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr &cmd) {
@@ -203,29 +200,26 @@ void AttitudeController::CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr
     roll_cmd = cmd->euler_rpy.x;
     roll_cmd = AttitudeController::Constrain(roll_cmd, MAX_ROLL_LIMIT);
     status_msg.roll.reference = roll_cmd;
-    inactive_angX_sent = false;
   }
   else {
-    AttitudeController::ResetRoll();
+    AttitudeController::ResetRoll(DISABLE_ID);
   }
 
   if(!pid_pitch_reset && pid_pitch_active) {
     pitch_cmd = cmd->euler_rpy.y;
     pitch_cmd = AttitudeController::Constrain(pitch_cmd, MAX_PITCH_LIMIT);
     status_msg.pitch.reference = pitch_cmd;
-    inactive_angY_sent = false;
   }
   else {
-    AttitudeController::ResetPitch();
+    AttitudeController::ResetPitch(DISABLE_ID);
   }
 
   if(!pid_yaw_reset && pid_yaw_active) {
     yaw_cmd = cmd->euler_rpy.z;
     status_msg.yaw.reference = yaw_cmd;
-    inactive_angZ_sent = false;
   }
   else {
-    AttitudeController::ResetYaw();
+    AttitudeController::ResetYaw(DISABLE_ID);
   }
 
   if(pid_roll_active || pid_pitch_active || pid_yaw_active)
@@ -234,33 +228,21 @@ void AttitudeController::CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr
     pid_attitude_active = false;
 }
 
-void AttitudeController::ResetController(const riptide_msgs::ResetControls::ConstPtr& reset_msg) {
+void AttitudeController::ResetCB(const riptide_msgs::ResetControls::ConstPtr& reset_msg) {
   if(reset_msg->reset_roll) {
-    pid_roll_reset = true;
-    AttitudeController::ResetRoll();
+    AttitudeController::ResetRoll(RESET_ID);
   }
-  else {
-    pid_roll_reset = false;
-    reset_angX_sent = false;
-  }
+  else pid_roll_reset = false;
 
   if(reset_msg->reset_pitch) {
-    pid_pitch_reset = true;
-    AttitudeController::ResetPitch();
+    AttitudeController::ResetPitch(RESET_ID);
   }
-  else {
-    pid_pitch_reset = false;
-    reset_angY_sent = false;
-  }
+  else pid_pitch_reset = false;
 
   if(reset_msg->reset_yaw) {
-    pid_yaw_reset = true;
-    AttitudeController::ResetYaw();
+    AttitudeController::ResetYaw(RESET_ID);
   }
-  else {
-    pid_yaw_reset = false;
-    reset_angZ_sent = false;
-  }
+  else pid_yaw_reset = false;
 
   if(pid_roll_reset && pid_pitch_reset && pid_yaw_reset)
     pid_attitude_reset = true;
@@ -268,82 +250,77 @@ void AttitudeController::ResetController(const riptide_msgs::ResetControls::Cons
     pid_attitude_reset = false;
 }
 
-void AttitudeController::ResetRoll() {
-  if(!reset_angX_sent && !inactive_angX_sent) {
+void AttitudeController::ResetRoll(int id) {
+  if((id == RESET_ID && !pid_roll_reset) || (id == DISABLE_ID && pid_roll_active))
+  {
     roll_controller_pid.reset();
     roll_cmd = 0;
     roll_error = 0;
     roll_error_dot = 0;
     last_error.x = 0;
-    last_error_dot.x = 0;
 
     status_msg.roll.reference = 0;
     status_msg.roll.error = 0;
+    status_msg.header.stamp = ros::Time::now();
+    status_pub.publish(status_msg);
 
     ang_accel_cmd.x = 0;
-
-    AttitudeController::UpdateError();
-
-    if(!reset_angX_sent)
-      reset_angX_sent = true;
-    if(!inactive_angX_sent)
-      inactive_angX_sent = true;
+    cmd_pub.publish(ang_accel_cmd);
   }
+
+  // Disable roll controller
+  if (id == RESET_ID)
+    pid_roll_reset = true;
+  else if (id == DISABLE_ID)
+    pid_roll_active = false;
 }
 
-void AttitudeController::ResetPitch() {
-  if(!reset_angY_sent && !inactive_angY_sent) {
+void AttitudeController::ResetPitch(int id) {
+  if((id == RESET_ID && !pid_pitch_reset) || (id == DISABLE_ID && pid_pitch_active))
+  {
     pitch_controller_pid.reset();
     pitch_cmd = 0;
     pitch_error = 0;
     pitch_error_dot = 0;
     last_error.y = 0;
-    last_error_dot.y = 0;
 
     status_msg.pitch.reference = 0;
     status_msg.pitch.error = 0;
+    status_msg.header.stamp = ros::Time::now();
+    status_pub.publish(status_msg);
 
     ang_accel_cmd.y = 0;
-
-    AttitudeController::UpdateError();
-
-    if(!reset_angY_sent)
-      reset_angY_sent = true;
-    if(!inactive_angY_sent)
-      inactive_angY_sent = true;
+    cmd_pub.publish(ang_accel_cmd);
   }
+
+  // Disable pitch controller
+  if (id == RESET_ID)
+    pid_pitch_reset = true;
+  else if (id == DISABLE_ID)
+    pid_pitch_active = false;
 }
 
-void AttitudeController::ResetYaw() {
-  if(!reset_angZ_sent && !inactive_angZ_sent) {
+void AttitudeController::ResetYaw(int id) {
+  if((id == RESET_ID && !pid_yaw_reset) || (id == DISABLE_ID && pid_yaw_active))
+  {
     yaw_controller_pid.reset();
     yaw_cmd = 0;
     yaw_error = 0;
     yaw_error_dot = 0;
     last_error.z = 0;
-    last_error_dot.z = 0;
 
     status_msg.yaw.reference = 0;
     status_msg.yaw.error = 0;
+    status_msg.header.stamp = ros::Time::now();
+    status_pub.publish(status_msg);
 
     ang_accel_cmd.z = 0;
-
-    AttitudeController::UpdateError();
-
-    if(!reset_angZ_sent)
-      reset_angZ_sent = true;
-    if(!inactive_angZ_sent)
-      inactive_angZ_sent = true;
+    cmd_pub.publish(ang_accel_cmd);
   }
-}
 
-void AttitudeController::Loop() {
-  ros::Rate rate(200);
-  while(!ros::isShuttingDown()) {
-    if(!pid_attitude_reset && pid_attitude_active) {
-      AttitudeController::UpdateError();
-    }
-    ros::spinOnce();
-    rate.sleep();
-  }
+  // Disable yaw controller
+  if (id == RESET_ID)
+    pid_yaw_reset = true;
+  else if (id == DISABLE_ID)
+    pid_yaw_active = false;
 }

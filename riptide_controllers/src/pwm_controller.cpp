@@ -86,6 +86,7 @@ PWMController::PWMController() : nh("pwm_controller")
   last_alive_time = ros::Time::now();
   silent = true; // Silent refers to not receiving commands from the control stack
   dead = true; // Dead refers to the kill switch being pulled
+  reset_pwm = true; // Refers to controller being reset via reset command
 }
 
 // Load parameter from namespace
@@ -110,7 +111,7 @@ void PWMController::LoadParam(string param, T &var)
 
 void PWMController::ThrustCB(const riptide_msgs::ThrustStamped::ConstPtr& thrust)
 {
-  if (!dead && !silent)
+  if (!dead && !reset_pwm)
   {
     msg.header.stamp = thrust->header.stamp;
 
@@ -138,11 +139,10 @@ void PWMController::SwitchCB(const riptide_msgs::SwitchState::ConstPtr &state)
 
 void PWMController::ResetController(const riptide_msgs::ResetControls::ConstPtr &reset_msg) {
   if(reset_msg->reset_pwm)
-    silent = true;
+    reset_pwm = true;
   else
-    silent = false;
+    reset_pwm = false;
 }
-
 
 int PWMController::Thrust2pwm(double raw_force, int thruster)
 {
@@ -207,7 +207,7 @@ void PWMController::Loop()
       silent = true;
     }
 
-    if (silent || dead)
+    if (silent || dead || reset_pwm)
     {
       PWMController::PublishZeroPWM();
     }

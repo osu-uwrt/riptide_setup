@@ -1,0 +1,447 @@
+{
+  "keys": {},
+  "groups": {
+    "pluginmanager": {
+      "keys": {
+        "running-plugins": {
+          "type": "repr",
+          "repr": "{u'rqt_console/Console': [1], u'rqt_publisher/Publisher': [1], u'rqt_image_view/ImageView': [1], u'rqt_plot/Plot': [1], u'rqt_topic/TopicPlugin': [1], u'rqt_reconfigure/Param': [1]}"
+        }
+      },
+      "groups": {
+        "plugin__rqt_reconfigure__Param__1": {
+          "keys": {},
+          "groups": {
+            "dock_widget___plugincontainer_top_widget": {
+              "keys": {
+                "dockable": {
+                  "type": "repr",
+                  "repr": "True"
+                },
+                "parent": {
+                  "type": "repr",
+                  "repr": "None"
+                },
+                "dock_widget_title": {
+                  "type": "repr",
+                  "repr": "u'Dynamic Reconfigure'"
+                }
+              },
+              "groups": {}
+            },
+            "plugin": {
+              "keys": {
+                "splitter": {
+                  "type": "repr(QByteArray.hex)",
+                  "repr(QByteArray.hex)": "QtCore.QByteArray('000000ff0000000100000002000001230000028801ffffffff010000000100')",
+                  "pretty-print": "       #       "
+                },
+                "_splitter": {
+                  "type": "repr(QByteArray.hex)",
+                  "repr(QByteArray.hex)": "QtCore.QByteArray('000000ff00000001000000020000012c000000000100000009010000000200')",
+                  "pretty-print": "       ,       "
+                }
+              },
+              "groups": {}
+            }
+          }
+        },
+        "plugin__rqt_image_view__ImageView__1": {
+          "keys": {},
+          "groups": {
+            "dock_widget__ImageViewWidget": {
+              "keys": {
+                "dockable": {
+                  "type": "repr",
+                  "repr": "True"
+                },
+                "parent": {
+                  "type": "repr",
+                  "repr": "None"
+                },
+                "dock_widget_title": {
+                  "type": "repr",
+                  "repr": "u'Image View'"
+                }
+              },
+              "groups": {}
+            },
+            "plugin": {
+              "keys": {
+                "max_range": {
+                  "type": "repr",
+                  "repr": "10.0"
+                },
+                "mouse_pub_topic": {
+                  "type": "repr",
+                  "repr": "u''"
+                },
+                "num_gridlines": {
+                  "type": "repr",
+                  "repr": "0"
+                },
+                "toolbar_hidden": {
+                  "type": "repr",
+                  "repr": "False"
+                },
+                "zoom1": {
+                  "type": "repr",
+                  "repr": "False"
+                },
+                "dynamic_range": {
+                  "type": "repr",
+                  "repr": "False"
+                },
+                "topic": {
+                  "type": "repr",
+                  "repr": "u''"
+                },
+                "publish_click_location": {
+                  "type": "repr",
+                  "repr": "False"
+                }
+              },
+              "groups": {}
+            }
+          }
+        },
+        "plugin__rqt_plot__Plot__1": {
+          "keys": {},
+          "groups": {
+            "dock_widget__DataPlotWidget": {
+              "keys": {
+                "dockable": {
+                  "type": "repr",
+                  "repr": "True"
+                },
+                "parent": {
+                  "type": "repr",
+                  "repr": "None"
+                },
+                "dock_widget_title": {
+                  "type": "repr",
+                  "repr": "u'MatPlot'"
+                }
+              },
+              "groups": {}
+            },
+            "plugin": {
+              "keys": {
+                "autoscroll": {
+                  "type": "repr",
+                  "repr": "True"
+                },
+                "plot_type": {
+                  "type": "repr",
+                  "repr": "1"
+                },
+                "topics": {
+                  "type": "repr",
+                  "repr": "u''"
+                },
+                "y_limits": {
+                  "type": "repr",
+                  "repr": "[0.0, 1.0]"
+                },
+                "x_limits": {
+                  "type": "repr",
+                  "repr": "[0.0, 1.0]"
+                }
+              },
+              "groups": {}
+            }
+          }
+        },
+        "plugin__rqt_launch__Launch__1": {
+          "keys": {},
+          "groups": {
+            "dock_widget___plugincontainer_top_widget": {
+              "keys": {
+                "dockable": {
+                  "type": "repr",
+                  "repr": "u'true'"
+                },
+                "parent": {
+                  "type": "repr",
+                  "repr": "None"
+                },
+                "dock_widget_title": {
+                  "type": "repr",
+                  "repr": "u'ROS Launch GUI'"
+                }
+              },
+              "groups": {}
+            },
+            "plugin": {
+              "keys": {
+                "_splitter": {
+                  "type": "repr(QByteArray.hex)",
+                  "repr(QByteArray.hex)": "QtCore.QByteArray('000000ff000000010000000200000127000000000100000009010000000200')",
+                  "pretty-print": "       '       "
+                }
+              },
+              "groups": {}
+            }
+          }
+        },
+        "plugin__rqt_graph__RosGraph__1": {
+          "keys": {},
+          "groups": {
+            "dock_widget__RosGraphUi": {
+              "keys": {
+                "dockable": {
+                  "type": "repr",
+                  "repr": "u'true'"
+                },
+                "parent": {
+                  "type": "repr",
+                  "repr": "None"
+                },
+                "dock_widget_title": {
+                  "type": "repr",
+                  "repr": "u'Node Graph'"
+                }
+              },
+              "groups": {}
+            },
+            "plugin": {
+              "keys": {
+                "graph_type_combo_box_index": {
+                  "type": "repr",
+                  "repr": "u'0'"
+                },
+                "topic_filter_line_edit_text": {
+                  "type": "repr",
+                  "repr": "u'/'"
+                },
+                "filter_line_edit_text": {
+                  "type": "repr",
+                  "repr": "u'/'"
+                },
+                "highlight_connections_check_box_state": {
+                  "type": "repr",
+                  "repr": "u'true'"
+                },
+                "unreachable_check_box_state": {
+                  "type": "repr",
+                  "repr": "u'true'"
+                },
+                "actionlib_check_box_state": {
+                  "type": "repr",
+                  "repr": "u'true'"
+                },
+                "quiet_check_box_state": {
+                  "type": "repr",
+                  "repr": "u'true'"
+                },
+                "dead_sinks_check_box_state": {
+                  "type": "repr",
+                  "repr": "u'true'"
+                },
+                "leaf_topics_check_box_state": {
+                  "type": "repr",
+                  "repr": "u'true'"
+                },
+                "namespace_cluster_check_box_state": {
+                  "type": "repr",
+                  "repr": "u'true'"
+                },
+                "auto_fit_graph_check_box_state": {
+                  "type": "repr",
+                  "repr": "u'true'"
+                }
+              },
+              "groups": {}
+            }
+          }
+        },
+        "plugin__rqt_publisher__Publisher__1": {
+          "keys": {},
+          "groups": {
+            "dock_widget__PublisherWidget": {
+              "keys": {
+                "dockable": {
+                  "type": "repr",
+                  "repr": "True"
+                },
+                "parent": {
+                  "type": "repr",
+                  "repr": "None"
+                },
+                "dock_widget_title": {
+                  "type": "repr",
+                  "repr": "u'Message Publisher'"
+                }
+              },
+              "groups": {}
+            },
+            "plugin": {
+              "keys": {
+                "publishers": {
+                  "type": "repr",
+                  "repr": "u\"[{'topic_name': '/command/pneumatics', 'type_name': 'riptide_msgs/Pneumatics', 'enabled': False, 'rate': 0.5, 'expressions': {u'/command/pneumatics/torpedo_port': 'True', u'/command/pneumatics/duration': '300', u'/command/pneumatics/torpedo_stbd': 'False', u'/command/pneumatics/manipulator': 'False', u'/command/pneumatics/markerdropper': 'False'}, 'publisher_id': 0, 'counter': 0}, {'type_name': 'geometry_msgs/Vector3', 'topic_name': '/command/accel_linear', 'enabled': False, 'rate': 10.0, 'expressions': {}, 'publisher_id': 1, 'counter': 0}, {'type_name': 'riptide_msgs/DepthCommand', 'topic_name': '/command/depth', 'enabled': False, 'rate': 1.0, 'expressions': {u'/command/depth/active': 'False'}, 'publisher_id': 2, 'counter': 0}, {'type_name': 'riptide_msgs/AttitudeCommand', 'topic_name': '/command/attitude', 'enabled': False, 'rate': 1.0, 'expressions': {}, 'publisher_id': 3, 'counter': 0}, {'type_name': 'riptide_msgs/AttitudeCommand', 'topic_name': '/command/attitude', 'enabled': False, 'rate': 1.0, 'expressions': {}, 'publisher_id': 4, 'counter': 0}, {'type_name': 'riptide_msgs/ThrustStamped', 'topic_name': '/command/thrust', 'enabled': False, 'rate': 1.0, 'expressions': {u'/command/thrust/force/sway_aft': '0', u'/command/thrust/force/heave_stbd_fwd': '0', u'/command/thrust/force/heave_port_fwd': '0', u'/command/thrust/force/surge_stbd_lo': '0', u'/command/thrust/force/heave_port_aft': '0', u'/command/thrust/force/sway_fwd': '0', u'/command/thrust/force/heave_stbd_aft': '0', u'/command/thrust/force/surge_port_lo': '0'}, 'publisher_id': 5, 'counter': 0}, {'topic_name': '/task/info', 'type_name': 'riptide_msgs/TaskInfo', 'enabled': False, 'rate': 1.0, 'expressions': {u'/task/info/alignment_plane': '1', u'/task/info/task_id': '7', u'/task/info/task_name': 'Roulette'}, 'publisher_id': 6, 'counter': 0}, {'topic_name': '/command/alignment', 'type_name': 'riptide_msgs/AlignmentCommand', 'enabled': False, 'rate': 1.0, 'expressions': {}, 'publisher_id': 7, 'counter': 0}, {'type_name': 'geometry_msgs/Vector3', 'topic_name': '/command/accel_angular', 'enabled': False, 'rate': 1000.0, 'expressions': {u'/command/accel_angular/z': '-1'}, 'publisher_id': 8, 'counter': 0}, {'type_name': 'riptide_msgs/Pneumatics', 'topic_name': '/command/pneumatics', 'enabled': False, 'rate': 0.5, 'expressions': {u'/command/pneumatics/torpedo_port': 'True', u'/command/pneumatics/duration': '300', u'/command/pneumatics/torpedo_stbd': 'False', u'/command/pneumatics/manipulator': 'False', u'/command/pneumatics/markerdropper': 'False'}, 'publisher_id': 9, 'counter': 0}, {'topic_name': '/command/accel_linear', 'type_name': 'geometry_msgs/Vector3', 'enabled': False, 'rate': 10.0, 'expressions': {}, 'publisher_id': 10, 'counter': 0}, {'topic_name': '/command/depth', 'type_name': 'riptide_msgs/DepthCommand', 'enabled': False, 'rate': 1.0, 'expressions': {u'/command/depth/active': 'False'}, 'publisher_id': 11, 'counter': 0}, {'topic_name': '/command/attitude', 'type_name': 'riptide_msgs/AttitudeCommand', 'enabled': False, 'rate': 1.0, 'expressions': {}, 'publisher_id': 12, 'counter': 0}, {'topic_name': '/command/attitude', 'type_name': 'riptide_msgs/AttitudeCommand', 'enabled': False, 'rate': 1.0, 'expressions': {}, 'publisher_id': 13, 'counter': 0}, {'topic_name': '/command/thrust', 'type_name': 'riptide_msgs/ThrustStamped', 'enabled': False, 'rate': 1.0, 'expressions': {u'/command/thrust/force/sway_aft': '0', u'/command/thrust/force/heave_stbd_fwd': '0', u'/command/thrust/force/heave_port_fwd': '0', u'/command/thrust/force/surge_stbd_lo': '0', u'/command/thrust/force/heave_port_aft': '0', u'/command/thrust/force/sway_fwd': '0', u'/command/thrust/force/heave_stbd_aft': '0', u'/command/thrust/force/surge_port_lo': '0'}, 'publisher_id': 14, 'counter': 0}, {'type_name': 'riptide_msgs/TaskInfo', 'topic_name': '/task/info', 'enabled': False, 'rate': 1.0, 'expressions': {u'/task/info/alignment_plane': '1', u'/task/info/task_id': '7', u'/task/info/task_name': 'Roulette'}, 'publisher_id': 15, 'counter': 0}, {'type_name': 'riptide_msgs/AlignmentCommand', 'topic_name': '/command/alignment', 'enabled': False, 'rate': 1.0, 'expressions': {}, 'publisher_id': 16, 'counter': 0}, {'topic_name': '/command/accel_angular', 'type_name': 'geometry_msgs/Vector3', 'enabled': False, 'rate': 1000.0, 'expressions': {u'/command/accel_angular/z': '-1'}, 'publisher_id': 17, 'counter': 0}]\""
+                }
+              },
+              "groups": {}
+            }
+          }
+        },
+        "plugin__rqt_topic__TopicPlugin__1": {
+          "keys": {},
+          "groups": {
+            "plugin": {
+              "keys": {
+                "tree_widget_header_state": {
+                  "type": "repr(QByteArray.hex)",
+                  "repr(QByteArray.hex)": "QtCore.QByteArray('000000ff000000000000000100000000000000000100000000000000000000000000000000000003fd000000050101000100000000000000000500000064ffffffff000000810000000300000005000000e00000000100000003000000ef00000001000000030000007200000001000000030000003d00000001000000030000017f0000000100000003000003e800')",
+                  "pretty-print": "                              d                     r     =            "
+                }
+              },
+              "groups": {}
+            },
+            "dock_widget__TopicWidget": {
+              "keys": {
+                "dockable": {
+                  "type": "repr",
+                  "repr": "True"
+                },
+                "parent": {
+                  "type": "repr",
+                  "repr": "None"
+                },
+                "dock_widget_title": {
+                  "type": "repr",
+                  "repr": "u'Topic Monitor'"
+                }
+              },
+              "groups": {}
+            }
+          }
+        },
+        "plugin__rqt_topic__TopicPlugin__2": {
+          "keys": {},
+          "groups": {
+            "plugin": {
+              "keys": {
+                "tree_widget_header_state": {
+                  "type": "repr(QByteArray.hex)",
+                  "repr(QByteArray.hex)": "QtCore.QByteArray('000000ff000000000000000100000000000000000100000000000000000000000000000000000003e3000000050101000100000000000000000500000064ffffffff0000008100000003000000050000008800000001000000030000008d00000001000000030000007200000001000000030000003d00000001000000030000021f0000000100000003000003e800')",
+                  "pretty-print": "                              d                     r     =            "
+                }
+              },
+              "groups": {}
+            }
+          }
+        },
+        "plugin__rqt_action__ActionPlugin__1": {
+          "keys": {},
+          "groups": {
+            "dock_widget__messages.ui": {
+              "keys": {
+                "dockable": {
+                  "type": "repr",
+                  "repr": "u'true'"
+                },
+                "parent": {
+                  "type": "repr",
+                  "repr": "None"
+                },
+                "dock_widget_title": {
+                  "type": "repr",
+                  "repr": "u'Action Type Browser'"
+                }
+              },
+              "groups": {}
+            }
+          }
+        },
+        "plugin__rqt_console__Console__1": {
+          "keys": {},
+          "groups": {
+            "dock_widget__ConsoleWidget": {
+              "keys": {
+                "dockable": {
+                  "type": "repr",
+                  "repr": "True"
+                },
+                "parent": {
+                  "type": "repr",
+                  "repr": "None"
+                },
+                "dock_widget_title": {
+                  "type": "repr",
+                  "repr": "u'Console'"
+                }
+              },
+              "groups": {}
+            },
+            "plugin": {
+              "keys": {
+                "show_highlighted_only": {
+                  "type": "repr",
+                  "repr": "True"
+                },
+                "message_limit": {
+                  "type": "repr",
+                  "repr": "20000"
+                },
+                "exclude_filters": {
+                  "type": "repr",
+                  "repr": "u''"
+                },
+                "table_splitter": {
+                  "type": "repr(QByteArray.hex)",
+                  "repr(QByteArray.hex)": "QtCore.QByteArray('000000ff000000010000000200000144000000000100000009010000000200')",
+                  "pretty-print": "       D       "
+                },
+                "highlight_filters": {
+                  "type": "repr",
+                  "repr": "u''"
+                },
+                "paused": {
+                  "type": "repr",
+                  "repr": "False"
+                },
+                "settings_exist": {
+                  "type": "repr",
+                  "repr": "True"
+                },
+                "filter_splitter": {
+                  "type": "repr(QByteArray.hex)",
+                  "repr(QByteArray.hex)": "QtCore.QByteArray('000000ff00000001000000020000006f0000006f0100000009010000000200')",
+                  "pretty-print": "       o o     "
+                }
+              },
+              "groups": {}
+            }
+          }
+        }
+      }
+    },
+    "mainwindow": {
+      "keys": {
+        "geometry": {
+          "type": "repr(QByteArray.hex)",
+          "repr(QByteArray.hex)": "QtCore.QByteArray('01d9d0cb0002000000000041000000180000063f0000038300000041000000340000063f0000038300000000000000000640')",
+          "pretty-print": "     A   ?   A 4 ?      @"
+        },
+        "state": {
+          "type": "repr(QByteArray.hex)",
+          "repr(QByteArray.hex)": "QtCore.QByteArray('000000ff00000000fd0000000100000003000005ff0000033afc0100000005fb00000030005f005f0044006f0063006b0057006900640067006500740043006f006e007400610069006e00650072005f005f00310100000000000003000000000000000000fb00000050007200710074005f0061006300740069006f006e005f005f0041006300740069006f006e0050006c007500670069006e005f005f0031005f005f006d0065007300730061006700650073002e007500690100000000000005ff0000000000000000fb00000044007200710074005f00670072006100700068005f005f0052006f007300470072006100700068005f005f0031005f005f0052006f007300470072006100700068005500690100000000000005ff0000000000000000fb00000078007200710074005f00720075006e00740069006d0065005f006d006f006e00690074006f0072005f005f00520075006e00740069006d0065004d006f006e00690074006f0072005f005f0031005f005f00520075006e00740069006d0065004d006f006e00690074006f007200570069006400670065007401000003c00000023f0000000000000000fc00000000000005ff0000040600fffffffc0200000002fb0000004c007200710074005f0074006f007000690063005f005f0054006f0070006900630050006c007500670069006e005f005f0032005f005f0054006f0070006900630057006900640067006500740100000000000000720000000000000000fc000000000000033a000002be00fffffffc0200000002fc00000000000001470000000000fffffffa000000000100000001fb00000064007200710074005f006c00610075006e00630068005f005f004c00610075006e00630068005f005f0031005f005f005f0070006c007500670069006e0063006f006e007400610069006e00650072005f0074006f0070005f0077006900640067006500740100000000ffffffff0000000000000000fc000000000000033a000002be00fffffffc0100000002fc00000000000001e80000019b00fffffffa000000000100000002fb0000005a007200710074005f0069006d006100670065005f0076006900650077005f005f0049006d0061006700650056006900650077005f005f0031005f005f0049006d00610067006500560069006500770057006900640067006500740100000000ffffffff0000019b00fffffffb00000042007200710074005f0070006c006f0074005f005f0050006c006f0074005f005f0031005f005f00440061007400610050006c006f00740057006900640067006500740100000000000002120000017800fffffffc000001ee000004110000026500fffffffc0200000002fc00000000000001a90000012d0100001dfa000000000100000003fb0000004c007200710074005f0074006f007000690063005f005f0054006f0070006900630050006c007500670069006e005f005f0031005f005f0054006f0070006900630057006900640067006500740100000000ffffffff000000d700fffffffb0000006c007200710074005f007200650063006f006e006600690067007500720065005f005f0050006100720061006d005f005f0031005f005f005f0070006c007500670069006e0063006f006e007400610069006e00650072005f0074006f0070005f0077006900640067006500740100000000ffffffff0000010900fffffffb00000058007200710074005f007000750062006c00690073006800650072005f005f005000750062006c00690073006800650072005f005f0031005f005f005000750062006c00690073006800650072005700690064006700650074010000039a000002650000026500fffffffb0000004c007200710074005f0063006f006e0073006f006c0065005f005f0043006f006e0073006f006c0065005f005f0031005f005f0043006f006e0073006f006c006500570069006400670065007401000001af0000018b0000018b00ffffff000005ff0000000000000004000000040000000800000008fc00000001000000030000000100000036004d0069006e0069006d0069007a006500640044006f0063006b00570069006400670065007400730054006f006f006c0062006100720000000000ffffffff0000000000000000')",
+          "pretty-print": "                 0__DockWidgetContainer__1          Prqt_action__ActionPlugin__1__messages.ui          Drqt_graph__RosGraph__1__RosGraphUi          xrqt_runtime_monitor__RuntimeMonitor__1__RuntimeMonitorWidget                                                                r                   G                                                                                                                                                                                                x                   -                                                                                                                                                                           e e                                                                                                           "
+        }
+      },
+      "groups": {
+        "toolbar_areas": {
+          "keys": {
+            "MinimizedDockWidgetsToolbar": {
+              "type": "repr",
+              "repr": "8"
+            }
+          },
+          "groups": {}
+        }
+      }
+    }
+  }
+}

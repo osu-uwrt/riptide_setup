@@ -4,7 +4,15 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "yolo_processor");
   YoloProcessor yp;
-  yp.Loop();
+  try
+  {
+    ros::spin();
+  }
+  catch (exception &e)
+  {
+    ROS_ERROR("YOLO Pro Error: %s", e.what());
+    ROS_ERROR("YOLO Pro: Shutting Down");
+  }
 }
 
 YoloProcessor::YoloProcessor() : nh("yolo_processor") {
@@ -28,12 +36,11 @@ YoloProcessor::YoloProcessor() : nh("yolo_processor") {
   for(int i = 0; i < num_rows; i++)
     text_start[i] = (i+1.0)/num_rows*top_margin - offset;
 
-  YoloProcessor::LoadParam<string>("task_file", task_file);
-
   // Initialize task info to Casino gate
   task_id = 0;
+  task_file = rc::FILE_TASKS;
   task_name = "Casino_Gate";
-  alignment_plane = riptide_msgs::Constants::PLANE_YZ;
+  alignment_plane = rc::PLANE_YZ;
 
   tasks = YAML::LoadFile(task_file);
 
@@ -79,8 +86,8 @@ void YoloProcessor::UpdateTaskInfo() {
   num_objects = (int)tasks["tasks"][task_id]["objects"].size();
 
   alignment_plane = tasks["tasks"][task_id]["plane"].as<int>();
-  if(alignment_plane != riptide_msgs::Constants::PLANE_YZ && alignment_plane != riptide_msgs::Constants::PLANE_XY)
-    alignment_plane = riptide_msgs::Constants::PLANE_YZ; // Default to YZ-plane (fwd cam)
+  if(alignment_plane != rc::PLANE_YZ && alignment_plane != rc::PLANE_XY)
+    alignment_plane = rc::PLANE_YZ; // Default to YZ-plane (fwd cam)
 
   object_names.clear();
   thresholds.clear();
@@ -106,10 +113,9 @@ void YoloProcessor::ImageCB(const sensor_msgs::Image::ConstPtr &msg) {
   double font_scale = 1;
 
   // Should only have at most 4 bboxes (only Dice/Slots have 4 classes)
-  darknet_ros_msgs::BoundingBoxes last_bboxes = task_bboxes;
-  for(int i=0; i<last_bboxes.bounding_boxes.size(); i++) {
+  for(int i=0; i<task_bboxes.bounding_boxes.size(); i++) {
     darknet_ros_msgs::BoundingBox bbox = task_bboxes.bounding_boxes[i];
-    rectangle(task_image, Point(bbox.xmin, bbox.ymin), Point(bbox.xmax, bbox.ymax), colors.at(i), thickness);
+    rectangle(task_image, Point(bbox.xmin, bbox.ymin + top_margin), Point(bbox.xmax, bbox.ymax + top_margin), colors.at(i), thickness);
     char text[100];
     sprintf(text, "%s: %.5f%%", bbox.Class.c_str(), bbox.probability);
     putText(task_image, string(text), Point(5, text_start[i]), FONT_HERSHEY_COMPLEX_SMALL, font_scale, colors.at(i), thickness);
@@ -143,7 +149,7 @@ void YoloProcessor::DarknetBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPt
     darknet_ros_msgs::BoundingBox max_detection;
 
     for(int j=0; j<bbox_msg->bounding_boxes.size(); j++) {
-      if(strcmp(object_names.at(i).c_str(), bbox_msg->bounding_boxes[j].Class.c_str()) == 0 ) {
+      if(object_names.at(i) == bbox_msg->bounding_boxes[j].Class) {
         if(bbox_msg->bounding_boxes[j].probability > max_prob) {
           max_prob = bbox_msg->bounding_boxes[j].probability;
           max_detection = bbox_msg->bounding_boxes[j];
@@ -158,8 +164,10 @@ void YoloProcessor::DarknetBBoxCB(const darknet_ros_msgs::BoundingBoxes::ConstPt
     }
   }
 
-  task_bbox_pub.publish(task_bboxes);
-  low_detections_pub.publish(low_detections);
+  if(task_bboxes.bounding_boxes.size() > 0)
+    task_bbox_pub.publish(task_bboxes);
+  if(low_detections.bounding_boxes.size() > 0)
+    low_detections_pub.publish(low_detections);
 }
 
 // Get task info
@@ -176,14 +184,4 @@ void YoloProcessor::TaskInfoCB(const riptide_msgs::TaskInfo::ConstPtr& task_msg)
   }
 
   last_alignment_plane = alignment_plane;
-}
-
-void YoloProcessor::Loop()
-{
-  ros::Rate rate(50);
-  while(ros::ok())
-  {
-    ros::spinOnce();
-    rate.sleep();
-  }
 }

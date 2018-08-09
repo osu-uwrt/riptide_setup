@@ -1,0 +1,68 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "type": "shell",
+            "command": "catkin_make",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "make_riptide",
+            "type": "shell",
+            "command": "./src/riptide_utilities/make-riptide.sh",
+            "problemMatcher": []
+        },
+        {
+            "label": "make_jetson",
+            "type": "shell",
+            "command": "./src/riptide_utilities/make-jetson.sh",
+            "problemMatcher": []
+        },
+        {
+            "label": "xfer_riptide",
+            "type": "shell",
+            "command": "./src/riptide_utilities/xfer-riptide.sh",
+            "problemMatcher": []
+        },
+        {
+            "label": "xfer_jetson",
+            "type": "shell",
+            "command": "./src/riptide_utilities/xfer-jetson.sh",
+            "problemMatcher": []
+        },
+        {
+            "label": "shutdown_all",
+            "type": "shell",
+            "command": "./src/riptide_utilities/shutdown_scripts/shutdown_all.sh",
+            "problemMatcher": []
+        },
+        {
+            "label": "reboot_all",
+            "type": "shell",
+            "command": "./src/riptide_utilities/shutdown_scripts/reboot_all.sh",
+            "problemMatcher": []
+        },
+        {
+            "label": "local_gui",
+            "type": "shell",
+            "command": "./src/riptide_utilities/gui/local-gui.sh",
+            "problemMatcher": []
+        },
+        {
+            "label": "riptide_gui",
+            "type": "shell",
+            "command": "./src/riptide_utilities/gui/riptide-gui.sh",
+            "problemMatcher": []
+        },
+        {
+            "label": "jetson_gui",
+            "type": "shell",
+            "command": "./src/riptide_utilities/gui/jetson-gui.sh",
+            "problemMatcher": []
+        }
+    ]
+}

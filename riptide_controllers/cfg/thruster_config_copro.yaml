@@ -26,10 +26,10 @@ SPL:
 SSL:
   POS:
     SLOPE: 7.982523
-    XINT: 1466
+    XINT: 1517 #1466 in original file
   NEG:
     SLOPE: 7.829684
-    XINT: 1517
+    XINT: 1466 #1517 in original file
   ENABLE: true
 HPF: # Previously HSA on old Riptide
   POS:

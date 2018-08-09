@@ -1,13 +1,24 @@
 #include "riptide_controllers/command_combinator.h"
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   ros::init(argc, argv, "command_combinator");
   CommandCombinator cc;
-  cc.Loop();
+  try
+  {
+    ros::spin();
+  }
+  catch (exception &e)
+  {
+    ROS_ERROR("Comm Comb Error: %s", e.what());
+    ROS_ERROR("Comm Comb: Shutting Down");
+  }
 }
 
-CommandCombinator::CommandCombinator() : nh("command_combinator") {
-  linear_sub = nh.subscribe<geometry_msgs::Vector3>("/command/accel_linear", 1, &CommandCombinator::LinearCB, this);
+CommandCombinator::CommandCombinator() : nh("command_combinator")
+{
+  x_sub = nh.subscribe<std_msgs::Float64>("/command/accel_x", 1, &CommandCombinator::XCB, this);
+  y_sub = nh.subscribe<std_msgs::Float64>("/command/accel_y", 1, &CommandCombinator::YCB, this);
   depth_sub = nh.subscribe<geometry_msgs::Vector3>("/command/accel_depth", 1, &CommandCombinator::DepthCB, this);
   angular_sub = nh.subscribe<geometry_msgs::Vector3>("/command/accel_angular", 1, &CommandCombinator::AngularCB, this);
 
@@ -34,7 +45,7 @@ void CommandCombinator::LoadParam(string param, T &var)
       throw 0;
     }
   }
-  catch(int e)
+  catch (int e)
   {
     string ns = nh.getNamespace();
     ROS_ERROR("Command Combinator Namespace: %s", ns.c_str());
@@ -43,7 +54,8 @@ void CommandCombinator::LoadParam(string param, T &var)
   }
 }
 
-void CommandCombinator::InitMsgs() {
+void CommandCombinator::InitMsgs()
+{
   cmd_accel.linear.x = 0;
   cmd_accel.linear.y = 0;
   cmd_accel.linear.z = 0;
@@ -63,25 +75,44 @@ void CommandCombinator::InitMsgs() {
   depth_accel.z = 0;
 }
 
-void CommandCombinator::LinearCB(const geometry_msgs::Vector3::ConstPtr &lin_accel) {
-  accel.linear.x = lin_accel->x;
-  accel.linear.y = lin_accel->y;
-  accel.linear.z = lin_accel->z;
+void CommandCombinator::XCB(const std_msgs::Float64::ConstPtr &x_accel)
+{
+  accel.linear.x = x_accel->data;
+
+  CommandCombinator::Combine();
+  cmd_pub.publish(cmd_accel);
 }
 
-void CommandCombinator::DepthCB(const geometry_msgs::Vector3::ConstPtr &d_accel) {
+void CommandCombinator::YCB(const std_msgs::Float64::ConstPtr &y_accel)
+{
+  accel.linear.y = y_accel->data;
+
+  CommandCombinator::Combine();
+  cmd_pub.publish(cmd_accel);
+}
+
+void CommandCombinator::DepthCB(const geometry_msgs::Vector3::ConstPtr &d_accel)
+{
   depth_accel.x = d_accel->x;
   depth_accel.y = d_accel->y;
   depth_accel.z = d_accel->z;
+
+  CommandCombinator::Combine();
+  cmd_pub.publish(cmd_accel);
 }
 
-void CommandCombinator::AngularCB(const geometry_msgs::Vector3::ConstPtr &ang_accel) {
+void CommandCombinator::AngularCB(const geometry_msgs::Vector3::ConstPtr &ang_accel)
+{
   accel.angular.x = ang_accel->x;
   accel.angular.y = ang_accel->y;
   accel.angular.z = ang_accel->z;
+
+  CommandCombinator::Combine();
+  cmd_pub.publish(cmd_accel);
 }
 
-void CommandCombinator::Combine() {
+void CommandCombinator::Combine()
+{
   cmd_accel.linear.x = accel.linear.x + depth_accel.x;
   cmd_accel.linear.y = accel.linear.y + depth_accel.y;
   cmd_accel.linear.z = accel.linear.z + depth_accel.z;
@@ -97,20 +128,11 @@ void CommandCombinator::Combine() {
   cmd_accel.angular.z = CommandCombinator::Constrain(cmd_accel.angular.z, MAX_YAW_ACCEL);
 }
 
-double CommandCombinator::Constrain(double current, double max) {
-  if(current > max)
+double CommandCombinator::Constrain(double current, double max)
+{
+  if (current > max)
     return max;
-  else if(current < -1*max)
-    return -1*max;
+  else if (current < -1 * max)
+    return -1 * max;
   return current;
-}
-
-void CommandCombinator::Loop() {
-  ros::Rate rate(200);
-  while(!ros::isShuttingDown()) {
-    CommandCombinator::Combine();
-    cmd_pub.publish(cmd_accel); // ALWAYS publish a message, regardless of circumstance
-    ros::spinOnce();
-    rate.sleep();
-  }
 }

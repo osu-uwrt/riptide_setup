@@ -10,8 +10,8 @@ import sys
 
 
 def main():
-    FILE = "/home/benji/out.ogv"
-    TOPIC = "/forward/image_raw"
+    FILE = "/home/tsender/rosbags/gold_chip_rpac.avi"
+    TOPIC = "/forward/image_undistorted"
     loop = False
 
     if len(sys.argv) >= 2:
