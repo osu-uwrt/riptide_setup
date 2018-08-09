@@ -13,7 +13,8 @@ void DiceHop::Start()
   timer = master->nh.createTimer(ros::Duration(duration), &DiceHop::DiceHopTimer, this, true);
   ROS_INFO("DiceHop: Timer initiated until Tslam ends in %f seconds", duration);
 
-  /*master->tslam->SetEndPos();
+  /*master->tslam->Abort(false);
+  master->tslam->SetEndPos();
   DiceHop::Abort();
   master->LaunchTSlam();*/
 }

@@ -63,7 +63,8 @@ void CasinoGate::Start()
   task_bbox_sub = master->nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &CasinoGate::IDCasinoGate, this);
   ROS_INFO("CasinoGate: Looking for %s. Subscribed to /task/bboxes", object_name.c_str());
 
-  /*master->tslam->SetEndPos();
+  /*master->tslam->Abort(false);
+  master->tslam->SetEndPos();
   CasinoGate::Abort();
   master->LaunchTSlam();*/
 }

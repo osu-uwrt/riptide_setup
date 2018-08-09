@@ -92,7 +92,8 @@ void Slots::Start()
   timeout_duration = master->tslam->tslam_duration + 1;
   timer = master->nh.createTimer(ros::Duration(timeout_duration), &Slots::TimeOutTimer, this, true);
 
-  /*master->tslam->SetEndPos();
+  /*master->tslam->Abort(false);
+  master->tslam->SetEndPos();
   Slots::Abort();
   master->LaunchTSlam();*/
 }
@@ -167,13 +168,13 @@ void Slots::IDToAlignment()
   {
     align_cmd.bbox_dim = (int)(master->frame_height * big_red_bbox_height);
     align_cmd.target_pos.y = torpedo_offsets[active_torpedo].y;
-    //align_cmd.target_pos.z = torpedo_offsets[active_torpedo].z;
     align_cmd.target_pos.z = 0;
+    //align_cmd.target_pos.z = torpedo_offsets[active_torpedo].z;
     ROS_INFO("Target y: %f", align_cmd.target_pos.y);
     ROS_INFO("Target z: %f", align_cmd.target_pos.z);
     alignment_state = AST_CENTER;
     // Take control
-    master->tslam->Abort(false);
+    //master->tslam->Abort(false);
     master->alignment_pub.publish(align_cmd);
     alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &Slots::AlignmentStatusCB, this);
   }
@@ -201,6 +202,7 @@ void Slots::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr 
         align_cmd.surge_active = true;
         align_cmd.target_pos.z = torpedo_offsets[active_torpedo].z; // Align to bbox and z-offset
         master->alignment_pub.publish(align_cmd);
+        ROS_INFO(":Slots: Aligned Big Red to cetner of frame. Now aligning on bbox and z-pos");
       }
     }
   }
@@ -229,11 +231,12 @@ void Slots::AlignmentStatusCB(const riptide_msgs::ControlStatusLinear::ConstPtr 
         if (active_torpedo == PORT_TORPEDO)
           cmd.euler_rpy.z = master->tslam->KeepHeadingInRange(master->euler_rpy.z - 12);
         else
-          cmd.euler_rpy.z = master->tslam->KeepHeadingInRange(master->euler_rpy.z + 6);
+          cmd.euler_rpy.z = master->tslam->KeepHeadingInRange(master->euler_rpy.z + 10);
         ros::Publisher pub = master->nh.advertise<riptide_msgs::AttitudeCommand>("/command/attitude", 1);
         pub.publish(cmd);
 
         attitude_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1, &Slots::ImuCB, this);
+        ROS_INFO("Slots: Aligned to bbox and z-pos");
       }
     }
   }
@@ -253,7 +256,7 @@ void Slots::ImuCB(const riptide_msgs::ControlStatusAngular::ConstPtr &msg)
     pneumatics_cmd.manipulator = false;
     pneumatics_cmd.duration = pneumatics_duration;
     master->pneumatics_pub.publish(pneumatics_cmd);
-    ROS_INFO("Slots: BOOM");
+    ROS_INFO("Slots: At torpedo heading. BOOM");
 
     timer = master->nh.createTimer(ros::Duration(1), &Slots::FireTimer, this, true);
   }
@@ -285,7 +288,7 @@ void Slots::FireTimer(const ros::TimerEvent &event)
   }
   else
   {
-    Abort();
+    Slots::Abort();
     master->tslam->SetEndPos();
     master->LaunchTSlam();
   }
@@ -312,12 +315,13 @@ void Slots::BackupTimer(const ros::TimerEvent &event)
 
   master->alignment_pub.publish(align_cmd);
   alignment_status_sub = master->nh.subscribe<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1, &Slots::AlignmentStatusCB, this);
+  ROS_INFO("Slots: Published new alignment command for second torpedo");
 }
 
 // If TSlam aborts, then abort the task for now so we can attempt the next task
 void Slots::TimeOutTimer(const ros::TimerEvent &event)
 {
-  Abort();
+  Slots::Abort();
   master->tslam->SetEndPos();
   master->LaunchTSlam();
   ROS_INFO("Slots: Timeout reached. Aborting and moving on");

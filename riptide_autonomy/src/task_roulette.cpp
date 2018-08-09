@@ -61,7 +61,8 @@ void Roulette::Start()
   timeout_duration = master->tslam->tslam_duration + 1;
   timer = master->nh.createTimer(ros::Duration(timeout_duration), &Roulette::TimeOutTimer, this, true);
 
-  /*master->tslam->SetEndPos();
+  /*master->tslam->Abort(false);
+  master->tslam->SetEndPos();
   Roulette::Abort();
   master->LaunchTSlam();*/
 }
@@ -149,7 +150,7 @@ void Roulette::SetMarkerDropHeading(double heading)
   if (heading > 90)
     offset = heading - 180;
 
-  offset += 15;
+  //offset += 15;
 
   /*if (heading <= 90)
     green_heading = heading + 90;

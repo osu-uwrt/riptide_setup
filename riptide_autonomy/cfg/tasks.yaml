@@ -105,7 +105,7 @@ tasks: [
       id: 6,
       name: "Roulette",
       plane: 1,
-      search_depth: 0.5,
+      search_depth: 0.6,
       search_accel: 0.6,
       marker_drop_depth: 1.8, # [m]
       objects: ["Roulette"],
@@ -134,7 +134,7 @@ tasks: [
       id: 8,
       name: "Cash_In",
       plane: 0,
-      search_depth: 1,
+      search_depth: 0.6,
       search_accel: 0.6,
       objects: ["Cash_In"],
       thresholds: [0.5],

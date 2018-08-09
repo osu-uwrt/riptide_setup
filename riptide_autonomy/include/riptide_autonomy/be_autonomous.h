@@ -37,6 +37,7 @@
 #include "riptide_autonomy/task_slots.h"
 #include "riptide_autonomy/task_roulette.h"
 #include "riptide_autonomy/task_gold_chip.h"
+#include "riptide_autonomy/task_cash_in.h"
 
 
 using namespace std;
@@ -50,6 +51,7 @@ class Dice;
 class Slots;
 class Roulette;
 class GoldChip;
+class CashIn;
 
 class BeAutonomous
 {
@@ -108,6 +110,7 @@ public:
   Roulette* roulette;
   Slots* slots;
   GoldChip* gold_chip;
+  CashIn* cash_in;
 
   BeAutonomous();
   template <typename T>

@@ -14,7 +14,8 @@ void CashIn::Start()
   ROS_INFO("CashIn: Timer initiated until Tslam ends in %f seconds", duration);
   ROS_INFO("CashIn: Current x accel: %f", master->linear_accel.x);
 
-  /*master->tslam->SetEndPos();
+  /*master->tslam->Abort(false);
+  master->tslam->SetEndPos();
   CashIn::Abort();
   master->LaunchTSlam();*/
 }

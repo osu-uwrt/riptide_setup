@@ -126,6 +126,7 @@ BeAutonomous::BeAutonomous() : nh("be_autonomous")
   slots = new Slots(this);
   roulette = new Roulette(this);
   gold_chip = new GoldChip(this);
+  cash_in = new CashIn(this);
 
   ROS_INFO("BE: Created task objects. Awaiting mission start.");
 }
@@ -212,8 +213,8 @@ void BeAutonomous::StartTask()
     gold_chip->Start();
     break;
   case rc::TASK_CASH_IN:
-    ROS_INFO("BE: Cash In unimplemented. Ending mission.");
-    BeAutonomous::EndMission();
+    ROS_INFO("BE: Starting CashIn");
+    cash_in->Start();
     break;
   default:
     ROS_INFO("BE: Invalid Task ID. Ending mission.");
