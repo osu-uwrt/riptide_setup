@@ -2,6 +2,7 @@
 sudo apt-get -y install ros-kinetic-pointgrey-camera-driver 
 sudo apt-get -y install ros-kinetic-control-toolbox
 sudo apt-get -y install ros-kinetic-joy
+
 # Ceres install
 sudo apt-get -y install cmake
 sudo apt-get -y install libgoogle-glog-dev
