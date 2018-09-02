@@ -44,19 +44,9 @@ message("-- Computer name: " ${_host_name})
 
 if(NOT _host_name MATCHES "jetson")
 
-    
-
     add_executable(imu_logger src/imu_logger.cpp)
     target_link_libraries(imu_logger ${catkin_LIBRARIES})
     add_dependencies(imu_logger ${catkin_EXPORTED_TARGETS})
-
-    file(GLOB ACOUSTICS_REFERENCES
-        resources/acoustics/src/*.cpp
-    )
-
-    add_executable(acoustics src/acoustics.cpp ${ACOUSTICS_REFERENCES})
-    target_link_libraries(acoustics ${catkin_LIBRARIES} okFrontPanel)
-    add_dependencies(acoustics ${catkin_EXPORTED_TARGETS})
 
     add_executable(depth_processor src/depth_processor.cpp)
     target_link_libraries(depth_processor ${catkin_LIBRARIES})
@@ -78,6 +68,20 @@ else()
     message("-- Skipping jetson code on riptide")
 endif()
 
+# ONLY compile this on riptide
+if(_host_name MATCHES "riptide")
+
+    file(GLOB ACOUSTICS_REFERENCES
+        resources/acoustics/src/*.cpp
+    )
+
+    add_executable(acoustics src/acoustics.cpp ${ACOUSTICS_REFERENCES})
+    target_link_libraries(acoustics ${catkin_LIBRARIES} okFrontPanel)
+    add_dependencies(acoustics ${catkin_EXPORTED_TARGETS})
+
+endif()
+
+# Compile on all computers
 add_executable(bag_to_csv src/bag_to_csv.cpp)
 target_link_libraries(bag_to_csv ${catkin_LIBRARIES})
 add_dependencies(bag_to_csv ${catkin_EXPORTED_TARGETS})
