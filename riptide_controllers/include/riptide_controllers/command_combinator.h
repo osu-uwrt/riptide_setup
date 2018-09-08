@@ -12,7 +12,7 @@ class CommandCombinator
   private:
     // Comms
     ros::NodeHandle nh;
-    ros::Subscriber x_sub, y_sub, angular_sub, depth_sub;
+    ros::Subscriber x_sub, y_sub, z_sub, angular_sub, depth_sub;
     ros::Publisher cmd_pub;
 
     geometry_msgs::Accel cmd_accel, accel;
@@ -26,8 +26,9 @@ class CommandCombinator
     template <typename T>
     void LoadParam(string param, T &var);
     void InitMsgs();
-    void XCB(const std_msgs::Float64::ConstPtr &lin_accel);
-    void YCB(const std_msgs::Float64::ConstPtr &lin_accel);
+    void XCB(const std_msgs::Float64::ConstPtr &x_accel);
+    void YCB(const std_msgs::Float64::ConstPtr &y_accel);
+    void ZCB(const std_msgs::Float64::ConstPtr &z_accel);
     void DepthCB(const geometry_msgs::Vector3::ConstPtr &d_accel);
     void AngularCB(const geometry_msgs::Vector3::ConstPtr &ang_accel);
     double Constrain(double current, double max);

@@ -17,14 +17,14 @@ def pwm_callback(pwm_message):
     pwmEnd = "@@@@"
 
     #Each thruster's pwm value is stored
-    spl = str(pwm_message.pwm.surge_port_lo)
-    ssl = str(pwm_message.pwm.surge_stbd_lo)
-    swf = str(pwm_message.pwm.sway_fwd)
-    swa = str(pwm_message.pwm.sway_aft)
-    hpa = str(pwm_message.pwm.heave_port_aft)
-    hsa = str(pwm_message.pwm.heave_stbd_aft)
-    hsf = str(pwm_message.pwm.heave_stbd_fwd)
-    hpf = str(pwm_message.pwm.heave_port_fwd)
+    spl = str(pwm_message.pwm.surge_port_lo -20)
+    ssl = str(pwm_message.pwm.surge_stbd_lo -20)
+    swf = str(pwm_message.pwm.sway_fwd -20)
+    swa = str(pwm_message.pwm.sway_aft -20)
+    hpa = str(pwm_message.pwm.heave_port_aft -20)
+    hsa = str(pwm_message.pwm.heave_stbd_aft -20)
+    hsf = str(pwm_message.pwm.heave_stbd_fwd -20)
+    hpf = str(pwm_message.pwm.heave_port_fwd -20)
 
     #The pwm values and start and end bytes are added to a String and written
     final_pwm = pwmStart + spl + ssl + swf + swa + hpa + hsa + hsf + hpf + pwmEnd
@@ -108,7 +108,7 @@ def main():
         rate.sleep()
     rospy.loginfo("Stopping thrusters")
     #The pwm values and start and end bytes are added to a String and written
-    final_pwm = "####15001500150015001500150015001500@@@@"
+    final_pwm = "####14801480148014801480148014801480@@@@"
     final_pwm = bytes(final_pwm)
     ser.write(final_pwm)
 

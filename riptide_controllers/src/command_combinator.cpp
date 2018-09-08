@@ -19,6 +19,7 @@ CommandCombinator::CommandCombinator() : nh("command_combinator")
 {
   x_sub = nh.subscribe<std_msgs::Float64>("/command/accel_x", 1, &CommandCombinator::XCB, this);
   y_sub = nh.subscribe<std_msgs::Float64>("/command/accel_y", 1, &CommandCombinator::YCB, this);
+  z_sub = nh.subscribe<std_msgs::Float64>("/command/accel_z", 1, &CommandCombinator::ZCB, this);
   depth_sub = nh.subscribe<geometry_msgs::Vector3>("/command/accel_depth", 1, &CommandCombinator::DepthCB, this);
   angular_sub = nh.subscribe<geometry_msgs::Vector3>("/command/accel_angular", 1, &CommandCombinator::AngularCB, this);
 
@@ -86,6 +87,14 @@ void CommandCombinator::XCB(const std_msgs::Float64::ConstPtr &x_accel)
 void CommandCombinator::YCB(const std_msgs::Float64::ConstPtr &y_accel)
 {
   accel.linear.y = y_accel->data;
+
+  CommandCombinator::Combine();
+  cmd_pub.publish(cmd_accel);
+}
+
+void CommandCombinator::ZCB(const std_msgs::Float64::ConstPtr &z_accel)
+{
+  accel.linear.z = z_accel->data;
 
   CommandCombinator::Combine();
   cmd_pub.publish(cmd_accel);
