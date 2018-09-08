@@ -2,6 +2,7 @@
   <arg name="port" default="1" />
   <arg name="rate" default="100" />
   <arg name="is_depth_working" default="true" />
+  <arg name="is_imu_working" default="true" />
 
   <node pkg="joy" type="joy_node" name="joystick_driver">
     <param name="dev" value="/dev/input/js$(arg port)" />
@@ -16,5 +17,6 @@
     <rosparam command="load" file="$(find riptide_controllers)/cfg/vehicle_properties.yaml" />
     <param name="rate" type="double" value="$(arg rate)" />
     <param name="is_depth_working" type="bool" value="$(arg is_depth_working)" />
+    <param name="is_imu_working" type="bool" value="$(arg is_imu_working)" />
   </node>
 </launch>
