@@ -367,12 +367,15 @@ int main(int argc, char **argv) {
     ROS_INFO("\tManual Dec (deg): %f", manualDeclination*180/PI);
 
     ROS_INFO("Sensor LPF Bandwidths");
-    imu.setLPFBandwidth("mag", "IIR", "manual", magLPFBandwidth3DM);
-    imu.setLPFBandwidth("accel", "IIR", "manual", accelLPFBandwidth3DM);
-    imu.setLPFBandwidth("gyro", "IIR", "manual", gyroLPFBandwidth3DM);
-    ROS_INFO("\tMag LPF (Hz): %i", magLPFBandwidth3DM);
-    ROS_INFO("\tAccel LPF (Hz): %i", accelLPFBandwidth3DM);
-    ROS_INFO("\tGyro LPF (Hz): %i", gyroLPFBandwidth3DM);
+    std::string magLPFType =  (magLPFBandwidth3DM > 0) ? (std::string)("IIR") : (std::string)("none");
+    std::string accelLPFType =  (accelLPFBandwidth3DM > 0) ? (std::string)("IIR") : (std::string)("none");
+    std::string gyroLPFType =  (gyroLPFBandwidth3DM > 0) ? (std::string)("IIR") : (std::string)("none");
+    imu.setLPFBandwidth("mag", magLPFType, "manual", abs(magLPFBandwidth3DM));
+    imu.setLPFBandwidth("accel", accelLPFType, "manual", abs(accelLPFBandwidth3DM));
+    imu.setLPFBandwidth("gyro", gyroLPFType, "manual", abs(gyroLPFBandwidth3DM));
+    ROS_INFO("\tMag LPF: %s, %i [Hz]", magLPFType.c_str(), magLPFBandwidth3DM);
+    ROS_INFO("\tAccel LPF: %s, %i [Hz]]", accelLPFType.c_str(), accelLPFBandwidth3DM);
+    ROS_INFO("\tGyro LPF: %s, %i [Hz]", gyroLPFType.c_str(), gyroLPFBandwidth3DM);
 
     ROS_INFO("Setting Hard and Soft Iron Offsets");
     if(enable_iron_offset) {
