@@ -2,35 +2,37 @@
 #define ACOUSTICS_H
 
 #include "ros/ros.h"
-#include "sensor_msgs/image_encodings.h"
-#include "std_msgs/Header.h"
-#include <vector>
-#include "okFrontPanelDLL.h"
-#include <iostream>
+#include <sys/stat.h> 
 #include <fstream>
-#include "detectPhase.h"
+#include "fftw3.h"
+#include "okFrontPanelDLL.h"
 #include "riptide_msgs/Acoustics.h"
+#include "riptide_msgs/AcousticsCommand.h"
+#include "std_msgs/String.h"
 
 using namespace std;
-
-#define NUM_OF_COLLECTIONS 8192
+using namespace ros;
 
 class Acoustics
 {
 private:
-  ros::NodeHandle nh;
-  ros::Publisher acoustics_pub;
-  okCFrontPanel *device;
-  riptide_msgs::Acoustics acoustics_msg;
+  NodeHandle nh;
+  Publisher acoustics_pub;
+  okCFrontPanel *fpga;
+  bool enabled = false;
+  long pingFrequency;
+  string fileName = "";
+  Time collectionTime;
 
 public:
   Acoustics();
-  double DoubleMod(double c, int divisor);
   bool ConfigureFPGA();
   bool InitializeFPGA();
-  void Collect();
-  void Loop();
-  std::string GetCurrentWorkingDir( void );
+  double* fft(double*, int);
+  void Calculate(double*, double*, double*, double*, int);
+  void Collect(int);
+  void CommandCB(const riptide_msgs::AcousticsCommand::ConstPtr&);
+  void TestCB(const std_msgs::String::ConstPtr&);
 };
 
 #endif
