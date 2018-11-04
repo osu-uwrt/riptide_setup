@@ -3,9 +3,9 @@
     <arg name="city" default="san_diego"/>
     <arg name="location" default="hotel"/>
     <arg name="device" default="/dev/imu_front" />
-    <arg name="mag_LPF_bandwidth" default="15" />
-    <arg name="accel_LPF_bandwidth" default="50" />
-    <arg name="gyro_LPF_bandwidth" default="50" />
+    <arg name="mag_LPF_bandwidth" default="15" /> <!-- (15 Hz) Set to -1 to disable internal IMU IIR LPF -->
+    <arg name="accel_LPF_bandwidth" default="50" /> <!-- (50 Hz) Set to -1 to disable internal IMU IIR LPF -->
+    <arg name="gyro_LPF_bandwidth" default="50" /> <!-- (50 Hz) Set to -1 to disable internal IMU IIR LPF -->
     <arg name="enable_iron_offset" default="false" />
     <arg name="post_IIR_LPF_bandwidth" default="17" />
     <arg name="filter_rate" default="100"/> <!-- MUST be an integer, gets passed to actual imu.launch file -->
