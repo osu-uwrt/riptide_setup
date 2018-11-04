@@ -1,10 +1,16 @@
 #include "riptide_hardware/acoustics.h"
 #include <thread>
 
-//!!!!!!!!!!!!!!!!!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!!!!!!!!!!!///
-// Must extract /resources/FrontPanel. Run install.sh as sudo //
-// and sudo copy API/okFrontPanel.so file to /usr/lib		  //
-////////////////////////////////////////////////////////////////
+// /command/acoustics
+// 		enabled: Start reporting acoustics data, -1 means leave in current state
+//		pingFrequency: Frequency to listen to, -1 means leave in current state
+//  	fileName: When published, next recording will be saved under the name specified. "" will do nothing
+
+// /test/acoustics: Load data saved under this name and perform the math on it
+
+// /state/acoustics: Output of position data
+
+
 
 #define PING_DURATION 2048
 #define MAX_TIME_OFFSET 300
@@ -276,7 +282,7 @@ void Acoustics::Collect(int length)
 	// Shedule the following code to run after the data has been recorded
 	static Timer t;
 	t = nh.createTimer(
-		Duration(length / 1000),
+		Duration(length / 1000.0),
 		(boost::function<void(const TimerEvent &)>)[ length, this ](const TimerEvent &event) {
 			long err;
 			int NumOfCollections = length * 512;
