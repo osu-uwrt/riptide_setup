@@ -6,7 +6,7 @@ int main(int argc, char** argv)
 {
  ros::init(argc, argv, "imu_processor");
  IMUProcessor imu;
- imu.Loop();
+ ros::spin();
 }
 
 IMUProcessor::IMUProcessor() : nh("imu_processor") {
@@ -131,7 +131,7 @@ void IMUProcessor::FilterCallback(const imu_3dm_gx4::FilterOutput::ConstPtr& fil
   R_b2w.setRPY(tf.x(), tf.y(), tf.z()); //Body to world rotations --> world_vector =  R_b2w * body_vector
 
   // Smmoth angular velocity and linear accel with IIR LPF
-  IMUProcessor::SmoothDataIIR();
+  //IMUProcessor::SmoothDataIIR();
 
   // Process linear acceleration (Remove centrifugal and tangential components)
 
