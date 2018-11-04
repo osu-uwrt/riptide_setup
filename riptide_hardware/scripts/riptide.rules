@@ -1,6 +1,6 @@
 #IMU Rules - set "imu_front" and "imu_rear"
-SUBSYSTEMS=="usb", ATTRS{manufacturer}=="Lord Microstrain",ATTRS{product}=="Lord Inertial Sensor", ATTRS{serial}=="0000__6234.50972", MODE="0777", SYMLINK+="imu_front", GROUP="uwrt"
-SUBSYSTEMS=="usb", ATTRS{manufacturer}=="Lord Microstrain",ATTRS{product}=="Lord Inertial Sensor", ATTRS{serial}=="0000__6234.41818", MODE="0777", SYMLINK+="imu_rear", GROUP="uwrt"
+SUBSYSTEMS=="usb", ATTRS{manufacturer}=="Lord Microstrain",ATTRS{product}=="Lord Inertial Sensor", ATTRS{serial}=="0000__6234.50972", MODE="0777", SYMLINK+="imu_riptide", GROUP="uwrt"
+SUBSYSTEMS=="usb", ATTRS{manufacturer}=="Lord Microstrain",ATTRS{product}=="Lord Inertial Sensor", ATTRS{serial}=="0000__6234.41818", MODE="0777", SYMLINK+="imu_eddy", GROUP="uwrt"
 
 #Arduino Rule
 SUBSYSTEMS=="usb", ATTRS{manufacturer}=="Arduino SA",ATTRS{product}=="Uno R3 (CDC ACM)",ATTRS{serial}=="220", MODE="0777", SYMLINK+="arduino", GROUP="uwrt"
