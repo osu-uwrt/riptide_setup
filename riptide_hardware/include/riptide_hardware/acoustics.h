@@ -6,19 +6,23 @@
 #include <fstream>
 #include "fftw3.h"
 #include "okFrontPanelDLL.h"
-#include "riptide_msgs/Acoustics.h"
+#include "riptide_msgs/AcousticsStatus.h"
 #include "riptide_msgs/AcousticsCommand.h"
+#include "riptide_msgs/AttitudeCommand.h"
+#include "riptide_msgs/ControlStatusAngular.h"
 #include "std_msgs/String.h"
 
 using namespace std;
 using namespace ros;
+using namespace riptide_msgs;
 
 class Acoustics
 {
 private:
   NodeHandle nh;
-  Publisher acoustics_pub;
+  Publisher acoustics_pub, attitude_pub;
   okCFrontPanel *fpga;
+  double curHeading = 0;
   bool enabled = false;
   long pingFrequency;
   string fileName = "";
@@ -31,7 +35,7 @@ public:
   double* fft(double*, int);
   void Calculate(double*, double*, double*, double*, int);
   void Collect(int);
-  void CommandCB(const riptide_msgs::AcousticsCommand::ConstPtr&);
+  void CommandCB(const AcousticsCommand::ConstPtr&);
   void TestCB(const std_msgs::String::ConstPtr&);
 };
 

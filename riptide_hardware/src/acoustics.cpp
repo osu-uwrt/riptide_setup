@@ -10,8 +10,6 @@
 
 // /state/acoustics: Output of position data
 
-
-
 #define PING_DURATION 2048
 #define MAX_TIME_OFFSET 300
 #define MAX_OFFSET 300
@@ -27,11 +25,15 @@ int main(int argc, char **argv)
 }
 
 Acoustics::Acoustics()
-{ 
+{
 	nh = NodeHandle("acoustics");
-	acoustics_pub = nh.advertise<riptide_msgs::Acoustics>("/state/acoustics", 1);
-	static auto acoustics_sub = nh.subscribe<riptide_msgs::AcousticsCommand>("/command/acoustics", 1, &Acoustics::CommandCB, this);
+	acoustics_pub = nh.advertise<AcousticsStatus>("/state/acoustics", 1);
+	attitude_pub = nh.advertise<AttitudeCommand>("/command/attitude", 1);
+	static auto acoustics_sub = nh.subscribe<AcousticsCommand>("/command/acoustics", 1, &Acoustics::CommandCB, this);
 	static auto acoustics_test_sub = nh.subscribe<std_msgs::String>("/test/acoustics", 1, &Acoustics::TestCB, this);
+	static auto heading_sub = nh.subscribe<ControlStatusAngular>("/status/controls/angular", 1, (boost::function<void(const ControlStatusAngular::ConstPtr &)>)[this](const ControlStatusAngular::ConstPtr &msg) {
+		curHeading = msg->yaw.current;
+	});
 	InitializeFPGA();
 
 	// Run the fft once to let it initialize
@@ -104,8 +106,8 @@ int maxIndex(double *list, int length)
 
 double *Acoustics::fft(double *data, int frequency)
 {
-	static fftw_complex* in = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * SAMPLE_LENGTH);
-	static fftw_complex* out = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * SAMPLE_LENGTH);
+	static fftw_complex *in = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * SAMPLE_LENGTH);
+	static fftw_complex *out = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * SAMPLE_LENGTH);
 	static fftw_plan p = fftw_plan_dft_1d(SAMPLE_LENGTH, in, out, FFTW_FORWARD, FFTW_MEASURE);
 
 	for (int i = 0; i < SAMPLE_LENGTH; i++)
@@ -141,7 +143,6 @@ void Acoustics::Calculate(double *PFdata, double *PAdata, double *SFdata, double
 
 	int pingApprox = maxIndex(amps, length / SAMPLE_LENGTH) * SAMPLE_LENGTH;
 
-
 	// Find start of PF ping
 	double PFTime = 0;
 	int ampDiffTime = -1;
@@ -153,7 +154,7 @@ void Acoustics::Calculate(double *PFdata, double *PAdata, double *SFdata, double
 		return;
 	}
 
-	for (int i = 1; i <= PING_DURATION; i++)
+	for (int i = -PING_DURATION / 2; i <= PING_DURATION; i++)
 	{
 		double *leading = fft(getSample(PFdata, pingApprox - i), pingFrequency);
 		double *lagging = fft(getSample(PFdata, pingApprox - i - SAMPLE_LENGTH), pingFrequency);
@@ -178,7 +179,6 @@ void Acoustics::Calculate(double *PFdata, double *PAdata, double *SFdata, double
 		PFTime = ampDiffTime;
 		ROS_WARN("PF phase guess wrong, implementing amplitude guess. Don't worry");
 	}
-
 
 	// Find start of PA ping
 	ampDiffTime = -1;
@@ -221,7 +221,6 @@ void Acoustics::Calculate(double *PFdata, double *PAdata, double *SFdata, double
 		ROS_WARN("PA phase guess wrong, implementing amplitude guess. Don't worry");
 	}
 
-
 	// Line up according to phase
 	double PFphase = phase(fft(getSample(PFdata, (int)PFTime), pingFrequency));
 	double PAphase = phase(fft(getSample(PAdata, (int)PATime), pingFrequency));
@@ -230,11 +229,25 @@ void Acoustics::Calculate(double *PFdata, double *PAdata, double *SFdata, double
 	double phaseDiff = restrictAngle(PFphase - PAphase) / 360 * period;
 	PATime += phaseDiff;
 
+	double SFTime = PFTime - 50;
+
 	// Report result
-	riptide_msgs::Acoustics msg;
+	AcousticsStatus msg;
 	msg.PFPADiff = PFTime - PATime;
+	msg.PFSFDiff = PFTime - SFTime;
+
+	double angle = atan2(-(PFTime - SFTime), -(PFTime - PATime)) * 180 / 3.14159265359;
+	msg.Angle = angle;
 
 	acoustics_pub.publish(msg);
+
+	AttitudeCommand cmd;
+	cmd.roll_active = true;
+	cmd.pitch_active = true;
+	cmd.roll_active = true;
+	cmd.euler_rpy.x = 0;
+	cmd.euler_rpy.y = 0;
+	cmd.euler_rpy.z = restrictAngle(curHeading + angle);
 
 	// Schedule next recording
 	Time pingTime = collectionTime + Duration(PFTime / 512000 - 0.5); // Say the ping happened a half second earlier to center the ping in new colleciton window
@@ -382,7 +395,7 @@ void Acoustics::Collect(int length)
 		true);
 }
 
-void Acoustics::CommandCB(const riptide_msgs::AcousticsCommand::ConstPtr &msg)
+void Acoustics::CommandCB(const AcousticsCommand::ConstPtr &msg)
 {
 	if (msg->enabled >= 0)
 	{
