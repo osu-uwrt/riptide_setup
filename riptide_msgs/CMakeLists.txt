@@ -31,7 +31,8 @@ add_message_files(
     AlignmentCommand.msg
     DepthCommand.msg
     AttitudeCommand.msg
-    Acoustics.msg
+    AcousticsStatus.msg
+    AcousticsCommand.msg
     Pneumatics.msg
     Constants.msg
     ThrusterResiduals.msg
