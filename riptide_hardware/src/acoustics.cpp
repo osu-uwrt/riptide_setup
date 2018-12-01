@@ -39,6 +39,7 @@ Acoustics::Acoustics()
 	nh = NodeHandle("acoustics");
 	acoustics_pub = nh.advertise<AcousticsStatus>("/state/acoustics", 1);
 	attitude_pub = nh.advertise<AttitudeCommand>("/command/attitude", 1);
+	reset_pub = nh.advertise<ResetControls>("/controls/reset", 1);
 	static auto acoustics_sub = nh.subscribe<AcousticsCommand>("/command/acoustics", 1, &Acoustics::CommandCB, this);
 	static auto acoustics_test_sub = nh.subscribe<std_msgs::String>("/test/acoustics", 1, &Acoustics::TestCB, this);
 	static auto heading_sub = nh.subscribe<ControlStatusAngular>("/status/controls/angular", 1, (boost::function<void(const ControlStatusAngular::ConstPtr &)>)[this](const ControlStatusAngular::ConstPtr &msg) {
@@ -48,6 +49,7 @@ Acoustics::Acoustics()
 
 	// Run the fft once to let it initialize
 	fft(new double[SAMPLE_LENGTH], 0);
+	ROS_INFO("Acoustics initialized");
 }
 
 bool Acoustics::InitializeFPGA()
@@ -78,6 +80,16 @@ bool Acoustics::ConfigureFPGA()
 	}
 	ROS_INFO("Configured successfully!");
 	return true;
+}
+
+double plot(double* data, int length)
+{
+	ofstream plotFile;
+	plotFile.open("../plotData.txt", ofstream::out | ofstream::trunc);
+	for(int i = 0; i < length; i++)
+		plotFile << data[i] << "\n";
+	plotFile.close();
+	system("gnuplot --persist -e \"plot '../plotData.txt' with lines\"");
 }
 
 double unsignedToSigned(long val)
@@ -144,6 +156,7 @@ double phase(double *complex)
 
 void Acoustics::Calculate(double *PFdata, double *PAdata, double *SFdata, double *SAdata, int length)
 {
+	int period = SAMPLE_FREQ / pingFrequency;
 
 	// Find highest amplitude of ping frequency to approximate ping time
 	double *amps = new double[length / SAMPLE_LENGTH];
@@ -153,116 +166,107 @@ void Acoustics::Calculate(double *PFdata, double *PAdata, double *SFdata, double
 
 	int pingApprox = maxIndex(amps, length / SAMPLE_LENGTH) * SAMPLE_LENGTH;
 
-	// Find start of PF ping
+
+	double max = 0;
 	double PFTime = 0;
-	int ampDiffTime = -1;
-	double maxAmpDiff = 0;
+	double average = -1;
+	double ratio = .99;
 
-	if (pingApprox - PING_DURATION - SAMPLE_LENGTH < 0)
+	for (int i = -PING_DURATION * 5 / 4; i < PING_DURATION * 1 / 4; i++)
 	{
-		ROS_ERROR("Ping too soon in sample interval");
-		return;
-	}
+		double leading = magnitude(fft(getSample(PFdata, pingApprox + i), pingFrequency));
+		double lagging = magnitude(fft(getSample(PFdata, pingApprox + i - SAMPLE_LENGTH), pingFrequency));
 
-	for (int i = -PING_DURATION / 2; i <= PING_DURATION; i++)
-	{
-		double *leading = fft(getSample(PFdata, pingApprox - i), pingFrequency);
-		double *lagging = fft(getSample(PFdata, pingApprox - i - SAMPLE_LENGTH), pingFrequency);
+		double val = leading - lagging;
 
-		if (PFTime == 0)
+		if (average == -1)
+			average = val;
+		average = average * ratio + val * (1 - ratio);
+		if (average > max)
 		{
-			double score = restrictAngle((phase(lagging) - phase(leading)));
-			if (score > 90)
-				PFTime = pingApprox - i;
-		}
-
-		double a = magnitude(leading) - magnitude(lagging);
-		if (ampDiffTime == -1 || a > maxAmpDiff)
-		{
-			maxAmpDiff = a;
-			ampDiffTime = pingApprox - i;
+			max = average;
+			PFTime = pingApprox + i;
 		}
 	}
-	double b = magnitude(fft(getSample(PFdata, (int)PFTime), pingFrequency)) - magnitude(fft(getSample(PFdata, (int)PFTime - SAMPLE_LENGTH), pingFrequency));
-	if (b < maxAmpDiff * .7)
-	{
-		PFTime = ampDiffTime;
-		ROS_WARN("PF phase guess wrong, implementing amplitude guess. Don't worry");
-	}
 
-	// Find start of PA ping
-	ampDiffTime = -1;
-	maxAmpDiff = 0;
+	
+
+	max = 0;
 	double PATime = 0;
+	average = -1;
 
-	if (PFTime - MAX_OFFSET - SAMPLE_LENGTH < 0)
+	for (int i = -MAX_OFFSET; i < MAX_OFFSET; i++)
 	{
-		ROS_ERROR("Ping too soon in sample interval");
-		return;
-	}
-	if (PFTime + MAX_OFFSET + SAMPLE_LENGTH > length)
-	{
-		ROS_ERROR("Ping too late in sample interval");
-		return;
-	}
+		double leading = magnitude(fft(getSample(PAdata, (int)PFTime + i), pingFrequency));
+		double lagging = magnitude(fft(getSample(PAdata, (int)PFTime + i - SAMPLE_LENGTH), pingFrequency));
 
-	for (int i = -MAX_OFFSET + 1; i <= MAX_OFFSET; i++)
-	{
-		double *lagging = fft(getSample(PAdata, (int)PFTime - i - SAMPLE_LENGTH), pingFrequency);
-		double *leading = fft(getSample(PAdata, (int)PFTime - i), pingFrequency);
-		if (PATime == 0)
+		double val = leading - lagging;
+		if (average == -1)
+			average = val;
+		average = average * ratio + val * (1 - ratio);
+		if (average > max)
 		{
-			double score = restrictAngle(phase(lagging) - phase(leading));
-			if (score > 90)
-				PATime = (int)PFTime - i;
-		}
-
-		double a = magnitude(leading) - magnitude(lagging);
-		if (ampDiffTime == -1 || a > maxAmpDiff)
-		{
-			maxAmpDiff = a;
-			ampDiffTime = (int)PFTime - i;
+			max = average;
+			PATime = PFTime + i;
 		}
 	}
-	b = magnitude(fft(getSample(PAdata, (int)PATime), pingFrequency)) - magnitude(fft(getSample(PAdata, (int)PATime - SAMPLE_LENGTH), pingFrequency));
-	if (b < maxAmpDiff * .7)
+
+
+	max = 0;
+	double SFTime = 0;
+	average = -1;
+	for (int i = -MAX_OFFSET; i < MAX_OFFSET; i++)
 	{
-		PATime = ampDiffTime;
-		ROS_WARN("PA phase guess wrong, implementing amplitude guess. Don't worry");
+		double leading = magnitude(fft(getSample(SFdata, (int)PFTime + i), pingFrequency));
+		double lagging = magnitude(fft(getSample(SFdata, (int)PFTime + i - SAMPLE_LENGTH), pingFrequency));
+
+		double val = leading - lagging;
+		if (average == -1)
+			average = val;
+		average = average * ratio + val * (1 - ratio);
+		if (average > max)
+		{
+			max = average;
+			SFTime = PFTime + i;
+		}
 	}
+
 
 	// Line up according to phase
 	double PFphase = phase(fft(getSample(PFdata, (int)PFTime), pingFrequency));
 	double PAphase = phase(fft(getSample(PAdata, (int)PATime), pingFrequency));
+	double SFphase = phase(fft(getSample(SFdata, (int)SFTime), pingFrequency));
 
-	int period = SAMPLE_FREQ / pingFrequency;
-	double phaseDiff = restrictAngle(PFphase - PAphase) / 360 * period;
-	PATime += phaseDiff;
+	double PFPAphaseDiff = restrictAngle(PFphase - PAphase) / 360 * period;
+	double PFSFphaseDiff = restrictAngle(PFphase - SFphase) / 360 * period;
+	PATime += PFPAphaseDiff;
+	SFTime += PFSFphaseDiff;
 
-	double SFTime = PFTime - 50;
 
 	// Report result
 	AcousticsStatus msg;
 	msg.PFPADiff = PFTime - PATime;
 	msg.PFSFDiff = PFTime - SFTime;
 
-	double angle = atan2(-(PFTime - SFTime), -(PFTime - PATime)) * 180 / 3.14159265359;
+	double angle = atan2(SFTime - PFTime, PATime - PFTime) * 180 / 3.14159265359;
 	msg.Angle = angle;
+	ROS_INFO("Angle: %f", angle);
 
 	acoustics_pub.publish(msg);
 
 	AttitudeCommand cmd;
 	cmd.roll_active = true;
 	cmd.pitch_active = true;
-	cmd.roll_active = true;
+	cmd.yaw_active = true;
 	cmd.euler_rpy.x = 0;
 	cmd.euler_rpy.y = 0;
 	cmd.euler_rpy.z = restrictAngle(curHeading + angle);
 
-	// Schedule next recording
-	Time pingTime = collectionTime + Duration(PFTime / 512000 - 0.5); // Say the ping happened a half second earlier to center the ping in new colleciton window
-	double timeSincePing = (Time::now() - pingTime).toSec();
+	attitude_pub.publish(cmd);
 
+	// Schedule next recording
+	Time pingTime = collectionTime + Duration(PFTime / 512000.0) - Duration(.7); // Say the ping happened a half second earlier to center the ping in new colleciton window
+	double timeSincePing = (Time::now() - pingTime).toSec();
 	// Make sure timer duration will not go negative
 	while (timeSincePing > 2)
 		timeSincePing -= 2;
@@ -296,6 +300,7 @@ void Acoustics::Collect(int length)
 	fpga->SetWireInValue(0x00, 0x0000);
 	fpga->UpdateWireIns();
 
+	ROS_INFO("Collecting");
 	// Collect Data
 	fpga->SetWireInValue(0x00, 0x0002);
 	fpga->UpdateWireIns();
@@ -306,7 +311,8 @@ void Acoustics::Collect(int length)
 	static Timer t;
 	t = nh.createTimer(
 		Duration(length / 1000.0),
-		(boost::function<void(const TimerEvent &)>)[ length, this ](const TimerEvent &event) {
+		(boost::function<void(const TimerEvent &)>)[ this, length ](const TimerEvent &event) {
+			ROS_INFO("Done");
 			long err;
 			int NumOfCollections = length * 512;
 			unsigned char *data = new unsigned char[NumOfCollections * 16];
@@ -328,22 +334,18 @@ void Acoustics::Collect(int length)
 				   *PAdata = new double[NumOfCollections],
 				   *SFdata = new double[NumOfCollections],
 				   *SAdata = new double[NumOfCollections];
-			char *PFqueue = new char[3 * NumOfCollections],
-				 *PAqueue = new char[3 * NumOfCollections],
-				 *SFqueue = new char[3 * NumOfCollections],
-				 *SAqueue = new char[3 * NumOfCollections];
 
 			// Process data and save in arrays
 			for (int i = 0; i < NumOfCollections; i++)
 			{
-				long PFVal = ((long)data[2 + 16 * i] << 16) + ((long)data[1 + 16 * i] << 8) + data[16 * i];
-				double PFVoltage = unsignedToSigned(PFVal);
-				long PAVal = ((long)data[5 + 16 * i] << 16) + ((long)data[4 + 16 * i] << 8) + data[3 + 16 * i];
-				double PAVoltage = unsignedToSigned(PAVal);
-				long SFVal = ((long)data[8 + 16 * i] << 16) + ((long)data[7 + 16 * i] << 8) + data[6 + 16 * i];
-				double SFVoltage = unsignedToSigned(SFVal);
-				long SAVal = ((long)data[11 + 16 * i] << 16) + ((long)data[10 + 16 * i] << 8) + data[9 + 16 * i];
+				long SAVal = ((long)data[2 + 16 * i] << 16) + ((long)data[1 + 16 * i] << 8) + data[16 * i];
 				double SAVoltage = unsignedToSigned(SAVal);
+				long SFVal = ((long)data[5 + 16 * i] << 16) + ((long)data[4 + 16 * i] << 8) + data[3 + 16 * i];
+				double SFVoltage = unsignedToSigned(SFVal);
+				long PAVal = ((long)data[8 + 16 * i] << 16) + ((long)data[7 + 16 * i] << 8) + data[6 + 16 * i];
+				double PAVoltage = unsignedToSigned(PAVal);
+				long PFVal = ((long)data[11 + 16 * i] << 16) + ((long)data[10 + 16 * i] << 8) + data[9 + 16 * i];
+				double PFVoltage = unsignedToSigned(PFVal);
 
 				PFdata[i] = PFVoltage;
 				PAdata[i] = PAVoltage;
@@ -411,6 +413,16 @@ void Acoustics::CommandCB(const AcousticsCommand::ConstPtr &msg)
 	{
 		if (msg->enabled && !enabled)
 		{
+			ResetControls reset_msg;
+			reset_msg.reset_surge = true;
+			reset_msg.reset_sway = true;
+			reset_msg.reset_heave = true;
+			reset_msg.reset_roll = false;
+			reset_msg.reset_pitch = false;
+			reset_msg.reset_yaw = false;
+			reset_msg.reset_depth = false;
+			reset_msg.reset_pwm = false;
+			reset_pub.publish(reset_msg);
 			enabled = true;
 			Collect(2000);
 		}
@@ -430,9 +442,15 @@ void Acoustics::TestCB(const std_msgs::String::ConstPtr &msg)
 	ifstream PFfile("../Saved Data/" + msg->data + "/PF.dat");
 	char *PFbuffer = new char[3072000];
 	PFfile.read(PFbuffer, 3072000);
+	PFfile.close();
 	ifstream PAfile("../Saved Data/" + msg->data + "/PA.dat");
 	char *PAbuffer = new char[3072000];
 	PAfile.read(PAbuffer, 3072000);
+	PAfile.close();
+	ifstream SFfile("../Saved Data/" + msg->data + "/SF.dat");
+	char *SFbuffer = new char[3072000];
+	SFfile.read(SFbuffer, 3072000);
+	SFfile.close();
 
 	double *PFdata = new double[1024000], *PAdata = new double[1024000], *SFdata = new double[1024000], *SAdata = new double[1024000];
 	for (int i = 0; i < 1024000; i++)
@@ -441,11 +459,12 @@ void Acoustics::TestCB(const std_msgs::String::ConstPtr &msg)
 		PFdata[i] = unsignedToSigned(PFVal);
 		long PAVal = ((long)((unsigned char)PAbuffer[2 + 3 * i]) << 16) + ((long)((unsigned char)PAbuffer[1 + 3 * i]) << 8) + (unsigned char)PAbuffer[3 * i];
 		PAdata[i] = unsignedToSigned(PAVal);
+		long SFVal = ((long)((unsigned char)SFbuffer[2 + 3 * i]) << 16) + ((long)((unsigned char)SFbuffer[1 + 3 * i]) << 8) + (unsigned char)SFbuffer[3 * i];
+		SFdata[i] = unsignedToSigned(SFVal);
 	}
 
 	collectionTime = Time::now();
 	Calculate(PFdata, PAdata, SFdata, SAdata, 1024000);
 
-	PFfile.close();
-	PAfile.close();
+	
 }

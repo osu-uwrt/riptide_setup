@@ -20,42 +20,42 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller") 
   ThrusterController::LoadParam<double>("HPF/X", pos_heave_port_fwd.x);
   ThrusterController::LoadParam<double>("HPF/Y", pos_heave_port_fwd.y);
   ThrusterController::LoadParam<double>("HPF/Z", pos_heave_port_fwd.z);
-  ThrusterController::LoadParam<bool>("HPF/ENABLE", enableHPF);
+  ThrusterController::LoadParam<bool>("ENABLE_HPF", enableHPF);
 
   ThrusterController::LoadParam<double>("HPA/X", pos_heave_port_aft.x);
   ThrusterController::LoadParam<double>("HPA/Y", pos_heave_port_aft.y);
   ThrusterController::LoadParam<double>("HPA/Z", pos_heave_port_aft.z);
-  ThrusterController::LoadParam<bool>("HPA/ENABLE", enableHPA);
+  ThrusterController::LoadParam<bool>("ENABLE_HPA", enableHPA);
 
   ThrusterController::LoadParam<double>("HSF/X", pos_heave_stbd_fwd.x);
   ThrusterController::LoadParam<double>("HSF/Y", pos_heave_stbd_fwd.y);
   ThrusterController::LoadParam<double>("HSF/Z", pos_heave_stbd_fwd.z);
-  ThrusterController::LoadParam<bool>("HSF/ENABLE", enableHSF);
+  ThrusterController::LoadParam<bool>("ENABLE_HSF", enableHSF);
 
   ThrusterController::LoadParam<double>("HSA/X", pos_heave_stbd_aft.x);
   ThrusterController::LoadParam<double>("HSA/Y", pos_heave_stbd_aft.y);
   ThrusterController::LoadParam<double>("HSA/Z", pos_heave_stbd_aft.z);
-  ThrusterController::LoadParam<bool>("HSA/ENABLE", enableHSA);
+  ThrusterController::LoadParam<bool>("ENABLE_HSA", enableHSA);
 
   ThrusterController::LoadParam<double>("SWF/X", pos_sway_fwd.x);
   ThrusterController::LoadParam<double>("SWF/Y", pos_sway_fwd.y);
   ThrusterController::LoadParam<double>("SWF/Z", pos_sway_fwd.z);
-  ThrusterController::LoadParam<bool>("SWF/ENABLE", enableSWF);
+  ThrusterController::LoadParam<bool>("ENABLE_SWF", enableSWF);
 
   ThrusterController::LoadParam<double>("SWA/X", pos_sway_aft.x);
   ThrusterController::LoadParam<double>("SWA/Y", pos_sway_aft.y);
   ThrusterController::LoadParam<double>("SWA/Z", pos_sway_aft.z);
-  ThrusterController::LoadParam<bool>("SWA/ENABLE", enableSWA);
+  ThrusterController::LoadParam<bool>("ENABLE_SWA", enableSWA);
 
   ThrusterController::LoadParam<double>("SPL/X", pos_surge_port_lo.x);
   ThrusterController::LoadParam<double>("SPL/Y", pos_surge_port_lo.y);
   ThrusterController::LoadParam<double>("SPL/Z", pos_surge_port_lo.z);
-  ThrusterController::LoadParam<bool>("SPL/ENABLE", enableSPL);
+  ThrusterController::LoadParam<bool>("ENABLE_SPL", enableSPL);
 
   ThrusterController::LoadParam<double>("SSL/X", pos_surge_stbd_lo.x);
   ThrusterController::LoadParam<double>("SSL/Y", pos_surge_stbd_lo.y);
   ThrusterController::LoadParam<double>("SSL/Z", pos_surge_stbd_lo.z);
-  ThrusterController::LoadParam<bool>("SSL/ENABLE", enableSSL);
+  ThrusterController::LoadParam<bool>("ENABLE_SSL", enableSSL);
 
   // Load vehicle properties
   ThrusterController::LoadParam<double>("Mass", mass);
