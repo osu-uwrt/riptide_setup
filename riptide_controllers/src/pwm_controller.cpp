@@ -13,11 +13,11 @@
 #define HSA 6
 #define HPA 7
 
-// Critical Thrusts
+// Critical Thrust Indeces
 #define MIN_THRUST 0
 #define STARTUP_THRUST 1
 
-// Indeces for slopes and y-intercepts
+// Slope and y-intercept Indeces
 #define POS_SLOPE 0
 #define POS_YINT 1
 #define NEG_SLOPE 2
