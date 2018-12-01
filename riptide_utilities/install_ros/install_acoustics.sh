@@ -1,10 +1,20 @@
-# Setup Acoustics
-tar -zxf ~/osu-uwrt/riptide_software/src/riptide_hardware/resources/acoustics/FrontPanel-Ubuntu16.04LTS-x64-5.0.1.tgz
-mv FrontPanel-Ubuntu16.04LTS-x64-5.0.1 ~
-cd ~/FrontPanel-Ubuntu16.04LTS-x64-5.0.1
-chmod +x install.sh
-sudo install.sh
-sudo cp API/libokFrontPanel.so /usr/lib/
-rm -rf ~/FrontPanel-Ubuntu16.04LTS-x64-5.0.1
+# Acoustics Dependencies
 
-echo "Acoustics dependencies setup\n"
+# Install FFT Software
+fft_version="fftw-3.3.8"
+if [ -e "$fft_version.tar.gz" ]; then # Check if tar file exists on local machine
+    echo -e "Skipping download of $fft_version.tar.gz\n"
+else
+    echo -e "Downloading $fft_version.tar.gz\n"
+    wget ftp://ftp.fftw.org/pub/fftw/$fft_version.tar.gz
+fi
+tar -zxf $fft_version.tar.gz
+cd $fft_version
+sudo ./configure
+sudo make
+sudo make install
+cd ..
+rm $fft_version.tar.gz
+sudo rm -rf $fft_version
+
+echo "Installed acoustics dependencies"

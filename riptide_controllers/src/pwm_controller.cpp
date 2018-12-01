@@ -13,7 +13,7 @@
 #define HSA 6
 #define HPA 7
 
-// Critical Thrusts
+// Indeces for critical Thrusts
 #define MIN_THRUST 0
 #define STARTUP_THRUST 1
 
