@@ -10,6 +10,7 @@
 #include "riptide_msgs/AcousticsCommand.h"
 #include "riptide_msgs/AttitudeCommand.h"
 #include "riptide_msgs/ControlStatusAngular.h"
+#include "riptide_msgs/ResetControls.h"
 #include "std_msgs/String.h"
 
 using namespace std;
@@ -20,7 +21,7 @@ class Acoustics
 {
 private:
   NodeHandle nh;
-  Publisher acoustics_pub, attitude_pub;
+  Publisher acoustics_pub, attitude_pub, reset_pub;
   okCFrontPanel *fpga;
   double curHeading = 0;
   bool enabled = false;

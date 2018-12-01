@@ -29,6 +29,7 @@ Acoustics::Acoustics()
 	nh = NodeHandle("acoustics");
 	acoustics_pub = nh.advertise<AcousticsStatus>("/state/acoustics", 1);
 	attitude_pub = nh.advertise<AttitudeCommand>("/command/attitude", 1);
+	reset_pub = nh.advertise<ResetControls>("/controls/reset", 1);
 	static auto acoustics_sub = nh.subscribe<AcousticsCommand>("/command/acoustics", 1, &Acoustics::CommandCB, this);
 	static auto acoustics_test_sub = nh.subscribe<std_msgs::String>("/test/acoustics", 1, &Acoustics::TestCB, this);
 	static auto heading_sub = nh.subscribe<ControlStatusAngular>("/status/controls/angular", 1, (boost::function<void(const ControlStatusAngular::ConstPtr &)>)[this](const ControlStatusAngular::ConstPtr &msg) {
@@ -246,10 +247,12 @@ void Acoustics::Calculate(double *PFdata, double *PAdata, double *SFdata, double
 	AttitudeCommand cmd;
 	cmd.roll_active = true;
 	cmd.pitch_active = true;
-	cmd.roll_active = true;
+	cmd.yaw_active = true;
 	cmd.euler_rpy.x = 0;
 	cmd.euler_rpy.y = 0;
 	cmd.euler_rpy.z = restrictAngle(curHeading + angle);
+
+	attitude_pub.publish(cmd);
 
 	// Schedule next recording
 	Time pingTime = collectionTime + Duration(PFTime / 512000.0) - Duration(.7); // Say the ping happened a half second earlier to center the ping in new colleciton window
@@ -400,6 +403,16 @@ void Acoustics::CommandCB(const AcousticsCommand::ConstPtr &msg)
 	{
 		if (msg->enabled && !enabled)
 		{
+			ResetControls reset_msg;
+			reset_msg.reset_surge = true;
+			reset_msg.reset_sway = true;
+			reset_msg.reset_heave = true;
+			reset_msg.reset_roll = false;
+			reset_msg.reset_pitch = false;
+			reset_msg.reset_yaw = false;
+			reset_msg.reset_depth = false;
+			reset_msg.reset_pwm = false;
+			reset_pub.publish(reset_msg);
 			enabled = true;
 			Collect(2000);
 		}
