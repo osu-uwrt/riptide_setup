@@ -17,7 +17,8 @@ class PWMController
   ros::Publisher pwm_pub;
   riptide_msgs::PwmStamped msg;
 
-  float thrust_config[8][4]; // thrust slopes
+  float startup_config[2][4], primary_config[2][4]; // Slopes and y-intercepts
+  float critical_thrusts[2][2]; // Minimum and startup thrusts
   bool dead, silent, reset_pwm;
   ros::Time last_alive_time;
   ros::Duration alive_timeout;
