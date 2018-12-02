@@ -38,7 +38,7 @@ class PS3Controller
   bool publish_pneumatics;
 
   // Max values, and command rates
-  double MAX_ROLL, MAX_PITCH, MAX_DEPTH, MAX_XY_ACCEL, MAX_Z_ACCEL;
+  double MAX_ROLL, MAX_PITCH, MAX_DEPTH, MAX_X_ACCEL, MAX_Y_ACCEL, MAX_Z_ACCEL;
   double MAX_ROLL_ACCEL, MAX_PITCH_ACCEL, MAX_YAW_ACCEL;
   double CMD_ROLL_RATE, CMD_PITCH_RATE, CMD_YAW_RATE, CMD_DEPTH_RATE;
 

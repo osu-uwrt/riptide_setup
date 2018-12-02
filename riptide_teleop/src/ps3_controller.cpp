@@ -31,7 +31,8 @@ PS3Controller::PS3Controller() : nh("ps3_controller")
   PS3Controller::LoadParam<double>("buoyancy_depth_thresh", buoyancy_depth_thresh); // [m]
   PS3Controller::LoadParam<double>("max_roll_limit", MAX_ROLL);                     // [m/s^2]
   PS3Controller::LoadParam<double>("max_pitch_limit", MAX_PITCH);                   // [m/s^2]
-  PS3Controller::LoadParam<double>("max_x_accel", MAX_XY_ACCEL);                    // [m/s^2]
+  PS3Controller::LoadParam<double>("max_x_accel", MAX_X_ACCEL);                     // [m/s^2]
+  PS3Controller::LoadParam<double>("max_y_accel", MAX_Y_ACCEL);                     // [m/s^2]
   PS3Controller::LoadParam<double>("max_z_accel", MAX_Z_ACCEL);                     // [m/s^2]
   PS3Controller::LoadParam<double>("max_roll_accel", MAX_ROLL_ACCEL);               // [rad/s^2]
   PS3Controller::LoadParam<double>("max_pitch_accel", MAX_PITCH_ACCEL);             // [rad/s^2]
@@ -219,8 +220,8 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr &joy)
     }
 
     // Update Linear XY Accel
-    x_cmd.data = joy->axes[AXES_STICK_RIGHT_UD] * MAX_XY_ACCEL; // Surge (X) positive forward
-    y_cmd.data = joy->axes[AXES_STICK_RIGHT_LR] * MAX_XY_ACCEL; // Sway (Y) positive left
+    x_cmd.data = joy->axes[AXES_STICK_RIGHT_UD] * MAX_X_ACCEL; // Surge (X) positive forward
+    y_cmd.data = joy->axes[AXES_STICK_RIGHT_LR] * MAX_Y_ACCEL; // Sway (Y) positive left
 
     if (joy->buttons[BUTTON_SELECT])
       alignment_plane = !alignment_plane;
