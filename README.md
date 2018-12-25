@@ -1,7 +1,15 @@
 The Riptide AUV Software Platform
 =================================
 
-This repository is the main codebase for the Underwater Robotics Team at The Ohio State University. Our mission is to develop the software which powers our Autonomous Underwater Vehicles. The software in this repository handles low level controls, computer vision, mission-specific programs, and everything in between. All built on the Robot Operating System framework.
+This repository is the main codebase for the Underwater Robotics Team at The Ohio State University. Our mission is to develop the software which powers our Autonomous Underwater Vehicles. The software in this repository handles low level controls, computer vision, mission-specific programs, and everything in between. All built on the [Robot Operating System](http://www.ros.org/) framework.
+
+**The Underwater Robotics Team**  
+The Ohio State University
+
+[Website](https://uwrt.engineering.osu.edu) | [RoboSub](https://www.auvsifoundation.org/competition/robosub) | [License](LICENSE)
+
+
+![OSU UWRT Logo](logos/UWRT_Logo_small.png)
 
 # Building
 ROS is compiled using the catkin build system, and so all of our repos will use catkin. 
@@ -27,12 +35,5 @@ Now, if you type:
 ```
 git remote -v
 ```
-You will see both a remote to your fork and to the main repo. You will use these two remotes a lot when pushing code to your fork, submitting pull-requrests, and pulling down the latest code.
+You will see both a remote to your fork and to the main repo. You will use these two remotes a lot when pushing code to your fork, submitting pull-reqruests, and pulling down the latest code.
 
-**The Underwater Robotics Team**  
-The Ohio State University
-
-[Website](https://uwrt.engineering.osu.edu) | [RoboSub](https://www.auvsifoundation.org/competition/robosub) | [License](LICENSE)
-
-
-![OSU UWRT Logo](logos/UWRT_Logo_small.png)
