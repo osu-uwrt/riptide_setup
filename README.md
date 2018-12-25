@@ -23,7 +23,7 @@ git clone <your_forked_repo> src
 ```
 
 ## Setting up Git Remotes
-Since you just cloned your fork to your computer, your remote called "origin" will point to your fork. Now, create a new remote that points to this main repo.
+Since you just cloned your fork to your computer, your remote called "origin" will point to your fork. Now, create a new remote called "upstream" that points to this main repo.
 ```
 cd ~/osu-uwrt/riptide_software/src/
 git remote add upstream https://github.com/osu-uwrt/riptide_software.git
@@ -36,7 +36,7 @@ git remote -v
 You will see both a remote to your fork and to the main repo. You will use these two remotes a lot when pushing code to your fork, submitting pull-requests, and pulling down the latest code.
 
 ## Compiling
-To compile this repo, you simply execute the "catkin_make" command from a terminal. As a word of caution, you MUST be inside the folder ~/osu-uwrt/riptide_software to run "catkin_make"
+To compile this repo, you simply execute the "catkin_make" command from a terminal. As a word of caution, you MUST be inside the folder "~/osu-uwrt/riptide_software" to run "catkin_make"
 ```
 cd ~/osu-uwrt/riptide_software/
 catkin_make
