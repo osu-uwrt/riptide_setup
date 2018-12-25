@@ -79,6 +79,6 @@ Below is the complete set of lines that must be placed within the ~/.bashrc file
 source /opt/ros/kinetic/setup.bash
 source ~/osu-uwrt/sim_software/devel/setup.bash
 source ~/osu-uwrt/shared_software/devel/setup.bash
-source ~/osu-uwrt/control_toolbox/devel/setup.bash
+source ~/osu-uwrt/control_toolbox/devel_isolated/setup.bash
 source ~/osu-uwrt/riptide_software/devel/setup.bash
 ```
