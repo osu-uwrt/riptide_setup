@@ -45,7 +45,7 @@ catkin_make
 In the near future, you will have to clone and compile the [control_toolbox](https://github.com/osu-uwrt/control_toolbox) because this repo will be dependent on it.
 
 ### Updating the ~/.bashrc File
-Because this repo is built on ROS, there are a number of environment variables that are required when running the code. Each time you open a terminal window to run those commands, those environment variables will need to be set. To automate this process, we add a line to the ~/.bashrc file (bashrc = Born Again Shell Run-Commands). Each time a new terminal/shell is opened, it executes any commands within the ~/.bashrc file.
+Because this repo is built on ROS, there are a number of environment variables that are required when running the code. Each time you open a terminal window to run those commands, those environment variables will need to be set. To automate this process, we add a line to the "~/.bashrc" file (bashrc = Born Again Shell Run-Commands). Each time a new terminal/shell is opened, it executes any commands within the "~/.bashrc" file.
 
 Open it with a terminal text editor:
 ```
@@ -74,7 +74,7 @@ UWRT has a few other repositories that can be used in conjunction with this one.
 ## Chaining Workspaces
 Each of the above repositories (sim_softare, shared_software) are built on catkin as well. For the entire set of repositories to work together, we must "chain" their setup.bash files within the ~/.bashrc file for complete functionality.
 
-Below is the complete set of lines that must be placed within the ~/.bashrc file for all of these workspaces to be chained properly. Only the lines pertaining to "sim_software" and "shared_software" can be omitted if the user decides not to use them. All others must remain.
+Below is the complete set of lines that must be placed within the "~/.bashrc" file for all of these workspaces to be chained properly. Only the lines pertaining to "sim_software" and "shared_software" can be omitted if the user decides not to use them. All others must remain.
 ```
 source /opt/ros/kinetic/setup.bash
 source ~/osu-uwrt/sim_software/devel/setup.bash
