@@ -35,5 +35,5 @@ Now, if you type:
 ```
 git remote -v
 ```
-You will see both a remote to your fork and to the main repo. You will use these two remotes a lot when pushing code to your fork, submitting pull-reqruests, and pulling down the latest code.
+You will see both a remote to your fork and to the main repo. You will use these two remotes a lot when pushing code to your fork, submitting pull-requests, and pulling down the latest code.
 
