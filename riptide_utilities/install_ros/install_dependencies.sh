@@ -22,6 +22,9 @@ sudo make install
 cd ..
 rm -rf ~/ceres-temp
 
+# Install Eigen
+install_eigen.sh
+
 # Install Acoustics Dependencies
 install_acoustics.sh
 
