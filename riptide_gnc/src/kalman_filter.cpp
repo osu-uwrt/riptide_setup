@@ -41,7 +41,7 @@ KalmanFilter::Init(VectorXf Xo)
 {
     int in_rows = Xo.rows();
     if (in_rows != n)
-        throw std::runtime_error("Dimension mismatch: Input initial state of row_size(%i) must match expcted row_size(%i)", in_rows, n);
+        throw std::runtime_error("Dimension mismatch: Input initial state row_size(%i) does not match expcted row_size(%i)", in_rows, n);
     
     Xhat = Xo;
     init = true;

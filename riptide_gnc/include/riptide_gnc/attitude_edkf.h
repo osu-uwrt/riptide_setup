@@ -15,9 +15,12 @@ float sec(x)
 }
 
 // Attitude Extended Dynamic Kalman Filter (EDKF)
-// This EDKF can be used as a cascaded KF, in which an IMU's EKF output is treated as the measurement
-// OR this EDKF can simply use angular rate from a rate gyro as a measurement input.
-// Using the cascade feature can lead to more accurate results.
+// This EDKF is meant to be used as a cascaded KF, in which an IMU's EKF output is treated as the measurement
+// The expected input measurement from the IMU EKF is (phi, theta, psi, p, q, r).
+// Because this EDKF does not use quaternions, it is still subject to the singularity issue at
+// pitch angles of +/- 90 degrees. To ensure complete operation of this EDKF, when the IMU EKF reports
+// pitch angles outside the specified range, this EDKF will bypass the calculations and simply report
+// the same values from the IMU EKF.
 class AttitudeEDKF
 {
 public:
@@ -31,24 +34,29 @@ public:
   float c1, c2, c3, c4;                               // Common expressions for calculating partial derivatives
   Matrix6f F1, F2;                                    // State-transition matrices
   Matrix<float, 3, 6> H1;                             // Measurement matrix for angular motion
-  MatrixXf H2;                                        // Measurement matrix for attitide
-  bool cascadeInit;                                   // Turn on/off cascade feature
+  Matrix6f H2;                                        // Measurement matrix for attitide
+  bool init;                                          // Indicates if EDKF is initialized
   Vector3f J;                                         // Inertia Tensor (Assume Jxx, Jyy, and Jzz, no need for cross-terms)
   Vector3f b;                                         // Damping Coefficients
   VectorXf<float, 1, 36> pd;                          // Partial Derivatives (36 total)
   float dt;                                           // Time-step [s]
   int s;                                              // s = 3, half the number of states
+  float theta_max;                                    // Maximum pitch angle allowed for operation of EDKF [rad]
 
 private:
-  AttitudeEDKF(bool cascade, Vector3f inertia, Vector3f damping,
-               Matrix6f Q1, MatrixXf R1, Matrix6f Q2, MatrixXf R2);
-  void UpdateAttEDKF(float time_step, Vector3f input_states, VectorXf Z); // Input state: p_dot, q_dot, r_dot
-  void TimePredictAngMotState(Vector3f input_states);                     // Calculate X1a
-  void TimePredictAttState();                                             // Calculate X2a
-  void KeepAnglesInRange();
+  AttitudeEDKF(float max_pitch, Vector3f inertia, Vector3f damping,
+               Matrix6f Q1, MatrixXf R1, Matrix6f Q2, MatrixXf R2); // max_pitch [rad]
+  void InitAttEDKF(Vector3f input_states, Vector6f Z);
+  void UpdateAttEDKF(float time_step, Vector3f input_states, Vector6f Z); // Input state: p_dot, q_dot, r_dot
+  void UpdateAngMotStates(Vector3f input_states, Vector6f Z);
+  void UpdateAttStates(Vector6f Z);
+  void TimePredictAngMotState(Vector3f input_states);
+  void TimePredictAttState();
   void CalcPartialDerivatives();
   void CalcAngMotJacobians(); // Update F1 and H1
   void CalcAttJacobians();    // Update F2 and H2
+  void KeepAngleWithInPI(float angle);
+  void KeepMsmtWithinPI(float predict, float msmt);
 };
 
 #endif
