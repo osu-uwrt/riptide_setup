@@ -2,12 +2,15 @@
 #define KALMAN_FILTER
 
 #include "eigen3/Eigen/Dense"
+#include "eigen3/Eigen/Core"
 
 using namespace Eigen;
 
-class KalmanFilter // Basic Kalman Filter
+// Basic Kalman Filter
+// If not initialized manually, then it will auto-initialize (set Xhat prediction to zero-vector).
+class KalmanFilter
 {
-public:
+private:
     float m, n; // m = # measurements, n = # states
     VectorXf Xhat; // State Vector
     MatrixXf A; // State-transition Matrix
@@ -18,11 +21,12 @@ public:
     MatrixXf R; // Measurement Noise Covariance Matrix
     MatrixXf I; // Identity Matrix
     bool init;
-private:
+public:
     KalmanFilter(MatrixXf Ao, MatrixXf Ho, MatrixXf Qo, MatrixXf Ro);
     void InitKF(VectorXf Xo);
     void UpdateKF(VectorXf Z);
-    void UpdateKFOverride(VectorXf Xpredict, Vector Xf Z, MatrixXf Anew, Matrix Hnew);
+    void UpdateKFOverride(VectorXf Xpredict, VectorXf Z, MatrixXf Anew, MatrixXf Hnew);
+    VectorXf GetXhat();
 };
 
 #endif

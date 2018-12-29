@@ -1,5 +1,17 @@
 #include "riptide_gnc/attitude_edkf.h"
 
+float sec(float x)
+{
+  return (1.0 / cos(x));
+}
+
+// max_pitch = max pitch angle allowed for operation of EDKF [rad]
+// inertia = moments of inertia (Jxx, Jyy, Jzz) [kg-m^2]
+// damping = angular damping coefficients (bx, by, bz) [Nms/rad]
+// Q1 = Process Noise Covariance Matrix for angular motion KF
+// R1 = Measurement Noise Covariance Matrix for angular motion KF
+// Q2 = Process Noise Covariance Matrix for attitude KF
+// R2 = Measurement Noise Covariance Matrix for attitude KF
 AttitudeEDKF::AttitudeEDKF(float max_pitch, Vector3f inertia, Vector3f damping,
                            Matrix6f Q1, MatrixXf R1, Matrix6f Q2, MatrixXf R2)
 {
@@ -25,8 +37,8 @@ AttitudeEDKF::AttitudeEDKF(float max_pitch, Vector3f inertia, Vector3f damping,
 }
 
 // Update Attitude EDKF
-// time_step = dt
-// input_states = pre-calculated p_dot, q_dot, r_dot
+// time_step = dt [s]
+// input_states = pre-calculated p_dot, q_dot, r_dot [rad/s^2]
 // Z = IMU measurement (phi, theta, psi, p, q, r)
 void AttitudeEDKF::UpdateAttEDKF(float time_step, Vector3f input_states, Vector6f Z)
 {
@@ -34,7 +46,7 @@ void AttitudeEDKF::UpdateAttEDKF(float time_step, Vector3f input_states, Vector6
 
     if (abs(Z(1)) < max_theta) // Pitch angle within specified operation range
     {
-        if (!init)
+        if (!init) // Auto-initialize
         {
             init = true;
             AttitudeEDKF::InitAttEDKF(input_states, Z);
@@ -50,9 +62,9 @@ void AttitudeEDKF::UpdateAttEDKF(float time_step, Vector3f input_states, Vector6
 }
 
 // Initialize Attitude EDKF
-// input_states = pre-calculated p_dot, q_dot, r_dot
+// input_states = pre-calculated p_dot, q_dot, r_dot [rad/s^2]
 // Z = IMU measurement (phi, theta, psi, p, q, r)
-void InitAttEDKF(Vector3f input_states, Vector6f Z)
+void AttitudeEDKF::InitAttEDKF(Vector3f input_states, Vector6f Z)
 {
     // Initialize X1hat (p, q, r) to IMU (p, q, r) and pre-calculated input_states
     for (int i = 0; i < s; i++)
@@ -81,7 +93,7 @@ void AttitudeEDKF::UpdateAngMotStates(Vector3f input_states, Vector6f Z)
     AttitudeEDKF::TimePredictAngMotState(input_states);
     AttitudeEDKF::CalcAngMotJacobians();
     AngMotKF->UpdateKFOverride(X1hatPre, Z1, F1, H1);
-    X1hat = AngMotKF->Xhat;
+    X1hat = AngMotKF->GetXhat();
 }
 
 // Update Attitude EDKF
@@ -98,7 +110,7 @@ void AttitudeEDKF::UpdateAttStates(Vector6f Z)
     Z2(2) = AttitudeEDKF::KeepMsmtWithinPI(X2hatPre(2), Z2(2));
 
     AttKF->UpdateKFOverride(X2hatPre, Z2, F2, H2);
-    X2hat = AttKF->Xhat;
+    X2hat = AttKF->GetXhat();
     X2hat(0) = AttitudeEDKF::KeepAngleWithinPI(X2hatPre(0));
     X2hat(2) = AttitudeEDKF::KeepAngleWithinPI(X2hatPre(2));
 }
@@ -118,16 +130,18 @@ void AttitudeEDKF::TimePredictAngMotState(Vector3f input_states)
 // Constant Acceleration Model: Xk = Xk + Xk_dot*dt + (1/2)*xk_ddot*dt^2
 void AttitudeEDKF::TimePredictAttState()
 {
-    phi_ddot = p_dot + tan(theta) * (phi_dot * c2 + c3) + (theta_dot * (sec(theta) ^ 2) * c1);
-    theta_ddot = (-phi_dot * c1) + c4;
-    psi_ddot = (theta_dot * sec(theta) * tan(theta) * c1) + sec(theta) * (phi_dot * c2 + c3);
+    // Calculate second time-derivatives
+    float phi_ddot = p_dot + tan(theta) * (phi_dot * c2 + c3) + (theta_dot * pow(sec(theta), 2) * c1);
+    float theta_ddot = (-phi_dot * c1) + c4;
+    float psi_ddot = (theta_dot * sec(theta) * tan(theta) * c1) + sec(theta) * (phi_dot * c2 + c3);
 
-    X2hatPre(0) = phi + phi_dot * dt + 0.5 * phi_ddot * dt ^ 2;       // Update phi
-    X2hatPre(1) = theta + theta_dot * dt + 0.5 * theta_ddot * dt ^ 2; // Update theta
-    X2hatPre(2) = psi + psi_dot * dt + 0.5 * psi_ddot * dt ^ 2;       // Update psi
-    X2hatPre(3) = phi_dot + phi_ddot * dt;                            // Update phi_dot
-    X2hatPre(4) = theta_dot + theta_ddot * dt;                        // Update theta_dot
-    X2hatPre(5) = psi_dot + psi_ddot * dt;                            // Update psi_dot
+    // Make prediction
+    X2hatPre(0) = phi + phi_dot * dt + 0.5 * phi_ddot * pow(dt, 2);       // Update phi
+    X2hatPre(1) = theta + theta_dot * dt + 0.5 * theta_ddot * pow(dt, 2); // Update theta
+    X2hatPre(2) = psi + psi_dot * dt + 0.5 * psi_ddot * pow(dt, 2);       // Update psi
+    X2hatPre(3) = phi_dot + phi_ddot * dt;                                // Update phi_dot
+    X2hatPre(4) = theta_dot + theta_ddot * dt;                            // Update theta_dot
+    X2hatPre(5) = psi_dot + psi_ddot * dt;                                // Update psi_dot
 }
 
 // Calculate Partial Derivatives, which are needed to calculate the Jacobians
@@ -172,14 +186,14 @@ void AttitudeEDKF::CalcPartialDerivatives()
 
     // partial phi_dot / (partial phi, theta, psi)
     pd(9) = tan(theta) * c2;
-    pd(10) = (sec(theta) ^ 2) * c1;
+    pd(10) = pow(sec(theta),2) * c1;
     pd(11) = 0;
 
     // partial phi_ddot / (partial phi, phi_dot, theta, theta_dot, psi, psi_dot)
-    pd(12) = (-phi_dot * tan(theta) * c1) + (theta_dot * (sec(theta) ^ 2) * c2) + tan(theta) * c4;
+    pd(12) = (-phi_dot * tan(theta) * c1) + (theta_dot * pow(sec(theta), 2) * c2) + tan(theta) * c4;
     pd(13) = tan(theta) * c2;
-    pd(14) = (sec(theta) ^ 2) * (phi_dot * c2 + (2 * theta_dot * tan(theta) * c1) + c3);
-    pd(15) = (sec(theta) ^ 2) * c1;
+    pd(14) = pow(sec(theta), 2) * (phi_dot * c2 + (2 * theta_dot * tan(theta) * c1) + c3);
+    pd(15) = pow(sec(theta), 2) * c1;
     pd(16) = 0;
     pd(17) = 0;
 
@@ -204,7 +218,7 @@ void AttitudeEDKF::CalcPartialDerivatives()
     // partial psi_ddot / (partial phi, phi_dot, theta, theta_dot, psi, psi_dot)
     pd(30) = (theta_dot * sec(theta) * tan(theta) * c2) + sec(theta) * (-phi_dot * c1 + c2);
     pd(31) = sec(theta) * c2;
-    pd(32) = (theta_dot * c1 * (sec(theta) * (tan(theta) ^ 2) + (sec(theta) ^ 3))) +
+    pd(32) = (theta_dot * c1 * (sec(theta) * pow(tan(theta), 2) + pow(sec(theta), 3))) +
              sec(theta) * tan(theta) * (phi_dot * c2 + c3);
     pd(33) = sec(theta) * tan(theta) * c1;
     pd(34) = 0;
@@ -255,9 +269,9 @@ void AttitudeEDKF::CalcAttJacobians()
             e = d + s + j;
             f = e + 1;
 
-            F2(i, j) = pd(d) * dt + 0.5 * pd(e) * dt ^ 2; // Update upper-left 3x3
+            F2(i, j) = pd(d) * dt + 0.5 * pd(e) * pow(dt,2); // Update upper-left 3x3
             F2(i + s, j) = pd(d) + pd(e) * dt;            // Update lower-left 3x3
-            F2(i, j + s) = 0.5 * pd(f) * dt ^ 2;          // Update upper-right 3x3
+            F2(i, j + s) = 0.5 * pd(f) * pow(dt,2);          // Update upper-right 3x3
             F2(i + s, j + s) = pd(f) * dt;                // Update lower-right 3x3
 
             if (i == j) // Account for a few diagonal terms within the above 3x3's
@@ -289,10 +303,24 @@ float AttitudeEDKF::KeepAngleWithinPI(float angle)
 }
 
 // Keep measurement within PI of prediction (applies to roll and yaw)
+// Ex: roll prediction = 179 deg, but roll measurement = -179 deg
+// The difference b/w the two is greater than 180 deg (the algorithm will fail from this discontinuity)
 float AttitudeEDKF::KeepMsmtWithinPI(float predict, float msmt)
 {
     if (msmt - predict > M_PI)
         return (msmt - 2 * M_PI);
     if (msmt - predict < -M_PI)
         return (msmt + 2 * M_PI);
+}
+
+// Get angular motion Xhat
+Vector6f AttitudeEDKF::GetAngularMotionXhat()
+{
+    return AngMotKF->GetXhat();
+}
+
+// Get attitude Xhat
+Vector6f AttitudeEDKF::GetAttitudeXhat()
+{
+    return AttKF->GetXhat();
 }

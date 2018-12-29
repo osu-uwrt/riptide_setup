@@ -3,16 +3,12 @@
 
 #include "riptide_gnc/kalman_filter.h"
 #include "eigen3/Eigen/Dense"
-#include "Math.h"
+#include "eigen3/Eigen/Core"
+#include "math.h"
 
 using namespace Eigen;
 typedef Matrix<float, 6, 6> Matrix6f;
-typedef Vector<float, 6, 1> Vector6f;
-
-float sec(x)
-{
-  return 1.0 / cos(x);
-}
+typedef Matrix<float, 6, 1> Vector6f;
 
 // Attitude Extended Dynamic Kalman Filter (EDKF)
 // This EDKF is meant to be used as a cascaded KF, in which an IMU's EKF output is treated as the measurement
@@ -21,12 +17,13 @@ float sec(x)
 // pitch angles of +/- 90 degrees. To ensure complete operation of this EDKF, when the IMU EKF reports
 // pitch angles outside the specified range, this EDKF will bypass the calculations and simply report
 // the same values from the IMU EKF.
+// The EDKF also performs auto-intialization (no need to directly initialize)
 class AttitudeEDKF
 {
-public:
+private:
   // 1 -> Angular Motion (ang. vel and accel.); 2 -> Attitude (ang. pos. and ang. pos. rates)
 
-  KalmanFilter *AngMotKF, AttKF;
+  KalmanFilter *AngMotKF, *AttKF;
   Vector6f X1hat, X1hatPre, X2hat, X2hatPre;          // State vectors
   int x, y, z;                                        // Helper indeces for calculating partial derivatives
   float p, q, r, p_dot, q_dot, r_dot;                 // Helper variables for calculating partial derivatives
@@ -38,12 +35,12 @@ public:
   bool init;                                          // Indicates if EDKF is initialized
   Vector3f J;                                         // Inertia Tensor (Assume Jxx, Jyy, and Jzz, no need for cross-terms)
   Vector3f b;                                         // Damping Coefficients
-  VectorXf<float, 1, 36> pd;                          // Partial Derivatives (36 total)
+  Matrix<float, 1, 36> pd;                          // Partial Derivatives (36 total)
   float dt;                                           // Time-step [s]
   int s;                                              // s = 3, half the number of states
-  float theta_max;                                    // Maximum pitch angle allowed for operation of EDKF [rad]
+  float max_theta;                                    // Maximum pitch angle allowed for operation of EDKF [rad]
 
-private:
+public:
   AttitudeEDKF(float max_pitch, Vector3f inertia, Vector3f damping,
                Matrix6f Q1, MatrixXf R1, Matrix6f Q2, MatrixXf R2); // max_pitch [rad]
   void InitAttEDKF(Vector3f input_states, Vector6f Z);
@@ -55,8 +52,13 @@ private:
   void CalcPartialDerivatives();
   void CalcAngMotJacobians(); // Update F1 and H1
   void CalcAttJacobians();    // Update F2 and H2
-  void KeepAngleWithInPI(float angle);
-  void KeepMsmtWithinPI(float predict, float msmt);
+
+  float KeepAngleWithinPI(float angle);
+  float KeepMsmtWithinPI(float predict, float msmt);
+
+  // Getter Methods
+  Vector6f GetAngularMotionXhat();
+  Vector6f GetAttitudeXhat();
 };
 
 #endif
