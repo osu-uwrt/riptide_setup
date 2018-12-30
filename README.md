@@ -15,7 +15,7 @@ The Ohio State University
 ROS is compiled using the catkin build system, and so all of our repos will use catkin. 
 
 ## Cloning
-To collaborate with the riptide_software platform, you must fork this repo (click "Fork" at the top-right of this page). When executing the commands below, you will need to enter the URL to your forked repo. Form YOUR forked repo, click "Clone or download" at the top-right of the page, copy the URL, and then insert that URL in place of "<your_forked_repo>". make sure you do not forget the "src" at the end of the last line. This is a catkin-specific requirement that all source code be placed within a folder called "src".
+To collaborate with the riptide_software platform, you must fork this repo (click "Fork" at the top-right of this page). When executing the commands below, you will need to enter the URL to your forked repo. Form YOUR forked repo, click "Clone or download" at the top-right of the page, copy the URL, and then insert that URL in place of "<your_forked_repo>". Do NOT forget the "src" at the end of the last line. This is a catkin-specific requirement that all source code be placed within a folder called "src".
 ```
 mkdir -p ~/osu-uwrt/riptide_software/
 cd ~/osu-uwrt/riptide_software/
