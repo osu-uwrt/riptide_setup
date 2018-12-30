@@ -7,7 +7,7 @@
 
 using namespace Eigen;
 using namespace std;
-typedef Vector<float, 6, 1> Vector6f;
+typedef Matrix<float, 6, 1> Vector6f;
 
 // Pose Extended Kalman Filter (EKF) Suite
 // This class contains a suite of EKFs designed to estimate a vehicle's state from a series of
@@ -16,18 +16,22 @@ typedef Vector<float, 6, 1> Vector6f;
 // provided, b/c it is not a good idea to run old data in a Kalman Filter
 class PoseEKFSuite
 {
-  private:
-    vector<KalmanFilter> EKFSuite;
-    init; // Indicates if EKF is initilized
+private:
+  vector<KalmanFilter> KFSuite;
+  Matrix3i dataMask;
+  bool needKF[3]; // Indicate if there is an X, Y, and/or Z KF
+  bool init;     // Indicates if EKF is initilized
 
-  public:
-    PoseEKFSuite(Vector3f pos, Vector3f vel, Vector3f accel,
-                 Vector3f Rpos, Vector3f Rvel, Vector3f Raccel);
+public:
+  PoseEKFSuite(Matrix3i dataAvail, Vector3f Rpos, Vector3f Rvel, Vector3f Raccel,
+               Matrix3f Qx, Matrix3f Qy, Matrix3f Qz);
+  void UpdatePoseEKF(Vector3f Xpredict, Matrix3f data, Matrix3f Anew, Vector3f attitude);
+  void UpdateEKFX();
+  void UpdateEKFY();
+  void UpdateEKFZ();
+  void CalcMsmtJacobian(); // Calculate measurement Jacobian
 
-    void Update PoseEKF(Vector3f newData, Vector3f posData, Vector3f velData, Vector3f accelData);
-    void InitPoseEKF(Vector3f input_states);
-    void CalcJacobians();
-    // Getter Methods
+  // Getter Methods
 };
 
 #endif
