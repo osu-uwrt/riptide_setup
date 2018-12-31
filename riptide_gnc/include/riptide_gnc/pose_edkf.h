@@ -6,17 +6,22 @@
 
 using namespace Eigen;
 using namespace std;
+typedef Matrix<int, 3, 2> Matrix32i;
 
 // Pose Extended Dynamic Kalman Filter
+// This class is designed to estimate a vehicle's state from a series of sensors running at different 
+// rates (which is most probable in practice). Based on the indicated vehicle's on-board sensors
+// this class will determine all possible combinations of sensory data and will automatically 
+// determine which EKF to run based on the combination of new sensor data provided.
 class PoseEDKF
 {
 private:
     vector<PoseEKFSuite> poseEKFSuite;
-    bool init;
+    int EKFindeces;
 public:
-    PoseEDKF();
+    PoseEDKF(Matrix32i posAvail, Matrix32i velAvail, Matrix32i accelAvail);
     void InitPoseEDKF(VectorXf Xo);
-    void UpdatePoseEDKF(VectorXf Z);
+    void UpdatePoseEDKF(VectorXf Z, Vector3f attitude);
 };
 
 #endif

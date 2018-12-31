@@ -8,6 +8,7 @@
 
 using namespace Eigen;
 typedef Matrix<float, 6, 6> Matrix6f;
+typedef Matrix<float, 6, 2> Matrix62f;
 typedef Matrix<float, 6, 1> Vector6f;
 
 // Attitude Extended Dynamic Kalman Filter (EDKF)
@@ -44,7 +45,7 @@ public:
   AttitudeEDKF(float max_pitch, Vector3f inertia, Vector3f damping,
                Matrix6f Q1, MatrixXf R1, Matrix6f Q2, MatrixXf R2); // max_pitch [rad]
   void InitAttEDKF(Vector3f input_states, Vector6f Z);
-  void UpdateAttEDKF(float time_step, Vector3f input_states, Vector6f Z); // Input state: p_dot, q_dot, r_dot
+  Matrix62f UpdateAttEDKF(float time_step, Vector3f input_states, Vector6f Z); // Input state: p_dot, q_dot, r_dot
   void UpdateAngMotStates(Vector3f input_states, Vector6f Z);
   void UpdateAttStates(Vector6f Z);
   void TimePredictAngMotState(Vector3f input_states);

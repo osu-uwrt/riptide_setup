@@ -40,7 +40,7 @@ AttitudeEDKF::AttitudeEDKF(float max_pitch, Vector3f inertia, Vector3f damping,
 // time_step = dt [s]
 // input_states = pre-calculated p_dot, q_dot, r_dot [rad/s^2]
 // Z = IMU measurement (phi, theta, psi, p, q, r)
-void AttitudeEDKF::UpdateAttEDKF(float time_step, Vector3f input_states, Vector6f Z)
+Matrix62f AttitudeEDKF::UpdateAttEDKF(float time_step, Vector3f input_states, Vector6f Z)
 {
     dt = time_step;
 
@@ -59,6 +59,10 @@ void AttitudeEDKF::UpdateAttEDKF(float time_step, Vector3f input_states, Vector6
     {
         AttitudeEDKF::InitAttEDKF(input_states, Z);
     }
+
+    Matrix62f output;
+    output << X1hat, X2hat;
+    return output;
 }
 
 // Initialize Attitude EDKF
@@ -92,8 +96,8 @@ void AttitudeEDKF::UpdateAngMotStates(Vector3f input_states, Vector6f Z)
         Z1(i) = Z(i + s);
     AttitudeEDKF::TimePredictAngMotState(input_states);
     AttitudeEDKF::CalcAngMotJacobians();
-    AngMotKF->UpdateKFOverride(X1hatPre, Z1, F1, H1);
-    X1hat = AngMotKF->GetXhat();
+    X1hat = AngMotKF->UpdateKFOverride(X1hatPre, Z1, F1, H1);
+    //X1hat = AngMotKF->GetXhat();
 }
 
 // Update Attitude EDKF
@@ -109,8 +113,8 @@ void AttitudeEDKF::UpdateAttStates(Vector6f Z)
     Z2(0) = AttitudeEDKF::KeepMsmtWithinPI(X2hatPre(0), Z2(0));
     Z2(2) = AttitudeEDKF::KeepMsmtWithinPI(X2hatPre(2), Z2(2));
 
-    AttKF->UpdateKFOverride(X2hatPre, Z2, F2, H2);
-    X2hat = AttKF->GetXhat();
+    X2hat = AttKF->UpdateKFOverride(X2hatPre, Z2, F2, H2);
+    //X2hat = AttKF->GetXhat();
     X2hat(0) = AttitudeEDKF::KeepAngleWithinPI(X2hatPre(0));
     X2hat(2) = AttitudeEDKF::KeepAngleWithinPI(X2hatPre(2));
 }

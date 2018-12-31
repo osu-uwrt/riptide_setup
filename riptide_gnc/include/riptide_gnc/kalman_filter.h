@@ -24,8 +24,8 @@ private:
 public:
     KalmanFilter(MatrixXf Ao, MatrixXf Ho, MatrixXf Qo, MatrixXf Ro);
     void InitKF(VectorXf Xo);
-    void UpdateKF(VectorXf Z);
-    void UpdateKFOverride(VectorXf Xpredict, VectorXf Z, MatrixXf Anew, MatrixXf Hnew);
+    VectorXf UpdateKF(VectorXf Z);
+    VectorXf UpdateKFOverride(VectorXf Xpredict, VectorXf Z, MatrixXf Anew, MatrixXf Hnew);
     VectorXf GetXhat();
 };
 

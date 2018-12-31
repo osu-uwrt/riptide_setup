@@ -1,7 +1,6 @@
-#ifndef ATTITUDE_EDKF_INTERFACE
-#define ATTITUDE_EDKF_INTERFACE
+#ifndef POSE_EDKF_INTERFACE
+#define POSE_EDKF_INTERFACE
 
-#include "riptide_gnc/attitude_edkf.h"
 #include "riptide_gnc/pose_edkf.h"
 #include "ros/ros.h"
 #include "eigen3/Eigen/Dense"
@@ -10,13 +9,13 @@
 using namespace Eigen;
 using namespace std;
 
-class AttitudeEDKFInterface
+class PoseEDKFInterface
 {
   private:
   ros::NodeHandle nh;
 
   public:
-    AttitudeEDKFInterface();
+    PoseEDKFInterface();
 };
 
 #endif

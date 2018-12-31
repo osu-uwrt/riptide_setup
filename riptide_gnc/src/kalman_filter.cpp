@@ -48,7 +48,7 @@ void KalmanFilter::InitKF(VectorXf Xo)
 }
 
 // Update Kalman Filter, assuming linear system
-void KalmanFilter::UpdateKF(VectorXf Z)
+VectorXf KalmanFilter::UpdateKF(VectorXf Z)
 {
     // Verify input vector dimensions
     int Zrows = Z.rows();
@@ -65,12 +65,13 @@ void KalmanFilter::UpdateKF(VectorXf Z)
     K = P * H.transpose() * ((H * P * H.transpose() + R).inverse());
     Xhat = Xhat + K * (Z - H * Xhat);
     P = (I - K * H) * P;
+    return Xhat;
 }
 
 // Update Kalman Filter with overridden state vector and system matrices
 // To be called by an Extended Kalman Filter (EKF)
 // A and H matrices are Jacobians calculated by the EKF
-void KalmanFilter::UpdateKFOverride(VectorXf Xpredict, VectorXf Z, MatrixXf Anew, MatrixXf Hnew)
+VectorXf KalmanFilter::UpdateKFOverride(VectorXf Xpredict, VectorXf Z, MatrixXf Anew, MatrixXf Hnew)
 {
     // Verify input matrix dimensions
     int Xrows = Xpredict.rows(), Zrows = Z.rows();
@@ -90,6 +91,7 @@ void KalmanFilter::UpdateKFOverride(VectorXf Xpredict, VectorXf Z, MatrixXf Anew
     K = P * H.transpose() * ((H * P * H.transpose() + R).inverse());
     Xhat = Xpredict + K * (Z - H * Xpredict);
     P = (I - K * H) * P;
+    return Xhat;
 }
 
 VectorXf KalmanFilter::GetXhat()
