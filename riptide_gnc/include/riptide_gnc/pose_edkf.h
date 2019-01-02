@@ -18,10 +18,11 @@ class PoseEDKF
 private:
     vector<PoseEKFSuite> poseEKFSuite;
     int EKFindeces;
+    float dt;
 public:
     PoseEDKF(Matrix32i posAvail, Matrix32i velAvail, Matrix32i accelAvail);
     void InitPoseEDKF(VectorXf Xo);
-    void UpdatePoseEDKF(VectorXf Z, Vector3f attitude);
+    void UpdatePoseEDKF(float time_step, VectorXf Z, Vector3f attitude);
 };
 
 #endif
