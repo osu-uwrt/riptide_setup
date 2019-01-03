@@ -56,10 +56,6 @@ public:
 
   float KeepAngleWithinPI(float angle);
   float KeepMsmtWithinPI(float predict, float msmt);
-
-  // Getter Methods
-  Vector6f GetAngularMotionXhat();
-  Vector6f GetAttitudeXhat();
 };
 
 #endif

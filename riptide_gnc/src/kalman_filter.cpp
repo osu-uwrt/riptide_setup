@@ -94,7 +94,7 @@ VectorXf KalmanFilter::UpdateKFOverride(VectorXf Xpredict, VectorXf Z, MatrixXf 
     return Xhat;
 }
 
-VectorXf KalmanFilter::GetXhat()
+MatrixXf KalmanFilter::GetProcessCovariance()
 {
-    return Xhat;
+    return P;
 }

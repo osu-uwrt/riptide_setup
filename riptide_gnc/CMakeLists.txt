@@ -25,8 +25,8 @@ set(ATTITUDE_EDKF
 
 set(POSE_EDKF
   src/kalman_filter.cpp
+  src/linear_motion_ekf_suite.cpp
   src/pose_edkf.cpp
-  src/pose_ekf_suite.cpp
 )
 
 add_executable(attitude_edkf_interface src/attitude_edkf_interface.cpp ${ATTITUDE_EDKF})

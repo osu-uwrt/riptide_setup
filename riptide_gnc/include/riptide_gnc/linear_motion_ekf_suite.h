@@ -3,6 +3,8 @@
 
 #include "riptide_gnc/kalman_filter.h"
 #include "eigen3/Eigen/Dense"
+#include "eigen3/Eigen/Core"
+#include "eigen3/Eigen/StdVector"
 #include "math.h"
 
 using namespace Eigen;
@@ -13,23 +15,26 @@ typedef Matrix<float, Dynamic, 3> MatrixX3f;
 
 // Linear Motion Extended Kalman Filter (EKF) Suite
 
-// This class is deigned to work with the Pose EDKF class, as the Pose EDKF class instantiates
-// numerous Pose EKF Suites to better estimate the vehicle's state.
-// Each Pose EKF Suite is initialized to handle a specific collection of measurements, indicated
-// in the dataAvail parameter. The Pose EKF Suite uses this parameter to pass the appropriate
-// information to each Kalman Filter (X, Y, and Z axes).
+// This class is designed to work with the Pose EDKF class, as the Pose EDKF class instantiates
+// numerous Linear Motion EKF Suites to better estimate the vehicle's linear state.
+// Each Linear Motion EKF Suite is initialized to handle a specific collection of measurements,
+// indicated in the posIn, velIn, and accelIn parameters. The Pose EKF Suite uses this parameter to
+// pass the appropriate information to each Kalman Filter (X, Y, and Z axes).
 // This class is written mostly in a generic sense to handle all possible combinations of information.
 class LinearMotionEKFSuite
 {
 private:
   vector<KalmanFilter *> KFSuite; // std::vector of pointers to KFs
-  Vector3i states;
-  Matrix3Xi posData;     // Available position data
-  Matrix3Xi velData;     // Available velocity vel data
-  Matrix3Xi accelData;   // Available  acceleration data
-  vector<int> KFindeces; // Contains the index within KFSuite for the X, Y, and/or Z KF
+  Vector3i states;                // Indicates which states are being tracked (pos, vel, and/or accel)
+  int n;                          // Number of States
+  Matrix3Xi posData;              // Available position data
+  Matrix3Xi velData;              // Available velocity data
+  Matrix3Xi accelData;            // Available acceleration data
   int colsPos, colsVel, colsAccel;
-  int numKFPerAxis[3];
+  int activeKFPerAxis[3];           // Number of active KFs per axis
+  vector<vector<int> > msmtsPerAxis; // Row -> axis; Col -> num msmts per KF w/in the axis
+  vector<vector<bool> > skipKF;      // Row -> axis; Col -> skip KF w/in the axis
+  int maxMsmtsPerAxis[3];
 
 public:
   LinearMotionEKFSuite(Vector3i kf_states, Matrix3Xi posIn, Matrix3Xi velIn, Matrix3Xi accelIn,

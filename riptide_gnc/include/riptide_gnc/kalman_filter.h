@@ -26,7 +26,7 @@ public:
     void InitKF(VectorXf Xo);
     VectorXf UpdateKF(VectorXf Z);
     VectorXf UpdateKFOverride(VectorXf Xpredict, VectorXf Z, MatrixXf Anew, MatrixXf Hnew);
-    VectorXf GetXhat();
+    MatrixXf GetProcessCovariance();
 };
 
 #endif

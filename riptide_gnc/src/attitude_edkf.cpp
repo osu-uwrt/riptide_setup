@@ -316,15 +316,3 @@ float AttitudeEDKF::KeepMsmtWithinPI(float predict, float msmt)
     if (msmt - predict < -M_PI)
         return (msmt + 2 * M_PI);
 }
-
-// Get angular motion Xhat
-Vector6f AttitudeEDKF::GetAngularMotionXhat()
-{
-    return AngMotKF->GetXhat();
-}
-
-// Get attitude Xhat
-Vector6f AttitudeEDKF::GetAttitudeXhat()
-{
-    return AttKF->GetXhat();
-}
