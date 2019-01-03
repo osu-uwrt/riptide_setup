@@ -26,13 +26,13 @@ set(ATTITUDE_EDKF
 set(POSE_EDKF
   src/kalman_filter.cpp
   src/linear_motion_ekf_suite.cpp
-  src/pose_edkf.cpp
+  #src/pose_ekf.cpp
 )
 
 add_executable(attitude_edkf_interface src/attitude_edkf_interface.cpp ${ATTITUDE_EDKF})
 target_link_libraries(attitude_edkf_interface ${catkin_LIBRARIES})
 add_dependencies(attitude_edkf_interface ${catkin_EXPORTED_TARGETS})
 
-add_executable(pose_edkf_interface src/attitude_edkf_interface.cpp ${POSE_EDKF})
+add_executable(pose_edkf_interface src/pose_edkf_interface.cpp ${POSE_EDKF})
 target_link_libraries(pose_edkf_interface ${catkin_LIBRARIES})
 add_dependencies(pose_edkf_interface ${catkin_EXPORTED_TARGETS})

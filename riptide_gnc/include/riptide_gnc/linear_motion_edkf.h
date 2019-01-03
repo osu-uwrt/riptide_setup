@@ -19,7 +19,7 @@ typedef Matrix<float, 2, Dynamic> Matrix2Xf;
 class LinearMotionEDKF
 {
   private:
-    vector<LinearMotionEKFSuite> KFSuite;
+    vector<LinearMotionEKFSuite> LMEKFSuite;
     Matrix3Xi velData;   // Available body-frame velocity data
     Matrix3Xi accelData; // Available body-frame acceleration data
     int velSensors, accelSensors;

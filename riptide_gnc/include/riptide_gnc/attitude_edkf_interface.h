@@ -2,7 +2,6 @@
 #define ATTITUDE_EDKF_INTERFACE
 
 #include "riptide_gnc/attitude_edkf.h"
-#include "riptide_gnc/pose_edkf.h"
 #include "ros/ros.h"
 #include "eigen3/Eigen/Dense"
 #include "math.h"
