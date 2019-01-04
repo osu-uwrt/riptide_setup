@@ -16,15 +16,16 @@ LinearMotionEKFSuite::LinearMotionEKFSuite(Vector3i kf_states, Matrix3Xi posIn, 
     states = kf_states;
     n = states.sum();
 
-    posData.resize(posIn.rows(), posIn.cols());
-    velData.resize(velIn.rows(), velIn.cols());
-    accelData.resize(accelIn.rows(), accelIn.cols());
-    posData = posIn;     // Available position data
-    velData = velIn;     // Available velocity data
-    accelData = accelIn; // Available acceleration data
-    colsPos = posData.cols();
-    colsVel = velData.cols();
-    colsAccel = accelData.cols();
+    posMask.resize(posIn.rows(), posIn.cols());
+    velMask.resize(velIn.rows(), velIn.cols());
+    accelMask.resize(accelIn.rows(), accelIn.cols());
+    posMask = posIn;     // Available position data
+    velMask = velIn;     // Available velocity data
+    accelMask = accelIn; // Available acceleration data
+    colsPos = posMask.cols();
+    colsVel = velMask.cols();
+    colsAccel = accelMask.cols();
+
     int maxCols = max(colsPos, max(colsVel, colsAccel));
 
     // Check for basic matrix size requirements
@@ -50,7 +51,7 @@ LinearMotionEKFSuite::LinearMotionEKFSuite(Vector3i kf_states, Matrix3Xi posIn, 
 
         for (int i = 0; i < maxCols; i++) // Match columns one-by-one
         {
-            int numMsmts = posData(axis, colP) + velData(axis, colV) + accelData(axis, colA); // At most 3
+            int numMsmts = posMask(axis, colP) + velMask(axis, colV) + accelMask(axis, colA); // At most 3
 
             if (numMsmts > 0) // Add KF
             {
@@ -64,11 +65,11 @@ LinearMotionEKFSuite::LinearMotionEKFSuite(Vector3i kf_states, Matrix3Xi posIn, 
                 MatrixXf R(numMsmts, numMsmts);
                 R.setZero();
                 int Rindex = 0;
-                if (posData(axis, colP))
+                if (posMask(axis, colP))
                     R(Rindex, Rindex++) = Rpos(axis, colP);
-                if (velData(axis, colV))
+                if (velMask(axis, colV))
                     R(Rindex, Rindex++) = Rvel(axis, colV);
-                if (accelData(axis, colA))
+                if (accelMask(axis, colA))
                     R(Rindex, Rindex++) = Raccel(axis, colA);
 
                 // Add to KFSuite
@@ -85,7 +86,7 @@ LinearMotionEKFSuite::LinearMotionEKFSuite(Vector3i kf_states, Matrix3Xi posIn, 
                 msmtsPerKF.push_back(0);
             }
 
-            // Update current column of posData, velData, and accelData
+            // Update current column of posMask, velMask, and accelMask
             // If thre is only one column, this will always return that column
             colP = (colP + 1) % colsPos;
             colV = (colV + 1) % colsVel;
@@ -122,9 +123,10 @@ LinearMotionEKFSuite::LinearMotionEKFSuite(Vector3i kf_states, Matrix3Xi posIn, 
 // Xpredict = concatenation of time-predictions for each axis (up to 3 rows, if necessary)
 //            Row 0 = state1 prediction, Row 1 = state2 prediction, Row 2 = state3 prediction
 //            Col 0 = X-axis, Col 1 = Y-axis, Col 2 = Z-axis
-// Z = horizontal concatenation of posIn, velIn, and accelIn where each "1" is replaced with the actual msmt)
+// Z = horizontal concatenation of posIn, velIn, and accelIn where each "1" is replaced with the msmt)
 // Anew = horizontal concatenation of each KF's A matrix (Ax, Ay, Az)
-MatrixX3f LinearMotionEKFSuite::UpdateEKFSuite(MatrixX3f Xpredict, Matrix3Xf Z, MatrixXf Anew)
+MatrixX3f LinearMotionEKFSuite::UpdateEKFSuite(MatrixX3f Xpredict, Matrix3Xf Zpos, Matrix3Xf Zvel,
+                                               Matrix3Xf Zaccel, MatrixXf Anew)
 {
     /*if (Z.cols() != (colsPos + colsVel + colsAccel))
         throw std::runtime_error("Dimension mismatch: row size of Z does not match expected row size");*/
@@ -140,8 +142,8 @@ MatrixX3f LinearMotionEKFSuite::UpdateEKFSuite(MatrixX3f Xpredict, Matrix3Xf Z, 
 
         VectorXf state(n);
         MatrixXf Pinverse(n, n);
-        vector<VectorXf > states; // Vector for all state estimates for this axis
-        vector<MatrixXf > Pinverses; // Vector of all process covariance inverses
+        vector<VectorXf> states;       // Vector for all state estimates for this axis
+        vector<MatrixXf> Pinverses;    // Vector of all process covariance inverses
         MatrixXf overallInverse(n, n); // May or may not be used
         state.setZero();
         Pinverse.setZero();
@@ -150,7 +152,7 @@ MatrixX3f LinearMotionEKFSuite::UpdateEKFSuite(MatrixX3f Xpredict, Matrix3Xf Z, 
         for (int i = 0; i < maxCols; i++) // Match columns one-by-one (same format as above)
         {
             // Keep track of KF index
-            int numMsmts = posData(axis, colP) + velData(axis, colV) + accelData(axis, colA);
+            int numMsmts = posMask(axis, colP) + velMask(axis, colV) + accelMask(axis, colA);
             if (numMsmts > 0)
                 KFindex++;
 
@@ -158,20 +160,20 @@ MatrixX3f LinearMotionEKFSuite::UpdateEKFSuite(MatrixX3f Xpredict, Matrix3Xf Z, 
             {
                 // Create vector indicating available measurements
                 Vector3i msmts = Vector3i::Zero();
-                msmts(0) = posData(axis, colP);
-                msmts(1) = velData(axis, colV);
-                msmts(2) = accelData(axis, colA);
+                msmts(0) = posMask(axis, colP);
+                msmts(1) = velMask(axis, colV);
+                msmts(2) = accelMask(axis, colA);
 
                 // Create Z vector for current KF
                 VectorXf Znew(numMsmts);
                 Znew.setZero();
                 int Zindex = 0;
-                if (posData(axis, colP))
-                    Znew(Zindex++) = Z(axis, colP);
-                if (velData(axis, colV))
-                    Znew(Zindex++) = Z(axis, colsPos + colV);
-                if (accelData(axis, colA))
-                    Znew(Zindex++) = Z(axis, colsPos + colsVel + colA);
+                if (posMask(axis, colP))
+                    Znew(Zindex++) = Zpos(axis, colP);
+                if (velMask(axis, colV))
+                    Znew(Zindex++) = Zvel(axis, colV);
+                if (accelMask(axis, colA))
+                    Znew(Zindex++) = Zaccel(axis, colA);
 
                 // Create H matrix for current KF
                 MatrixXf Hnew(numMsmts, n);
@@ -186,7 +188,7 @@ MatrixX3f LinearMotionEKFSuite::UpdateEKFSuite(MatrixX3f Xpredict, Matrix3Xf Z, 
                 }
 
                 state = KFSuite[KFindex]->UpdateKFOverride(Xpredict.col(axis), Znew,
-                                                   Anew.block(n, n, 0, axis * n), Hnew);
+                                                           Anew.block(n, n, 0, axis * n), Hnew);
                 Pinverse = KFSuite[KFindex]->GetProcessCovariance().inverse();
 
                 states.push_back(state);
@@ -194,7 +196,7 @@ MatrixX3f LinearMotionEKFSuite::UpdateEKFSuite(MatrixX3f Xpredict, Matrix3Xf Z, 
                 overallInverse = overallInverse + Pinverse; // Sum all inverses
             }
 
-            // Update current column of posData, velData, and accelData
+            // Update current column of posMask, velMask, and accelMask
             colP = (colP + 1) % colsPos;
             colV = (colV + 1) % colsVel;
             colA = (colA + 1) % colsAccel;
@@ -211,7 +213,7 @@ MatrixX3f LinearMotionEKFSuite::UpdateEKFSuite(MatrixX3f Xpredict, Matrix3Xf Z, 
             }
             X.col(axis) = overallInverse * X.col(axis); // Then pre-multiply by overallInverse
         }
-        else 
+        else
             X.col(axis) = state;
     }
 

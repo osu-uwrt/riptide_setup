@@ -27,9 +27,9 @@ private:
   vector<KalmanFilter *> KFSuite; // std::vector of pointers to KFs
   Vector3i states;                // Indicates which states are being tracked (pos, vel, and/or accel)
   int n;                          // Number of States
-  Matrix3Xi posData;              // Available position data
-  Matrix3Xi velData;              // Available velocity data
-  Matrix3Xi accelData;            // Available acceleration data
+  Matrix3Xi posMask;              // Available position data
+  Matrix3Xi velMask;              // Available velocity data
+  Matrix3Xi accelMask;            // Available acceleration data
   int colsPos, colsVel, colsAccel;
   int activeKFPerAxis[3];           // Number of active KFs per axis
   vector<vector<int> > msmtsPerAxis; // Row -> axis; Col -> num msmts per KF w/in the axis
@@ -39,7 +39,7 @@ private:
 public:
   LinearMotionEKFSuite(Vector3i kf_states, Matrix3Xi posIn, Matrix3Xi velIn, Matrix3Xi accelIn,
                        Matrix3Xf Rpos, Matrix3Xf Rvel, Matrix3Xf Raccel, MatrixXf Q);
-  MatrixX3f UpdateEKFSuite(MatrixX3f Xpredict, Matrix3Xf Z, MatrixXf Anew);
+  MatrixX3f UpdateEKFSuite(MatrixX3f Xpredict, Matrix3Xf Zpos, Matrix3Xf Zvel, Matrix3Xf Zaccel, MatrixXf Anew);
 };
 
 #endif

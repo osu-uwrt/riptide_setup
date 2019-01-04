@@ -21,7 +21,7 @@ class PoseEKFSuite
 {
 private:
   vector<KalmanFilter*> KFSuite; // std::vector of pointers to KFs
-  Vector3i posData;           // Available absolute position data
+  Vector3i posMask;           // Available absolute position data
   Matrix<int, 3, 2> bfData; // Available body-frame data
   bool needKF[3];             // Indicate if there is an X, Y, and/or Z KF
   int KFindeces[3];           // Contains the index within KFSuite for the X, Y, and/or Z KF

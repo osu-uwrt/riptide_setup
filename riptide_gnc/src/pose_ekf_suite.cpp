@@ -7,12 +7,12 @@
 // Qx, Qy, and Qz are the process-noise coviariance matrices for each axis
 PoseEKFSuite::PoseEKFSuite(Matrix3i dataAvail, Vector3f Rpos, Vector3f Rvel, Vector3f Raccel, Matrix39f Q)
 {
-    posData = dataAvail.col(0);      // Available absolute position data
+    posMask = dataAvail.col(0);      // Available absolute position data
     bfData = dataAvail.rightCols(2); // Available body-frame data
 
     // Deterine which KFs need to be created (X, Y, and/or Z)
     for (int i = 0; i < 3; i++) // Check for absolute position measurements
-        needKF[i] = (bool)posData(i);
+        needKF[i] = (bool)posMask(i);
     if (bfData.sum() > 0) // Check for relative measurements
         for (int i = 0; i < 3; i++)
             needKF[i] = true;
@@ -29,13 +29,13 @@ PoseEKFSuite::PoseEKFSuite(Matrix3i dataAvail, Vector3f Rpos, Vector3f Rvel, Vec
 
         if (needKF[axis])
         {
-            numMsmts = posData(axis) + bfData.sum();
+            numMsmts = posMask(axis) + bfData.sum();
             MatrixXf H(numMsmts, 3); // Create H matrix
             H.setZero();
 
             MatrixXf R(numMsmts, numMsmts); // Create R matrix
             R.setZero();
-            if (posData(axis))
+            if (posMask(axis))
                 R(Rindex, Rindex++) = Rpos(axis);
             for (int k = 0; k < bfData.cols(); k++)
                 for (int j = 0; j < bfData.rows(); j++)
@@ -66,7 +66,7 @@ Matrix43f PoseEKFSuite::UpdatePoseEKFSuite(Matrix3f Xpredict, Vector3f attitude,
         if (needKF[axis]) // Update each KF (X, Y, and/or Z) as needed
         {
             newDataAvail(axis) = 1; // 1 indicates new data available for KF
-            int numMsmts = posData(axis) + bfData.sum();
+            int numMsmts = posMask(axis) + bfData.sum();
             MatrixXf Hnew(numMsmts, 3);
             MatrixXf Znew(numMsmts, 1);
             Matrix3f R_w2b = GetRotationRPY2Body(attitude(0), attitude(1), attitude(2));
@@ -75,7 +75,7 @@ Matrix43f PoseEKFSuite::UpdatePoseEKFSuite(Matrix3f Xpredict, Vector3f attitude,
             int Hrow = 0;
 
             // Calculate Jacobian for H matrix
-            if (posData(axis))
+            if (posMask(axis))
             {
                 Hnew(Hrow, 0) = 1;
                 Znew(Hrow++) = Z(axis, 0);

@@ -3,11 +3,12 @@
 
 #include "riptide_gnc/linear_motion_ekf_suite.h"
 #include "eigen3/Eigen/Dense"
+#include "math.h"
 
 using namespace Eigen;
 using namespace std;
 typedef Matrix<int, 1, Dynamic> RowXi;
-typedef Matrix<float, 2, Dynamic> Matrix2Xf;
+typedef Matrix<float, 2, 3> Matrix23f;
 
 // Linear Motion Extended Dynamic Kalman Filter
 // This class is designed to estimate a vehicle's body-frame linear velocity and acceleration from a 
@@ -20,16 +21,18 @@ class LinearMotionEDKF
 {
   private:
     vector<LinearMotionEKFSuite> LMEKFSuite;
-    Matrix3Xi velData;   // Available body-frame velocity data
-    Matrix3Xi accelData; // Available body-frame acceleration data
+    Matrix3Xi velMask;   // Available body-frame velocity data
+    Matrix3Xi accelMask; // Available body-frame acceleration data
     int velSensors, accelSensors;
     vector<RowXi > sensorCombos;
+    Vector3f damping;
 
   public:
-    LinearMotionEDKF(Matrix3Xi velIn, Matrix3Xi accelIn, Matrix3Xf Rvel, Matrix3Xf Raccel, Matrix2Xf Q);
+    LinearMotionEDKF(Vector3f dampSlopes, Matrix3Xi velIn, Matrix3Xi accelIn, Matrix3Xf Rvel, Matrix3Xf Raccel, Matrix2Xf Q);
     void FindDataCombos(int velSensors, int accelSensors);
     void InitLMEDKF(VectorXf Xo);
-    void UpdateLMEDKF(float time_step, Matrix3Xf Zvel, Matrix3Xf Zaccel);
+    void UpdateLMEDKF(RowXi dataMask, float time_step, Matrix2Xf Xpredict, Matrix3Xf Zvel, Matrix3Xf Zaccel);
+    void VelAccelSTM(float dampingSlope, float dt);
 };
 
 #endif

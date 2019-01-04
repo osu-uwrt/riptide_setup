@@ -16,9 +16,9 @@ class PoseEKF
 {
   private:
     vector<LinearMotionEKFSuite> EKFSuite;
-    Matrix3Xi posData;     // Available position data
-    Matrix3Xi velData;   // Available velocity data
-    Matrix3Xi accelData; // Available acceleration data
+    Matrix3Xi posMask;     // Available position data
+    Matrix3Xi velMask;   // Available velocity data
+    Matrix3Xi accelMask; // Available acceleration data
 
   public:
     PoseEKF(Matrix3Xi posIn, Matrix3Xi bfVelIn, Matrix3Xi bfAccelIn);

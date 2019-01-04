@@ -1,22 +1,34 @@
 #include "riptide_gnc/linear_motion_edkf.h"
 
-LinearMotionEDKF::LinearMotionEDKF(Matrix3Xi velIn, Matrix3Xi accelIn,
+// damping = the linearized damping slope for each body-frame axis
+//      Ex: Linear drag: accel_drag = -b*v/mass --> damping slope = -b/mass
+//      Ex: Quadratic fit: accel_drag = (0.5/mass)*rho*C*A*v^2 --> damping solpe = rho*C*A/mass
+// velIn, accelIn = matrices indicating which measurements are provided to this EKF
+//      Row 0 = X; Row 1 = Y; Row 2 = Z
+//      Each column represents data from a different sensor
+//      1 = msmt provided, 0 = msmt not provided
+// Rvel, and Raccel = the main-diagonal elements for the sensor noise covariance matrices
+//      Row 0 = X; Row 1 = Y; Row 2 = Z
+// Q = horizontal concatenation of process coviariance matrices for each axis (Qx, Qy, and Qz)
+LinearMotionEDKF::LinearMotionEDKF(Vector3f dampSlopes, Matrix3Xi velIn, Matrix3Xi accelIn,
                                    Matrix3Xf Rvel, Matrix3Xf Raccel, Matrix2Xf Q)
 {
-    velData.resize(velIn.rows(), velIn.cols());
-    accelData.resize(accelIn.rows(), accelIn.cols());
-    velData = velIn;     // Available velocity data
-    accelData = accelIn; // Available acceleration data
-    int colsVel = velData.cols();
-    int colsAccel = accelData.cols();
+    damping = dampSlopes;
+
+    velMask.resize(velIn.rows(), velIn.cols());
+    accelMask.resize(accelIn.rows(), accelIn.cols());
+    velMask = velIn;     // Available velocity data
+    accelMask = accelIn; // Available acceleration data
+    int colsVel = velMask.cols();
+    int colsAccel = accelMask.cols();
 
     // Count number of each type of sensor
     velSensors = 0, accelSensors = 0;
     for (int i = 0; i < colsVel; i++)
-        if (velData.col(i).sum() > 0)
+        if (velMask.col(i).sum() > 0)
             velSensors++;
     for (int i = 0; i < colsAccel; i++)
-        if (accelData.col(i).sum() > 0)
+        if (accelMask.col(i).sum() > 0)
             accelelSensors++;
 
     // Find all possible sensor combinations
@@ -27,9 +39,9 @@ LinearMotionEDKF::LinearMotionEDKF(Matrix3Xi velIn, Matrix3Xi accelIn,
 
     // Create states vector
     Vector3i states;
-    states(0) = 0; // No pos
-    states(1) = 1; // Yes vel
-    states(2) = 1; // Yes accel
+    states(0) = 0; // Not tracking pos
+    states(1) = 1; // Tracking vel
+    states(2) = 1; // Tracking accel
 
     RowXi combo;
     combo.resize(1, numSensors + noVel + noAccel);
@@ -45,39 +57,37 @@ LinearMotionEDKF::LinearMotionEDKF(Matrix3Xi velIn, Matrix3Xi accelIn,
     for (int i = 0; i < sensorCombos.size(); i++)
     {
         combo = sensorCombos[i];
-        velCols = combo.leftCols(colsV); // Vel on the left
+        velCols = combo.leftCols(colsV);    // Vel on the left
         accelCols = combo.rightCols(colsA); // Accel on the right
 
         Matrix3Xi velInNew(3, velCols.sum());
         Matrix3Xf Rvelnew(3, velCols.sum());
         Matrix3Xi accelInNew(3, accelCols.sum());
         Matrix3Xf Raccelnew(3, accelCols.sum());
-        
+
         // Get required dataIn and R columns
         int col = 0;
-        for (int j = 0; j < velCols.cols(); j++)
+        for (int j = 0; j < colsV; j++)
         {
             if (velCols(j))
             {
-                velInNew.col(col) = velData.col(col);
-                Rvelnew.col(col) = Rvel.col(col++);
+                velInNew.col(col) = combo.col(j);
+                Rvelnew.col(col++) = Rvel.col(j);
             }
         }
         col = 0;
-        for (int j = 0; j < accelCols.cols(); j++)
+        for (int j = 0; j < colsA; j++)
         {
             if (accelCols(j))
             {
-                accelInNew.col(col) = accelData.col(col);
-                Raccelnew.col(col) = Raccel.col(col++);
+                accelInNew.col(col) = combo.col(colsV + j);
+                Raccelnew.col(col++) = Raccel.col(j);
             }
         }
 
         // Add LMEKF to LMEKFSuite
         LMEKFSuite.push_back(new LinearMotionEKFSuite(states, posIn, velInNew, accelInNew,
-                                                Rpos, Rvelnew, Raccelnew, Q));
-
-        
+                                                      Rpos, Rvelnew, Raccelnew, Q));
     }
 }
 
@@ -126,6 +136,33 @@ void LinearMotionEDKF::InitLMEDKF(VectorXf Xo)
 {
 }
 
-void LinearMotionEDKF::UpdateLMEDKF(float time_step, Matrix3Xf Zvel, Matrix3Xf Zaccel)
+void LinearMotionEDKF::UpdateLMEDKF(RowXi dataMask, float time_step, Matrix23f Xpredict,
+                                    Matrix3Xf Zvel, Matrix3Xf Zaccel)
 {
+    // Determine which KF to use based on provided dataMask
+    int KFindex = 0 for (int i = 0; i < sensorCombos.size(); i++)
+    {
+        if (mask == sensorCombos[i])
+        {
+            KFindex = i;
+            break;
+        }
+    }
+
+    // Create A matrices
+    // This uses the actual state transition matrix formula
+    MatrixXf Amatrices(2, 6);
+    for (int i = 0; i < 3; i++)
+    {
+    }
+}
+
+// Compute State Transition Matrix (this was computed from e^At)
+Matrix2f LinearMotionEDKF::VelAccelSTM(float b, float dt)
+{
+    Matrix2f A = Matrix2f::Zero();
+    A(0, 0) = cos(b * dt);
+    A(0, 1) = (1.0 / b) * sin(b * dt);
+    A(1, 0) = b * sin(b * dt);
+    A(1, 1) = cos(b * dt);
 }
