@@ -73,7 +73,7 @@ LinearMotionEKFSuite::LinearMotionEKFSuite(Vector3i kf_states, Matrix3Xi posIn, 
                     R(Rindex, Rindex++) = Raccel(axis, colA);
 
                 // Add to KFSuite
-                KFSuite.push_back(new KalmanFilter(A, H, Q.block(n, n, 0, axis * n), R));
+                KFSuite.push_back(new KalmanFilter(A, H, Q.block(0, axis * n, n, n), R));
                 activeKFPerAxis[axis] += 1;     // 1 more potential active KF
                 msmtsPerKF.push_back(numMsmts); // Add num. msmts
 
@@ -135,18 +135,23 @@ MatrixX3f LinearMotionEKFSuite::UpdateEKFSuite(MatrixX3f Xpredict, Matrix3Xf Zpo
     X.setZero();
     int KFindex = -1;
 
+    // Create row vector indicating which axis will be updated
+    Matrix<int, 1, 3> updateFlags;
+    updateFlags.setZero();
+
     for (int axis = 0; axis < 3; axis++) // One axis at a time
     {
         int colP = 0, colV = 0, colA = 0;
         int maxCols = max(colsPos, max(colsVel, colsAccel));
+
+        if (activeKFPerAxis[axis] > 0)
+            updateFlags(axis) = 1;
 
         VectorXf state(n);
         MatrixXf Pinverse(n, n);
         vector<VectorXf> states;       // Vector for all state estimates for this axis
         vector<MatrixXf> Pinverses;    // Vector of all process covariance inverses
         MatrixXf overallInverse(n, n); // May or may not be used
-        state.setZero();
-        Pinverse.setZero();
         overallInverse.setZero();
 
         for (int i = 0; i < maxCols; i++) // Match columns one-by-one (same format as above)
@@ -155,6 +160,9 @@ MatrixX3f LinearMotionEKFSuite::UpdateEKFSuite(MatrixX3f Xpredict, Matrix3Xf Zpo
             int numMsmts = posMask(axis, colP) + velMask(axis, colV) + accelMask(axis, colA);
             if (numMsmts > 0)
                 KFindex++;
+
+            state.setZero();
+            Pinverse.setZero();
 
             if (!skipKF[axis][i]) // This KF is required
             {
@@ -188,7 +196,7 @@ MatrixX3f LinearMotionEKFSuite::UpdateEKFSuite(MatrixX3f Xpredict, Matrix3Xf Zpo
                 }
 
                 state = KFSuite[KFindex]->UpdateKFOverride(Xpredict.col(axis), Znew,
-                                                           Anew.block(n, n, 0, axis * n), Hnew);
+                                                           Anew.block(0, axis * n, n, n), Hnew);
                 Pinverse = KFSuite[KFindex]->GetProcessCovariance().inverse();
 
                 states.push_back(state);
@@ -217,5 +225,7 @@ MatrixX3f LinearMotionEKFSuite::UpdateEKFSuite(MatrixX3f Xpredict, Matrix3Xf Zpo
             X.col(axis) = state;
     }
 
+    MatrixX3 output(n+1, 3);
+    output << updateFlags, X;
     return X;
 }
