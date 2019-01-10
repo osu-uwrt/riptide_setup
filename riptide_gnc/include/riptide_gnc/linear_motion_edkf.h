@@ -24,13 +24,13 @@ private:
   vector<LinearMotionEKFSuite> LMEKFSuite;
   vector<LinearMotionEKFSuite> PoseEKFSuite;
 
-  Matrix3Xi velMaskbf;   // Available body-frame velocity data
-  Matrix3Xi accelMaskbf; // Available body-frame acceleration data
-  Matrix3Xi posMaskw;    // Available world-frame position data
-  Matrix3Xi vaMaskw;     // Available world-frame velocity and acceleraton data
+  /*Matrix3Xi velMaskBF;   // Available body-frame velocity data
+  Matrix3Xi accelMaskBF; // Available body-frame acceleration data
+  Matrix3Xi posMaskW;    // Available world-frame position data
+  Matrix3Xi vaMaskW;     // Available world-frame velocity and acceleraton data*/
 
-  int velSensors, accelSensors;
-  vector<RowXi> sensorCombos;
+  int posSensors, velSensors, accelSensors;
+  vector<RowXi> sensorCombosBF, sensorCombosW;
   int dragOrder;
   Vector3f linearizedDamping;
 
@@ -38,7 +38,7 @@ public:
   const int DRAG_ORDER_1; // 1st order polynomial model for drag/viscous damping
   const int DRAG_ORDER_2; // 2nd order polynomial for drag/viscous damping
 
-  LinearMotionEDKF(int drag_order, Vector3f damping, Matrix3Xi posIn, Matrix3Xi velIn, Matrix3Xi accelIn, Matrix3Xf Rpos, Matrix3Xf Rvel, Matrix3Xf Raccel, Matrix3Xf Q);
+  LinearMotionEDKF(int drag_order, Vector3f damping, Matrix3Xi posMaskW, Matrix3Xi velMaskBF, Matrix3Xi accelMaskBF, Matrix3Xf Rpos, Matrix3Xf Rvel, Matrix3Xf Raccel, Matrix3Xf Q);
   void FindDataCombos(vector<RowXi> &list, int numSensors1, int numSensors2);
   void InitLMEDKF(VectorXf Xo);
   MatrixX3f UpdateLMEDKF(RowXi dataMask, float time_step, Vector3f input_states, Matrix3Xf Zpos, Matrix3Xf Zvel, Matrix3Xf Zaccel);
