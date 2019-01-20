@@ -25,8 +25,8 @@ public:
     KalmanFilter(MatrixXf Ao, MatrixXf Ho, MatrixXf Qo, MatrixXf Ro);
     void InitKF(VectorXf Xo);
     VectorXf UpdateKF(VectorXf Z);
-    VectorXf UpdateKFOverride(VectorXf Xpredict, VectorXf Z, MatrixXf Anew, MatrixXf Hnew);
-    MatrixXf GetProcessCovariance();
+    VectorXf UpdateEKF(MatrixXf Anew, MatrixXf Hnew, VectorXf Xpredict, VectorXf Z);
+    MatrixXf GetErrorCovariance();
 };
 
 #endif

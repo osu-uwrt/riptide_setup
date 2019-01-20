@@ -9,40 +9,40 @@
 using namespace Eigen;
 using namespace std;
 typedef Matrix<int, 1, Dynamic> RowXi;
-typedef Matrix<float, 2, 3> Matrix23f;
+typedef Matrix<float, 3, 2> Matrix32f;
+typedef Matrix<float, 9, 9> Matrix9Xf;
 
-// Linear Motion Extended Dynamic Kalman Filter
+// Translational Extended Kalman Filter
 // This class is designed to estimate a vehicle's body-frame linear velocity and acceleration from a
 // series of sensors running at different rates (which is most probable in practice). Based on the
 // indicated vehicle's on-board sensors, this class will determine all possible combinations of sensory
 // data and will automatically determine which EKF to run based on the new sensor data provided.
 // NOTE: This class assumes at least one sensor input is provided
 // NOTE: For practical reasons, at most TWO of the same type of sensor may be provided
-class LinearMotionEDKF
+class TransEKF
 {
 private:
-  vector<LinearMotionEKFSuite> LMEKFSuite;
-  vector<LinearMotionEKFSuite> PoseEKFSuite;
+  vector<KalmanFilter> EKF;
+  int n, numEKF;
+  vector<Matrix3Xi> sensorMask;
+  vector<Matrix3Xf> Rmat;
+  RowXi maskCols;
+  Matrix9Xf Q;
+  Matrix32f dragCoeffs;
 
-  /*Matrix3Xi velMaskBF;   // Available body-frame velocity data
-  Matrix3Xi accelMaskBF; // Available body-frame acceleration data
-  Matrix3Xi posMaskW;    // Available world-frame position data
-  Matrix3Xi vaMaskW;     // Available world-frame velocity and acceleraton data*/
+  bool sensorsExist;
+  bool sensors[3], sensorsRed[3]; // Red = redundant
+  bool indexRed[3];
+  int axialData[3], axialDataRed[3], numMsmts[2];
 
-  int posSensors, velSensors, accelSensors;
   vector<RowXi> sensorCombosBF, sensorCombosW;
-  int dragOrder;
-  Vector3f linearizedDamping;
 
 public:
-  const int DRAG_ORDER_1; // 1st order polynomial model for drag/viscous damping
-  const int DRAG_ORDER_2; // 2nd order polynomial for drag/viscous damping
-
-  LinearMotionEDKF(int drag_order, Vector3f damping, Matrix3Xi posMaskW, Matrix3Xi velMaskBF, Matrix3Xi accelMaskBF, Matrix3Xf Rpos, Matrix3Xf Rvel, Matrix3Xf Raccel, Matrix3Xf Q);
+  TransEKF(Matrix32f damping, Matrix3Xi posMaskw, Matrix3Xi velMaskbf, Matrix3Xi accelMaskbf,
+           Matrix3Xf Rpos, Matrix3Xf Rvel, Matrix3Xf Raccel, Matrix9Xf Qin);
   void FindDataCombos(vector<RowXi> &list, int numSensors1, int numSensors2);
   void InitLMEDKF(VectorXf Xo);
-  MatrixX3f UpdateLMEDKF(RowXi dataMask, float time_step, Vector3f input_states, Matrix3Xf Zpos, Matrix3Xf Zvel, Matrix3Xf Zaccel);
-  Matrix2f VelAccelSTM(float dampingSlope, float dt);
+  MatrixX3f UpdateEKF(float time_step, Vector3f input_states, Matrix3Xf Zpos, Matrix3Xf Zvel, Matrix3Xf Zaccel);
   Matrix3f GetRotationRPY2Body(float roll, float pitch, float yaw); // World to body rotation matrix
 };
 

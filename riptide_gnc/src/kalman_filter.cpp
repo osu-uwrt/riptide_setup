@@ -17,8 +17,8 @@ KalmanFilter::KalmanFilter(MatrixXf Ao, MatrixXf Ho, MatrixXf Qo, MatrixXf Ro)
         throw std::runtime_error("Dimension mismatch: Ho of row_size(%i) must match Ro of row_size(%i)", Hrows, Rrows);*/
 
     // Resize matrices and initialize
-    m = Hrows;
-    n = Arows;
+    n = Ao.rows();
+    m = Ho.rows();
     A.resize(n, n);
     H.resize(m, n);
     Q.resize(n, n);
@@ -71,7 +71,7 @@ VectorXf KalmanFilter::UpdateKF(VectorXf Z)
 // Update Kalman Filter with overridden state vector and system matrices
 // To be called by an Extended Kalman Filter (EKF)
 // A and H matrices are Jacobians calculated by the EKF
-VectorXf KalmanFilter::UpdateKFOverride(VectorXf Xpredict, VectorXf Z, MatrixXf Anew, MatrixXf Hnew)
+VectorXf KalmanFilter::UpdateEKF(MatrixXf Anew, MatrixXf Hnew, VectorXf Xpredict, VectorXf Z)
 {
     // Verify input matrix dimensions
     int Xrows = Xpredict.rows(), Zrows = Z.rows();
@@ -94,7 +94,7 @@ VectorXf KalmanFilter::UpdateKFOverride(VectorXf Xpredict, VectorXf Z, MatrixXf 
     return Xhat;
 }
 
-MatrixXf KalmanFilter::GetProcessCovariance()
+MatrixXf KalmanFilter::GetErrorCovariance()
 {
     return P;
 }

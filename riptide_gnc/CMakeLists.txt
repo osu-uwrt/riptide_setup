@@ -18,21 +18,12 @@ find_package(Eigen3 3.3 REQUIRED)
 catkin_package(INCLUDE_DIRS include)
 include_directories(include ${catkin_INCLUDE_DIRS} ${Eigen3_INCLUDE_DIRS})
 
-set(ATTITUDE_EDKF
-  src/kalman_filter.cpp
-  src/attitude_edkf.cpp
-)
-
 set(POSE_EDKF
   src/kalman_filter.cpp
   src/linear_motion_ekf_suite.cpp
   #src/pose_ekf.cpp
 )
 
-add_executable(attitude_edkf_interface src/attitude_edkf_interface.cpp ${ATTITUDE_EDKF})
-target_link_libraries(attitude_edkf_interface ${catkin_LIBRARIES})
-add_dependencies(attitude_edkf_interface ${catkin_EXPORTED_TARGETS})
-
-add_executable(pose_edkf_interface src/pose_edkf_interface.cpp ${POSE_EDKF})
-target_link_libraries(pose_edkf_interface ${catkin_LIBRARIES})
-add_dependencies(pose_edkf_interface ${catkin_EXPORTED_TARGETS})
+#add_executable(pose_edkf_interface src/pose_edkf_interface.cpp ${POSE_EDKF})
+#target_link_libraries(pose_edkf_interface ${catkin_LIBRARIES})
+#add_dependencies(pose_edkf_interface ${catkin_EXPORTED_TARGETS})
