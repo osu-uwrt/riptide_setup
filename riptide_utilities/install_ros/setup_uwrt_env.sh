@@ -4,8 +4,6 @@ install_ros_kinetic.sh
 install_dependencies.sh
 
 # Setup ~/.bashrc file
-echo "source ~/osu-uwrt/sim_software/devel/setup.bash" >> ~/.bashrc
-echo "source ~/osu-uwrt/shared_software/devel/setup.bash" >> ~/.bashrc
 echo "source ~/osu-uwrt/riptide_software/devel/setup.bash" >> ~/.bashrc
 echo "#export ROS_MASTER_URI=http://riptide:11311" >> ~/.bashrc
 echo "#export ROS_MASTER_URI=http://jetosn:11311" >> ~/.bashrc
