@@ -346,6 +346,7 @@ void Acoustics::Collect(int length)
 			// Save to file if requested
 			if (fileName.length() != 0)
 			{
+				ROS_INFO("%s", fileName.c_str());
 				char *PFqueue = new char[3 * NumOfCollections],
 					 *PAqueue = new char[3 * NumOfCollections],
 					 *SFqueue = new char[3 * NumOfCollections],
@@ -367,11 +368,14 @@ void Acoustics::Collect(int length)
 					SAqueue[3 * i + 2] = data[16 * i + 11];
 				}
 
+				ROS_INFO("Making directory");
 				const int dir_err = mkdir(("../Saved Data/" + fileName).c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+				ROS_INFO("Directory made");
 				ofstream fout;
 				fout.open(("../Saved Data/" + fileName + "/PF.dat").c_str(), ios::binary | ios::out);
 				fout.write(PFqueue, 3 * NumOfCollections);
 				fout.close();
+				ROS_INFO("PF made");
 				fout.open(("../Saved Data/" + fileName + "/PA.dat").c_str(), ios::binary | ios::out);
 				fout.write(PAqueue, 3 * NumOfCollections);
 				fout.close();
