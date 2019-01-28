@@ -10,6 +10,16 @@
 
 // /state/acoustics: Output of position data
 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// To install dependencies:									//
+//	1. Log in https://pins.opalkelly.com/downloads. blaine141@gmail.com pass is usual	//
+//	2. Download FrontPanel-Ubuntu16.04LTS-x64-5.0.2.tgz 					//
+//    	3. Unzip, run install.sh as su and sudo copy API/okFrontPanel.so file to /usr/lib	//
+//	4. Download fftw-3.3.8.tar.gz from http://www.fftw.org/download.html			//
+//	5. Run as su: ./configure, make, make install						//
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
 #define PING_DURATION 2048
 #define MAX_TIME_OFFSET 300
 #define MAX_OFFSET 300
