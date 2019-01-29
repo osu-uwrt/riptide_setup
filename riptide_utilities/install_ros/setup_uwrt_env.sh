@@ -1,7 +1,7 @@
 # Setup UWRT Environment
 # Install ROS and dependencies
-install_ros_kinetic.sh
-install_dependencies.sh
+sh install_ros_kinetic.sh
+sh install_dependencies.sh
 
 # Setup ~/.bashrc file
 echo "source ~/osu-uwrt/riptide_software/devel/setup.bash" >> ~/.bashrc
