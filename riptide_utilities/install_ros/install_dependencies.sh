@@ -23,6 +23,6 @@ cd ..
 rm -rf ~/ceres-temp
 
 # Install Acoustics Dependencies
-install_acoustics.sh
+sh install_acoustics.sh
 
 echo "Installed all UWRT dependencies"
