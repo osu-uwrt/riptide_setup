@@ -38,14 +38,14 @@ You will see both a remote to your fork and to the main repo. You will use these
 ## Installing ROS and/or Dependencies
 The "riptide_software" base currently uses ROS Kinetic Kame. You will need to have ROS installed on your Ubuntu machine, along with various other dependencies, to compile the code. But don't worry, we have a setup script that will install everything for you:
 ```
-cd ~/osu-uwrt/riptide_software/riptide_utilities/install_ros
-./setup_uwrt_env
+cd ~/osu-uwrt/riptide_software/src/riptide_utilities/install_ros
+./setup_uwrt_env.sh
 ```
 
 If you already have ROS installed, but our dependencies have changed, then all you need to do is run the dependencies script (do not re-run "setup_uwrt_env" because it will repeat lines written to the "bashrc" file):
 ```
 cd ~/osu-uwrt/riptide_software/riptide_utilities/install_ros
-./install_dependencies
+./install_dependencies.sh
 ```
 
 ## The ~/.bashrc File
