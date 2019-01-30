@@ -1,3 +1,0 @@
-Run it to install needed ROS packages and the ceres solver software
-
-May have to chmod 700 dependencies.sh if you don't have permissions
