@@ -20,7 +20,7 @@ cmake ../$ceres_version
 make -j3
 sudo make install
 cd ..
-rm -rf ~/ceres-temp
+rm -rf $ceres_version/ ceres-bin/
 
 # Install Acoustics Dependencies
 sh install_acoustics.sh
