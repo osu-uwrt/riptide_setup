@@ -44,7 +44,7 @@ cd ~/osu-uwrt/riptide_software/src/riptide_utilities/install_ros
 
 If you already have ROS installed, but our dependencies have changed, then all you need to do is run the dependencies script (do not re-run "setup_uwrt_env" because it will repeat lines written to the "bashrc" file):
 ```
-cd ~/osu-uwrt/riptide_software/riptide_utilities/install_ros
+cd ~/osu-uwrt/riptide_software/riptide_utilities/installation
 ./install_dependencies.sh
 ```
 
