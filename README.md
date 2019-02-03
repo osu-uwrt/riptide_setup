@@ -1,7 +1,7 @@
 The Riptide AUV Software Platform
 =================================
 
-This repository is the main codebase for the Underwater Robotics Team at The Ohio State University. Our mission is to develop the software which powers our Autonomous Underwater Vehicles. The software in this repository handles low level controls, computer vision, mission-specific programs, and everything in between. All built on the [Robot Operating System](http://www.ros.org/) framework, version Kinetic Kame.
+This repository is the main codebase for the Underwater Robotics Team at The Ohio State University. Our mission is to develop the software which powers our autonomous underwater vehicles (AUVs) that compete in the Association for Unmanned Vehicle Systems International (AUVSI) RoboSub Competition in San Diego, CA. The software in this repository handles low level controls, computer vision, mission-specific programs, and everything in between. All built on the [Robot Operating System](http://www.ros.org/) framework, version Kinetic Kame.
 
 **The Underwater Robotics Team**  
 The Ohio State University
@@ -15,7 +15,8 @@ The Ohio State University
 # Initial Setup
 
 ## Cloning riptide_software
-To collaborate with the riptide_software platform, you must fork this repo (click "Fork" at the top-right of this page). When executing the commands below, you will need to enter the URL to your forked repo. Form YOUR forked repo, click "Clone or download" at the top-right of the page, copy the URL, and then insert that URL in place of "<your_forked_repo>". Do NOT forget the "src" at the end of the last line. This is a catkin-specific requirement that all source code be placed within a folder called "src".
+To collaborate with the riptide_software platform, you must fork this repo (click "Fork" at the top-right of this page). When executing the commands below, you will need to enter the URL to your forked repo. From YOUR forked repo, click "Clone or download" at the top-right of the page, copy the URL, and then insert that URL in place of "<your_forked_repo>". Do NOT forget the "src" at the end of the last line. This is a catkin-specific requirement that all source code be placed within a folder called "src".
+NOTE: It is common to see brackets such as "<>" used to act as placeholders for actual code. Make sure you replace the ENTIRE phrase "<your_forked_repo>" with the URL.
 ```
 mkdir -p ~/osu-uwrt/riptide_software/
 cd ~/osu-uwrt/riptide_software/
@@ -97,3 +98,9 @@ catkin_make
 ```
 
 In the near future, you will have to clone and compile the [control_toolbox](https://github.com/osu-uwrt/control_toolbox) because this repo will be dependent on it.
+
+# Navigating our Code
+
+Below is a flow chart relating all major active ROS nodes broken down by system level:
+
+![riptide_software_flow_chart](diagrams/Riptide_Software_Stack_Full.png)
