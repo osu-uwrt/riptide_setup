@@ -104,3 +104,14 @@ In the near future, you will have to clone and compile the [control_toolbox](htt
 Below is a flow chart relating all major active ROS nodes broken down by system level:
 
 ![riptide_software_flow_chart](diagrams/Riptide_Software_Stack_Full.png)
+
+## Primary Packages
+### imu_3dm_gxm
+### darknet_ros
+### riptide_bringup
+### riptide_msgs
+### riptide_autonomy
+### riptide_hardware
+### riptide_controllers
+### riptide_vision
+### 
