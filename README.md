@@ -99,19 +99,27 @@ catkin_make
 
 In the near future, you will have to clone and compile the [control_toolbox](https://github.com/osu-uwrt/control_toolbox) because this repo will be dependent on it.
 
-# Navigating our Code
+# Riptide Software Hierarchy
 
-Below is a flow chart relating all major active ROS nodes broken down by system level:
+Below is a flow chart relating all major ROS nodes in our software base broken down by system level. Boxes with sharp corners represent physical objects (hardware, actuators), boxes with rounded corners represent individual ROS nodes, and the arrows connecting represent the direction of data communication via ROS topics.
 
 ![riptide_software_flow_chart](diagrams/Riptide_Software_Stack_Full.png)
 
 ## Primary Packages
+Below is a list of the primary packages we use to run our vehicle. Feel free to click on each package to learn more about its functionality.
 ### imu_3dm_gxm
+Contains the driver for our [LordMicrostrain IMU 3DM-GX4](https://www.microstrain.com/inertial/3dm-gx4-25).
 ### darknet_ros
-### riptide_bringup
+Contains the darknet source code for the machine-learning algorithm known as [You Only Look Once (YOLO)](https://pjreddie.com/darknet/yolo/) and the ROS interface.
 ### riptide_msgs
-### riptide_autonomy
+Contains custom ROS messages used throughout our entire repo
 ### riptide_hardware
+Contains the hardware-software interface for working with all of our vehicle's sensors (data collection, data processing, etc.).
 ### riptide_controllers
+Handles all-things controls regarding movement of the vehicle, using a system of decoupled PID controllers.
 ### riptide_vision
-### 
+Contains vision processing algorithms (using OpenCV) to extract additional features from our camera footage.
+### riptide_bringup
+Contains a series of launch files used to "bring-up" our vehicle. Ex. launch a mission, launch our PS3 controller, etc.
+### riptide_autonomy
+Contains the competition-specific task code. Our ultimate goal is that to have a semi-autonomous system (since full autonomoys is too hard right now).
