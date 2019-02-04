@@ -5,7 +5,6 @@ This package handles the hardware-software interface with all of our AUVs sensor
 * 2x [Point Grey Blackfly USB 3.0](https://www.ptgrey.com/blackfly-13-mp-color-usb3-vision-sony-icx445) cameras
 * 4x hydrophones, creating a single acoustics system
 
-# Package Struture
 # Config Files (cfg/)
 This folder contains .yaml files with parameters needed by some of our ROS nodes. The main files are calibration paramters to undistort the images from our PointGrey Blackfly USB 3.0 cameras, as well as geospatial parameters for the LordMicrostrain IMU 3DM-GX4.
 
