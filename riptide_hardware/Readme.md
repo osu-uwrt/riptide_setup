@@ -1,5 +1,9 @@
-# The riptide_hardware Package
-This package handles the hardware-software interface with all of our AUVs sensors: IMU, depth sensor, cameras, and acoustics
+# The Riptide Hardware Package
+This package handles the hardware-software interface with all of our AUVs sensors. Our AUV is equipped with:
+* 1x [LordMicrostrain IMU 3DM-GX4](https://www.microstrain.com/inertial/3dm-gx4-25)
+* 1x [BlueRobotics Bar30](https://www.bluerobotics.com/store/sensors-sonars-cameras/sensors/bar30-sensor-r1/) depth sensor
+* 2x [Point Grey Blackfly USB 3.0](https://www.ptgrey.com/blackfly-13-mp-color-usb3-vision-sony-icx445) cameras
+* 4x hydrophones, creating a single acoustics system
 
 # Package Struture
 # Config Files (cfg/)
