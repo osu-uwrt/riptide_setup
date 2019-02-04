@@ -1,7 +1,7 @@
 The Riptide AUV Software Platform
 =================================
 
-This repository is the main codebase for the Underwater Robotics Team at The Ohio State University. Our mission is to develop the software which powers our Autonomous Underwater Vehicles. The software in this repository handles low level controls, computer vision, mission-specific programs, and everything in between. All built on the [Robot Operating System](http://www.ros.org/) framework.
+This repository is the main codebase for the Underwater Robotics Team at The Ohio State University. Our mission is to develop the software which powers our autonomous underwater vehicles (AUVs) that compete in the Association for Unmanned Vehicle Systems International (AUVSI) RoboSub Competition in San Diego, CA. The software in this repository handles low level controls, computer vision, mission-specific programs, and everything in between. All built on the [Robot Operating System](http://www.ros.org/) framework, version Kinetic Kame.
 
 **The Underwater Robotics Team**  
 The Ohio State University
@@ -11,11 +11,12 @@ The Ohio State University
 
 ![OSU UWRT Logo](logos/UWRT_Logo_small.png)
 
-# Building
-ROS is compiled using the catkin build system, and so all of our repos will use catkin. 
 
-## Cloning
-To collaborate with the riptide_software platform, you must fork this repo (click "Fork" at the top-right of this page). When executing the commands below, you will need to enter the URL to your forked repo. Form YOUR forked repo, click "Clone or download" at the top-right of the page, copy the URL, and then insert that URL in place of "<your_forked_repo>". Do NOT forget the "src" at the end of the last line. This is a catkin-specific requirement that all source code be placed within a folder called "src".
+# Initial Setup
+
+## Cloning riptide_software
+To collaborate with the riptide_software platform, you must fork this repo (click "Fork" at the top-right of this page). When executing the commands below, you will need to enter the URL to your forked repo. From YOUR forked repo, click "Clone or download" at the top-right of the page, copy the URL, and then insert that URL in place of "<your_forked_repo>". Do NOT forget the "src" at the end of the last line. This is a catkin-specific requirement that all source code be placed within a folder called "src".
+NOTE: It is common to see brackets such as "<>" used to act as placeholders for actual code. Make sure you replace the ENTIRE phrase "<your_forked_repo>" with the URL.
 ```
 mkdir -p ~/osu-uwrt/riptide_software/
 cd ~/osu-uwrt/riptide_software/
@@ -33,7 +34,61 @@ Now, if you type:
 ```
 git remote -v
 ```
-You will see both a remote to your fork and to the main repo. You will use these two remotes a lot when pushing code to your fork, submitting pull-requests, and pulling down the latest code.
+You will see both a remote to your fork and to the main repo. You will use these two remotes a lot when pushing code to your fork, submitting pull-requests, and pulling the latest code.
+
+## Installing ROS and/or Dependencies
+The "riptide_software" base currently uses ROS Kinetic Kame. You will need to have ROS installed on your Ubuntu machine, along with various other dependencies, to compile the code. But don't worry, we have a setup script that will install everything for you:
+```
+cd ~/osu-uwrt/riptide_software/src/riptide_utilities/install_ros
+./setup_uwrt_env.sh
+```
+
+If you already have ROS installed, but our dependencies have changed, then all you need to do is run the dependencies script (do not re-run "setup_uwrt_env" because it will repeat lines written to the "bashrc" file):
+```
+cd ~/osu-uwrt/riptide_software/riptide_utilities/installation
+./install_dependencies.sh
+```
+
+## The ~/.bashrc File
+NOTE: This section is not required, since the setup script from above performs this action. However, it is good to verify this information is setup properly.
+
+There are a number of environment variables (mostly pertaining to ROS features and package paths) that are required when running the code or when using the terminal. Each time you want to run one of those commands in a terminal, those environment variables will need to be set. To automate this process, we add a line to the "bashrc" file (bashrc = Born Again Shell Run-Commands) because each time a new terminal/shell is opened, it executes any commands within this file.
+
+Open it with a terminal text editor (this is a hidden file, hence the "."):
+```
+nano ~/.bashrc
+```
+Scroll down to the bottom. Beneath the line
+```
+source /opt/ros/kinetic/setup.bash
+```
+add the line (if not already there):
+```
+source ~/osu-uwrt/riptide_software/devel/setup.bash
+```
+To exit and save your changes, press CTRL-X, type "y", then press ENTER. Close all terminals and then re-open for changes to take effect. If you are lazy and don't want to close your terminals, then each terminal will need to be "sourced" individually to setup its environment properly. Run the command:
+```
+source ~/.bashrc
+```
+
+# Working with Our Other Repositories
+UWRT has a few other repositories that can be used in conjunction with this one.
+1. [sim_software](https://github.com/osu-uwrt/sim_software)
+2. [shared_software](https://github.com/osu-uwrt/shared_software)
+
+## Chaining Workspaces
+Each of the above repositories (sim_softare, shared_software) are built on catkin as well. For the entire set of repositories to work together, we must "chain" their setup.bash files within the "bashrc" file for complete functionality.
+
+Below is a complete section of code that must be placed within the "bashrc" file for ALL of our working workspaces to be chained properly. The lines pertaining to "sim_software" and "shared_software" can be omitted if the user decides not to use them. All others must remain.
+```
+source /opt/ros/kinetic/setup.bash
+source ~/osu-uwrt/sim_software/devel/setup.bash
+source ~/osu-uwrt/shared_software/devel/setup.bash
+source ~/osu-uwrt/riptide_software/devel/setup.bash
+```
+
+# Building riptide_software
+ROS is compiled using the catkin build system, and so all of our repos will use catkin.
 
 ## Compiling
 To compile this repo, you simply execute the "catkin_make" command from a terminal. As a word of caution, you MUST be inside the folder "~/osu-uwrt/riptide_software" to run "catkin_make"
@@ -44,41 +99,27 @@ catkin_make
 
 In the near future, you will have to clone and compile the [control_toolbox](https://github.com/osu-uwrt/control_toolbox) because this repo will be dependent on it.
 
-### Updating the ~/.bashrc File
-Because this repo is built on ROS, there are a number of environment variables that are required when running the code. Each time you open a terminal window to run those commands, those environment variables will need to be set. To automate this process, we add a line to the "bashrc" file (bashrc = Born Again Shell Run-Commands). Each time a new terminal/shell is opened, it executes any commands within the "bashrc" file. This is a hidden file that lies within the home directory (hence the "~/.").
+# Riptide Software Hierarchy
 
-Open it with a terminal text editor:
-```
-nano ~/.bashrc
-```
-Scroll down to the bottom. Beneath the line
-```
-source /opt/ros/kinetic/setup.bash
-```
-add the line:
-```
-source ~/osu-uwrt/riptide_software/devel/setup.bash
-```
-To exit and save your changes, press CTRL-X, type "y", then press ENTER. For these changes to take effect in the CURRENT terminal window we have to "source" it because the terminal was opened a while ago. Run the command:
-```
-source ~/.bashrc
-```
+Below is a flow chart relating all major ROS nodes in our software base broken down by system level. Boxes with sharp corners represent physical objects (hardware, actuators), boxes with rounded corners represent individual ROS nodes, and the arrows connecting represent the direction of data communication via ROS topics.
 
-You could also just close the terminal and open a new one, because opening a terminal will automatically run the ~/.bashrc file.
+![riptide_software_flow_chart](diagrams/Riptide_Software_Stack_Full.png)
 
-# Other Repositories
-UWRT has a few other repositories that can be used in conjunction with this one.
-1. [sim_software](https://github.com/osu-uwrt/sim_software)
-2. [shared_software](https://github.com/osu-uwrt/shared_software)
-
-## Chaining Workspaces
-Each of the above repositories (sim_softare, shared_software) are built on catkin as well. For the entire set of repositories to work together, we must "chain" their setup.bash files within the ~/.bashrc file for complete functionality.
-
-Below is the complete set of lines that must be placed within the "~/.bashrc" file for all of these workspaces to be chained properly. Only the lines pertaining to "sim_software" and "shared_software" can be omitted if the user decides not to use them. All others must remain.
-```
-source /opt/ros/kinetic/setup.bash
-source ~/osu-uwrt/sim_software/devel/setup.bash
-source ~/osu-uwrt/shared_software/devel/setup.bash
-source ~/osu-uwrt/control_toolbox/devel_isolated/setup.bash
-source ~/osu-uwrt/riptide_software/devel/setup.bash
-```
+## Primary Packages
+Below is a list of the primary packages we use to run our vehicle. Feel free to click on each package to learn more about its functionality.
+### imu_3dm_gxm
+Contains the driver for our [LordMicrostrain IMU 3DM-GX4](https://www.microstrain.com/inertial/3dm-gx4-25).
+### darknet_ros
+Contains the darknet source code for the machine-learning algorithm known as [You Only Look Once (YOLO)](https://pjreddie.com/darknet/yolo/) and the ROS interface.
+### riptide_msgs
+Contains custom ROS messages used throughout our entire repo
+### riptide_hardware
+Contains the hardware-software interface for working with all of our vehicle's sensors (data collection, data processing, etc.).
+### riptide_controllers
+Handles all-things controls regarding movement of the vehicle, using a system of decoupled PID controllers.
+### riptide_vision
+Contains vision processing algorithms (using OpenCV) to extract additional features from our camera footage.
+### riptide_bringup
+Contains a series of launch files used to "bring-up" our vehicle. Ex. launch a mission, launch our PS3 controller, etc.
+### riptide_autonomy
+Contains the competition-specific task code. Our ultimate goal is that to have a semi-autonomous system (since full autonomoys is too hard right now).
