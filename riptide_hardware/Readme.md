@@ -15,11 +15,11 @@ This node reads in data from the imu_3dm_gx4 package, performs any necessary coo
 * Input Topics: /imu/filter, /imu/magnetic_field
 * Output Topics: /state/imu, /state/imu_verbose
 ### depth_processor
-This node reads in raw data from the depth sensor and applies a basic infinite-impulse response (IIR) low pass filter (LPF) to smooth the data a bit.
+This node reads in raw data from the depth sensor and applies a basic infinite-impulse response (IIR) low pass filter (LPF) to smooth the data.
 * Input Topics: /depth/raw
 * Output Topics: /state/depth
 ### undistort_camera
-This node reads in the raw image from a camera, and uses the loaded camera parameters and distortion coefficients to undistort the image.
+This node reads in the raw image from a camera and uses the loaded camera parameters and distortion coefficients to undistort the image.
 * Input Topics: /<camera_name>/image_raw
 * Output Topics: /<camera_name>/image_undistorted
 ### acoustics
