@@ -17,7 +17,7 @@ The Ohio State University
 # Initial Setup
 
 ## Cloning riptide_software
-To collaborate with the riptide_software platform, you must fork this repo (click "Fork" at the top-right of this page). When executing the commands below, you will need to enter the URL to your forked repo. From YOUR forked repo, click "Clone or download" at the top-right of the page, copy the URL, and then insert that URL in place of `<your_forked_repo>`. Do NOT forget the `src` at the end of the last line. This is a catkin-specific requirement that all source code be placed within a folder called `src`.
+To collaborate with the `riptide_software` platform, you must fork this repo (click "Fork" at the top-right of this page). When executing the commands below, you will need to enter the URL to your forked repo. From YOUR forked repo, click "Clone or download" at the top-right of the page, copy the URL, and then insert that URL in place of `<your_forked_repo>`. Do NOT forget the `src` at the end of the last line. This is a catkin-specific requirement that all source code be placed within a folder called `src`
 
 NOTE: It is common to see brackets such as `<>` used to act as placeholders for actual code. Make sure you replace the ENTIRE phrase `<your_forked_repo>` with the URL.
 ```
@@ -82,9 +82,9 @@ UWRT has a few other repositories that can be used in conjunction with this one.
 2. [shared_software](https://github.com/osu-uwrt/shared_software)
 
 ## Chaining Workspaces
-Each of the above repositories (sim_softare, shared_software) are built on catkin as well. For the entire set of repositories to work together, we must "chain" their setup.bash files within the "bashrc" file for complete functionality.
+Each of the above repositories (sim_softare, shared_software) are built on catkin as well. For the entire set of repositories to work together, we must "chain" their `setup.bash` files within the `bashrc` file for complete functionality.
 
-Below is a complete section of code that must be placed within the "bashrc" file for ALL of our working workspaces to be chained properly. The lines pertaining to `sim_software` and `shared_software` can be omitted if the user decides not to use them. All others must remain.
+Below is a complete section of code that must be placed within the `bashrc` file for ALL of our working workspaces to be chained properly. The lines pertaining to `sim_software` and `shared_software` can be omitted if the user decides not to use them. All others must remain.
 ```
 source /opt/ros/kinetic/setup.bash
 source ~/osu-uwrt/sim_software/devel/setup.bash
@@ -96,7 +96,7 @@ source ~/osu-uwrt/riptide_software/devel/setup.bash
 ROS is compiled using the catkin build system, and so all of our repos will use catkin.
 
 ## Compiling
-To compile this repo, you simply execute the "catkin_make" command from a terminal. As a word of caution, you MUST be inside the folder `~/osu-uwrt/riptide_software` to run `catkin_make`
+To compile this repo, you simply execute the `catkin_make` command from a terminal. As a word of caution, you MUST be inside the folder `~/osu-uwrt/riptide_software` to run `catkin_make`
 ```
 cd ~/osu-uwrt/riptide_software/
 catkin_make
