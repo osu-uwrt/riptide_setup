@@ -3,6 +3,8 @@ The Riptide AUV Software Platform
 
 This repository is the main codebase for the Underwater Robotics Team at The Ohio State University. Our mission is to develop the software which powers our autonomous underwater vehicles (AUVs) that compete in the Association for Unmanned Vehicle Systems International (AUVSI) [RoboSub](https://www.auvsifoundation.org/competition/robosub) Competition in San Diego, CA. The software in this repository is built on [Robot Operating System](http://www.ros.org/) and handles low level controls, computer vision, mission-specific programs, and everything in between.
 
+Supported Operating Systems: Ubuntu 16.04
+
 **The Underwater Robotics Team**  
 The Ohio State University
 
@@ -15,9 +17,9 @@ The Ohio State University
 # Initial Setup
 
 ## Cloning riptide_software
-To collaborate with the riptide_software platform, you must fork this repo (click "Fork" at the top-right of this page). When executing the commands below, you will need to enter the URL to your forked repo. From YOUR forked repo, click "Clone or download" at the top-right of the page, copy the URL, and then insert that URL in place of "<your_forked_repo>". Do NOT forget the "src" at the end of the last line. This is a catkin-specific requirement that all source code be placed within a folder called "src".
+To collaborate with the riptide_software platform, you must fork this repo (click "Fork" at the top-right of this page). When executing the commands below, you will need to enter the URL to your forked repo. From YOUR forked repo, click "Clone or download" at the top-right of the page, copy the URL, and then insert that URL in place of `<your_forked_repo>`. Do NOT forget the `src` at the end of the last line. This is a catkin-specific requirement that all source code be placed within a folder called `src`.
 
-NOTE: It is common to see brackets such as "<>" used to act as placeholders for actual code. Make sure you replace the ENTIRE phrase "<your_forked_repo>" with the URL.
+NOTE: It is common to see brackets such as `<>` used to act as placeholders for actual code. Make sure you replace the ENTIRE phrase `<your_forked_repo>` with the URL.
 ```
 mkdir -p ~/osu-uwrt/riptide_software/
 cd ~/osu-uwrt/riptide_software/
@@ -25,7 +27,7 @@ git clone <your_forked_repo> src
 ```
 
 ## Setting up Git Remotes
-Since you just cloned your fork to your computer, your remote called "origin" will point to your fork. Now, create a new remote called "upstream" that points to this main repo.
+Since you just cloned your fork to your computer, your remote called `origin` will point to your fork. Now, create a new remote called `upstream` that points to this main repo.
 ```
 cd ~/osu-uwrt/riptide_software/src/
 git remote add upstream https://github.com/osu-uwrt/riptide_software.git
@@ -38,24 +40,24 @@ git remote -v
 You will see both a remote to your fork and to the main repo. You will use these two remotes a lot when pushing code to your fork, submitting pull-requests, and pulling the latest code.
 
 ## Installing ROS and/or Dependencies
-The "riptide_software" base currently uses ROS Kinetic Kame. You will need to have ROS installed on your Ubuntu machine, along with various other dependencies, to compile the code. But don't worry, we have a setup script that will install everything for you:
+The `riptide_software` base currently uses ROS Kinetic Kame. You will need to have ROS installed on your Ubuntu machine, along with various other dependencies, to compile the code. But don't worry, we have a setup script that will install everything for you:
 ```
 cd ~/osu-uwrt/riptide_software/src/riptide_utilities/installation
 ./setup_uwrt_env.sh
 ```
 
-If you already have ROS installed, but our dependencies have changed, then all you need to do is run the dependencies script (there is no need to re-run "setup_uwrt_env.sh"):
+If you already have ROS installed, but our dependencies have changed, then all you need to do is run the dependencies script (there is no need to re-run `setup_uwrt_env.sh`):
 ```
 cd ~/osu-uwrt/riptide_software/riptide_utilities/installation
 ./install_dependencies.sh
 ```
 
-OR, if you already know which dependency has changed, then you may search through the "riptide_utilities/installation" folder and run the desired install/setup script.
+OR, if you already know which dependency has changed, then you may search through the `riptide_utilities/installation` folder and run the desired install/setup script.
 
 ## The ~/.bashrc File
 NOTE: This section is NOT required, since the setup script from above performs this action. However, it is good to verify this information is setup properly.
 
-There are a number of environment variables (mostly pertaining to ROS features and package paths) that are required when running the code or when using the terminal. Each time you want to run one of those commands in a terminal, those environment variables will need to be set. To automate this process, we add a line to the "bashrc" file (bashrc = Born Again Shell Run-Commands) because each time a new terminal/shell is opened, it executes any commands within this file.
+There are a number of environment variables (mostly pertaining to ROS features and package paths) that are required when running the code or when using the terminal. Each time you want to run one of those commands in a terminal, those environment variables will need to be set. To automate this process, we add a line to the `bashrc` file (bashrc = Born Again Shell Run-Commands) because each time a new terminal/shell is opened, it executes any commands within this file.
 
 Open it with a terminal text editor (this is a hidden file, hence the "."):
 ```
@@ -82,7 +84,7 @@ UWRT has a few other repositories that can be used in conjunction with this one.
 ## Chaining Workspaces
 Each of the above repositories (sim_softare, shared_software) are built on catkin as well. For the entire set of repositories to work together, we must "chain" their setup.bash files within the "bashrc" file for complete functionality.
 
-Below is a complete section of code that must be placed within the "bashrc" file for ALL of our working workspaces to be chained properly. The lines pertaining to "sim_software" and "shared_software" can be omitted if the user decides not to use them. All others must remain.
+Below is a complete section of code that must be placed within the "bashrc" file for ALL of our working workspaces to be chained properly. The lines pertaining to `sim_software` and `shared_software` can be omitted if the user decides not to use them. All others must remain.
 ```
 source /opt/ros/kinetic/setup.bash
 source ~/osu-uwrt/sim_software/devel/setup.bash
@@ -94,7 +96,7 @@ source ~/osu-uwrt/riptide_software/devel/setup.bash
 ROS is compiled using the catkin build system, and so all of our repos will use catkin.
 
 ## Compiling
-To compile this repo, you simply execute the "catkin_make" command from a terminal. As a word of caution, you MUST be inside the folder "~/osu-uwrt/riptide_software" to run "catkin_make"
+To compile this repo, you simply execute the "catkin_make" command from a terminal. As a word of caution, you MUST be inside the folder `~/osu-uwrt/riptide_software` to run `catkin_make`
 ```
 cd ~/osu-uwrt/riptide_software/
 catkin_make
