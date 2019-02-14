@@ -12,8 +12,10 @@ This package originates from KumarRobotics (link to original [imu_3dm_gx4](https
 ## Version History (KumarRobotics versions are 0.0.1 - 0.0.4)
 
 * **0.1.4**
-  - This version revises the original source code quite heavily for increased user functionality
-  - Removes 'enable_filter' argument so the Adaptive Extended Kalman Filter (AEKF) output is always present
+  - Removes `enable_filter` argument so the Adaptive Extended Kalman Filter (AEKF) output is always present.
+  - Updated `/imu/magnetic_field` message type from `sensor_msgs/MagneticField` to `imu_3dm_gx4/msg/MagFieldCF`.
+  - Added more data fields provided by AEKF to `imu_3dm_gx4/FilterOutput` message.
+  - Added launch file arguments for: reference location, heading update source, declination source, sensor LPF bandwidths, and enabling iron offsets loaded from file
 * **0.0.4**:
   - Fixed issue where packets would be dropped if the header checksum was broken up
   into multiple packets.
@@ -42,10 +44,19 @@ The `imu_3dm_gx4` node supports the following base options:
 * `imu_rate`: IMU rate to use, in Hz. Default is 100.
 * `verbose`: If true, packet reads and mismatched checksums will be logged.
 
-The following additional options are present for leveraging the 3DM's onboard estimation filter:
-* `filter_rate`: Filter rate to use, in Hz. Default is 100.
-* `enable_mag_update`: If true, the IMU will use the magnetometer to correct the heading angle estimate. Default is false.
-* `enable_accel_update`: If true, the IMU will use the accelerometer to correct the roll/pitch angle estimates. Default is true.
+The following options are present for leveraging the IMU's onboard estimation filter:
+* `filter_rate` (Default is `100`): Filter rate to use, in Hz.
+* `enable_mag_update` (Default is `true`): If true, the IMU will use the magnetometer to correct the heading angle estimate. Default is `true`.
+* `enable_accel_update` (Default is `true`): If true, the IMU will use the accelerometer to correct the roll/pitch angle estimates.
+
+The following options are required for the heading update feature:
+* `name` (Default is `imu_front`): Common name for the IMU
+* `city` (Default is `columbus`): City in which reference location resides
+* `location` (Default is `CAR`): Actual reference location. Other examples: `apartment`
+* `heading_update_source` (Default is `magnetometer`): Possible options are: `none`, `external`, or `magnetometer`
+  - Note: `magnetometer` indicates the IMU should uses its internal magnetometer. This option seems to fail on the 3DM-GX4 model and the heading update calculation has to be done manually for best results.
+* `declination_source` (Default is `wmm`): Possible options are: `none`, `wmm`, or `manual`
+  - Note: `wmm` indicates the IMU should use its internal 2005 World Magnetometer Model
 
 **In order to launch the node** (streaming IMU data at 100Hz), execute:
 
