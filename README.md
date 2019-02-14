@@ -112,7 +112,7 @@ Below is a flow chart relating all major ROS nodes in our software base broken d
 Below is a list of the primary packages we use to run our vehicle. Feel free to click on each package to learn more about its functionality.
 ### [imu_3dm_gxm](https://github.com/osu-uwrt/riptide_software/tree/master/imu_3dm_gx4)
 This is the driver for our [LordMicrostrain IMU 3DM-GX4](https://www.microstrain.com/inertial/3dm-gx4-25).
-### [darknet_ros](https://github.com/osu-uwrt/riptide_software/tree/autonomy/darknet_ros)
+### [darknet_ros](https://github.com/osu-uwrt/riptide_software/tree/master/darknet_ros)
 This package contains the ROS interface for the machine-learning algorithm known as [You Only Look Once (YOLO)](https://pjreddie.com/darknet/yolo/) as well as the darknet source code itself.
 ### [riptide_msgs](https://github.com/osu-uwrt/riptide_software/tree/master/riptide_msgs)
 This package only contains custom ROS messages used throughout riptide packages.
