@@ -1,13 +1,19 @@
-# imu_3dm_gx4
+# The imu_3dm_gx4 Package
 
 ![Picture of IMU](https://www.microstrain.com/sites/default/files/styles/larger__550x550_/public/gx4-25.jpg?itok=vB8GWQpI)
 
 The `imu_3dm_gx4` package provides support for the [Lord Corporation](http://www.microstrain.com) Microstrain [3DM-GX4-25](http://www.microstrain.com/inertial/3dm-gx4-25) series IMU. The package employs the MIP packet format, so it could conceivably be adapted to support other versions of Microstrain products with relatively little effort. At present, the 15 and 45 series AHRS systems are not supported.
 
-This package works on Ubuntu 12.04 and 14.04.
+Supported platforms: Ubuntu 12.04, 14.04, and 16.04
 
-## Version History
+NOTE:
+This package originates from KumarRobotics (link to original [imu_3dm_gx4](https://github.com/KumarRobotics/imu_3dm_gx4)) and has been adapted extensively from the 0.0.4 version.
 
+## Version History (KumarRobotics versions are 0.0.1 - 0.0.4)
+
+* **0.1.4**
+  - This version revises the original source code quite heavily for increased user functionality
+  - Removes 'enable_filter' argument so the Adaptive Extended Kalman Filter (AEKF) output is always present
 * **0.0.4**:
   - Fixed issue where packets would be dropped if the header checksum was broken up
   into multiple packets.
@@ -37,11 +43,9 @@ The `imu_3dm_gx4` node supports the following base options:
 * `verbose`: If true, packet reads and mismatched checksums will be logged.
 
 The following additional options are present for leveraging the 3DM's onboard estimation filter:
-* `enable_filter`: If true, the IMU estimation filter is enabled. Default is false.
 * `filter_rate`: Filter rate to use, in Hz. Default is 100.
 * `enable_mag_update`: If true, the IMU will use the magnetometer to correct the heading angle estimate. Default is false.
-* `enable_accel_update`: If true, the IMU will use the accelerometer to correct
-the roll/pitch angle estimates. Default is true.
+* `enable_accel_update`: If true, the IMU will use the accelerometer to correct the roll/pitch angle estimates. Default is true.
 
 **In order to launch the node** (streaming IMU data at 100Hz), execute:
 
@@ -59,17 +63,15 @@ Where the base frequency is 1kHz for the GX4. Since decimation values are intege
 
 ## Output
 
-On launch, the node will configure the IMU according to the parameters and then enable streaming node. At least three topics are published:
+On launch, the node will configure the IMU according to the parameters and then enable streaming node. The following topics are published with syncrhrnoized timestamps:
 
 * `/imu_3dm_gx4/imu`: An instance of `sensor_msgs/Imu`. Orientation quaternion not provided in this message since is already part of the filter message.
 * `/imu_3dm_gx4/magnetic_field`: An instance of `sensor_msgs/MagneticField`.
 * `/imu_3dm_gx4/pressure`: An instance of `sensor_msgs/FluidPressure`.
 
-All of the above topics are published with synchronized timestamps.
+The topic for the IMU's AEKF is published on a separate topic, and on an asyhcnronous timestamp:
 
-Additional topics will be published if `enable_filter` is true:
-
-* `/imu_3dm_gx4/filter`: An instance of `imu_3dm_gx4/FilterOuput`. Custom message indicating all the onboard filter outputs.
+* `/imu_3dm_gx4/filter`: An instance of `imu_3dm_gx4/FilterOuput`. Thism message has been revised from the original KumarRobotics message to include additional data fields.
 
 ## Known Issues
 
