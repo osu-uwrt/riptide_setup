@@ -110,19 +110,19 @@ Below is a flow chart relating all major ROS nodes in our software base broken d
 
 ## Primary Packages
 Below is a list of the primary packages we use to run our vehicle. Feel free to click on each package to learn more about its functionality.
-### imu_3dm_gxm
+### [imu_3dm_gxm](https://github.com/osu-uwrt/riptide_software/tree/master/imu_3dm_gx4)
 This is the driver for our [LordMicrostrain IMU 3DM-GX4](https://www.microstrain.com/inertial/3dm-gx4-25).
-### darknet_ros
+### [darknet_ros](https://github.com/osu-uwrt/riptide_software/tree/autonomy/darknet_ros)
 This package contains the ROS interface for the machine-learning algorithm known as [You Only Look Once (YOLO)](https://pjreddie.com/darknet/yolo/) as well as the darknet source code itself.
-### riptide_msgs
+### [riptide_msgs](https://github.com/osu-uwrt/riptide_software/tree/master/riptide_msgs)
 This package only contains custom ROS messages used throughout riptide packages.
-### riptide_hardware
+### [riptide_hardware](https://github.com/osu-uwrt/riptide_software/tree/master/riptide_hardware)
 This package handles the hardware-software interface for working with all of our vehicle's sensors (data collection, data processing, etc.).
-### riptide_controllers
+### [riptide_controllers](https://github.com/osu-uwrt/riptide_software/tree/master/riptide_controllers)
 This package handles all-things controls regarding movement of the vehicle, using a system of decoupled PID controllers.
-### riptide_vision
+### [riptide_vision](https://github.com/osu-uwrt/riptide_software/tree/master/riptide_vision)
 This package contains vision processing algorithms, such as using OpenCV to extract additional features from our camera footage, or to further process the output from darknet_ros.
-### riptide_bringup
+### [riptide_bringup](https://github.com/osu-uwrt/riptide_software/tree/master/riptide_bringup)
 This package only contains a series of launch files used to "bring-up" our vehicle. Ex. launch a mission, launch our PS3 controller, etc.
-### riptide_autonomy
+### [riptide_autonomy](https://github.com/osu-uwrt/riptide_software/tree/master/riptide_autonomy)
 This package contains the RoboSub competition-specific task code. Our ultimate goal is to have a semi-autonomous system (since full autonomoy is too hard right now).
