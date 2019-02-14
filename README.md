@@ -19,7 +19,7 @@ The Ohio State University
 ## Cloning riptide_software
 To collaborate with the `riptide_software` platform, you must fork this repo (click "Fork" at the top-right of this page). When executing the commands below, you will need to enter the URL to your forked repo. From YOUR forked repo, click "Clone or download" at the top-right of the page, copy the URL, and then insert that URL in place of `<your_forked_repo>`. Do NOT forget the `src` at the end of the last line. This is a catkin-specific requirement that all source code be placed within a folder called `src`
 
-NOTE: It is common to see brackets such as `<>` used to act as placeholders for actual code. Make sure you replace the ENTIRE phrase `<your_forked_repo>` with the URL.
+NOTE: It is common to see brackets such as `<>` to act as placeholders for actual code. Make sure you replace the ENTIRE phrase `<your_forked_repo>` with the URL.
 ```
 mkdir -p ~/osu-uwrt/riptide_software/
 cd ~/osu-uwrt/riptide_software/
