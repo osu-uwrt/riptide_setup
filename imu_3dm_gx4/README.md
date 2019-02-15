@@ -15,7 +15,7 @@ This package originates from [KumarRobotics/imu_3dm_gx4](https://github.com/Kuma
 * **0.1.4**
   - All fields referring to commands, reply fields, and data fields inside the `imu.cpp` file have been renamed to match those appearing in the LORD Microstrain 3DM-GX4-25 Data and Communications Protocol manual.
   - Removes `enable_filter` argument so the Adaptive Extended Kalman Filter (AEKF) output is always present.
-  - Updated `/imu/magnetic_field` message type from `sensor_msgs/MagneticField` to `imu_3dm_gx4/msg/MagFieldCF`.
+  - Updated `/imu/magnetic_field` message type from `sensor_msgs/MagneticField` to `imu_3dm_gx4/MagFieldCF`.
   - Added more data fields provided by AEKF to `imu_3dm_gx4/FilterOutput` message.
   - Added launch file arguments for: reference location, heading update source, declination source, sensor LPF bandwidths, and enabling iron offsets loaded from file
   
