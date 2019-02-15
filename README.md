@@ -128,3 +128,12 @@ This package contains vision processing algorithms, such as using OpenCV to extr
 This package only contains a series of launch files used to "bring-up" our vehicle. Ex. launch a mission, launch our PS3 controller, etc.
 ### [riptide_autonomy](https://github.com/osu-uwrt/riptide_software/tree/master/riptide_autonomy)
 This package contains the RoboSub competition-specific task code. Our ultimate goal is to have a semi-autonomous system (since full autonomoy is too hard right now).
+
+## Miscellaneous Packages
+### [riptide_utilities](https://github.com/osu-uwrt/riptide_software/tree/master/riptide_utilities)
+This is actually not a catkin package. This is a utility folder specific for UWRT software members for interfacing our computers with ROS and our vehicle's computer system.
+### [riptide_teleop](https://github.com/osu-uwrt/riptide_software/tree/master/riptide_teleop)
+This package contains the code to control the vehicle via PS3 controller.
+### [riptide_description](https://github.com/osu-uwrt/riptide_software/tree/master/riptide_description)
+This package contains the URDF files so we can build our vehicle in the Gazebo simulator.
+
