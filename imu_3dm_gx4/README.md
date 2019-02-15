@@ -7,7 +7,7 @@ The `imu_3dm_gx4` package provides support for the [Lord Corporation](http://www
 Supported platforms: Ubuntu 12.04, 14.04, and 16.04
 
 NOTE:
-This package originates from KumarRobotics (link to original [imu_3dm_gx4](https://github.com/KumarRobotics/imu_3dm_gx4)) and has been adapted extensively from the 0.0.4 version.
+This package originates from [KumarRobotics/imu_3dm_gx4](https://github.com/KumarRobotics/imu_3dm_gx4)) and has been adapted extensively from the 0.0.4 version.
 
 ## Version History (KumarRobotics versions are 0.0.1 - 0.0.4)
 
@@ -44,19 +44,33 @@ The `imu_3dm_gx4` node supports the following base options:
 * `imu_rate`: IMU rate to use, in Hz. Default is 100.
 * `verbose`: If true, packet reads and mismatched checksums will be logged.
 
-The following options are present for leveraging the IMU's onboard estimation filter:
+The following options allow the user to change the IMU's internal infinite impulse response (IIR) low pass filter (LPF) bandwidths on each of the IMU's sensors. A value of `-1` will disable the internal IIR LPF.
+* `mag_LPF_Bandwidth` (Default is `15`): LPF bandwidth for the magnetometer
+* `accel_LPF_Bandwidth` (Default is `50`): LPF bandwidth for the accelerometer
+* `gyro_LPF_Bandwidth` (Default is `50`): LPF bandwidth for the gyroscope
+
+The following option is for setting the IMU to load a pre-defined set of Hard and Soft Iron coefficients:
+* `enable_iron_offset` (Default is `false`); Indicates if IMU should load pre-defined coefficients from a YAML file. PROVIDE DATA FORMAT
+
+The sensor-to-vehicle transformation feature is always active (with default values of `0 deg.`). In case when the sensor frame does not align with that of the vehicle body-frame, then the user may specify the transformation (via Euler Angles in the order of yaw, pitch, and roll) from the sensor TO the body-frame. The user simply needs to define the following three data fields in a YAML file called `sensor_to_vehicle_tf.yaml`
+* `roll`
+* `pitch`
+* `yaw`
+
+The following options are for high-level usage of the IMU's onboard estimation filter:
 * `filter_rate` (Default is `100`): Filter rate to use, in Hz.
-* `enable_mag_update` (Default is `true`): If true, the IMU will use the magnetometer to correct the heading angle estimate. Default is `true`.
-* `enable_accel_update` (Default is `true`): If true, the IMU will use the accelerometer to correct the roll/pitch angle estimates.
+* `enable_mag_update` (Default is `true`): Indicates if the IMU should use its internal magnetometer to correct the heading angle estimate. The updated heading has a separate data field within the `/imu/FilterOutput` message called `heading_update`.
+* `enable_accel_update` (Default is `true`): Indicates if the IMU will use the accelerometer to correct the roll/pitch angle estimates. Corrections do NOT get stored to separate fields within the `/imu/FilterOutput` message, they affect the actual values themselves.
 
 The following options are required for the heading update feature:
 * `name` (Default is `imu_front`): Common name for the IMU
 * `city` (Default is `columbus`): City in which reference location resides
 * `location` (Default is `CAR`): Actual reference location. Other examples: `apartment`
 * `heading_update_source` (Default is `magnetometer`): Possible options are: `none`, `external`, or `magnetometer`
-  - Note: `magnetometer` indicates the IMU should uses its internal magnetometer. This option seems to fail on the 3DM-GX4 model and the heading update calculation has to be done manually for best results.
+  - Note: `magnetometer` indicates the IMU should uses its internal magnetometer. 
+  - IMPORTANT: The 3DM-GX4-25 model does NOT perform the heading update well in the presence of EMI. Even though setting the filtered magnetometer data (from the IIR LPF) is supposed to be used in the correction step, the heading update still exhibits considerable sinusoidal behavior. This driver offers an ALTERNATIVE heading update feature which performs the calculation correctly.
 * `declination_source` (Default is `wmm`): Possible options are: `none`, `wmm`, or `manual`
-  - Note: `wmm` indicates the IMU should use its internal 2005 World Magnetometer Model
+  - Note: `wmm` indicates the IMU should use its internal World Magnetometer Model (the GX4 has the 2005 model preloaded)
 
 **In order to launch the node** (streaming IMU data at 100Hz), execute:
 
@@ -77,12 +91,20 @@ Where the base frequency is 1kHz for the GX4. Since decimation values are intege
 On launch, the node will configure the IMU according to the parameters and then enable streaming node. The following topics are published with syncrhrnoized timestamps:
 
 * `/imu_3dm_gx4/imu`: An instance of `sensor_msgs/Imu`. Orientation quaternion not provided in this message since is already part of the filter message.
-* `/imu_3dm_gx4/magnetic_field`: An instance of `sensor_msgs/MagneticField`.
+* `/imu_3dm_gx4/magnetic_field`: An instance of `imu_3dm_gx4/MagFieldCF`. This essage contains:
+  - The magnetic field components (Gauss)
+  - Total magnetic field magnitude (Gauss)
+  - Covariance of the magnetic field (Gauss^2)
 * `/imu_3dm_gx4/pressure`: An instance of `sensor_msgs/FluidPressure`.
 
-The topic for the IMU's AEKF is published on a separate topic, and on an asyhcnronous timestamp:
+The topic for the IMU's estimation filter is published on a separate topic on an asyhcnronous timestamp:
 
-* `/imu_3dm_gx4/filter`: An instance of `imu_3dm_gx4/FilterOuput`. Thism message has been revised from the original KumarRobotics message to include additional data fields.
+* `/imu_3dm_gx4/filter`: An instance of `imu_3dm_gx4/FilterOuput`. This message has been revised from the original KumarRobotics message to include additional data fields. This message contains
+  - Orientation estimates in Euler Angles (rad) and the covariances (rad^2), and status flags
+  - Orientation estimates in Quaternions and status flags
+  - Filtered linear accelerations (m/s^2) and angular velocities (rad/s), and status flags
+  - The heading update (as performed by Lord Microstrain) as well as the heading update from this driver (the recommended field), both in units of (rad)
+  - Gyro bias and covariances (rad^2)
 
 ## Known Issues
 
