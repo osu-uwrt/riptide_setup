@@ -38,16 +38,16 @@ This package originates from [KumarRobotics/imu_3dm_gx4](https://github.com/Kuma
 ## Options
 
 The `imu_3dm_gx4` node supports the following base options:
-* `device`: Path to the device in `/dev`. Defaults to `/dev/ttyACM0`.
-* `baudrate`: Baudrate to employ with serial communication. Defaults to `115200`.
+* `device` (Default is `/dev/ttyACM0`): Path to the device in `/dev`. .
+* `baudrate` (Defaults is `115200`): Baudrate to employ with serial communication.
 * `frame_id`: Frame to use in headers.
-* `imu_rate`: IMU rate to use, in Hz. Default is 100.
+* `imu_rate` (Default is `100`): IMU rate to use, in Hz
 * `verbose`: If true, packet reads and mismatched checksums will be logged.
 
 The following options allow the user to change the IMU's internal infinite impulse response (IIR) low pass filter (LPF) bandwidths on each of the IMU's sensors. A value of `-1` will disable the internal IIR LPF.
-* `mag_LPF_Bandwidth` (Default is `15`): LPF bandwidth for the magnetometer
-* `accel_LPF_Bandwidth` (Default is `50`): LPF bandwidth for the accelerometer
-* `gyro_LPF_Bandwidth` (Default is `50`): LPF bandwidth for the gyroscope
+* `mag_LPF_Bandwidth` (Default is `15`): LPF bandwidth for the magnetometer, in Hz
+* `accel_LPF_Bandwidth` (Default is `50`): LPF bandwidth for the accelerometer, in Hz
+* `gyro_LPF_Bandwidth` (Default is `50`): LPF bandwidth for the gyroscope, in Hz
 
 The following option is for setting the IMU to load a pre-defined set of Hard and Soft Iron coefficients:
 * `enable_iron_offset` (Default is `false`); Indicates if IMU should load pre-defined coefficients from a YAML file. PROVIDE DATA FORMAT
