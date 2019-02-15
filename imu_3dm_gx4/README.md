@@ -13,6 +13,7 @@ This package originates from [KumarRobotics/imu_3dm_gx4](https://github.com/Kuma
 
 ### UWRT
 * **0.1.4**
+  - All fields referring to commands, reply fields, and data fields inside the `imu.cpp` file have been renamed to match those appearing in the LORD Microstrain 3DM-GX4-25 Data and Communications Protocol manual.
   - Removes `enable_filter` argument so the Adaptive Extended Kalman Filter (AEKF) output is always present.
   - Updated `/imu/magnetic_field` message type from `sensor_msgs/MagneticField` to `imu_3dm_gx4/msg/MagFieldCF`.
   - Added more data fields provided by AEKF to `imu_3dm_gx4/FilterOutput` message.
@@ -45,6 +46,7 @@ This package originates from [KumarRobotics/imu_3dm_gx4](https://github.com/Kuma
   - This is the header file for the `imu_3dm_gx4` driver.
 * imu.cpp
   - This is the cpp file for `imu_3dm_gx4` driver.
+  - All COMMANDS, REPLY_FIELDS, and DATA fields have been renamed for convenience.
 * imu_3dm_gx4.cpp
   - This file creates the ROS node that interfaces with the imu.cpp file.
 
@@ -65,7 +67,8 @@ This package originates from [KumarRobotics/imu_3dm_gx4](https://github.com/Kuma
     * Total magnetic field magnitude (Gauss)
     * Covariance of the magnetic field (Gauss^2)
 
-## Settings (Organized according to LORD Microstrain 3DM-GX4-25 Data Communications Protocol)
+## Settings 
+The following settings are organized according to [LORD Microstrain's 3DM-GX4-25 Data Communications Protocol manual](http://files.microstrain.com/3DM-GX4-25%20Data%20Communications%20Protocol.pdf).
 
 ### 3DM Settings
 #### High-Level Settings
