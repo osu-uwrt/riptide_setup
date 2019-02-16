@@ -33,4 +33,4 @@ This folder contains a number of scripts that can either transfer or BOTH transf
 This folder contains a number of scripts that can remotely shutdown and/or reboot `riptide` and/or `jetson`.
 
 ## GUI (gui/)
-This folder contains pre-defined layout of an rqt_gui we use often use when testing our vehicle at pool-tests. Import this gui upon running: `rosrun rqt_gui rqt_gui`
+This folder contains pre-defined layout of an rqt_gui we often use when testing our vehicle at pool-tests. Import this gui after running: `rosrun rqt_gui rqt_gui`
