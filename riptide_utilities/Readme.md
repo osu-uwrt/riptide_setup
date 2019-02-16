@@ -15,8 +15,8 @@ This folder contains a few scripts that allow you to ssh ("secure shell" - this 
 
 ## Date Scripts (date_scripts/)
 This folder contains a few files to set the time on our two computers: `riptide` and `jetson`
-* When pushing code to one of these computers, the code may not compile based on 1) the time you made the change on your computer and 2) the time indicated by `riptide` or `jetson`.
-  - For example, if you changed a file at 2:55pm, but the "local" time on let's say `riptide` is 3:00pm, then `riptide` will not compile the code because, according to it, nothing new has changed.
+* Note: This only needs to be done if when pushing code to one of these computers, the code does not compile due to 1) the time you made the file changes on your computer and 2) the time indicated by `riptide` or `jetson`.
+  - For example, if you changed a file at 2:55pm, but the "local" time on let's say `riptide` is 3:00pm, then `riptide` will not compile this file because changes in the "past" are unimportant.
   
 ## Jetson Setup (jetson_setup/)
 This folder contains a series of scripts that are used to install ROS and other dependencies on our NVIDIA Jetson TX1.
