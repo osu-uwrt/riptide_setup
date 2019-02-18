@@ -1,6 +1,7 @@
 #include "riptide_gnc/kalman_filter.h"
 
-KalmanFilter::KalmanFilter(MatrixXf Ao, MatrixXf Ho, MatrixXf Qo, MatrixXf Ro)
+KalmanFilter::KalmanFilter(const Ref<const MatrixXf> &Ao, const Ref<const MatrixXf> &Ho,
+                           const Ref<const MatrixXf> &Qo, const Ref<const MatrixXf> &Ro)
 {
     // Verify matrix dimensions
     int Arows = Ao.rows(), Acols = Ao.cols(), Hrows = Ho.rows(), Hcols = Ho.cols();
@@ -37,18 +38,18 @@ KalmanFilter::KalmanFilter(MatrixXf Ao, MatrixXf Ho, MatrixXf Qo, MatrixXf Ro)
     init = false;
 }
 
-void KalmanFilter::InitKF(VectorXf Xo)
+void KalmanFilter::InitKF(const Ref<const VectorXf> &Xo)
 {
     int in_rows = Xo.rows();
     /*if (in_rows != n)
         throw std::runtime_error("Dimension mismatch: Input initial state row_size(%i) does not match expcted row_size(%i)", in_rows, n);*/
-    
+
     Xhat = Xo;
     init = true;
 }
 
 // Update Kalman Filter, assuming linear system
-VectorXf KalmanFilter::UpdateKF(VectorXf Z)
+VectorXf KalmanFilter::UpdateKF(const Ref<const VectorXf> &Z)
 {
     // Verify input vector dimensions
     int Zrows = Z.rows();
@@ -71,7 +72,8 @@ VectorXf KalmanFilter::UpdateKF(VectorXf Z)
 // Update Kalman Filter with overridden state vector and system matrices
 // To be called by an Extended Kalman Filter (EKF)
 // A and H matrices are Jacobians calculated by the EKF
-VectorXf KalmanFilter::UpdateEKF(MatrixXf Anew, MatrixXf Hnew, VectorXf Xpredict, VectorXf Z)
+VectorXf KalmanFilter::UpdateEKF(const Ref<const MatrixXf> &Anew, const Ref<const MatrixXf> &Hnew,
+                                 const Ref<const VectorXf> &Xpredict, const Ref<const VectorXf> &Z)
 {
     // Verify input matrix dimensions
     int Xrows = Xpredict.rows(), Zrows = Z.rows();

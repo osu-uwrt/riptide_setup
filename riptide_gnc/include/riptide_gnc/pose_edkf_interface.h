@@ -14,9 +14,13 @@ class PoseEDKFInterface
 {
   private:
   ros::NodeHandle nh;
+  Matrix3f mat;
 
   public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     PoseEDKFInterface();
+    void copy(const Ref<const MatrixXf>& m);
 };
 
 #endif

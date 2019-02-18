@@ -10,22 +10,25 @@ using namespace Eigen;
 // If not initialized manually, then it will auto-initialize (set Xhat prediction to zero-vector).
 class KalmanFilter
 {
-private:
-    float m, n; // m = # measurements, n = # states
+  private:
+    float m, n;    // m = # measurements, n = # states
     VectorXf Xhat; // State Vector
-    MatrixXf A; // State-transition Matrix
-    MatrixXf H; // Measurement Matrix
-    MatrixXf K; // Kalman Gain
-    MatrixXf P; // Error Covariance Matrix
-    MatrixXf Q; // Process Noise Covariance Matrix
-    MatrixXf R; // Measurement Noise Covariance Matrix
-    MatrixXf I; // Identity Matrix
+    MatrixXf A;    // State-transition Matrix
+    MatrixXf H;    // Measurement Matrix
+    MatrixXf K;    // Kalman Gain
+    MatrixXf P;    // Error Covariance Matrix
+    MatrixXf Q;    // Process Noise Covariance Matrix
+    MatrixXf R;    // Measurement Noise Covariance Matrix
+    MatrixXf I;    // Identity Matrix
     bool init;
-public:
-    KalmanFilter(MatrixXf Ao, MatrixXf Ho, MatrixXf Qo, MatrixXf Ro);
-    void InitKF(VectorXf Xo);
-    VectorXf UpdateKF(VectorXf Z);
-    VectorXf UpdateEKF(MatrixXf Anew, MatrixXf Hnew, VectorXf Xpredict, VectorXf Z);
+
+  public:
+    KalmanFilter(const Ref<const MatrixXf> &Ao, const Ref<const MatrixXf> &Ho,
+                 const Ref<const MatrixXf> &Qo, const Ref<const MatrixXf> &Ro);
+    void InitKF(const Ref<const VectorXf> &Xo);
+    VectorXf UpdateKF(const Ref<const VectorXf> &Z);
+    VectorXf UpdateEKF(const Ref<const MatrixXf> &Anew, const Ref<const MatrixXf> &Hnew,
+                       const Ref<const VectorXf> &Xpredict, const Ref<const VectorXf> &Z);
     MatrixXf GetErrorCovariance();
 };
 
