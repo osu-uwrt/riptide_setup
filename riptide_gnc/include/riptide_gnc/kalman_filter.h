@@ -3,6 +3,7 @@
 
 #include "eigen3/Eigen/Dense"
 #include "eigen3/Eigen/Core"
+#include "sstream"
 
 using namespace Eigen;
 
@@ -29,7 +30,8 @@ class KalmanFilter
     VectorXf UpdateKF(const Ref<const VectorXf> &Z);
     VectorXf UpdateEKF(const Ref<const MatrixXf> &Anew, const Ref<const MatrixXf> &Hnew,
                        const Ref<const VectorXf> &Xpredict, const Ref<const VectorXf> &Z);
-    MatrixXf GetErrorCovariance();
+    void GetXhat(Ref<VectorXf> x);
+    void GetErrorCovariance(Ref<MatrixXf> mat);
 };
 
 #endif

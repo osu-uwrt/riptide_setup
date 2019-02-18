@@ -8,39 +8,42 @@ AUModel::AUVModel(float m, Vector3f J, float V, float fluid_rho, const Ref<const
     vol = V;         // [m^3]
     rho = fluid_rho; // [kg/m^3]
     CoB = cob;
-    dragCoeffs = drag;
+    drag = dragCoeffs;
     thrusters = auv_thrusters;
 }
 
 // Get vector of ALL actuation forces/moments as expressed in the body frame
-Vector6f AUVModel::DecomposeActuation(const Ref<const VectorXf> &actuation)
+// Parameters:
+//      totalFM = Vector6f for (3x) overall forces and (3x) overall moments actuators exert on vehicle
+//      actuation = VectorXf of force exerted on vehicle by each thruster
+void AUVModel::DecomposeActuation(Ref<Vector6f> totalFM, const Ref<const VectorXf> &actuation)
 {
-    Vector6f output;
-    output.setZero();
+    totalFM.setZero();
 
     if (actuation.rows() == thrusters.size())
         for (int i = 0; i < thrusters.size(); i++)
-            output = output + AUVModel::DecomposeActuator(i, actuation(i));
-
-    return output;
+        {
+            Vector6f temp;
+            AUVModel::DecomposeActuator(temp, i, actuation(i));
+            totalFM = allFM + temp;
+        }
 }
 
-// Get actuator forces/moments as expressed in the body frame
+// Get forces/moments that a SINGLE actuator exerts on the vehicle, expressed in the body frame
 // Parameters:
+//      thrustFM = Vector6f for (3x) forces and (3x) moments thruster exerts on vehicle
 //      thruster = index of given thruster
 //      force = force from given thruster [N]
-VectorXf AUVModel::DecomposeActuator(int thruster, float actuation)
+void AUVModel::DecomposeActuator(Ref<Vector6f> thrustFM, int thruster, float force)
 {
-    VectorXf output;
-    output.resize(6, 1);
-    output.setZero();
+    thrustFM.setZero(); 
 
     if (thruster < thrusters.size()) // Verify thruster index is valid
     {
-        Vector3f r, f, tao;
+        Vector3f r, f, tau;
         r.setZero();                          // Radius vector
         f.setZero();                          // Force vector
-        tao.setZero();                        // Moment vector
+        tau.setZero();                        // Moment vector
         float psi = thrusters[thruster](3);   // Yaw
         float theta = thrusters[thruster](4); // Pitch
 
@@ -48,22 +51,19 @@ VectorXf AUVModel::DecomposeActuator(int thruster, float actuation)
         f(0) = force * cos(psi) * cos(theta);
         f(1) = force * sin(psi) * cos(theta);
         f(2) = -force * sin(theta);
-        tao = r.cross(f);
-        output << f, t;
+        tau = r.cross(f);
+        thrustFM << f, tau;
     }
-
-    return output;
 }
 
 // Get forces/moments due to to vehicle's weight and buoyancy as expressed in the body frame
 // Parameters:
+//      weightFM = Vector6f of forces and moments due to vehicle's weight and buoyancy
 //      phi = roll [rad]
 //      theta = pitch [rad]
-VectorXf AUVModel::DecomposeWeightForces(float phi, float theta)
+void AUVModel::DecomposeWeightForces(Ref<Vector6f> weightFMfloat phi, float theta)
 {
-    VectorXf output;
-    output.resize(6, 1);
-    output.setZero();
+    weightFM.setZero();
 
     Vector3f w, fb, tao;
     w.setZero();   // Weight vector
@@ -79,16 +79,13 @@ VectorXf AUVModel::DecomposeWeightForces(float phi, float theta)
     fb(1) = -B * sin(phi) * cos(theta);
     fb(2) = -B * cos(phi) * cos(theta);
     tau = CoB.cross(fb);
-    output << w, tau;
-
-    return output;
+    weightFM << w, tau;
 }
 
 // Get rotation matrix from world-frame to body-frame using Euler Angles (yaw, pitch, roll)
 // Ex. Vb = R * Vw, Vb = vector in body-frame coordinates, Vw = vector in world-frame coordinates
-Matrix3f AUVModel::GetEulerYPR(float yaw, float pitch, float roll)
+void AUVModel::GetEulerYPR(Ref<Matrix3f> R, float yaw, float pitch, float roll)
 {
-    Matrix3f R = Matrix3f::Zero();
     float s_phi = sin(roll);
     float c_phi = cos(roll);
     float s_theta = sin(pitch);
@@ -105,26 +102,22 @@ Matrix3f AUVModel::GetEulerYPR(float yaw, float pitch, float roll)
     R(2, 0) = c_phi * s_theta * c_psi + s_phi * s_psi;
     R(2, 1) = c_phi * s_theta * s_psi - s_phi * c_psi;
     R(2, 2) = c_phi * c_theta;
-
-    return R;
 }
 
 // Compute a priori states for Translation EKF
 // 9 States: inertial pos, inertial vel, inertial accel (the last two are expressed in the body-frame)
-VectorXf AUVModel::TransEKF9APriori(const Ref<const Vector3f> &posPrev, const Ref<const Vector3f> &velPrev,
+void AUVModel::TransEKF9APriori(Ref<Vector9f> apriori, const Ref<const Vector3f> &posPrev, const Ref<const Vector3f> &velPrev,
                                     const Ref<const Vector3f> &attitude, const Ref<const Vector3f> &omega)
 {
-    VectorXf apriori;
-    apriori.resize(9, 1);
-    const float roll = attitude(0);
-    const float pitch = attitude(1);
-    const float yaw = attitude(2);
-    const float uPrev = velPrev(0);
-    const float vPrev = velPrev(1);
-    const float wPrev = velPrev(2);
-    const float p = omega(0);
-    const float q = omega(1);
-    const float r = omega(2);
+    float roll = attitude(0);
+    float pitch = attitude(1);
+    float yaw = attitude(2);
+    float uPrev = velPrev(0);
+    float vPrev = velPrev(1);
+    float wPrev = velPrev(2);
+    float p = omega(0);
+    float q = omega(1);
+    float r = omega(2);
 }
 
 // Compute vehicle acceleration expressed in the body-frame

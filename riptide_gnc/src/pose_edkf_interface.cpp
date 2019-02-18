@@ -65,6 +65,25 @@ PoseEDKFInterface::PoseEDKFInterface() : nh("pose_edkf")
     const float var1 = 10.5;
     float var2 = var1 + 2.5;
     cout << "var2: " << var2 << endl;
+
+    int a = 5;
+    stringstream ss;
+    ss << "The number 'is': " << a;
+    ROS_INFO("%s", ss.str().c_str());
+
+    int b = 6, m = 3, n = 4;
+    try
+    {
+        stringstream ss;
+        ss << "UpdateEKF, Dimension mismatch: Input 'Hnew' of size(" << a << ", " << b << ") does not match expected size(" << m << ", " << n << ")" << endl;
+        throw std::runtime_error(ss.str());
+        a = 7;
+    }
+    catch (exception &e)
+    {
+        cout << e.what();
+    }
+    ROS_INFO("a = %i", a);
 }
 
 void PoseEDKFInterface::copy(const Ref<const MatrixXf>& m)
