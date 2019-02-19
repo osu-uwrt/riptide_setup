@@ -7,7 +7,7 @@
 using namespace Eigen;
 using namespace std;
 
-typedef Matrix<float, 3, 2> Matrix32f;
+typedef Matrix<float, 6, 2> Matrix62f;
 typedef Matrix<float, 9, 1> Vector9f;
 typedef Matrix<float, 6, 1> Vector6f;
 typedef Matrix<float, 5, 1> Vector5f;
@@ -29,13 +29,14 @@ class AUVModel
     const static float GRAVITY = 9.81;     // [m/s^2]
     const static float DEFAULT_RHO = 1000; // [kg/m^3]
     AUVModel(float m, Vector3f J, float V, float fluid_rho, const Ref<const Vector3f> &cob,
-             const Ref<const Matrix32f> &dragCoeffs, vector<Vector5f> &auv_thrusters);
+             const Ref<const Matrix62f> &dragCoeffs, vector<Vector5f> &auv_thrusters);
 
     void DecomposeActuation(Ref<Vector6f> totalFM, const Ref<const VectorXf> &actuation);
     void DecomposeActuator(Ref<Vector6f> thrustFM, int thruster, float actuation);
     void DecomposeWeightForces(Ref<Vector6f> weightFM, float phi, float theta);
 
     void GetEulerYPR(Ref<Matrix3f> R, float yaw, float pitch, float roll);
+    MatrixXf Sgn(const Ref<const MatrixXf> mat);
 };
 
 #endif
