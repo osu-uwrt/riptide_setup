@@ -20,9 +20,17 @@
 #include "riptide_msgs/ThrustStamped.h"
 #include "riptide_msgs/ThrusterResiduals.h"
 
+#include <yaml-cpp/yaml.h>
+#include "eigen3/Eigen/Dense"
+#include "eigen3/Eigen/Core"
+using namespace Eigen;
+//#include "sstream"
+
 #define PI 3.141592653
 #define GRAVITY 9.81 //[m/s^2]
 #define WATER_DENSITY 1000.0 //[kg/m^3]
+
+typedef Matrix<double, 6, 1> Vector6d;
 
 class ThrusterController
 {
@@ -38,6 +46,15 @@ class ThrusterController
   dynamic_reconfigure::Server<riptide_controllers::VehiclePropertiesConfig> server;
   dynamic_reconfigure::Server<riptide_controllers::VehiclePropertiesConfig>::CallbackType cb;
 
+  // Variables for New Thruster Setup
+  YAML::Node VProperties; // Vehicle Properties
+  int numThrusters, activeThrusters;
+  std::vector<bool> thrustersEnabled;
+  MatrixXd thrusters, thrustFM;
+  Vector6d weightFM, transportThm;
+  Vector3d CoB;
+  double M, V, W, B, Jxx, Jyy, Jzz;
+
   // Primary EOMs
   ceres::Problem problem;
   ceres::Solver::Options options;
@@ -49,9 +66,13 @@ class ThrusterController
   ceres::Solver::Summary buoyancySummary;
 
  public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
   ThrusterController(char **argv);
   template <typename T>
   void LoadParam(std::string param, T &var);
+  void LoadVehicleProperties();
+  void SetupThrusters();
   void InitThrustMsg();
   void DynamicReconfigCallback(riptide_controllers::VehiclePropertiesConfig &config, uint32_t levels);
   void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);

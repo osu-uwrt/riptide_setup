@@ -11,8 +11,15 @@ int main(int argc, char **argv)
   ThrusterController.Loop();
 }
 
-ThrusterController::ThrusterController(char **argv) : nh("thruster_controller") {
+ThrusterController::ThrusterController(char **argv) : nh("thruster_controller")
+{
   // Load parameters from .yaml files or launch files
+  VProperties = YAML::LoadFile("../osu-uwrt/riptide_software/src/riptide_controllers/cfg/vehicle_properties2.yaml");
+  ThrusterController::LoadVehicleProperties();
+  ThrusterController::SetupThrusters();
+  weightFM.setZero();
+  transportThm.setZero();
+
   nh.getParam("debug", debug_controller);
   ThrusterController::LoadParam("buoyancy_depth_thresh", buoyancy_depth_thresh); // Depth threshold to include buoyancy
 
@@ -69,14 +76,14 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller") 
 
   std::string t = "true", f = "false"; // Use with '<expression>?a:b' --> if expression is 'true' return a, else return b
   ROS_INFO("Thruster Status:");
-  ROS_INFO("\tSPL enabled: %s", enableSPL?t.c_str():f.c_str());
-  ROS_INFO("\tSSL enabled: %s", enableSSL?t.c_str():f.c_str());
-  ROS_INFO("\tSWF enabled: %s", enableSWF?t.c_str():f.c_str());
-  ROS_INFO("\tSWA enabled: %s", enableSWA?t.c_str():f.c_str());
-  ROS_INFO("\tHPF enabled: %s", enableHPF?t.c_str():f.c_str());
-  ROS_INFO("\tHSF enabled: %s", enableHSF?t.c_str():f.c_str());
-  ROS_INFO("\tHPA enabled: %s", enableHPA?t.c_str():f.c_str());
-  ROS_INFO("\tHSA enabled: %s", enableHSA?t.c_str():f.c_str());
+  ROS_INFO("\tSPL enabled: %s", enableSPL ? t.c_str() : f.c_str());
+  ROS_INFO("\tSSL enabled: %s", enableSSL ? t.c_str() : f.c_str());
+  ROS_INFO("\tSWF enabled: %s", enableSWF ? t.c_str() : f.c_str());
+  ROS_INFO("\tSWA enabled: %s", enableSWA ? t.c_str() : f.c_str());
+  ROS_INFO("\tHPF enabled: %s", enableHPF ? t.c_str() : f.c_str());
+  ROS_INFO("\tHSF enabled: %s", enableHSF ? t.c_str() : f.c_str());
+  ROS_INFO("\tHPA enabled: %s", enableHPA ? t.c_str() : f.c_str());
+  ROS_INFO("\tHSA enabled: %s", enableHSA ? t.c_str() : f.c_str());
 
   R_b2w.setIdentity();
   R_w2b.setIdentity();
@@ -85,8 +92,8 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller") 
   ang_v.setZero();
 
   isBuoyant = false;
-  weight = mass*GRAVITY;
-  buoyancy = volume*WATER_DENSITY*GRAVITY;
+  weight = mass * GRAVITY;
+  buoyancy = volume * WATER_DENSITY * GRAVITY;
 
   state_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &ThrusterController::ImuCB, this);
   depth_sub = nh.subscribe<riptide_msgs::Depth>("/state/depth", 1, &ThrusterController::DepthCB, this);
@@ -99,7 +106,8 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller") 
   server.setCallback(cb);
 
   // Debug variables
-  if(debug_controller) {
+  if (debug_controller)
+  {
     buoyancy_pub = nh.advertise<geometry_msgs::Vector3Stamped>("/debug/pos_buoyancy", 1);
 
     // Published in a message
@@ -138,28 +146,36 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller") 
   problem.SetParameterLowerBound(&surge_stbd_lo, 0, MIN_THRUST);
   problem.SetParameterUpperBound(&surge_stbd_lo, 0, MAX_THRUST);*/
 
-  if(!enableSPL) {
+  if (!enableSPL)
+  {
     problem.AddResidualBlock(new ceres::AutoDiffCostFunction<disableSPL, 1, 1>(new disableSPL), NULL, &surge_port_lo);
   }
-  if(!enableSSL) {
+  if (!enableSSL)
+  {
     problem.AddResidualBlock(new ceres::AutoDiffCostFunction<disableSSL, 1, 1>(new disableSSL), NULL, &surge_stbd_lo);
   }
-  if(!enableSWF) {
+  if (!enableSWF)
+  {
     problem.AddResidualBlock(new ceres::AutoDiffCostFunction<disableSWF, 1, 1>(new disableSWF), NULL, &sway_fwd);
   }
-  if(!enableSWA) {
+  if (!enableSWA)
+  {
     problem.AddResidualBlock(new ceres::AutoDiffCostFunction<disableSWA, 1, 1>(new disableSWA), NULL, &sway_aft);
   }
-  if(!enableHPF) {
+  if (!enableHPF)
+  {
     problem.AddResidualBlock(new ceres::AutoDiffCostFunction<disableHPF, 1, 1>(new disableHPF), NULL, &heave_port_fwd);
   }
-  if(!enableHSF) {
+  if (!enableHSF)
+  {
     problem.AddResidualBlock(new ceres::AutoDiffCostFunction<disableHSF, 1, 1>(new disableHSF), NULL, &heave_stbd_fwd);
   }
-  if(!enableHPA) {
+  if (!enableHPA)
+  {
     problem.AddResidualBlock(new ceres::AutoDiffCostFunction<disableHPA, 1, 1>(new disableHPA), NULL, &heave_port_aft);
   }
-  if(!enableHSA) {
+  if (!enableHSA)
+  {
     problem.AddResidualBlock(new ceres::AutoDiffCostFunction<disableHSA, 1, 1>(new disableHSA), NULL, &heave_stbd_aft);
   }
 
@@ -169,11 +185,11 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller") 
 
   //*** Tuning for Buoyancy ***////////////////////////////////////////////////
   buoyancyProblem.AddResidualBlock(new ceres::AutoDiffCostFunction<tuneRoll, 1, 1, 1>(new tuneRoll), NULL,
-                           &pos_buoyancy_y, &pos_buoyancy_z);
+                                   &pos_buoyancy_y, &pos_buoyancy_z);
   buoyancyProblem.AddResidualBlock(new ceres::AutoDiffCostFunction<tunePitch, 1, 1, 1>(new tunePitch), NULL,
-                           &pos_buoyancy_x, &pos_buoyancy_z);
+                                   &pos_buoyancy_x, &pos_buoyancy_z);
   buoyancyProblem.AddResidualBlock(new ceres::AutoDiffCostFunction<tuneYaw, 1, 1, 1>(new tuneYaw), NULL,
-                           &pos_buoyancy_x, &pos_buoyancy_y);
+                                   &pos_buoyancy_x, &pos_buoyancy_y);
 
   //buoyancyProblem.SetParameterLowerBound(&pos_buoyancy_x, 0, 0.001);
 
@@ -198,12 +214,74 @@ void ThrusterController::LoadParam(std::string param, T &var)
       throw 0;
     }
   }
-  catch(int e)
+  catch (int e)
   {
     std::string ns = nh.getNamespace();
     ROS_ERROR("Thruster Controller Namespace: %s", ns.c_str());
     ROS_ERROR("Critical! Param \"%s/%s\" does not exist or is not accessed correctly. Shutting down.", ns.c_str(), param.c_str());
     ros::shutdown();
+  }
+}
+
+void ThrusterController::LoadVehicleProperties()
+{
+  M = VProperties["properties"]["mass"].as<double>();
+  V = VProperties["properties"]["volume"].as<double>();
+
+  for (int i = 0; i < 3; i++)
+    CoB(i) = VProperties["properties"]["CoB"][i].as<double>();
+
+  Jxx = VProperties["properties"]["inertia"][0].as<double>();
+  Jyy = VProperties["properties"]["inertia"][1].as<double>();
+  Jzz = VProperties["properties"]["inertia"][2].as<double>();
+}
+
+void ThrusterController::SetupThrusters()
+{
+  numThrusters = VProperties["properties"]["thrusters"].size();
+  activeThrusters = 0;
+  for (int i = 0; i < numThrusters; i++)
+  {
+    bool enabled = VProperties["properties"]["thrusters"][i]["enable"].as<bool>();
+    thrustersEnabled.push_back(enabled);
+    if (enabled)
+      activeThrusters++; // Find number of active thrusters
+  }
+
+  // Each COLUMN contains a thruster's info
+  thrusters.resize(5, activeThrusters);
+  thrustFM.resize(6, activeThrusters);
+  thrusters.setZero();
+  thrustFM.setZero();
+
+  int k = 0;
+  for (int i = 0; i < numThrusters; i++)
+  {
+    if (thrustersEnabled[i])
+    {
+      for (int j = 0; j < 5; j++)
+      {
+        thrusters(j, k) = VProperties["properties"]["thrusters"][i]["pose"][j].as<double>();
+      }
+      k++;
+    }
+  }
+
+  k = 0;
+  for (int i = 0; i < numThrusters; i++)
+  {
+    if (thrustersEnabled[i])
+    {
+      float psi = thrusters(3, i) * PI / 180;
+      float theta = thrusters(4, i) * PI / 180;
+      thrustFM(0, k) = cos(psi) * cos(theta); // cos(psi)cos(theta)
+      thrustFM(1, k) = sin(psi) * cos(theta); // sin(psi)cos(theta)
+      thrustFM(2, k) = -sin(theta);           // -sin(theta)
+
+      // Cross-product
+      thrustFM.block<3, 1>(3, k) = thrusters.block<3, 1>(0, i).cross(thrustFM.block<3, 1>(0, k));
+      k++;
+    }
   }
 }
 
@@ -223,16 +301,18 @@ void ThrusterController::InitThrustMsg()
 }
 
 // Callback for dynamic reconfigure
-void ThrusterController::DynamicReconfigCallback(riptide_controllers::VehiclePropertiesConfig &config, uint32_t levels) {
-  if(debug_controller) {
+void ThrusterController::DynamicReconfigCallback(riptide_controllers::VehiclePropertiesConfig &config, uint32_t levels)
+{
+  if (debug_controller)
+  {
     mass = config.Mass;
     volume = config.Volume;
     pos_buoyancy.x = config.Buoyancy_X_POS;
     pos_buoyancy.y = config.Buoyancy_Y_POS;
     pos_buoyancy.z = config.Buoyancy_Z_POS;
 
-    weight = mass*GRAVITY;
-    buoyancy = volume*WATER_DENSITY*GRAVITY;
+    weight = mass * GRAVITY;
+    buoyancy = volume * WATER_DENSITY * GRAVITY;
   }
 }
 
@@ -241,22 +321,47 @@ void ThrusterController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
 {
   //Get euler angles, convert to radians, and make two rotation matrices
   vector3MsgToTF(imu_msg->euler_rpy, euler_deg);
-  euler_rpy.setValue(euler_deg.x()*PI/180, euler_deg.y()*PI/180, euler_deg.z()*PI/180);
+  euler_rpy.setValue(euler_deg.x() * PI / 180, euler_deg.y() * PI / 180, euler_deg.z() * PI / 180);
   R_b2w.setRPY(euler_rpy.x(), euler_rpy.y(), euler_rpy.z()); //Body to world rotations --> world_vector =  R_b2w * body_vector
-  R_w2b = R_b2w.transpose(); //World to body rotations --> body_vector = R_w2b * world_vector
+  R_w2b = R_b2w.transpose();                                 //World to body rotations --> body_vector = R_w2b * world_vector
 
   //Get angular velocity and convert to [rad/s]
   vector3MsgToTF(imu_msg->ang_vel, ang_v);
-  ang_v.setValue(ang_v.x()*PI/180, ang_v.y()*PI/180, ang_v.y()*PI/180);
+  ang_v.setValue(ang_v.x() * PI / 180, ang_v.y() * PI / 180, ang_v.y() * PI / 180);
+
+  // Stuff for new setup
+  float phi = imu_msg->euler_rpy.x * PI / 180;
+  float theta = imu_msg->euler_rpy.y * PI / 180;
+  float p = imu_msg->ang_vel.x;
+  float q = imu_msg->ang_vel.y;
+  float r = imu_msg->ang_vel.z;
+
+  transportThm(3) = -q * r * (Jzz - Jyy);
+  transportThm(4) = -p * r * (Jxx - Jzz);
+  transportThm(5) = -p * q * (Jyy - Jxx);
+
+  W = M * GRAVITY;
+  B = WATER_DENSITY * V * GRAVITY;
+  Vector3d Fb;
+  Fb(0) = B * sin(theta);
+  Fb(1) = -B * sin(phi) * cos(theta);
+  Fb(2) = -B * cos(phi) * cos(theta);
+
+  weightFM(0) = -(W-B) * sin(theta);
+  weightFM(1) = (W-B) * sin(phi) * cos(theta);
+  weightFM(2) = (W-B) * cos(phi) * cos(theta);
+  weightFM.segment<3>(3) = CoB.cross(Fb);
 }
 
 //Get depth and determine if buoyancy should be included
 void ThrusterController::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg)
 {
-  if(depth_msg->depth > buoyancy_depth_thresh){
+  if (depth_msg->depth > buoyancy_depth_thresh)
+  {
     isBuoyant = true;
   }
-  else {
+  else
+  {
     isBuoyant = false;
   }
 }
@@ -281,26 +386,26 @@ void ThrusterController::AccelCB(const geometry_msgs::Accel::ConstPtr &a)
   heave_stbd_fwd = 0.0;
   heave_port_fwd = 0.0;
 
-  #ifdef debug
-    std::cout << "Initial surge_port_lo = " << surge_port_lo << ", surge_stbd_lo = " << surge_stbd_lo
-              << ", sway_fwd = " << sway_fwd << ", sway_aft = " << sway_aft << ", heave_port_aft = " << heave_port_aft
-              << ", heave_stbd_aft = " << heave_stbd_aft << ", heave_stbd_fwd = " << heave_stbd_fwd
-              << ", heave_port_fwd = " << heave_port_fwd << std::endl;
-  #endif
+#ifdef debug
+  std::cout << "Initial surge_port_lo = " << surge_port_lo << ", surge_stbd_lo = " << surge_stbd_lo
+            << ", sway_fwd = " << sway_fwd << ", sway_aft = " << sway_aft << ", heave_port_aft = " << heave_port_aft
+            << ", heave_stbd_aft = " << heave_stbd_aft << ", heave_stbd_fwd = " << heave_stbd_fwd
+            << ", heave_port_fwd = " << heave_port_fwd << std::endl;
+#endif
 
   // Solve all my problems
   ceres::Solve(options, &problem, &summary);
 
-  #ifdef report
-    std::cout << summary.FullReport() << std::endl;
-  #endif
+#ifdef report
+  std::cout << summary.FullReport() << std::endl;
+#endif
 
-  #ifdef debug
-    std::cout << "Final surge_port_lo = " << surge_port_lo << ", surge_stbd_lo = " << surge_stbd_lo
-              << ", sway_fwd = " << sway_fwd << ", sway_aft = " << sway_aft << ", heave_port_aft = " << heave_port_aft
-              << ", heave_stbd_aft = " << heave_stbd_aft << ", heave_stbd_fwd = " << heave_stbd_fwd
-              << ", heave_port_fwd = " << heave_port_fwd << std::endl;
-  #endif
+#ifdef debug
+  std::cout << "Final surge_port_lo = " << surge_port_lo << ", surge_stbd_lo = " << surge_stbd_lo
+            << ", sway_fwd = " << sway_fwd << ", sway_aft = " << sway_aft << ", heave_port_aft = " << heave_port_aft
+            << ", heave_stbd_aft = " << heave_stbd_aft << ", heave_stbd_fwd = " << heave_stbd_fwd
+            << ", heave_port_fwd = " << heave_port_fwd << std::endl;
+#endif
 
   //Forces are in POS dxn of the vehicle, where thrusts are what the
   //thruster outputs (POS thrust equals NEG vehicle dxn)
@@ -318,33 +423,48 @@ void ThrusterController::AccelCB(const geometry_msgs::Accel::ConstPtr &a)
 
   // Calculate residuals from EOMs
   residuals.res_surge = (surge_port_lo + surge_stbd_lo +
-                        (R_w2b.getRow(0).z() * (buoyancy - weight) * isBuoyant)) / mass - cmdSurge;
+                         (R_w2b.getRow(0).z() * (buoyancy - weight) * isBuoyant)) /
+                            mass -
+                        cmdSurge;
 
   residuals.res_sway = (sway_fwd + sway_aft +
-                (R_w2b.getRow(1).z() * (buoyancy - weight) * isBuoyant)) / mass - cmdSway;
+                        (R_w2b.getRow(1).z() * (buoyancy - weight) * isBuoyant)) /
+                           mass -
+                       cmdSway;
 
   residuals.res_heave = (heave_port_fwd + heave_stbd_fwd + heave_port_aft + heave_stbd_aft +
-                (R_w2b.getRow(2).z() * (buoyancy - weight) * isBuoyant)) / mass - cmdHeave;
+                         (R_w2b.getRow(2).z() * (buoyancy - weight) * isBuoyant)) /
+                            mass -
+                        cmdHeave;
 
   residuals.res_roll = ((R_w2b.getRow(1).z() * buoyancy * (-pos_buoyancy.z) +
-                R_w2b.getRow(2).z() * buoyancy * pos_buoyancy.y) * isBuoyant +
-                sway_fwd * (-pos_sway_fwd.z) + sway_aft * (-pos_sway_aft.z) +
-                heave_port_fwd * pos_heave_port_fwd.y + heave_stbd_fwd * pos_heave_stbd_fwd.y +
-                heave_port_aft * pos_heave_port_aft.y + heave_stbd_aft * pos_heave_stbd_aft.y -
-                ((ang_v.z() * ang_v.y()) * (Izz - Iyy))) / Ixx - cmdRoll;
+                         R_w2b.getRow(2).z() * buoyancy * pos_buoyancy.y) *
+                            isBuoyant +
+                        sway_fwd * (-pos_sway_fwd.z) + sway_aft * (-pos_sway_aft.z) +
+                        heave_port_fwd * pos_heave_port_fwd.y + heave_stbd_fwd * pos_heave_stbd_fwd.y +
+                        heave_port_aft * pos_heave_port_aft.y + heave_stbd_aft * pos_heave_stbd_aft.y -
+                        ((ang_v.z() * ang_v.y()) * (Izz - Iyy))) /
+                           Ixx -
+                       cmdRoll;
 
   residuals.res_pitch = ((R_w2b.getRow(0).z() * buoyancy * pos_buoyancy.z +
-                R_w2b.getRow(2).z() * buoyancy * (-pos_buoyancy.x)) * isBuoyant +
-                surge_port_lo * pos_surge_port_lo.z + surge_stbd_lo * pos_surge_stbd_lo.z +
-                heave_port_fwd * (-pos_heave_port_fwd.x) + heave_stbd_fwd * (-pos_heave_stbd_fwd.x) +
-                heave_port_aft * (-pos_heave_port_aft.x) + heave_stbd_aft * (-pos_heave_stbd_aft.x) -
-                ((ang_v.x() * ang_v.z()) * (Ixx - Izz))) / Iyy - cmdPitch;
+                          R_w2b.getRow(2).z() * buoyancy * (-pos_buoyancy.x)) *
+                             isBuoyant +
+                         surge_port_lo * pos_surge_port_lo.z + surge_stbd_lo * pos_surge_stbd_lo.z +
+                         heave_port_fwd * (-pos_heave_port_fwd.x) + heave_stbd_fwd * (-pos_heave_stbd_fwd.x) +
+                         heave_port_aft * (-pos_heave_port_aft.x) + heave_stbd_aft * (-pos_heave_stbd_aft.x) -
+                         ((ang_v.x() * ang_v.z()) * (Ixx - Izz))) /
+                            Iyy -
+                        cmdPitch;
 
   residuals.res_yaw = ((R_w2b.getRow(0).z() * buoyancy * (-pos_buoyancy.y) +
-                R_w2b.getRow(1).z() * buoyancy * pos_buoyancy.x) * isBuoyant +
-                surge_port_lo * (-pos_surge_port_lo.y) + surge_stbd_lo * (-pos_surge_stbd_lo.y) +
-                sway_fwd * pos_sway_fwd.x + sway_aft * pos_sway_aft.x -
-                ((ang_v.y() * ang_v.x()) * (Iyy - Ixx))) / Izz - cmdYaw;
+                        R_w2b.getRow(1).z() * buoyancy * pos_buoyancy.x) *
+                           isBuoyant +
+                       surge_port_lo * (-pos_surge_port_lo.y) + surge_stbd_lo * (-pos_surge_stbd_lo.y) +
+                       sway_fwd * pos_sway_fwd.x + sway_aft * pos_sway_aft.x -
+                       ((ang_v.y() * ang_v.x()) * (Iyy - Ixx))) /
+                          Izz -
+                      cmdYaw;
 
   residual_pub.publish(residuals);
 
@@ -354,7 +474,8 @@ void ThrusterController::AccelCB(const geometry_msgs::Accel::ConstPtr &a)
   // The output should contain non-zero distances so long as the the vehicle is
   // unable to reach a target orientation along any axis.
   // The depth controller is used only to keep the vehicle fully submerged
-  if(debug_controller) {
+  if (debug_controller)
+  {
     // Initialize values
     pos_buoyancy_x = 0.0;
     pos_buoyancy_y = 0.0;
@@ -373,7 +494,8 @@ void ThrusterController::AccelCB(const geometry_msgs::Accel::ConstPtr &a)
 void ThrusterController::Loop()
 {
   ros::Rate rate(200);
-  while(!ros::isShuttingDown()) {
+  while (!ros::isShuttingDown())
+  {
     ros::spinOnce();
     rate.sleep();
   }
