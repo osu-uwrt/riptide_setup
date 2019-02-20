@@ -8,6 +8,15 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "thruster_controller");
   ThrusterController ThrusterController(argv);
+
+  /*ThrusterController::numThrusters = 0;
+  ThrusterController::M = 0.5;
+  ThrusterController::thrustFM.resize(6,8);
+  ThrusterController::thrustFM.setZero();
+  ThrusterController::weightFM.setZero();
+  ThrusterController::transportThm.setZero();
+  ThrusterController::command.setZero();*/
+
   ThrusterController.Loop();
 }
 
@@ -20,8 +29,11 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller")
   weightFM.setZero();
   transportThm.setZero();
 
+  new_pub = nh.advertise<riptide_msgs::ThrustStamped>("/command/thrust_new", 1);
+
   nh.getParam("debug", debug_controller);
   ThrusterController::LoadParam("buoyancy_depth_thresh", buoyancy_depth_thresh); // Depth threshold to include buoyancy
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Load postions of each thruster relative to CoM
   ThrusterController::LoadParam<double>("HPF/X", pos_heave_port_fwd.x);
@@ -119,6 +131,13 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller")
   ThrusterController::InitThrustMsg();
 
   google::InitGoogleLogging(argv[0]);
+
+  ////////////////////////////////////////
+  // New problem
+  newProblem.AddResidualBlock(new ceres::AutoDiffCostFunction<EOM, 6, 8>(new EOM), NULL, forces);
+  newOptions.max_num_iterations = 100;
+  newOptions.linear_solver_type = ceres::DENSE_QR;
+  ////////////////////////////////////////
 
   // PROBLEM SETUP
   // Add residual blocks (equations)
@@ -234,6 +253,13 @@ void ThrusterController::LoadVehicleProperties()
   Jxx = VProperties["properties"]["inertia"][0].as<double>();
   Jyy = VProperties["properties"]["inertia"][1].as<double>();
   Jzz = VProperties["properties"]["inertia"][2].as<double>();
+
+  inertia(0) = M;
+  inertia(1) = M;
+  inertia(2) = M;
+  inertia(3) = Jxx;
+  inertia(4) = Jyy;
+  inertia(5) = Jzz;
 }
 
 void ThrusterController::SetupThrusters()
@@ -243,14 +269,14 @@ void ThrusterController::SetupThrusters()
   for (int i = 0; i < numThrusters; i++)
   {
     bool enabled = VProperties["properties"]["thrusters"][i]["enable"].as<bool>();
-    thrustersEnabled.push_back(enabled);
+    thrustersEnabled.push_back((int)enabled);
     if (enabled)
       activeThrusters++; // Find number of active thrusters
   }
 
   // Each COLUMN contains a thruster's info
-  thrusters.resize(5, activeThrusters);
-  thrustFM.resize(6, activeThrusters);
+  thrusters.resize(5, numThrusters);
+  thrustFM.resize(6, numThrusters);
   thrusters.setZero();
   thrustFM.setZero();
 
@@ -261,7 +287,7 @@ void ThrusterController::SetupThrusters()
     {
       for (int j = 0; j < 5; j++)
       {
-        thrusters(j, k) = VProperties["properties"]["thrusters"][i]["pose"][j].as<double>();
+        thrusters(j, i) = VProperties["properties"]["thrusters"][i]["pose"][j].as<double>();
       }
       k++;
     }
@@ -274,12 +300,12 @@ void ThrusterController::SetupThrusters()
     {
       float psi = thrusters(3, i) * PI / 180;
       float theta = thrusters(4, i) * PI / 180;
-      thrustFM(0, k) = cos(psi) * cos(theta); // cos(psi)cos(theta)
-      thrustFM(1, k) = sin(psi) * cos(theta); // sin(psi)cos(theta)
-      thrustFM(2, k) = -sin(theta);           // -sin(theta)
+      thrustFM(0, i) = cos(psi) * cos(theta); // cos(psi)cos(theta)
+      thrustFM(1, i) = sin(psi) * cos(theta); // sin(psi)cos(theta)
+      thrustFM(2, i) = -sin(theta);           // -sin(theta)
 
       // Cross-product
-      thrustFM.block<3, 1>(3, k) = thrusters.block<3, 1>(0, i).cross(thrustFM.block<3, 1>(0, k));
+      thrustFM.block<3, 1>(3, i) = thrusters.block<3, 1>(0, i).cross(thrustFM.block<3, 1>(0, i));
       k++;
     }
   }
@@ -298,6 +324,7 @@ void ThrusterController::InitThrustMsg()
   thrust.force.heave_stbd_fwd = 0;
   thrust.force.heave_port_fwd = 0;
   cmd_pub.publish(thrust);
+  new_pub.publish(thrust);
 }
 
 // Callback for dynamic reconfigure
@@ -329,6 +356,7 @@ void ThrusterController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
   vector3MsgToTF(imu_msg->ang_vel, ang_v);
   ang_v.setValue(ang_v.x() * PI / 180, ang_v.y() * PI / 180, ang_v.y() * PI / 180);
 
+  //////////////////////////////////////////////////////////////////////////////////////
   // Stuff for new setup
   float phi = imu_msg->euler_rpy.x * PI / 180;
   float theta = imu_msg->euler_rpy.y * PI / 180;
@@ -351,6 +379,7 @@ void ThrusterController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
   weightFM(1) = (W-B) * sin(phi) * cos(theta);
   weightFM(2) = (W-B) * cos(phi) * cos(theta);
   weightFM.segment<3>(3) = CoB.cross(Fb);
+  weightFM = weightFM * ((int)(isBuoyant));
 }
 
 //Get depth and determine if buoyancy should be included
@@ -375,6 +404,14 @@ void ThrusterController::AccelCB(const geometry_msgs::Accel::ConstPtr &a)
   cmdPitch = a->angular.y;
   cmdYaw = a->angular.z;
 
+  // New command
+  command(0) = a->linear.x;
+  command(1) = a->linear.y;
+  command(2) = a->linear.z;
+  command(3) = a->angular.x;
+  command(4) = a->angular.y;
+  command(5) = a->angular.z;
+
   // These forced initial guesses don't make much of a difference.
   // We currently experience a sort of gimbal lock w/ or w/o them.
   surge_port_lo = 0.0;
@@ -386,26 +423,26 @@ void ThrusterController::AccelCB(const geometry_msgs::Accel::ConstPtr &a)
   heave_stbd_fwd = 0.0;
   heave_port_fwd = 0.0;
 
-#ifdef debug
-  std::cout << "Initial surge_port_lo = " << surge_port_lo << ", surge_stbd_lo = " << surge_stbd_lo
-            << ", sway_fwd = " << sway_fwd << ", sway_aft = " << sway_aft << ", heave_port_aft = " << heave_port_aft
-            << ", heave_stbd_aft = " << heave_stbd_aft << ", heave_stbd_fwd = " << heave_stbd_fwd
-            << ", heave_port_fwd = " << heave_port_fwd << std::endl;
-#endif
+  /*#ifdef debug
+    std::cout << "Initial surge_port_lo = " << surge_port_lo << ", surge_stbd_lo = " << surge_stbd_lo
+              << ", sway_fwd = " << sway_fwd << ", sway_aft = " << sway_aft << ", heave_port_aft = " << heave_port_aft
+              << ", heave_stbd_aft = " << heave_stbd_aft << ", heave_stbd_fwd = " << heave_stbd_fwd
+              << ", heave_port_fwd = " << heave_port_fwd << std::endl;
+  #endif*/
 
   // Solve all my problems
   ceres::Solve(options, &problem, &summary);
 
-#ifdef report
-  std::cout << summary.FullReport() << std::endl;
-#endif
+  /*#ifdef report
+    std::cout << summary.FullReport() << std::endl;
+  #endif
 
-#ifdef debug
-  std::cout << "Final surge_port_lo = " << surge_port_lo << ", surge_stbd_lo = " << surge_stbd_lo
-            << ", sway_fwd = " << sway_fwd << ", sway_aft = " << sway_aft << ", heave_port_aft = " << heave_port_aft
-            << ", heave_stbd_aft = " << heave_stbd_aft << ", heave_stbd_fwd = " << heave_stbd_fwd
-            << ", heave_port_fwd = " << heave_port_fwd << std::endl;
-#endif
+  #ifdef debug
+    std::cout << "Final surge_port_lo = " << surge_port_lo << ", surge_stbd_lo = " << surge_stbd_lo
+              << ", sway_fwd = " << sway_fwd << ", sway_aft = " << sway_aft << ", heave_port_aft = " << heave_port_aft
+              << ", heave_stbd_aft = " << heave_stbd_aft << ", heave_stbd_fwd = " << heave_stbd_fwd
+              << ", heave_port_fwd = " << heave_port_fwd << std::endl;
+  #endif*/
 
   //Forces are in POS dxn of the vehicle, where thrusts are what the
   //thruster outputs (POS thrust equals NEG vehicle dxn)
@@ -420,6 +457,24 @@ void ThrusterController::AccelCB(const geometry_msgs::Accel::ConstPtr &a)
   thrust.force.heave_port_fwd = -heave_port_fwd;
 
   cmd_pub.publish(thrust);
+
+  /////////////////////////////////////////
+  // New commands
+  // Solve new problem
+  for(int i = 0; i < numThrusters; i++)
+    forces[i] = 0.0;
+  ceres::Solve(newOptions, &newProblem, &newSummary);
+
+  thrust2.header.stamp = ros::Time::now();
+  thrust2.force.heave_port_fwd = -forces[0];
+  thrust2.force.heave_port_aft = -forces[1];
+  thrust2.force.heave_stbd_fwd = -forces[2];
+  thrust2.force.heave_stbd_aft = -forces[3];
+  thrust2.force.sway_fwd = -forces[4];
+  thrust2.force.sway_aft = -forces[5];
+  thrust2.force.surge_port_lo = -forces[6];
+  thrust2.force.surge_stbd_lo = -forces[7];
+  new_pub.publish(thrust2);
 
   // Calculate residuals from EOMs
   residuals.res_surge = (surge_port_lo + surge_stbd_lo +

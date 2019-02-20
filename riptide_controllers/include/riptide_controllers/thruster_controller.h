@@ -27,14 +27,14 @@ using namespace Eigen;
 //#include "sstream"
 
 #define PI 3.141592653
-#define GRAVITY 9.81 //[m/s^2]
+#define GRAVITY 9.81         //[m/s^2]
 #define WATER_DENSITY 1000.0 //[kg/m^3]
 
 typedef Matrix<double, 6, 1> Vector6d;
 
 class ThrusterController
 {
- private:
+private:
   // Comms
   ros::NodeHandle nh;
   ros::Subscriber state_sub, cmd_sub, depth_sub, mass_vol_sub, buoyancy_sub;
@@ -47,13 +47,14 @@ class ThrusterController
   dynamic_reconfigure::Server<riptide_controllers::VehiclePropertiesConfig>::CallbackType cb;
 
   // Variables for New Thruster Setup
+  ros::Publisher new_pub;
+  riptide_msgs::ThrustStamped thrust2;
   YAML::Node VProperties; // Vehicle Properties
-  int numThrusters, activeThrusters;
-  std::vector<bool> thrustersEnabled;
-  MatrixXd thrusters, thrustFM;
-  Vector6d weightFM, transportThm;
+  int activeThrusters;
+  std::vector<int> thrustersEnabled;
+  MatrixXd thrusters;
   Vector3d CoB;
-  double M, V, W, B, Jxx, Jyy, Jzz;
+  double V, W, B, Jxx, Jyy, Jzz;
 
   // Primary EOMs
   ceres::Problem problem;
@@ -65,7 +66,12 @@ class ThrusterController
   ceres::Solver::Options buoyancyOptions;
   ceres::Solver::Summary buoyancySummary;
 
- public:
+  // New EOM Format
+  ceres::Problem newProblem;
+  ceres::Solver::Options newOptions;
+  ceres::Solver::Summary newSummary;
+
+public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   ThrusterController(char **argv);
@@ -81,6 +87,35 @@ class ThrusterController
   void Loop();
 };
 
+double M;
+int numThrusters;
+MatrixXd thrustFM;
+Vector6d inertia, weightFM, transportThm, command;
+double forces[8]; // Solved forces go here
+
+struct EOM
+{
+  template <typename T>
+  bool operator()(const T *const forces, T *residual) const
+  {
+    for (int i = 0; i < 6; i++)
+    {
+      residual[i] = T(0);
+
+      // Account for each thruster's contribution
+      for (int j = 0; j < numThrusters; j++)
+      {
+        residual[i] = residual[i] + T(thrustFM(i, j)) * forces[j];
+      }
+
+      // Account for weightFM and transportThm
+      residual[i] = residual[i] + T(weightFM(i) + transportThm(i));
+      residual[i] = residual[i] / T(inertia(i)) - T(command(i));
+    }
+    return true;
+  }
+};
+
 //***** Below are all the variables that are needed for ceres *****///////////////////////////////
 // **Please keep these in case they get deleted from the vehicle_properties.yaml file
 /*#define Ixx 0.52607145
@@ -88,7 +123,8 @@ class ThrusterController
 #define Izz 1.62450600*/
 double Ixx, Iyy, Izz;
 
-struct vector {
+struct vector
+{
   double x;
   double y;
   double z;
@@ -108,7 +144,7 @@ double MAX_THRUST = 24.0;
 // Vehicle mass (kg):
 // Updated 5-15-18
 double mass;
-double weight = mass*GRAVITY;
+double weight = mass * GRAVITY;
 
 // Vehcile volume (m^3)
 // TODO: Get this value from model
@@ -164,7 +200,7 @@ vector pos_heave_stbd_aft;
 // Buoyancy Location
 vector pos_buoyancy;
 
-/*** EQUATIONS ***/////////////////////////////////////////////////////////////
+/*** EQUATIONS ***/ ////////////////////////////////////////////////////////////
 // These equations solve for linear/angular acceleration in all axes
 
 // Linear Equations
@@ -174,7 +210,8 @@ struct surge
   bool operator()(const T *const surge_port_lo, const T *const surge_stbd_lo, T *residual) const
   {
     residual[0] = (surge_port_lo[0] + surge_stbd_lo[0] +
-                  (T(R_w2b.getRow(0).z()) * (T(buoyancy) - T(weight))*T(isBuoyant))) / T(mass) -
+                   (T(R_w2b.getRow(0).z()) * (T(buoyancy) - T(weight)) * T(isBuoyant))) /
+                      T(mass) -
                   T(cmdSurge);
     return true;
   }
@@ -186,7 +223,8 @@ struct sway
   bool operator()(const T *const sway_fwd, const T *const sway_aft, T *residual) const
   {
     residual[0] = (sway_fwd[0] + sway_aft[0] +
-                  (T(R_w2b.getRow(1).z()) * (T(buoyancy) - T(weight))*T(isBuoyant))) / T(mass) -
+                   (T(R_w2b.getRow(1).z()) * (T(buoyancy) - T(weight)) * T(isBuoyant))) /
+                      T(mass) -
                   T(cmdSway);
     return true;
   }
@@ -199,9 +237,10 @@ struct heave
                   const T *const heave_port_aft, const T *const heave_stbd_aft, T *residual) const
   {
 
-      residual[0] = (heave_port_fwd[0] + heave_stbd_fwd[0] + heave_port_aft[0] + heave_stbd_aft[0] +
-                    (T(R_w2b.getRow(2).z()) * (T(buoyancy) - T(weight))*T(isBuoyant))) / T(mass) -
-                    T(cmdHeave);
+    residual[0] = (heave_port_fwd[0] + heave_stbd_fwd[0] + heave_port_aft[0] + heave_stbd_aft[0] +
+                   (T(R_w2b.getRow(2).z()) * (T(buoyancy) - T(weight)) * T(isBuoyant))) /
+                      T(mass) -
+                  T(cmdHeave);
     return true;
   }
 };
@@ -220,11 +259,13 @@ struct roll
                   const T *const heave_port_aft, const T *const heave_stbd_aft, T *residual) const
   {
     residual[0] = ((T(R_w2b.getRow(1).z()) * T(buoyancy) * T(-pos_buoyancy.z) +
-                  T(R_w2b.getRow(2).z()) * T(buoyancy) * T(pos_buoyancy.y))*T(isBuoyant) +
-                  sway_fwd[0] * T(-pos_sway_fwd.z) + sway_aft[0] * T(-pos_sway_aft.z) +
-                  heave_port_fwd[0] * T(pos_heave_port_fwd.y) + heave_stbd_fwd[0] * T(pos_heave_stbd_fwd.y) +
-                  heave_port_aft[0] * T(pos_heave_port_aft.y) + heave_stbd_aft[0] * T(pos_heave_stbd_aft.y) -
-                  ((T(ang_v.z()) * T(ang_v.y())) * (T(Izz) - T(Iyy)))) / T(Ixx) -
+                    T(R_w2b.getRow(2).z()) * T(buoyancy) * T(pos_buoyancy.y)) *
+                       T(isBuoyant) +
+                   sway_fwd[0] * T(-pos_sway_fwd.z) + sway_aft[0] * T(-pos_sway_aft.z) +
+                   heave_port_fwd[0] * T(pos_heave_port_fwd.y) + heave_stbd_fwd[0] * T(pos_heave_stbd_fwd.y) +
+                   heave_port_aft[0] * T(pos_heave_port_aft.y) + heave_stbd_aft[0] * T(pos_heave_stbd_aft.y) -
+                   ((T(ang_v.z()) * T(ang_v.y())) * (T(Izz) - T(Iyy)))) /
+                      T(Ixx) -
                   T(cmdRoll);
     return true;
   }
@@ -242,11 +283,13 @@ struct pitch
                   const T *const heave_port_aft, const T *const heave_stbd_aft, T *residual) const
   {
     residual[0] = ((T(R_w2b.getRow(0).z()) * T(buoyancy) * T(pos_buoyancy.z) +
-                  T(R_w2b.getRow(2).z()) * T(buoyancy) * T(-pos_buoyancy.x))*T(isBuoyant) +
-                  surge_port_lo[0] * T(pos_surge_port_lo.z) + surge_stbd_lo[0] * T(pos_surge_stbd_lo.z) +
-                  heave_port_fwd[0] * T(-pos_heave_port_fwd.x) + heave_stbd_fwd[0] * T(-pos_heave_stbd_fwd.x) +
-                  heave_port_aft[0] * T(-pos_heave_port_aft.x) + heave_stbd_aft[0] * T(-pos_heave_stbd_aft.x) -
-                  ((T(ang_v.x()) * T(ang_v.z())) * (T(Ixx) - T(Izz)))) / T(Iyy) -
+                    T(R_w2b.getRow(2).z()) * T(buoyancy) * T(-pos_buoyancy.x)) *
+                       T(isBuoyant) +
+                   surge_port_lo[0] * T(pos_surge_port_lo.z) + surge_stbd_lo[0] * T(pos_surge_stbd_lo.z) +
+                   heave_port_fwd[0] * T(-pos_heave_port_fwd.x) + heave_stbd_fwd[0] * T(-pos_heave_stbd_fwd.x) +
+                   heave_port_aft[0] * T(-pos_heave_port_aft.x) + heave_stbd_aft[0] * T(-pos_heave_stbd_aft.x) -
+                   ((T(ang_v.x()) * T(ang_v.z())) * (T(Ixx) - T(Izz)))) /
+                      T(Iyy) -
                   T(cmdPitch);
     return true;
   }
@@ -263,10 +306,12 @@ struct yaw
                   const T *const sway_fwd, const T *const sway_aft, T *residual) const
   {
     residual[0] = ((T(R_w2b.getRow(0).z()) * T(buoyancy) * T(-pos_buoyancy.y) +
-                  T(R_w2b.getRow(1).z()) * T(buoyancy) * T(pos_buoyancy.x))*T(isBuoyant) +
-                  surge_port_lo[0] * T(-pos_surge_port_lo.y) + surge_stbd_lo[0] * T(-pos_surge_stbd_lo.y) +
-                  sway_fwd[0] * T(pos_sway_fwd.x) + sway_aft[0] * T(pos_sway_aft.x) -
-                  ((T(ang_v.y()) * T(ang_v.x())) * (T(Iyy) - T(Ixx)))) / T(Izz) -
+                    T(R_w2b.getRow(1).z()) * T(buoyancy) * T(pos_buoyancy.x)) *
+                       T(isBuoyant) +
+                   surge_port_lo[0] * T(-pos_surge_port_lo.y) + surge_stbd_lo[0] * T(-pos_surge_stbd_lo.y) +
+                   sway_fwd[0] * T(pos_sway_fwd.x) + sway_aft[0] * T(pos_sway_aft.x) -
+                   ((T(ang_v.y()) * T(ang_v.x())) * (T(Iyy) - T(Ixx)))) /
+                      T(Izz) -
                   T(cmdYaw);
     return true;
   }

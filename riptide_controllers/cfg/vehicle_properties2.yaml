@@ -1,7 +1,7 @@
 properties: {
   mass: 36.1,
   volume: 0.0386,
-  CoB: [0.0205, 0, 0.04],
+  CoB: [0.0205, 0, -0.04],
   inertia: [0.69, 2.62, 2.51],
   thrusters: [ # Pose: [x (m), y (m), z (m), yaw (deg), pitch (deg)]
     {
