@@ -54,8 +54,8 @@ private:
   std::vector<int> thrustersEnabled;
   MatrixXd thrusters;
   Vector3d CoB;
-  double V, W, B, Jxx, Jyy, Jzz;
-
+  double M, V, W, B, Jxx, Jyy, Jzz;
+  
   // Primary EOMs
   ceres::Problem problem;
   ceres::Solver::Options options;
@@ -72,6 +72,12 @@ private:
   ceres::Solver::Summary newSummary;
 
 public:
+  // These variables need to be public so class EOM can use them
+  int numThrusters;
+  MatrixXd thrustFM;
+  Vector6d inertia, weightFM, transportThm, command;
+  double forces[8]; // Solved forces go here
+  
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   ThrusterController(char **argv);
@@ -85,16 +91,24 @@ public:
   void DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg);
   void AccelCB(const geometry_msgs::Accel::ConstPtr &a);
   void Loop();
+
+  int GetNumThrusters();
+  void GetThrustFM(MatrixXd& m);
+  void GetWeightFM(Vector6d& v);
+  void GetTransportThm(Vector6d& v);
+  void GetInertia(Vector6d& v);
+  void GetCommand(Vector6d& v);
 };
 
-double M;
-int numThrusters;
-MatrixXd thrustFM;
-Vector6d inertia, weightFM, transportThm, command;
-double forces[8]; // Solved forces go here
-
-struct EOM
+class EOM
 {
+  public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  EOM(ThrusterController* tcIn)
+  {
+    tc = tcIn; // Pass in a pointer to the ThrusterController class
+  }
+  
   template <typename T>
   bool operator()(const T *const forces, T *residual) const
   {
@@ -103,17 +117,20 @@ struct EOM
       residual[i] = T(0);
 
       // Account for each thruster's contribution
-      for (int j = 0; j < numThrusters; j++)
+      for (int j = 0; j < tc->numThrusters; j++)
       {
-        residual[i] = residual[i] + T(thrustFM(i, j)) * forces[j];
+        residual[i] = residual[i] + T(tc->thrustFM(i, j)) * forces[j];
       }
 
       // Account for weightFM and transportThm
-      residual[i] = residual[i] + T(weightFM(i) + transportThm(i));
-      residual[i] = residual[i] / T(inertia(i)) - T(command(i));
+      residual[i] = residual[i] + T(tc->weightFM(i) + tc->transportThm(i));
+      residual[i] = residual[i] / T(tc->inertia(i)) - T(tc->command(i));
     }
     return true;
   }
+
+  private:
+  ThrusterController* tc;
 };
 
 //***** Below are all the variables that are needed for ceres *****///////////////////////////////

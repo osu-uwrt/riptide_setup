@@ -134,7 +134,7 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller")
 
   ////////////////////////////////////////
   // New problem
-  newProblem.AddResidualBlock(new ceres::AutoDiffCostFunction<EOM, 6, 8>(new EOM), NULL, forces);
+  newProblem.AddResidualBlock(new ceres::AutoDiffCostFunction<EOM, 6, 8>(new EOM(this)), NULL, forces);
   newOptions.max_num_iterations = 100;
   newOptions.linear_solver_type = ceres::DENSE_QR;
   ////////////////////////////////////////
@@ -375,9 +375,9 @@ void ThrusterController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
   Fb(1) = -B * sin(phi) * cos(theta);
   Fb(2) = -B * cos(phi) * cos(theta);
 
-  weightFM(0) = -(W-B) * sin(theta);
-  weightFM(1) = (W-B) * sin(phi) * cos(theta);
-  weightFM(2) = (W-B) * cos(phi) * cos(theta);
+  weightFM(0) = -(W - B) * sin(theta);
+  weightFM(1) = (W - B) * sin(phi) * cos(theta);
+  weightFM(2) = (W - B) * cos(phi) * cos(theta);
   weightFM.segment<3>(3) = CoB.cross(Fb);
   weightFM = weightFM * ((int)(isBuoyant));
 }
@@ -461,7 +461,7 @@ void ThrusterController::AccelCB(const geometry_msgs::Accel::ConstPtr &a)
   /////////////////////////////////////////
   // New commands
   // Solve new problem
-  for(int i = 0; i < numThrusters; i++)
+  for (int i = 0; i < numThrusters; i++)
     forces[i] = 0.0;
   ceres::Solve(newOptions, &newProblem, &newSummary);
 
@@ -554,4 +554,34 @@ void ThrusterController::Loop()
     ros::spinOnce();
     rate.sleep();
   }
+}
+
+int ThrusterController::GetNumThrusters()
+{
+  return numThrusters;
+}
+
+void ThrusterController::GetThrustFM(MatrixXd& m)
+{
+  m = thrustFM;
+}
+
+void ThrusterController::GetWeightFM(Vector6d& v)
+{
+  v = weightFM;
+}
+
+void ThrusterController::GetTransportThm(Vector6d& v)
+{
+  v = transportThm;
+}
+
+void ThrusterController::GetInertia(Vector6d& v)
+{
+  v = inertia;
+}
+
+void ThrusterController::GetCommand(Vector6d& v)
+{
+  v = command;
 }
