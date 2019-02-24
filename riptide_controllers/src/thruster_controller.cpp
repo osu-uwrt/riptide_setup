@@ -26,8 +26,19 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller")
   VProperties = YAML::LoadFile("../osu-uwrt/riptide_software/src/riptide_controllers/cfg/vehicle_properties2.yaml");
   ThrusterController::LoadVehicleProperties();
   ThrusterController::SetupThrusters();
-  weightFM.setZero();
-  transportThm.setZero();
+  weightFM_eig.setZero();
+
+  for(int i = 0; i < 6; i++)
+    for(int j = 0; j < 8; j++)
+      thrustFM[i][j] = 0;
+  
+  for(int i = 0; i < 6; i++)
+  {
+    inertia[i] = 0;
+    weightFM[i] = 0;
+    transportThm[i] = 0;
+    command[i] = 0;
+  }
 
   new_pub = nh.advertise<riptide_msgs::ThrustStamped>("/command/thrust_new", 1);
 
@@ -134,6 +145,7 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller")
 
   ////////////////////////////////////////
   // New problem
+  //newProblem.AddResidualBlock(new ceres::AutoDiffCostFunction<EOM, 6, 8>(new EOM(&numThrusters, thrustFM, inertia, weightFM, transportThm, command)), NULL, forces);
   newProblem.AddResidualBlock(new ceres::AutoDiffCostFunction<EOM, 6, 8>(new EOM(this)), NULL, forces);
   newOptions.max_num_iterations = 100;
   newOptions.linear_solver_type = ceres::DENSE_QR;
@@ -254,61 +266,61 @@ void ThrusterController::LoadVehicleProperties()
   Jyy = VProperties["properties"]["inertia"][1].as<double>();
   Jzz = VProperties["properties"]["inertia"][2].as<double>();
 
-  inertia(0) = M;
-  inertia(1) = M;
-  inertia(2) = M;
-  inertia(3) = Jxx;
-  inertia(4) = Jyy;
-  inertia(5) = Jzz;
+  inertia[0] = M;
+  inertia[1] = M;
+  inertia[2] = M;
+  inertia[3] = Jxx;
+  inertia[4] = Jyy;
+  inertia[5] = Jzz;
+
+  /*Map<MatrixXd>(Dinertia, 5, 8) = thrustFM;
+  for(int i = 0; i < 6; i++)
+    ROS_INFO("Dinertia element %i: %f", i, Dinertia[i]);*/
 }
 
 void ThrusterController::SetupThrusters()
 {
   numThrusters = VProperties["properties"]["thrusters"].size();
-  activeThrusters = 0;
   for (int i = 0; i < numThrusters; i++)
   {
     bool enabled = VProperties["properties"]["thrusters"][i]["enable"].as<bool>();
     thrustersEnabled.push_back((int)enabled);
-    if (enabled)
-      activeThrusters++; // Find number of active thrusters
   }
 
   // Each COLUMN contains a thruster's info
   thrusters.resize(5, numThrusters);
-  thrustFM.resize(6, numThrusters);
+  thrustFM_eig.resize(6, numThrusters);
   thrusters.setZero();
-  thrustFM.setZero();
+  thrustFM_eig.setZero();
 
-  int k = 0;
   for (int i = 0; i < numThrusters; i++)
-  {
     if (thrustersEnabled[i])
-    {
       for (int j = 0; j < 5; j++)
-      {
         thrusters(j, i) = VProperties["properties"]["thrusters"][i]["pose"][j].as<double>();
-      }
-      k++;
-    }
-  }
 
-  k = 0;
+
   for (int i = 0; i < numThrusters; i++)
   {
     if (thrustersEnabled[i])
     {
       float psi = thrusters(3, i) * PI / 180;
       float theta = thrusters(4, i) * PI / 180;
-      thrustFM(0, i) = cos(psi) * cos(theta); // cos(psi)cos(theta)
-      thrustFM(1, i) = sin(psi) * cos(theta); // sin(psi)cos(theta)
-      thrustFM(2, i) = -sin(theta);           // -sin(theta)
+      thrustFM_eig(0, i) = cos(psi) * cos(theta); // cos(psi)cos(theta)
+      thrustFM_eig(1, i) = sin(psi) * cos(theta); // sin(psi)cos(theta)
+      thrustFM_eig(2, i) = -sin(theta);           // -sin(theta)
 
       // Cross-product
-      thrustFM.block<3, 1>(3, i) = thrusters.block<3, 1>(0, i).cross(thrustFM.block<3, 1>(0, i));
-      k++;
+      thrustFM_eig.block<3, 1>(3, i) = thrusters.block<3, 1>(0, i).cross(thrustFM_eig.block<3, 1>(0, i));
     }
   }
+
+  // Map Eigen::MatrixXd to double[6][8]
+  // MUST specify RowMatrixXd so it copies the data properly (by default, eigen stores data by columns)
+  Map<RowMatrixXd>(&thrustFM[0][0], 6, 8) = thrustFM_eig;
+  /*std::cout << "thrustFM: " << thrustFM << std::endl;
+  for(int i = 0; i < 6; i++)
+    for(int j = 0; j < 8; j++)
+      ROS_INFO("DthrustFM[%i, %i]: %f", i, j, DthrustFM[i][j]);*/
 }
 
 void ThrusterController::InitThrustMsg()
@@ -364,9 +376,9 @@ void ThrusterController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
   float q = imu_msg->ang_vel.y;
   float r = imu_msg->ang_vel.z;
 
-  transportThm(3) = -q * r * (Jzz - Jyy);
-  transportThm(4) = -p * r * (Jxx - Jzz);
-  transportThm(5) = -p * q * (Jyy - Jxx);
+  transportThm[3] = -q * r * (Jzz - Jyy);
+  transportThm[4] = -p * r * (Jxx - Jzz);
+  transportThm[5] = -p * q * (Jyy - Jxx);
 
   W = M * GRAVITY;
   B = WATER_DENSITY * V * GRAVITY;
@@ -375,11 +387,14 @@ void ThrusterController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
   Fb(1) = -B * sin(phi) * cos(theta);
   Fb(2) = -B * cos(phi) * cos(theta);
 
-  weightFM(0) = -(W - B) * sin(theta);
-  weightFM(1) = (W - B) * sin(phi) * cos(theta);
-  weightFM(2) = (W - B) * cos(phi) * cos(theta);
-  weightFM.segment<3>(3) = CoB.cross(Fb);
-  weightFM = weightFM * ((int)(isBuoyant));
+  weightFM_eig(0) = -(W - B) * sin(theta);
+  weightFM_eig(1) = (W - B) * sin(phi) * cos(theta);
+  weightFM_eig(2) = (W - B) * cos(phi) * cos(theta);
+  weightFM_eig.segment<3>(3) = CoB.cross(Fb);
+  weightFM_eig = weightFM_eig * ((int)(isBuoyant));
+
+  // Convert Eigen::Vector6d to double[6]
+  Map<RowMatrixXd>(&weightFM[0], 6, 1) = weightFM_eig;
 }
 
 //Get depth and determine if buoyancy should be included
@@ -405,12 +420,12 @@ void ThrusterController::AccelCB(const geometry_msgs::Accel::ConstPtr &a)
   cmdYaw = a->angular.z;
 
   // New command
-  command(0) = a->linear.x;
-  command(1) = a->linear.y;
-  command(2) = a->linear.z;
-  command(3) = a->angular.x;
-  command(4) = a->angular.y;
-  command(5) = a->angular.z;
+  command[0] = a->linear.x;
+  command[1] = a->linear.y;
+  command[2] = a->linear.z;
+  command[3] = a->angular.x;
+  command[4] = a->angular.y;
+  command[5] = a->angular.z;
 
   // These forced initial guesses don't make much of a difference.
   // We currently experience a sort of gimbal lock w/ or w/o them.
@@ -554,34 +569,4 @@ void ThrusterController::Loop()
     ros::spinOnce();
     rate.sleep();
   }
-}
-
-int ThrusterController::GetNumThrusters()
-{
-  return numThrusters;
-}
-
-void ThrusterController::GetThrustFM(MatrixXd& m)
-{
-  m = thrustFM;
-}
-
-void ThrusterController::GetWeightFM(Vector6d& v)
-{
-  v = weightFM;
-}
-
-void ThrusterController::GetTransportThm(Vector6d& v)
-{
-  v = transportThm;
-}
-
-void ThrusterController::GetInertia(Vector6d& v)
-{
-  v = inertia;
-}
-
-void ThrusterController::GetCommand(Vector6d& v)
-{
-  v = command;
 }

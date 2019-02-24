@@ -31,6 +31,8 @@ using namespace Eigen;
 #define WATER_DENSITY 1000.0 //[kg/m^3]
 
 typedef Matrix<double, 6, 1> Vector6d;
+typedef Matrix<double, 6, 8> Matrix68d;
+typedef Matrix<double, Dynamic, Dynamic, RowMajor> RowMatrixXd;
 
 class ThrusterController
 {
@@ -50,9 +52,7 @@ private:
   ros::Publisher new_pub;
   riptide_msgs::ThrustStamped thrust2;
   YAML::Node VProperties; // Vehicle Properties
-  int activeThrusters;
   std::vector<int> thrustersEnabled;
-  MatrixXd thrusters;
   Vector3d CoB;
   double M, V, W, B, Jxx, Jyy, Jzz;
   
@@ -71,12 +71,17 @@ private:
   ceres::Solver::Options newOptions;
   ceres::Solver::Summary newSummary;
 
+  MatrixXd thrustFM_eig, thrusters;
+  Vector6d weightFM_eig;
+  double forces[8]; // Solved forces go here
+
 public:
   // These variables need to be public so class EOM can use them
+  /*int numThrusters;
+  Matrix68d thrustFM_eig;
+  Vector6d inertia, weightFM_eig, transportThm_eig, command;*/
   int numThrusters;
-  MatrixXd thrustFM;
-  Vector6d inertia, weightFM, transportThm, command;
-  double forces[8]; // Solved forces go here
+  double thrustFM[6][8], inertia[6], weightFM[6], transportThm[6], command[6];
   
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -91,23 +96,30 @@ public:
   void DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg);
   void AccelCB(const geometry_msgs::Accel::ConstPtr &a);
   void Loop();
-
-  int GetNumThrusters();
-  void GetThrustFM(MatrixXd& m);
-  void GetWeightFM(Vector6d& v);
-  void GetTransportThm(Vector6d& v);
-  void GetInertia(Vector6d& v);
-  void GetCommand(Vector6d& v);
 };
 
 class EOM
 {
+  private:
+  /*int* numThrusters;
+  double** thrustFM;
+  double *inertia, *weightFM, *transportThm, *command;*/
+  ThrusterController* tc;
+  
   public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   EOM(ThrusterController* tcIn)
   {
-    tc = tcIn; // Pass in a pointer to the ThrusterController class
+    tc = tcIn;
   }
+  /*EOM(int* num, double** thrustFMIn, double* inertiaIn, double* weightFMIn, double* transportThmIn, double* commandIn)
+  {
+    numThrusters = num;
+    thrustFM = thrustFMIn;
+    inertia = inertiaIn;
+    weightFM = weightFMIn;
+    transportThm = transportThmIn;
+    command = commandIn;
+  }*/
   
   template <typename T>
   bool operator()(const T *const forces, T *residual) const
@@ -119,18 +131,15 @@ class EOM
       // Account for each thruster's contribution
       for (int j = 0; j < tc->numThrusters; j++)
       {
-        residual[i] = residual[i] + T(tc->thrustFM(i, j)) * forces[j];
+        residual[i] = residual[i] + T(tc->thrustFM[i][j]) * forces[j];
       }
 
       // Account for weightFM and transportThm
-      residual[i] = residual[i] + T(tc->weightFM(i) + tc->transportThm(i));
-      residual[i] = residual[i] / T(tc->inertia(i)) - T(tc->command(i));
+      residual[i] = residual[i] + T(tc->weightFM[i] + tc->transportThm[i]);
+      residual[i] = residual[i] / T(tc->inertia[i]) - T(tc->command[i]);
     }
     return true;
   }
-
-  private:
-  ThrusterController* tc;
 };
 
 //***** Below are all the variables that are needed for ceres *****///////////////////////////////
