@@ -102,7 +102,7 @@ class EOM
 {
   private:
   /*int* numThrusters;
-  double** thrustFM;
+  double* thrustFM[8];
   double *inertia, *weightFM, *transportThm, *command;*/
   ThrusterController* tc;
   
@@ -114,11 +114,13 @@ class EOM
   /*EOM(int* num, double** thrustFMIn, double* inertiaIn, double* weightFMIn, double* transportThmIn, double* commandIn)
   {
     numThrusters = num;
-    thrustFM = thrustFMIn;
     inertia = inertiaIn;
     weightFM = weightFMIn;
     transportThm = transportThmIn;
     command = commandIn;
+
+    for(int i = 0; i < 6; i++)
+      thrustFM[i] = (double *)thrustFMIn;
   }*/
   
   template <typename T>
