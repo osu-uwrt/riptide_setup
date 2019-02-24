@@ -1,7 +1,7 @@
 #ifndef POSE_EDKF_INTERFACE
 #define POSE_EDKF_INTERFACE
 
-//#include "riptide_gnc/pose_ekf.h"
+#include "riptide_gnc/auv_math_lib.h"
 #include "ros/ros.h"
 #include "eigen3/Eigen/Dense"
 #include "math.h"
@@ -9,6 +9,7 @@
 
 using namespace Eigen;
 using namespace std;
+using namespace AUVMathLib;
 
 class PoseEDKFInterface
 {

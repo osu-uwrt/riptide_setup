@@ -18,10 +18,12 @@ find_package(Eigen3 3.3 REQUIRED)
 catkin_package(INCLUDE_DIRS include)
 include_directories(include ${catkin_INCLUDE_DIRS} ${Eigen3_INCLUDE_DIRS})
 
+# src/kalman_filter.cpp
+# src/linear_motion_ekf_suite.cpp
+# src/pose_ekf.cpp
+
 set(POSE_EDKF
-  #src/kalman_filter.cpp
-  #src/linear_motion_ekf_suite.cpp
-  #src/pose_ekf.cpp
+  src/auv_math_lib.cpp
 )
 
 add_executable(pose_edkf_interface src/pose_edkf_interface.cpp ${POSE_EDKF})

@@ -64,14 +64,32 @@ PoseEDKFInterface::PoseEDKFInterface() : nh("pose_edkf")
 
     const float var1 = 10.5;
     float var2 = var1 + 2.5;
-    cout << "var2: " << var2 << endl;
+    cout << "var2: " << endl << var2 << endl;
 
     int a = 5;
     stringstream ss;
     ss << "The number 'is': " << a;
     ROS_INFO("%s", ss.str().c_str());
 
-    int b = 6, m = 3, n = 4;
+    Vector3f v1, v2; 
+    v1 << -1, -2, -3;
+    v2 << 4, 5, 6;
+    Vector3f v3 = v1.array() * v2.array();
+    cout << "v1: " << endl << v1 << endl;
+    cout << "v2: " << endl << v2 << endl;
+    cout << "v1 dot v2 = " << endl << v3 << endl;
+
+    Matrix3f skew;
+    Vector3f pqr;
+    pqr << 1, 2, 3;
+    skew = SkewSym(pqr);
+    cout << "skew 123: " << endl << skew << endl;
+
+    cout << "v1: " << endl << v1 << endl;
+    v1 = v1.array().abs();
+    cout << "abs of v1: " << endl << v1 << endl;
+
+    /*int b = 6, m = 3, n = 4;
     try
     {
         stringstream ss;
@@ -83,7 +101,7 @@ PoseEDKFInterface::PoseEDKFInterface() : nh("pose_edkf")
     {
         cout << e.what();
     }
-    ROS_INFO("a = %i", a);
+    ROS_INFO("a = %i", a);*/
 }
 
 void PoseEDKFInterface::copy(const Ref<const MatrixXf>& m)
