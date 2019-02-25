@@ -4,6 +4,7 @@
 #include "eigen3/Eigen/Dense"
 #include "eigen3/Eigen/Core"
 #include "riptide_gnc/auv_math_lib.h"
+#include <cppad/cppad.hpp>
 
 using namespace Eigen;
 using namespace std;
@@ -20,6 +21,21 @@ typedef Matrix<float, 9, 1> Vector9f;
 typedef Matrix<float, 6, 1> Vector6f;
 typedef Matrix<float, 5, 1> Vector5f;
 
+// Constants used for Auto Diff
+// Indeces for state vector
+#define _xI 0    // Inertial X-pos, expressed in I-frame
+#define _yI 1    // Inertial Y-pos, expressed in I-frame
+#define _zI 2    // Inertial Z-pos, expressed in I-frame
+#define _psi 3   // Yaw
+#define _theta 4 // Pitch
+#define _phi 5   // Roll
+#define _U 6     // Inertial X velocity , expressed in B-frame
+#define _V 7     // Inertial Y velocity , expressed in B-frame
+#define _W 8     // Inertial Z velocity , expressed in B-frame
+#define _P 9     // Inertial X angular velocity , expressed in B-frame
+#define _Q 10    // Inertial Y angular velocity , expressed in B-frame
+#define _R 11    // Inertial Z angular velocity , expressed in B-frame
+
 // AUV Model
 // Contains information about an AUV's attributes: mass, volume inertia, drag, and thruster properties
 // Used to compute any jacobians and state vectors required by TransEKF and LQR
@@ -27,9 +43,10 @@ class AUVModel
 {
 private:
   float mass, vol, rho, Fg, Fb;
+  float Ixx, Ixy, Ixz, Iyy, Iyz, Izz;
   int numThrusters;
-  Matrix3f inertia;
-  Matrix32f drag;
+  Matrix3f inertia; // Inertia 3x3 matrix
+  Matrix32f dragCoeffs;
   Matrix5xf thrusters;
   Matrix6xf thrustCoeffs;
   Vector3f CoB; // Center of buoyancy position relative to CoM
@@ -42,8 +59,8 @@ public:
   const static float GRAVITY = 9.80665;    // [m/s^2]
   const static float WATER_DENSITY = 1000; // [kg/m^3]
 
-  AUVModel(float m, float V, float fluid_rho, const ref<const Matrix3f> &J, const Ref<const Vector3f> &cob,
-           const Ref<const Matrix62f> &dragCoeffs, const Ref<const Matrix5xf> &auv_thrusters);
+  AUVModel(float m, float V, float fluid_rho, const Ref<const Matrix3f> &Inertia, const Ref<const Vector3f> &cob,
+           const Ref<const Matrix62f> &drag, vector<Vector5f> &auv_thrusters);
 
   void SetThrustCoeffs();
   Vector6f GetTotalThrustLoad(const Ref<const VectorXf> &thrusts);
@@ -53,9 +70,10 @@ public:
                                       const Ref<const Vector3f> &pqr, const Ref<const VectorXf> &thrusts,
                                       float dt, int maxIter);
   Matrix9f GetTransEKFTwoStageJacobianA(const Ref<const Vector9f> &apriori, const Ref<const Vector3f> &attitude,
-                                       const Ref<const Vector3f> &pqr, float dt);
+                                        const Ref<const Vector3f> &pqr, float dt);
 
-  Matrix12f GetLQRJacobianA(const Ref<const Matrix12f> &states);
+  void SetInitialLQRJacobianA();
+  Matrix12f GetLQRJacobianA(const Ref<const Vector12f> &states);
 };
 
 #endif

@@ -1,12 +1,12 @@
 #include "riptide_gnc/auv_model.h"
 
-AUModel::AUVModel(float m, Vector3f J, float V, float fluid_rho, const Ref<const Vector3f> &cob,
+AUModel::AUVModel(float m, float V, float fluid_rho, const Ref<const Matrix3f> &Inertia, const Ref<const Vector3f> &cob,
                   const Ref<const Matrix62f> &drag, vector<Vector5f> &auv_thrusters);
 {
-    mass = m;        // [kg]
-    inertia = J;     // 3x3 inertia matrix
-    vol = V;         // [m^3]
-    rho = fluid_rho; // [kg/m^3]
+    mass = m;          // [kg]
+    inertia = Inertia; // 3x3 inertia matrix
+    vol = V;           // [m^3]
+    rho = fluid_rho;   // [kg/m^3]
     CoB = cob;
     dragCoeffs = drag;
     thrusters = auv_thrusters;
@@ -14,7 +14,15 @@ AUModel::AUVModel(float m, Vector3f J, float V, float fluid_rho, const Ref<const
     Fg = mass * GRAVITY;      // Force due to gravity [N]
     Fb = rho * vol * GRAVITY; // Buoyant Force [N]
 
-    AUVModel::GetThrustCoeffs();
+    // Get primary and products of inertia elements
+    Ixx = inertia(0, 0);
+    Iyy = inertia(1, 1);
+    Izz = inertia(2, 2);
+    Ixy = -inertia(0, 1);
+    Ixz = -inertia(0, 2);
+    Iyz = -inertia(1, 2);
+
+    AUVModel::SetThrustCoeffs();
 }
 
 // Set the thruster coefficients. Each column corresponds to a single thruster.
@@ -124,7 +132,7 @@ Vector9f AUVModel::GetTransEKFTwoStageAPriori(const Ref<const Vector9f> &xPrev, 
 //      pqr = inertial angular velocity, expressed in B-frame
 //      dt = time step;
 Matrix9f AUVModel::GetTransEKFTwoStageJacobianA(const Ref<const Vector9f> &apriori, const Ref<const Vector3f> &attitude,
-                                               const Ref<const Vector3f> &pqr, float dt;)
+                                                const Ref<const Vector3f> &pqr, float dt;)
 {
     Matrix9f jacobi = Matrix9f::Zero();
     Matrix3f R = GetEulerRotMat(attitude).transpose();
@@ -146,6 +154,46 @@ Matrix9f AUVModel::GetTransEKFTwoStageJacobianA(const Ref<const Vector9f> &aprio
     return jacobi;
 }
 
-Matrix12f AUVModel::GetLQRJacobianA(const Ref<const Matrix12f> &states)
+// Compute the Jacobian of the A-matrix for LQR
+// DO NOT CHANGE !!!!!!
+Matrix12f AUVModel::GetLQRJacobianA(const Ref<const Vector12f> &states)
 {
+    // Variables for Auto Diff.
+    size_t n = 12, a = 1;
+    vector<CppAD::AD<double>> X(n), Xdot(n), A(a), B(a), C(a);
+    vector<double> jacobi(n * n); // Create nxn Jacobian matrix
+
+    // MUST set X to contain INDEPENDENT variables
+    // Calling this function will BEGIN the recording sequence
+    CppAD::Independent(X);
+
+    // 1. Set time derivatives of: xI, yI, zI,
+    Xdot[_xI] = (CppAD::cos(X[_psi]) * CppAD::cos(X[_theta])) * X[_U] +
+                (-CppAD::sin(X[_psi]) * CppAD::cos(X[_phi]) + CppAD::cos(X[_psi]) * CppAD::sin(X[_theta]) * CppAD::sin(X[_phi])) * X[_V] +
+                (CppAD::sin(X[_psi]) * CppAD::sin(X[_phi]) + CppAD::cos(X[_psi]) * CppAD::sin(X[_theta]) * CppAD::cos(X[_phi])) * X[_W];
+
+    Xdot[_yI] = (CppAD::sin(X[_psi]) * CppAD::cos(X[_theta])) * X[_U] +
+                (CppAD::cos(X[_psi]) * CppAD::cos(X[_phi]) + CppAD::sin(X[_psi]) * CppAD::sin(X[_theta]) * CppAD::sin(X[_phi])) * X[_V] +
+                (-CppAD::cos(X[_psi]) * CppAD::sin(X[_phi]) + CppAD::sin(X[_psi]) * CppAD::sin(X[_theta]) * CppAD::cos(X[_phi])) * X[_W];
+
+    Xdot[_zI] = -CppAD::sin(X[_theta]) * X[_U] + (CppAD::cos(X[_theta]) * CppAD::sin(X[_phi])) * X[_V] + (CppAD::cos(X[_theta]) + CppAD::cos(X[_phi])) * X[_W];
+
+    // 2. Set time-derivatives of: psi, theta, and phi
+    Xdot[_psi] = (X[_Q] * CppAD::sin(X[_phi]) + X[_R] * CppAD::cos(X[_phi])) / cos(X[_theta]);
+
+    Xdot[_theta] = X[_Q] * CppAD::cos(X[_phi]) - X[_R] * CppAD::sin(X[_phi]);
+
+    Xdot[_phi] = X[_P] + (X[_Q] * CppAD::sin(X[_phi]) + X[_R] * CppAD::cos(X[_phi])) * CppAD::tan(X[_theta]);
+
+    // 3. Set time-derivaivesof : U, V, W
+    Xdot[_U] = (-drag(0, 0) * X[_U] - 0.5 * Sgn(states(_U)) * rho * drag(0, 1) * X[_U] * X[_U]) / mass -
+               ((Fg - Fb) / mass) * CppAD::sin(X[_theta]) + X[_R] * X[_V] - X[_Q] * X[_W];
+
+    Xdot[_V] = (-drag(1, 0) * X[_V] - 0.5 * Sgn(states(_V)) * rho * drag(1, 1) * X[_V] * X[_V]) / mass +
+               ((Fg - Fb) / mass) * CppAD::cos(X[_theta]) * CppAD::sin(X[_phi]) + X[_P] * X[_W] - X[_R] * X[_U];
+
+    Xdot[_W] = (-drag(2, 0) * X[_W] - 0.5 * Sgn(states(_W)) * rho * drag(2, 1) * X[_W] * X[_W]) / mass +
+               ((Fg - Fb) / mass) * CppAD::cos(X[_theta]) * CppAD::cos(X[_phi]) + X[_Q] * X[_U] - X[_P] * X[_V];
+
+    // 4. Set time-derivatives of: P, Q, R
 }

@@ -6,10 +6,15 @@
 #include "eigen3/Eigen/Dense"
 #include "math.h"
 #include <sstream>
+#include <cppad/cppad.hpp>
 
 using namespace Eigen;
 using namespace std;
 using namespace AUVMathLib;
+//using namespace CppAD;
+using CppAD::AD;
+typedef Matrix< AD<double> , Dynamic, Dynamic > ADMatrixXd;
+typedef Matrix< AD<double> , Dynamic, 1 > ADVectorXd;
 
 class PoseEDKFInterface
 {
@@ -22,6 +27,8 @@ class PoseEDKFInterface
 
     PoseEDKFInterface();
     void copy(const Ref<const MatrixXf>& m);
+    template <typename T>
+    int sign(T x);
 };
 
 #endif

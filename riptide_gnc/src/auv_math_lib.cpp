@@ -73,6 +73,28 @@ MatrixXf AUVMathLib::SgnMat(const Ref<const MatrixXf>& mat)
     return sgnMat;
 }
 
+//template <typename T>
+int AUVMathLib::Sgn(double &x){
+    if (x > 0)
+        return 1;
+    else 
+        return -1;
+}
+
+int AUVMathLib::Sgn(float &x){
+    if (x > 0)
+        return 1;
+    else 
+        return -1;
+}
+
+int AUVMathLib::Sgn(int &x){
+    if (x > 0)
+        return 1;
+    else 
+        return -1;
+}
+
 Matrix3f AUVMathLib::SkewSym(const Ref<const Vector3f> &v)
 {
     Matrix3f skew = Matrix3f::Zero();

@@ -1,10 +1,24 @@
 #include "riptide_gnc/pose_edkf_interface.h"
 
-int main(int argc, char** argv)
+namespace Eigen {
+template<typename X, typename BinOp>
+struct ScalarBinaryOpTraits<CppAD::AD<X>,X,BinOp>
 {
- ros::init(argc, argv, "pose_edkf");
- PoseEDKFInterface poseEDKF;
- ros::spin();
+  typedef CppAD::AD<X> ReturnType;
+};
+
+template<typename X, typename BinOp>
+struct ScalarBinaryOpTraits<X,CppAD::AD<X>,BinOp>
+{
+  typedef CppAD::AD<X> ReturnType;
+};
+} // namespace Eigen
+
+int main(int argc, char **argv)
+{
+    ros::init(argc, argv, "pose_edkf");
+    PoseEDKFInterface poseEDKF;
+    ros::spin();
 }
 
 void GetRotationYPR2Body(Ref<MatrixXf> R, float yaw, float pitch, float roll)
@@ -49,7 +63,7 @@ PoseEDKFInterface::PoseEDKFInterface() : nh("pose_edkf")
     cout << "Replaced row 1 with m3 in m1: \n" << m1 << endl;
 
     Matrix3Xf posIn = MatrixXf::Zero(3, 1);
-    cout << "posIn \n" << posIn << endl;*/
+    cout << "posIn \n" << posIn << endl;
 
     Matrix3f test = Matrix3f::Zero();
     GetRotationYPR2Body(test, 0.0, 0.0, 0.0);
@@ -77,7 +91,7 @@ PoseEDKFInterface::PoseEDKFInterface() : nh("pose_edkf")
     Vector3f v3 = v1.array() * v2.array();
     cout << "v1: " << endl << v1 << endl;
     cout << "v2: " << endl << v2 << endl;
-    cout << "v1 dot v2 = " << endl << v3 << endl;
+    cout << "v1 dot v2 = " << endl << v3 << endl; */
 
     Matrix3f skew;
     Vector3f pqr;
@@ -85,11 +99,11 @@ PoseEDKFInterface::PoseEDKFInterface() : nh("pose_edkf")
     skew = SkewSym(pqr);
     cout << "skew 123: " << endl << skew << endl;
 
-    cout << "v1: " << endl << v1 << endl;
+    /*cout << "v1: " << endl << v1 << endl;
     v1 = v1.array().abs();
     cout << "abs of v1: " << endl << v1 << endl;
 
-    /*int b = 6, m = 3, n = 4;
+    int b = 6, m = 3, n = 4;
     try
     {
         stringstream ss;
@@ -102,9 +116,71 @@ PoseEDKFInterface::PoseEDKFInterface() : nh("pose_edkf")
         cout << e.what();
     }
     ROS_INFO("a = %i", a);*/
+
+    /*int a = 3;
+    cout << "sgn(a) = " << Sgn(a) << endl;
+
+    size_t n = 1, m = 2;
+    vector<CppAD::AD<double>> X(n), Y(m), A(n);
+    X[0] = -4.;
+    CppAD::Independent(X);
+    vector<double> x(n); // domain space vector
+    x[0] = -2;           // argument value for derivative
+    Y[0] = -Sgn(x[0]) * X[0] * X[0];
+    Y[1] = X[0] * CppAD::exp(X[0]);
+    CppAD::ADFun<double> f(X, Y);
+    vector<double> jac(m * n);
+    jac = f.Jacobian(x); // Jacobian for operation sequence
+    cout << "f'(-2),1 = " << jac[0] << endl;
+    cout << "f'(-2),2 = " << jac[1] << endl;
+
+    X[0] = -4.;
+    CppAD::Independent(X);
+    A[0] = X[0] * X[0] * X[0]; // Declare a sub-expression, for modularity
+    Y[1] = 5 * A[0] * CppAD::exp(X[0]);
+    f.Dependent(X, Y);
+    jac = f.Jacobian(x); // Jacobian for operation sequence
+    cout << "New f'(-2),1 = " << jac[0] << endl;
+    cout << "New f'(-2),2 = " << jac[1] << endl;*/
+
+    Matrix3d id = Matrix3d::Identity();
+    Matrix3d mat;
+    mat << 1, 2, 3, 4, 5, 6, 7, 8, 9;
+    size_t n = 6, m = 3;
+    ADVectorXd X(m), Y(m), B(m);
+    vector<double> x(m);
+    x[0] = 1;
+    x[1] = 6;
+    x[2] = 20;
+
+    CppAD::Independent(X);
+    Y = X.head<3>().cross(mat * X.head<3>());
+    //Y = (2*id).inverse() * B;
+    CppAD::ADFun<double> f(X, Y);
+    vector<double> jac(m * m);
+    jac = f.Jacobian(x);
+    cout << "Eigen CppAD jac[0,0] = " << jac[0] << endl;
+    cout << "Eigen CppAD jac[0,0] = " << jac[1] << endl;
+    cout << "Eigen CppAD jac[0,0] = " << jac[2] << endl;
+    cout << "Eigen CppAD jac[0,0] = " << jac[3] << endl;
+    cout << "Eigen CppAD jac[0,0] = " << jac[4] << endl;
+    cout << "Eigen CppAD jac[0,0] = " << jac[5] << endl;
+    cout << "Eigen CppAD jac[0,0] = " << jac[6] << endl;
+    cout << "Eigen CppAD jac[0,0] = " << jac[7] << endl;
+    cout << "Eigen CppAD jac[0,0] = " << jac[8] << endl;
+    
+    //cout << "New f'(-2),2 = " << jac[1] << endl;
 }
 
-void PoseEDKFInterface::copy(const Ref<const MatrixXf>& m)
+void PoseEDKFInterface::copy(const Ref<const MatrixXf> &m)
 {
     mat = m;
+}
+
+template <typename T>
+int PoseEDKFInterface::sign(T x){
+    if (x > 0)
+        return 1;
+    else 
+        return -1;
 }
