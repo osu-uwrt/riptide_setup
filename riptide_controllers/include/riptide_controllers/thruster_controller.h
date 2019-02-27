@@ -71,17 +71,19 @@ private:
   ceres::Solver::Options newOptions;
   ceres::Solver::Summary newSummary;
 
-  MatrixXd thrustFM_eig, thrusters;
-  Vector6d weightFM_eig;
+  MatrixXd thrustCoeffs_eig, thrusters;
+  Vector6d weightLoad_eig;
   double forces[8]; // Solved forces go here
+  std::vector<Vector6d> thrustCoeffs;
+  int numThrusters;
+  double inertia[6], weightLoad[6], transportThm[6], command[6];
 
 public:
   // These variables need to be public so class EOM can use them
   /*int numThrusters;
   Matrix68d thrustFM_eig;
   Vector6d inertia, weightFM_eig, transportThm_eig, command;*/
-  int numThrusters;
-  double thrustFM[6][8], inertia[6], weightFM[6], transportThm[6], command[6];
+  
   
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -101,28 +103,21 @@ public:
 class EOM
 {
   private:
-  /*int* numThrusters;
-  double* thrustFM[8];
-  double *inertia, *weightFM, *transportThm, *command;*/
-  ThrusterController* tc;
+  int* numThrusters;
+  MatrixXd thrustCoeffs;
+  double *inertia, *weightLoad, *transportThm, *command;
   
-  public:
-  EOM(ThrusterController* tcIn)
-  {
-    tc = tcIn;
-  }
-  /*EOM(int* num, double** thrustFMIn, double* inertiaIn, double* weightFMIn, double* transportThmIn, double* commandIn)
+  public:  
+  EOM(int* num, const Ref<const MatrixXd> &thrustCoeffsIn, double* inertiaIn, double* weightLoadIn, double* transportThmIn, double* commandIn)
   {
     numThrusters = num;
+    thrustCoeffs = thrustCoeffsIn;
     inertia = inertiaIn;
-    weightFM = weightFMIn;
+    weightLoad = weightLoadIn;
     transportThm = transportThmIn;
     command = commandIn;
+  }
 
-    for(int i = 0; i < 6; i++)
-      thrustFM[i] = (double *)thrustFMIn;
-  }*/
-  
   template <typename T>
   bool operator()(const T *const forces, T *residual) const
   {
@@ -131,14 +126,14 @@ class EOM
       residual[i] = T(0);
 
       // Account for each thruster's contribution
-      for (int j = 0; j < tc->numThrusters; j++)
+      for (int j = 0; j < *numThrusters; j++)
       {
-        residual[i] = residual[i] + T(tc->thrustFM[i][j]) * forces[j];
+        residual[i] = residual[i] + T(thrustCoeffs(i,j)) * forces[j];
       }
 
-      // Account for weightFM and transportThm
-      residual[i] = residual[i] + T(tc->weightFM[i] + tc->transportThm[i]);
-      residual[i] = residual[i] / T(tc->inertia[i]) - T(tc->command[i]);
+      // Account for weightLoad and transportThm
+      residual[i] = residual[i] + T(weightLoad[i] + transportThm[i]);
+      residual[i] = residual[i] / T(inertia[i]) - T(command[i]);
     }
     return true;
   }

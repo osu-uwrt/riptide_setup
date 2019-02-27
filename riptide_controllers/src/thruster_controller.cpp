@@ -26,16 +26,11 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller")
   VProperties = YAML::LoadFile("../osu-uwrt/riptide_software/src/riptide_controllers/cfg/vehicle_properties2.yaml");
   ThrusterController::LoadVehicleProperties();
   ThrusterController::SetupThrusters();
-  weightFM_eig.setZero();
-
-  for(int i = 0; i < 6; i++)
-    for(int j = 0; j < 8; j++)
-      thrustFM[i][j] = 0;
+  weightLoad_eig.setZero();
   
   for(int i = 0; i < 6; i++)
   {
-    inertia[i] = 0;
-    weightFM[i] = 0;
+    weightLoad[i] = 0;
     transportThm[i] = 0;
     command[i] = 0;
   }
@@ -145,9 +140,9 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller")
 
   ////////////////////////////////////////
   // New problem
-  //newProblem.AddResidualBlock(new ceres::AutoDiffCostFunction<EOM, 6, 8>(new EOM(&numThrusters, thrustFM, inertia, weightFM, transportThm, command)), NULL, forces);
-  newProblem.AddResidualBlock(new ceres::AutoDiffCostFunction<EOM, 6, 8>(new EOM(this)), NULL, forces);
-  newOptions.max_num_iterations = 100;
+  ROS_INFO("Constructing Class EOM");
+  newProblem.AddResidualBlock(new ceres::AutoDiffCostFunction<EOM, 6, 8>(new EOM(&numThrusters, thrustCoeffs_eig, inertia, weightLoad, transportThm, command)), NULL, forces);
+  newOptions.max_num_iterations = 100;2
   newOptions.linear_solver_type = ceres::DENSE_QR;
   ////////////////////////////////////////
 
@@ -289,9 +284,9 @@ void ThrusterController::SetupThrusters()
 
   // Each COLUMN contains a thruster's info
   thrusters.resize(5, numThrusters);
-  thrustFM_eig.resize(6, numThrusters);
+  thrustCoeffs_eig.resize(6, numThrusters);
   thrusters.setZero();
-  thrustFM_eig.setZero();
+  thrustCoeffs_eig.setZero();
 
   for (int i = 0; i < numThrusters; i++)
     if (thrustersEnabled[i])
@@ -305,18 +300,20 @@ void ThrusterController::SetupThrusters()
     {
       float psi = thrusters(3, i) * PI / 180;
       float theta = thrusters(4, i) * PI / 180;
-      thrustFM_eig(0, i) = cos(psi) * cos(theta); // cos(psi)cos(theta)
-      thrustFM_eig(1, i) = sin(psi) * cos(theta); // sin(psi)cos(theta)
-      thrustFM_eig(2, i) = -sin(theta);           // -sin(theta)
+      thrustCoeffs_eig(0, i) = cos(psi) * cos(theta); // cos(psi)cos(theta)
+      thrustCoeffs_eig(1, i) = sin(psi) * cos(theta); // sin(psi)cos(theta)
+      thrustCoeffs_eig(2, i) = -sin(theta);           // -sin(theta)
 
       // Cross-product
-      thrustFM_eig.block<3, 1>(3, i) = thrusters.block<3, 1>(0, i).cross(thrustFM_eig.block<3, 1>(0, i));
+      thrustCoeffs_eig.block<3, 1>(3, i) = thrusters.block<3, 1>(0, i).cross(thrustCoeffs_eig.block<3, 1>(0, i));
+
+      //thrustCoeffs.push_back(thrustCoeffs_eig.col(i));
     }
   }
 
   // Map Eigen::MatrixXd to double[6][8]
   // MUST specify RowMatrixXd so it copies the data properly (by default, eigen stores data by columns)
-  Map<RowMatrixXd>(&thrustFM[0][0], 6, 8) = thrustFM_eig;
+  //Map<RowMatrixXd>(&thrustCoeffs[0][0], thrustCoeffs_eig.rows(), thrustCoeffs_eig.cols()) = thrustCoeffs_eig;
   /*std::cout << "thrustFM: " << thrustFM << std::endl;
   for(int i = 0; i < 6; i++)
     for(int j = 0; j < 8; j++)
@@ -387,14 +384,14 @@ void ThrusterController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
   Fb(1) = -B * sin(phi) * cos(theta);
   Fb(2) = -B * cos(phi) * cos(theta);
 
-  weightFM_eig(0) = -(W - B) * sin(theta);
-  weightFM_eig(1) = (W - B) * sin(phi) * cos(theta);
-  weightFM_eig(2) = (W - B) * cos(phi) * cos(theta);
-  weightFM_eig.segment<3>(3) = CoB.cross(Fb);
-  weightFM_eig = weightFM_eig * ((int)(isBuoyant));
+  weightLoad_eig(0) = -(W - B) * sin(theta);
+  weightLoad_eig(1) = (W - B) * sin(phi) * cos(theta);
+  weightLoad_eig(2) = (W - B) * cos(phi) * cos(theta);
+  weightLoad_eig.segment<3>(3) = CoB.cross(Fb);
+  weightLoad_eig = weightLoad_eig * ((int)(isBuoyant));
 
   // Convert Eigen::Vector6d to double[6]
-  Map<RowMatrixXd>(&weightFM[0], 6, 1) = weightFM_eig;
+  Map<RowMatrixXd>(&weightLoad[0], weightLoad_eig.rows(), weightLoad_eig.cols()) = weightLoad_eig;
 }
 
 //Get depth and determine if buoyancy should be included
