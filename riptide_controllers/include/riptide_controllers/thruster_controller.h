@@ -37,24 +37,17 @@ typedef Matrix<double, Dynamic, Dynamic, RowMajor> RowMatrixXd;
 class ThrusterController
 {
 private:
-  // Comms
   ros::NodeHandle nh;
   ros::Subscriber state_sub, cmd_sub, depth_sub, mass_vol_sub, buoyancy_sub;
   ros::Publisher cmd_pub, buoyancy_pub, residual_pub;
+
   riptide_msgs::ThrustStamped thrust;
   riptide_msgs::ThrusterResiduals residuals;
 
+  // Dynamic Reconfigure Setup
   bool debug_controller; // If true, key params can be input via messages
   dynamic_reconfigure::Server<riptide_controllers::VehiclePropertiesConfig> server;
   dynamic_reconfigure::Server<riptide_controllers::VehiclePropertiesConfig>::CallbackType cb;
-
-  // Variables for New Thruster Setup
-  ros::Publisher new_pub;
-  riptide_msgs::ThrustStamped thrust2;
-  YAML::Node VProperties; // Vehicle Properties
-  std::vector<int> thrustersEnabled;
-  Vector3d CoB;
-  double M, V, W, B, Jxx, Jyy, Jzz;
   
   // Primary EOMs
   ceres::Problem problem;
@@ -66,32 +59,35 @@ private:
   ceres::Solver::Options buoyancyOptions;
   ceres::Solver::Summary buoyancySummary;
 
+  // NEW THRUSTER SETUP /////////////////////////////////////////////
+  // Variables for New Thruster Setup
+  ros::Publisher new_pub;
+  riptide_msgs::ThrustStamped thrust2;
+  YAML::Node VProperties; // Vehicle Properties
+  std::vector<int> thrustersEnabled;
+  Vector3d CoB;
+  double M, V, W, B, Jxx, Jyy, Jzz;
+
+  MatrixXd thrustCoeffs_eig, thrusters;
+  Vector6d weightLoad_eig;
+  std::vector<Vector6d> thrustCoeffs;
+  int numThrusters;
+  double inertia[6], weightLoad[6], transportThm[6], command[6];
+  double forces[8]; // Solved forces go here
+
   // New EOM Format
   ceres::Problem newProblem;
   ceres::Solver::Options newOptions;
   ceres::Solver::Summary newSummary;
 
-  MatrixXd thrustCoeffs_eig, thrusters;
-  Vector6d weightLoad_eig;
-  double forces[8]; // Solved forces go here
-  std::vector<Vector6d> thrustCoeffs;
-  int numThrusters;
-  double inertia[6], weightLoad[6], transportThm[6], command[6];
-
-public:
-  // These variables need to be public so class EOM can use them
-  /*int numThrusters;
-  Matrix68d thrustFM_eig;
-  Vector6d inertia, weightFM_eig, transportThm_eig, command;*/
-  
-  
+public:  
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   ThrusterController(char **argv);
   template <typename T>
   void LoadParam(std::string param, T &var);
   void LoadVehicleProperties();
-  void SetupThrusters();
+  void SetThrusterCoeffs();
   void InitThrustMsg();
   void DynamicReconfigCallback(riptide_controllers::VehiclePropertiesConfig &config, uint32_t levels);
   void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
@@ -100,12 +96,16 @@ public:
   void Loop();
 };
 
+// Class EOM defines the 6 equations of motion that ceres needs to solve
 class EOM
 {
   private:
-  int* numThrusters;
-  MatrixXd thrustCoeffs;
-  double *inertia, *weightLoad, *transportThm, *command;
+  int* numThrusters; // (Pointer) Number of thrusters
+  MatrixXd thrustCoeffs; // Thrust coefficients (effective contributions of each thruster for force and moments)
+  double *inertia; // (Pointer) Inertia-related values (mass, mass, mass, Ixx, Iyy, Izz)
+  double *weightLoad; // (Pointer) Forces/moments due to weight forces (gravity and buoyancy)
+  double *transportThm; // (Pointer) Vector containng terms related to the transport theorem
+  double *command; // (Pointer) Command for each EOM
   
   public:  
   EOM(int* num, const Ref<const MatrixXd> &thrustCoeffsIn, double* inertiaIn, double* weightLoadIn, double* transportThmIn, double* commandIn)
@@ -125,13 +125,13 @@ class EOM
     {
       residual[i] = T(0);
 
-      // Account for each thruster's contribution
+      // Account for each thruster's contribution to force/moment
       for (int j = 0; j < *numThrusters; j++)
       {
         residual[i] = residual[i] + T(thrustCoeffs(i,j)) * forces[j];
       }
 
-      // Account for weightLoad and transportThm
+      // Account for weight-related forces/moments and transportThm
       residual[i] = residual[i] + T(weightLoad[i] + transportThm[i]);
       residual[i] = residual[i] / T(inertia[i]) - T(command[i]);
     }
@@ -139,7 +139,7 @@ class EOM
   }
 };
 
-//***** Below are all the variables that are needed for ceres *****///////////////////////////////
+//***** OLD CERES EQUATIONS *****///////////////////////////////
 // **Please keep these in case they get deleted from the vehicle_properties.yaml file
 /*#define Ixx 0.52607145
 #define Iyy 1.50451601

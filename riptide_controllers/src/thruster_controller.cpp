@@ -8,15 +8,6 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "thruster_controller");
   ThrusterController ThrusterController(argv);
-
-  /*ThrusterController::numThrusters = 0;
-  ThrusterController::M = 0.5;
-  ThrusterController::thrustFM.resize(6,8);
-  ThrusterController::thrustFM.setZero();
-  ThrusterController::weightFM.setZero();
-  ThrusterController::transportThm.setZero();
-  ThrusterController::command.setZero();*/
-
   ThrusterController.Loop();
 }
 
@@ -25,10 +16,10 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller")
   // Load parameters from .yaml files or launch files
   VProperties = YAML::LoadFile("../osu-uwrt/riptide_software/src/riptide_controllers/cfg/vehicle_properties2.yaml");
   ThrusterController::LoadVehicleProperties();
-  ThrusterController::SetupThrusters();
+  ThrusterController::SetThrusterCoeffs();
   weightLoad_eig.setZero();
-  
-  for(int i = 0; i < 6; i++)
+
+  for (int i = 0; i < 6; i++)
   {
     weightLoad[i] = 0;
     transportThm[i] = 0;
@@ -140,13 +131,12 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller")
 
   ////////////////////////////////////////
   // New problem
-  ROS_INFO("Constructing Class EOM");
   newProblem.AddResidualBlock(new ceres::AutoDiffCostFunction<EOM, 6, 8>(new EOM(&numThrusters, thrustCoeffs_eig, inertia, weightLoad, transportThm, command)), NULL, forces);
-  newOptions.max_num_iterations = 100;2
+  newOptions.max_num_iterations = 100;
   newOptions.linear_solver_type = ceres::DENSE_QR;
   ////////////////////////////////////////
 
-  // PROBLEM SETUP
+  // OLD PROBLEM SETUP
   // Add residual blocks (equations)
 
   // Linear
@@ -267,13 +257,9 @@ void ThrusterController::LoadVehicleProperties()
   inertia[3] = Jxx;
   inertia[4] = Jyy;
   inertia[5] = Jzz;
-
-  /*Map<MatrixXd>(Dinertia, 5, 8) = thrustFM;
-  for(int i = 0; i < 6; i++)
-    ROS_INFO("Dinertia element %i: %f", i, Dinertia[i]);*/
 }
 
-void ThrusterController::SetupThrusters()
+void ThrusterController::SetThrusterCoeffs()
 {
   numThrusters = VProperties["properties"]["thrusters"].size();
   for (int i = 0; i < numThrusters; i++)
@@ -293,31 +279,25 @@ void ThrusterController::SetupThrusters()
       for (int j = 0; j < 5; j++)
         thrusters(j, i) = VProperties["properties"]["thrusters"][i]["pose"][j].as<double>();
 
-
   for (int i = 0; i < numThrusters; i++)
   {
     if (thrustersEnabled[i])
     {
       float psi = thrusters(3, i) * PI / 180;
       float theta = thrusters(4, i) * PI / 180;
-      thrustCoeffs_eig(0, i) = cos(psi) * cos(theta); // cos(psi)cos(theta)
-      thrustCoeffs_eig(1, i) = sin(psi) * cos(theta); // sin(psi)cos(theta)
-      thrustCoeffs_eig(2, i) = -sin(theta);           // -sin(theta)
+      thrustCoeffs_eig(0, i) = cos(psi) * cos(theta); // Effective contrbution along X-axis
+      thrustCoeffs_eig(1, i) = sin(psi) * cos(theta); // Effective contrbution along Y-axis
+      thrustCoeffs_eig(2, i) = -sin(theta);           // Effective contrbution along Z-axis
 
       // Cross-product
+      // Determine the effective moment arms for each thruster about the B-frame axes
       thrustCoeffs_eig.block<3, 1>(3, i) = thrusters.block<3, 1>(0, i).cross(thrustCoeffs_eig.block<3, 1>(0, i));
-
-      //thrustCoeffs.push_back(thrustCoeffs_eig.col(i));
     }
   }
 
   // Map Eigen::MatrixXd to double[6][8]
   // MUST specify RowMatrixXd so it copies the data properly (by default, eigen stores data by columns)
   //Map<RowMatrixXd>(&thrustCoeffs[0][0], thrustCoeffs_eig.rows(), thrustCoeffs_eig.cols()) = thrustCoeffs_eig;
-  /*std::cout << "thrustFM: " << thrustFM << std::endl;
-  for(int i = 0; i < 6; i++)
-    for(int j = 0; j < 8; j++)
-      ROS_INFO("DthrustFM[%i, %i]: %f", i, j, DthrustFM[i][j]);*/
 }
 
 void ThrusterController::InitThrustMsg()
@@ -366,7 +346,7 @@ void ThrusterController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
   ang_v.setValue(ang_v.x() * PI / 180, ang_v.y() * PI / 180, ang_v.y() * PI / 180);
 
   //////////////////////////////////////////////////////////////////////////////////////
-  // Stuff for new setup
+  // Calculations for new setup
   float phi = imu_msg->euler_rpy.x * PI / 180;
   float theta = imu_msg->euler_rpy.y * PI / 180;
   float p = imu_msg->ang_vel.x;
@@ -390,7 +370,7 @@ void ThrusterController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
   weightLoad_eig.segment<3>(3) = CoB.cross(Fb);
   weightLoad_eig = weightLoad_eig * ((int)(isBuoyant));
 
-  // Convert Eigen::Vector6d to double[6]
+  // Convert Eigen::Vector6d to c++ double[6]
   Map<RowMatrixXd>(&weightLoad[0], weightLoad_eig.rows(), weightLoad_eig.cols()) = weightLoad_eig;
 }
 
