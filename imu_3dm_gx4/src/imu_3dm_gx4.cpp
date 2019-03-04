@@ -28,10 +28,21 @@ std::string frameId;
 Imu::Info info;
 Imu::DiagnosticFields fields;
 
+float magBX, magBY, magBZ; // Body-frame magnetic field components
+double declinationRad;
+
 //  diagnostic_updater resources
 std::shared_ptr<diagnostic_updater::Updater> updater;
 std::shared_ptr<diagnostic_updater::TopicDiagnostic> imuDiag;
 std::shared_ptr<diagnostic_updater::TopicDiagnostic> filterDiag;
+
+// Normalize vector components, and write new values to specified address
+void normalize(float v1, float v2, float v3, float *x, float *y, float *z) {
+  float magnitude = sqrt(v1*v1 + v2*v2 + v3*v3);
+  *x = v1/magnitude;
+  *y = v2/magnitude;
+  *z = v3/magnitude;
+}
 
 void publishData(const Imu::IMUData &data) {
   sensor_msgs::Imu imu;
@@ -63,11 +74,14 @@ void publishData(const Imu::IMUData &data) {
   imu.angular_velocity.y = data.gyro[1];
   imu.angular_velocity.z = data.gyro[2];
 
-  field.mag_field_components.x = data.mag[0];
-  field.mag_field_components.y = data.mag[1];
-  field.mag_field_components.z = data.mag[2];
-  field.mag_field_magnitude = sqrt(data.mag[0]*data.mag[0] +
-    data.mag[1]*data.mag[1] + data.mag[2]*data.mag[2]);
+  field.components.x = data.mag[0];
+  field.components.y = data.mag[1];
+  field.components.z = data.mag[2];
+  //field.magnitude = sqrt(pow(data.mag[0], 2) + pow(data.mag[1], 2) + pow(data.mag[2], 2));
+  field.magnitude = sqrt(data.mag[0]*data.mag[0] + data.mag[1]*data.mag[1] + data.mag[2]*data.mag[2]);
+  magBX = data.mag[0];
+  magBY = data.mag[1];
+  magBZ = data.mag[2];
 
   pressure.fluid_pressure = data.pressure;
 
@@ -122,10 +136,48 @@ void publishFilter(const Imu::FilterData &data) {
   output.gyro_bias_covariance[8] = data.gyroBiasUncertainty[2]*data.gyroBiasUncertainty[2];
   output.gyro_bias_covariance_status = data.gyroBiasUncertaintyStatus;
 
-  output.heading_update = data.headingUpdate;
+  output.heading_update_LORD = data.headingUpdate;
   output.heading_update_uncertainty = data.headingUpdateUncertainty;
   output.heading_update_source = data.headingUpdateSource;
   output.heading_update_flags = data.headingUpdateFlags;
+
+  // Perform Alternate Heading Update ////////////////////////////
+  float roll = data.eulerRPY[0] * 180/PI;
+  float pitch = data.eulerRPY[1] * 180/PI;
+
+  // Not sure why we need to reverse roll and pitch, but it makes the calculation work
+  pitch = -pitch;
+  roll -= 180;
+  if (roll > 180.0) // Keep roll in the range [-180, 180] deg
+    roll -= 360;
+  else if (roll < -180.0)
+    roll += 360;
+  roll *= PI/180;
+  pitch *= PI/180;
+
+  float mBX = 0, mBY = 0, mBZ = 0; // Normalized body-frame component variables
+  normalize(magBX, magBY, magBZ, &mBX, &mBY, &mBZ); // Normalize components
+
+  // Calculate x and y mag components in world frame using rotation matrix
+  float mWX = mBX * cos(pitch) + mBY * sin(roll) * sin(pitch) + mBZ * sin(pitch) * cos(roll);
+  float mWY = mBY * cos(roll) - mBZ * sin(roll);
+
+  // Calculate heading with arctan (use atan2)
+  float heading_alt = atan2(mWY, mWX);
+
+  // Account for declination
+  heading_alt += declinationRad; // Add declination value
+  heading_alt *= 180/PI;
+  if (heading_alt > 180.0) // Keep heading in the range [-180, 180] deg
+  {
+    heading_alt -= 360;
+  }
+  else if (heading_alt < -180.0)
+  {
+    heading_alt += 360;
+  }
+  output.heading_update_alt = heading_alt*PI/180;
+  ////////////////////////////////////////////////////////
 
   output.linear_acceleration.x = data.acceleration[0];
   output.linear_acceleration.y = data.acceleration[1];
@@ -187,16 +239,14 @@ int main(int argc, char **argv) {
 
   std::string device;
   int baudrate;
-  bool enableMagUpdate, enableAccelUpdate;
   int requestedImuRate, requestedFilterRate;
   bool verbose;
 
   // Variables for IMU Reference Position
   std::string headingUpdateSource, declinationSource;
   std::string name, city, location;
-  float roll, pitch, yaw;
-  double latitude, longitude, altitude, manualDeclination;
-  bool enable_sensor_to_vehicle_tf;
+  float rollDeg, rollRad, pitchDeg, pitchRad, yawDeg, yawRad;
+  double latitude, longitude, altitude, declinationDeg;
 
   // Sensor LPF Bandwidths
   int magLPFBandwidth3DM, accelLPFBandwidth3DM, gyroLPFBandwidth3DM;
@@ -211,8 +261,6 @@ int main(int argc, char **argv) {
   nh.param<std::string>("frame_id", frameId, std::string("imu"));
   nh.param<int>("imu_rate", requestedImuRate, 100);
   nh.param<int>("filter_rate", requestedFilterRate, 100);
-  nh.param<bool>("enable_mag_update", enableMagUpdate, true);
-  nh.param<bool>("enable_accel_update", enableAccelUpdate, true);
   nh.param<bool>("verbose", verbose, false);
 
   // Parameters for IMU Reference Position
@@ -222,11 +270,10 @@ int main(int argc, char **argv) {
   nh.param<double>("latitude", latitude, 39.9984f); //Default is Columbus latitude
   nh.param<double>("longitude", longitude, -83.0179f); //Default is Columbus longitude
   nh.param<double>("altitude", altitude, 224.0f); //Default is Columbus altitude
-  nh.param<double>("declination", manualDeclination, 7.01f); //Default is Columbus declination
-  nh.param<float>("roll", roll, 0.0f); //Default is 0.0
-  nh.param<float>("pitch", pitch, -90.0f); //Default is -90.0
-  nh.param<float>("yaw", yaw, 180.0f); //Default is 180.0
-  nh.param<bool>("enable_sensor_to_vehicle_tf", enable_sensor_to_vehicle_tf, true); //Default is Columbus declination
+  nh.param<double>("declination", declinationDeg, 7.01f); //Default is Columbus declination
+  nh.param<float>("roll", rollDeg, 0.0f); //Default is 0.0 deg
+  nh.param<float>("pitch", pitchDeg, 0.0f); //Default is 0.0 deg
+  nh.param<float>("yaw", yawDeg, 0.0f); //Default is 0.0 deg
   nh.param<std::string>("heading_update_source", headingUpdateSource, std::string("magnetometer")); //Default is magnetometer
   nh.param<std::string>("declination_source", declinationSource, std::string("manual")); //Default is World Magnetic Model
 
@@ -241,7 +288,7 @@ int main(int argc, char **argv) {
   nh.param<float>("m11", m11, 1.0);
   nh.param<float>("m12", m12, 0.0);
   nh.param<float>("m13", m13, 0.0);
-  nh.param<float>("m2", m21, 0.0);
+  nh.param<float>("m22", m21, 0.0);
   nh.param<float>("m22", m22, 1.0);
   nh.param<float>("m23", m23, 0.0);
   nh.param<float>("m31", m31, 0.0);
@@ -263,6 +310,7 @@ int main(int argc, char **argv) {
   // Ceate new instance of the IMU
   Imu imu(device, verbose);
   try {
+    ROS_INFO("Connecting to device: %s", device.c_str());
     imu.connect();
 
     ROS_INFO("Selecting baud rate %u", baudrate);
@@ -325,7 +373,7 @@ int main(int argc, char **argv) {
     imu.enableFilterStream(true);
 
     ROS_INFO("Enabling filter measurements");
-    imu.enableMeasurements(enableAccelUpdate, enableMagUpdate);
+    imu.enableMeasurements(true, true); // Enable accel and mag updates
 
     ROS_INFO("Enabling gyro bias estimation");
     imu.enableBiasEstimation(true);
@@ -334,26 +382,22 @@ int main(int argc, char **argv) {
     imu.setFilterDataCallback(publishFilter);
 
     // Additional IMU Settings //////////////////////////////////////////////
-    //Set parameters and display them to console thru ROS_INFO
-    //Convert to radians
-    roll *= (PI/180);
-    pitch *= (PI/180);
-    yaw *= (PI/180);
-    manualDeclination *= (PI/180);
+    // Set parameters and display them to console thru ROS_INFO
+    // The below parameters MUST be in radians
+    rollRad = rollDeg * (PI/180);
+    pitchRad = pitchDeg * (PI/180);
+    yawRad = yawDeg * (PI/180);
+    declinationRad = declinationDeg * (PI/180);
 
     ROS_INFO("IMU Name = %s", name.c_str());
     ROS_INFO("City = %s", city.c_str());
     ROS_INFO("Location = %s", location.c_str());
 
     ROS_INFO("Sensor to Vehicle Frame Transformation");
-    imu.setSensorToVehicleTF(roll, pitch, yaw);
-    ROS_INFO("\tRoll (deg): %f", roll*180/PI);
-    ROS_INFO("\tPitch (deg): %f", pitch*180/PI);
-    ROS_INFO("\tYaw (deg): %f", yaw*180/PI);
-
-    ROS_INFO("Heading Update Source");
-    imu.setHeadingUpdateSource(headingUpdateSource);
-    ROS_INFO("\tUpate Source: %s", headingUpdateSource.c_str());
+    imu.setSensorToVehicleTF(rollRad, pitchRad, yawRad);
+    ROS_INFO("\tRoll (deg): %f", rollRad);
+    ROS_INFO("\tPitch (deg): %f", pitchRad);
+    ROS_INFO("\tYaw (deg): %f", yawRad);
 
     ROS_INFO("Reference Position");
     imu.setReferencePosition(latitude, longitude, altitude);
@@ -361,10 +405,14 @@ int main(int argc, char **argv) {
     ROS_INFO("\tLongitude (deg): %f", longitude);
     ROS_INFO("\tAltitude (m): %f", altitude);
 
+    ROS_INFO("Heading Update Source");
+    imu.setHeadingUpdateSource(headingUpdateSource);
+    ROS_INFO("\tUpate Source: %s", headingUpdateSource.c_str());
+
     ROS_INFO("Declination Source");
-    imu.setDeclinationSource(declinationSource, manualDeclination);
+    imu.setDeclinationSource(declinationSource, declinationRad);
     ROS_INFO("\tDec Source: %s", declinationSource.c_str());
-    ROS_INFO("\tManual Dec (deg): %f", manualDeclination*180/PI);
+    ROS_INFO("\tManual Dec (deg): %f", declinationDeg);
 
     ROS_INFO("Sensor LPF Bandwidths");
     std::string magLPFType =  (magLPFBandwidth3DM > 0) ? (std::string)("IIR") : (std::string)("none");
@@ -377,13 +425,12 @@ int main(int argc, char **argv) {
     ROS_INFO("\tAccel LPF: %s, %i [Hz]]", accelLPFType.c_str(), accelLPFBandwidth3DM);
     ROS_INFO("\tGyro LPF: %s, %i [Hz]", gyroLPFType.c_str(), gyroLPFBandwidth3DM);
 
-    ROS_INFO("Setting Hard and Soft Iron Offsets");
+    ROS_INFO("Hard and Soft Iron Offsets");
+    ROS_INFO("\tEnable Status: %i", enable_iron_offset);
     if(enable_iron_offset) {
       imu.setHardIronOffset(hard_offset);
       imu.setSoftIronMatrix(soft_matrix);
     }
-    ROS_INFO("\tEnable Status: %i", enable_iron_offset);
-    ROS_INFO("\tFile: %s_%s_%s.yaml", name.c_str(), city.c_str(), location.c_str());
     //////////////////////////////////////////////////////////////////////////
 
     // Configure diagnostic updater

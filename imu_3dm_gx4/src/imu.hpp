@@ -443,7 +443,7 @@ public:
   void setReferencePosition(double latitude1, double longitude1, double altitude1);
 
   /**
-   * @brief Get refernece position (values are in degrees)
+   * @brief Get reference position (values are in degrees)
    */
   void getReferencePosition(double &latitude1, double &longitude1, double &altitude1);
 
@@ -469,22 +469,6 @@ public:
    */
   void getLPFBandwidth(std::string &dataType, std::string &filterType,
     std::string &config, uint16_t &LPFBandwidth);
-
-  /**
-   * @brief Set magnetometer magnitude error adaptive measurement settings
-   * and save as startup settings.
-   */
-  void setMagFilterErrAdaptMsmt(bool enabled, float LPFBandwidth, float lowLim,
-    float highLim, float lowLimUncertainty, float highLimUncertainty,
-    float minUncertainty);
-
-  /**
-   * @brief Get magnetometer magnitude error adaptive measurement settings
-   * and save as startup settings.
-   */
-  void getMagFilterErrAdaptMsmt(float &LPFBandwidth, float &lowLim,
-    float &highLim, float &lowLimUncertainty, float &highLimUncertainty,
-    float &minUncertainty);
 
 private:
   //  non-copyable

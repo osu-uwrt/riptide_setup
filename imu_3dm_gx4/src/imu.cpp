@@ -1,5 +1,5 @@
 /*
- * imu.hpp
+ * imu.cpp
  *
  *  Copyright (c) 2014 Kumar Robotics. All rights reserved.
  *
@@ -1270,56 +1270,6 @@ void Imu::getLPFBandwidth(std::string &dataType, std::string &filterType,
     config = (std::string)("manual");
   else if(cfg == 0x00)
     config = (std::string)("auto");
-}
-
-void Imu::setMagFilterErrAdaptMsmt(bool enabled, float LPFBandwidth, float lowLim,
-  float highLim, float lowLimUncertainty, float highLimUncertainty,
-  float minUncertainty) {
-  Packet p(COMMAND_CLASS_FILTER);
-  PacketEncoder encoder(p);
-  encoder.beginField(COMMAND_FILTER_MAG_ERR_ADAPT_MSMT);
-  encoder.append(COMMAND_FUNCTION_APPLY);
-
-  uint8_t flag;
-  if(!enabled) { //Disable
-    flag = 0x00;
-    encoder.append(flag);
-  } else { //Enable and set parameters
-    flag = 0x01;
-    encoder.append(flag, LPFBandwidth, lowLim, highLim,
-    lowLimUncertainty, highLimUncertainty, minUncertainty);
-  }
-
-  encoder.endField();
-  p.calcChecksum();
-  sendCommand(p);
-
-  saveCurrentSettings(COMMAND_CLASS_FILTER, COMMAND_FILTER_MAG_ERR_ADAPT_MSMT);
-}
-
-void Imu::getMagFilterErrAdaptMsmt(float &LPFBandwidth, float &lowLim, float &highLim,
-float &lowLimUncertainty, float &highLimUncertainty, float &minUncertainty) {
-  Packet p(COMMAND_CLASS_FILTER);
-  PacketEncoder encoder(p);
-  encoder.beginField(COMMAND_FILTER_MAG_ERR_ADAPT_MSMT);
-  encoder.append(COMMAND_FUNCTION_READ); //Request to read
-  encoder.endField();
-  p.calcChecksum();
-  sendCommand(p);
-
-  uint8_t enable;
-  //Extract information
-  {
-    PacketDecoder decoder(packet_);
-    BOOST_VERIFY(decoder.advanceTo(REPLY_FIELD_FILTER_MAG_ERR_ADAPT_MSMT));
-    decoder.extract(1, &enable);
-    decoder.extract(1, &LPFBandwidth);
-    decoder.extract(1, &lowLim);
-    decoder.extract(1, &highLim);
-    decoder.extract(1, &lowLimUncertainty);
-    decoder.extract(1, &highLimUncertainty);
-    decoder.extract(1, &minUncertainty);
-  }
 }
 
 int Imu::pollInput(unsigned int to) {

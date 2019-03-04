@@ -1,5 +1,4 @@
 # Output from the 3DM-GX4 attitude estimation filter.
-std_msgs/Header header
 
 # Note on status flags:
 # Status flags are implemented as bit-fields.
@@ -7,7 +6,10 @@ std_msgs/Header header
 #  1 = valid
 #  2 = valid and referenced to magnetic north
 #
-# Note that covariance on orientation becomes invalid as pitch angle exceeds 70 # degrees. This will be indicated by the status flag.
+# Note that covariance on orientation becomes invalid as pitch angle exceeds 70 # degrees. 
+# This will be indicated by the status flag.
+
+std_msgs/Header header
 
 # Quaternion, and status
 geometry_msgs/Quaternion quaternion
@@ -20,7 +22,8 @@ float64[9] euler_angle_covariance
 uint16 euler_angle_covariance_status
 
 # Heading Update Data
-float64 heading_update #Heading in [radians]
+float64 heading_update_alt #Heading in [radians]
+float64 heading_update_LORD #Heading in [radians]
 float64 heading_update_uncertainty #1-sigma heading uncertainty
 float64 heading_update_source
 float64 heading_update_flags #0 = no update received within 2 sec, 1 = update received within 2 sec
