@@ -68,9 +68,8 @@ private:
   Vector3d CoB;
   double M, V, W, B, Jxx, Jyy, Jzz;
 
-  MatrixXd thrustCoeffs_eig, thrusters;
+  MatrixXd thrustCoeffs, thrusters;
   Vector6d weightLoad_eig;
-  std::vector<Vector6d> thrustCoeffs;
   int numThrusters;
   double inertia[6], weightLoad[6], transportThm[6], command[6];
   double forces[8]; // Solved forces go here

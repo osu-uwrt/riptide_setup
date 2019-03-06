@@ -131,7 +131,7 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller")
 
   ////////////////////////////////////////
   // New problem
-  newProblem.AddResidualBlock(new ceres::AutoDiffCostFunction<EOM, 6, 8>(new EOM(&numThrusters, thrustCoeffs_eig, inertia, weightLoad, transportThm, command)), NULL, forces);
+  newProblem.AddResidualBlock(new ceres::AutoDiffCostFunction<EOM, 6, 8>(new EOM(&numThrusters, thrustCoeffs, inertia, weightLoad, transportThm, command)), NULL, forces);
   newOptions.max_num_iterations = 100;
   newOptions.linear_solver_type = ceres::DENSE_QR;
   ////////////////////////////////////////
@@ -270,9 +270,9 @@ void ThrusterController::SetThrusterCoeffs()
 
   // Each COLUMN contains a thruster's info
   thrusters.resize(5, numThrusters);
-  thrustCoeffs_eig.resize(6, numThrusters);
+  thrustCoeffs.resize(6, numThrusters);
   thrusters.setZero();
-  thrustCoeffs_eig.setZero();
+  thrustCoeffs.setZero();
 
   for (int i = 0; i < numThrusters; i++)
     if (thrustersEnabled[i])
@@ -285,13 +285,13 @@ void ThrusterController::SetThrusterCoeffs()
     {
       float psi = thrusters(3, i) * PI / 180;
       float theta = thrusters(4, i) * PI / 180;
-      thrustCoeffs_eig(0, i) = cos(psi) * cos(theta); // Effective contrbution along X-axis
-      thrustCoeffs_eig(1, i) = sin(psi) * cos(theta); // Effective contrbution along Y-axis
-      thrustCoeffs_eig(2, i) = -sin(theta);           // Effective contrbution along Z-axis
+      thrustCoeffs(0, i) = cos(psi) * cos(theta); // Effective contrbution along X-axis
+      thrustCoeffs(1, i) = sin(psi) * cos(theta); // Effective contrbution along Y-axis
+      thrustCoeffs(2, i) = -sin(theta);           // Effective contrbution along Z-axis
 
       // Cross-product
       // Determine the effective moment arms for each thruster about the B-frame axes
-      thrustCoeffs_eig.block<3, 1>(3, i) = thrusters.block<3, 1>(0, i).cross(thrustCoeffs_eig.block<3, 1>(0, i));
+      thrustCoeffs.block<3, 1>(3, i) = thrusters.block<3, 1>(0, i).cross(thrustCoeffs.block<3, 1>(0, i));
     }
   }
 
