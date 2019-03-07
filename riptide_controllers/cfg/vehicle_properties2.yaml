@@ -3,6 +3,8 @@ properties: {
   volume: 0.0386,
   CoB: [0.0205, 0, -0.04],
   inertia: [0.69, 2.62, 2.51],
+  # All thrusters are assumed to be pointing in the positive x-direction
+  # You MUST define the correct yaw and pitch angle from body-frame to thruster frame
   thrusters: [ # Pose: [x (m), y (m), z (m), yaw (deg), pitch (deg)]
     {
       id: 0,
