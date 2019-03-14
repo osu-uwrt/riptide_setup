@@ -40,38 +40,25 @@ git remote -v
 You will see both a remote to your fork and to the main repo. You will use these two remotes a lot when pushing code to your fork, submitting pull-requests, and pulling the latest code.
 
 ## Installing ROS and/or Dependencies
-The `riptide_software` base currently uses ROS Kinetic Kame. You will need to have ROS installed on your Ubuntu machine, along with various other dependencies, to compile the code. But don't worry, we have a setup script that will install everything for you:
+The `riptide_software` base currently uses ROS Kinetic Kame and is dependent on various ROS packages and other libraries. We created the [riptide_dependencies](https://github.com/osu-uwrt/riptide_dependencies) repository for the sole purpose of containing everything you need to install on your computer so you can use the `riptide_software` platform. Please go to our `riptide_dependencies` repo and follow the necessary instructions to install the required libraries onto your computer.
+
+Once you have installed all of our dependencies, you will need to run one final script to finish setting up the UWRT environment:
 ```
-cd ~/osu-uwrt/riptide_software/src/riptide_utilities/installation
+cd ~/osu-uwrt/riptide_software/src/riptide_utilities/setup/
 ./setup_uwrt_env.sh
 ```
+If everything compiled successfully, then you're all set to start coding. If you wish to contribute towards our other repositories than can be used in conjunction with `riptide_software`, then read through the section "Working with Our Other Repositories". It is recommended that you read through the section "Sourcing", as this is an important feature of catkin workspaces.
 
-If you already have ROS installed, but our dependencies have changed, then all you need to do is run the dependencies script (there is no need to re-run `setup_uwrt_env.sh`):
-```
-cd ~/osu-uwrt/riptide_software/riptide_utilities/installation
-./install_dependencies.sh
-```
+# Sourcing
+There are a number of environment variables (mostly pertaining to ROS features and package paths) that are required when compiling/running our code. Each time you want to run one of those commands in a terminal, those environment variables will need to be set. This process is called "sourcing", and it is specific to working with catkin workspaces. 
 
-OR, if you already know which dependency has changed, then you may search through the `riptide_utilities/installation` folder and run the desired install/setup script.
+To automate this process, we add various commands to the `bashrc` file indicating what needs to be sourced. As a note, bashrc = Born Again Shell Run-Commands. Each time a new terminal/shell is opened, it executes any commands within this file.
 
-## The ~/.bashrc File
-NOTE: This section is NOT required, since the setup script from above performs this action. However, it is good to verify this information is setup properly.
-
-There are a number of environment variables (mostly pertaining to ROS features and package paths) that are required when running the code or when using the terminal. Each time you want to run one of those commands in a terminal, those environment variables will need to be set. To automate this process, we add a line to the `bashrc` file (bashrc = Born Again Shell Run-Commands) because each time a new terminal/shell is opened, it executes any commands within this file.
-
-Open it with a terminal text editor (this is a hidden file, hence the "."):
+To edit/open the `bashrc` file, use the terminal text editor, nano (this is a hidden file, hence the "."):
 ```
 nano ~/.bashrc
 ```
-Scroll down to the bottom. Beneath the line
-```
-source /opt/ros/kinetic/setup.bash
-```
-add the line (if not already there):
-```
-source ~/osu-uwrt/riptide_software/devel/setup.bash
-```
-To exit and save your changes, press CTRL-X, type "y", then press ENTER. Close all terminals and then re-open for changes to take effect. If you are lazy and don't want to close your terminals, then each terminal will need to be "sourced" individually to setup its environment properly. Run the command:
+To exit and save your changes, press CTRL-X, type "y", then press ENTER. For the changes to take effect, close and re-open all terminals. If you are lazy and don't want to close your terminals, then you will need to source the `bashrc` file in each terminal that you have open:
 ```
 source ~/.bashrc
 ```
@@ -82,9 +69,9 @@ UWRT has a few other repositories that can be used in conjunction with this one.
 2. [shared_software](https://github.com/osu-uwrt/shared_software)
 
 ## Chaining Workspaces
-Each of the above repositories (sim_softare, shared_software) are built on catkin as well. For the entire set of repositories to work together, we must "chain" their `setup.bash` files within the `bashrc` file for complete functionality.
+Each of the above repositories (sim_softare, shared_software) are built on catkin as well. For the entire set of repositories to work together, we must "chain" their `setup.bash` files within the `bashrc` file for complete functionality (in essence, we must source these `setup.bash` files in a specific order).
 
-Below is a complete section of code that must be placed within the `bashrc` file for ALL of our working workspaces to be chained properly. The lines pertaining to `sim_software` and `shared_software` can be omitted if the user decides not to use them. All others must remain.
+Below is a complete section of code that must be placed within the `bashrc` file for ALL of our working workspaces to be chained properly. The lines pertaining to `sim_software` and `shared_software` can be commented/omitted if the user decides not to use them. The lines pertaining to `/opt/ros/kinetic` and `riptide_software` must remain.
 ```
 source /opt/ros/kinetic/setup.bash
 source ~/osu-uwrt/sim_software/devel/setup.bash
@@ -106,16 +93,12 @@ In the near future, you will have to clone and compile the [control_toolbox](htt
 
 # Riptide Software Hierarchy
 
-Below is a flow chart relating all major ROS nodes in our software base broken down by system level. Boxes with sharp corners represent physical objects (hardware, actuators), boxes with rounded corners represent individual ROS nodes, and the arrows connecting represent the direction of data communication via ROS topics.
+Below is a flow chart relating all major ROS nodes in our software base broken down by system level. Boxes with sharp corners represent physical objects (hardware, actuators), boxes with rounded corners represent individual ROS nodes, and the arrows connecting represent the direction of data communication via ROS topics. Note: only the major topics are displayed, otherwise the diagram would be too cluttered.
 
 ![riptide_software_flow_chart](diagrams/Riptide_Software_Stack_Full.png)
 
 ## Primary Packages
 Below is a list of the primary packages we use to run our vehicle. Feel free to click on each package to learn more about its functionality.
-### [imu_3dm_gx4](https://github.com/osu-uwrt/riptide_software/tree/master/imu_3dm_gx4)
-This is the driver for our [LordMicrostrain IMU 3DM-GX4](https://www.microstrain.com/inertial/3dm-gx4-25).
-### [darknet_ros](https://github.com/osu-uwrt/riptide_software/tree/master/darknet_ros)
-This package contains the ROS interface for the machine-learning algorithm known as [You Only Look Once (YOLO)](https://pjreddie.com/darknet/yolo/) as well as the darknet source code itself.
 ### [riptide_msgs](https://github.com/osu-uwrt/riptide_software/tree/master/riptide_msgs)
 This package only contains custom ROS messages used throughout riptide packages.
 ### [riptide_hardware](https://github.com/osu-uwrt/riptide_software/tree/master/riptide_hardware)
