@@ -11,7 +11,11 @@ int main(int argc, char **argv)
 
 IMUProcessor::IMUProcessor() : nh("~")
 {
-  imu_filter_sub = nh.subscribe<imu_3dm_gx4::FilterOutput>("/imu/filter", 1, &IMUProcessor::FilterCallback, this);
+  string imu_name, filter_topic;
+  IMUProcessor::LoadParam<string>("imu_name", imu_name);
+  filter_topic = "/" + imu_name + "/filter"; // Get topic name using imu's namespace
+
+  imu_filter_sub = nh.subscribe<imu_3dm_gx4::FilterOutput>(filter_topic, 1, &IMUProcessor::FilterCallback, this);
   imu_state_pub = nh.advertise<riptide_msgs::Imu>("/state/imu", 1);
 
   IMUProcessor::LoadParam<double>("post_IIR_LPF_bandwidth", post_IIR_LPF_bandwidth);
