@@ -114,7 +114,7 @@ void PS3Controller::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg)
 // Create rotation matrix from IMU orientation
 void PS3Controller::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
 {
-  euler_rpy = imu_msg->euler_rpy;
+  euler_rpy = imu_msg->rpy_deg;
 }
 
 void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr &joy)
