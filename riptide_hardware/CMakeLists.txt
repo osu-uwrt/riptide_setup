@@ -44,12 +44,6 @@ message("-- Computer name: " ${_host_name})
 
 if(NOT _host_name MATCHES "jetson")
 
-    
-
-    add_executable(imu_logger src/imu_logger.cpp)
-    target_link_libraries(imu_logger ${catkin_LIBRARIES})
-    add_dependencies(imu_logger ${catkin_EXPORTED_TARGETS})
-
     add_executable(acoustics src/acoustics.cpp)
     target_link_libraries(acoustics ${catkin_LIBRARIES} okFrontPanel fftw3)
     add_dependencies(acoustics ${catkin_EXPORTED_TARGETS})

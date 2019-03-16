@@ -181,13 +181,13 @@ double AttitudeController::SmoothErrorIIR(double input, double prev) {
 
 // Subscribe to state/imu
 void AttitudeController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg) {
-  current_attitude = imu_msg->euler_rpy;
+  current_attitude = imu_msg->rpy_deg;
   status_msg.roll.current = current_attitude.x;
   status_msg.pitch.current = current_attitude.y;
   status_msg.yaw.current = current_attitude.z;
 
   //Get angular velocity (leave in [deg/s])
-  ang_vel = imu_msg->ang_vel;
+  ang_vel = imu_msg->ang_vel_deg;
   AttitudeController::UpdateError();
 }
 

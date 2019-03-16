@@ -1,4 +1,26 @@
 <launch>
   <include file="$(find riptide_hardware)/launch/cameras_jetson.launch" />
-  <include file="$(find darknet_ros)/launch/darknet_ros_jetson.launch" />
+  
+  <machine address="jetson" name="jetson" user="ros" env-loader="~/osu-uwrt/riptide_software/src/riptide_utilities/riptide_master.sh"/>
+	<arg name="machine_name" default="jetson"/>
+
+  <!-- Console launch prefix -->
+  <arg name="launch_prefix" default=""/>
+
+  <!-- Config and weights folder -->
+  <arg name="jetson_weights_dir"         value="/home/ros/ssd/osu-uwrt/riptide_software/yolo_weights" />
+  <arg name="yolo_weights_path"          default="$(arg jetson_weights_dir)"/>
+  <arg name="yolo_config_path"           default="$(find riptide_hardware)/yolo_network_config"/>
+
+  <!-- Load parameters -->
+  <rosparam command="load" ns="darknet_ros" file="$(find darknet_ros)/config/ros.yaml"/>
+  <rosparam command="load" ns="darknet_ros" file="$(find riptide_hardware)/yolo_network_config/yolov3-tiny_RS2018.yaml"/>
+
+  <!-- Start darknet and ros wrapper -->
+  <node machine="$(arg machine_name)" pkg="darknet_ros" type="darknet_ros" name="darknet_ros" output="screen" launch-prefix="$(arg launch_prefix)">
+    <param name="weights_path"          value="$(arg yolo_weights_path)" />
+    <param name="config_path"           value="$(arg yolo_config_path)" />
+  </node>
+
+ <!--<node name="republish" type="republish" pkg="image_transport" output="screen" 	args="compressed in:=/front_camera/image_raw raw out:=/camera/image_raw" /> -->
 </launch>

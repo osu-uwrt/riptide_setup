@@ -582,7 +582,7 @@ void BeAutonomous::SwitchCB(const riptide_msgs::SwitchState::ConstPtr &switch_ms
 
 void BeAutonomous::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
 {
-  euler_rpy = imu_msg->euler_rpy;
+  euler_rpy = imu_msg->rpy_deg;
   linear_accel = imu_msg->linear_accel;
 }
 
