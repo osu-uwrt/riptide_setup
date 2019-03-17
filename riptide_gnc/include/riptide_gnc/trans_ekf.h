@@ -1,8 +1,8 @@
 #ifndef POSE_EDKF
 #define POSE_EDKF
 
-#include "riptide_gnc/linear_motion_ekf_suite.h"
-#include "riptide_gnc/pose_ekf.h"
+#include "riptide_gnc/kalman_filter.h"
+#include "riptide_gnc/auv_math_lib.h"
 #include "eigen3/Eigen/Dense"
 #include "math.h"
 
@@ -38,12 +38,11 @@ private:
   vector<RowXi> sensorCombosBF, sensorCombosW;
 
 public:
-  TransEKF(Matrix32f damping, Matrix3Xi posMaskw, Matrix3Xi velMaskbf, Matrix3Xi accelMaskbf,
+  TransEKF(Matrix3Xi posMaskw, Matrix3Xi velMaskbf, Matrix3Xi accelMaskbf,
            Matrix3Xf Rpos, Matrix3Xf Rvel, Matrix3Xf Raccel, Matrix9Xf Qin);
   void FindDataCombos(vector<RowXi> &list, int numSensors1, int numSensors2);
   void InitLMEDKF(VectorXf Xo);
   MatrixX3f UpdateEKF(float time_step, Vector3f input_states, Matrix3Xf Zpos, Matrix3Xf Zvel, Matrix3Xf Zaccel);
-  Matrix3f GetRotationRPY2Body(float roll, float pitch, float yaw); // World to body rotation matrix
 };
 
 #endif

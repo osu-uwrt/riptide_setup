@@ -9,6 +9,7 @@
 using namespace Eigen;
 using namespace std;
 using namespace AUVMathLib;
+using CppAD::AD;
 
 typedef Matrix<float, 12, 12> Matrix12f;
 typedef Matrix<float, 6, 2> Matrix62f;
@@ -20,6 +21,10 @@ typedef Matrix<float, 12, 1> Vector12f;
 typedef Matrix<float, 9, 1> Vector9f;
 typedef Matrix<float, 6, 1> Vector6f;
 typedef Matrix<float, 5, 1> Vector5f;
+
+typedef Matrix< CppAD::AD<double> , Dynamic, Dynamic > ADMatrixXd;
+typedef Matrix< CppAD::AD<double> , Dynamic, 1 > ADVectorXd;
+typedef Matrix< CppAD::AD<double> , 1, Dynamic > ADRowVectorXd;
 
 // Constants used for Auto Diff
 // Indeces for state vector
@@ -35,6 +40,21 @@ typedef Matrix<float, 5, 1> Vector5f;
 #define _P 9     // Inertial X angular velocity , expressed in B-frame
 #define _Q 10    // Inertial Y angular velocity , expressed in B-frame
 #define _R 11    // Inertial Z angular velocity , expressed in B-frame
+
+// Add new typedefs to Eigen namespace so we can use CppAD with it
+namespace Eigen {
+template<typename X, typename BinOp>
+struct ScalarBinaryOpTraits<CppAD::AD<X>,X,BinOp>
+{
+  typedef CppAD::AD<X> ReturnType;
+};
+
+template<typename X, typename BinOp>
+struct ScalarBinaryOpTraits<X,CppAD::AD<X>,BinOp>
+{
+  typedef CppAD::AD<X> ReturnType;
+};
+} // namespace Eigen
 
 // AUV Model
 // Contains information about an AUV's attributes: mass, volume inertia, drag, and thruster properties
@@ -66,14 +86,8 @@ public:
   Vector6f GetTotalThrustLoad(const Ref<const VectorXf> &thrusts);
   Vector6f GetWeightLoad(float phi, float theta);
 
-  Vector9f GetTransEKFTwoStageAPriori(const Ref<const Vector9f> &xPrev, const Ref<const Vector3f> &attitude,
-                                      const Ref<const Vector3f> &pqr, const Ref<const VectorXf> &thrusts,
-                                      float dt, int maxIter);
-  Matrix9f GetTransEKFTwoStageJacobianA(const Ref<const Vector9f> &apriori, const Ref<const Vector3f> &attitude,
-                                        const Ref<const Vector3f> &pqr, float dt);
-
   void SetInitialLQRJacobianA();
-  Matrix12f GetLQRJacobianA(const Ref<const Vector12f> &states);
+  Matrix12f GetStateJacobian(const Ref<const Vector12f> &ref);
 };
 
 #endif

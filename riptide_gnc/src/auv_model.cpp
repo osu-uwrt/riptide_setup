@@ -84,116 +84,64 @@ Vector6f AUVModel::GetWeightLoad(const Ref<const Vector3f> &attitude)
     return weightLoad;
 }
 
-// Compute a priori states for Two-Stage Translation EKF
-// This is called two-stage b/c the acceleration values come from an IMU's AEKF
-// 9 States: inertial pos (I-frame), inertial vel (B-frame), inertial accel (B-frame)
-Vector9f AUVModel::GetTransEKFTwoStageAPriori(const Ref<const Vector9f> &xPrev, const Ref<const Vector3f> &attitude,
-                                              const Ref<const Vector3f> &pqr, const Ref<const VectorXf> &thrusts,
-                                              float dt, int maxIter)
-{
-    Vector9f apriori;
-    apriori.setZero();
-
-    Vector3f uvwPrev, uvw, uvwDot, transportThm, uvwSq, Fd;
-    uvwPrev = xPrev.segment<3>(3);
-    uvw = uvwPrev; // xPrev.segment<3>(3);
-
-    Vector3f weightLoad = AUVModel::GetWeightLoad(attitude);
-    Vector3f thrustLoad = AUVModel::GetTotalThrustLoad(thrusts);
-    Vector3f dragT1 = drag.block<3, 1>(0, 0); // Linear drag coefficients for trans. motion
-    Vector3f dragT2 = drag.block<3, 1>(0, 1); // Quadratic drag coefficients for trans. motion
-
-    // Recurse over accel equations a few times. Hopefully recursing will create a better prediction
-    // Goal: Use dynamics to better predict the acceleration
-    for (int i = 0; i < maxIter; i++)
-    {
-        transportThm = pqr.cross(uvw);
-        uvwSq = uvw.array() * uvw.array();
-        Fd = (dragT1.array() * uvw.array()) + (SgnMat(uvw).array() * 0.5 * rho * dragT2.array * uvwSq);
-        uvwDot = (thrustLoad + weightLoad - Fd) / m - transportThm; // Compute uvwDot a priori
-        uvw = uvwPrev + apriori.segment<3>(6) * dt;                 // Compute uvw a priori
-    }
-
-    // Express a priori of vehicle's position expressed in the inertial frame
-    Matrix3f R = GetEulerRotMat(attitude).transpose();
-    Vector3f velI = R * uvwPrev;
-    Vector3f accelI = R * uvwDot;
-    Vector3f xyzI = xPrev.head<3>() + (velI * dt) + (0.5 * accelI * pow(dt, 2));
-
-    // Append all vectors to apriori
-    apriori << xyzI, uvw, uvwDot;
-    return apriori;
-}
-
-// Compute Jacobian for Two-Stage Translation EKF
-// Parameters:
-//      apriori = states computed by GetTransEKFTwoStageApriori
-//      attitude = attitude of yaw, pitch, and roll (in this order)
-//      pqr = inertial angular velocity, expressed in B-frame
-//      dt = time step;
-Matrix9f AUVModel::GetTransEKFTwoStageJacobianA(const Ref<const Vector9f> &apriori, const Ref<const Vector3f> &attitude,
-                                                const Ref<const Vector3f> &pqr, float dt;)
-{
-    Matrix9f jacobi = Matrix9f::Zero();
-    Matrix3f R = GetEulerRotMat(attitude).transpose();
-    Vector3f dragT1 = drag.block<3, 1>(0, 0); // Linear drag coefficients for trans. motion
-    Vector3f dragT2 = drag.block<3, 1>(0, 1); // Quadratic drag coefficients for trans. motion
-
-    jacobi.block<6, 6>(0, 0) = MatrixXf::Identity(6, 6);
-    jacobi.block<3, 3>(0, 3) = dt * R;
-    jacobi.block<3, 3>(0, 6) = pow(dt, 2) * R;
-    jacobi.block<3, 3>(3, 6) = dt * Matrix3f::Identity();
-
-    Vector3f uvwAbs = apriori.segment<3, 1>(3).array().abs(); // Absolute value of uvw
-    Vector3f dragPartials = -(dragT1.array() + 2 * dragT2.array() * uvwAbs.array()) / mass;
-    Matrix3f dragDiag = dragPartials.asDiagonal();
-    Matrix3f lastBlock = dragDiag - SkewSym(pqr);
-
-    jacobi.block<3, 3>(6, 3) = lastBlock;
-
-    return jacobi;
-}
-
-// Compute the Jacobian of the A-matrix for LQR
+// Compute the 12x12 Jacobian of the A-matrix
 // DO NOT CHANGE !!!!!!
-Matrix12f AUVModel::GetLQRJacobianA(const Ref<const Vector12f> &states)
+Matrix12f AUVModel::GetStateJacobian(const Ref<const Vector12f> &ref)
 {
     // Variables for Auto Diff.
-    size_t n = 12, a = 1;
-    vector<CppAD::AD<double>> X(n), Xdot(n), A(a), B(a), C(a);
-    vector<double> jacobi(n * n); // Create nxn Jacobian matrix
+    size_t n = 12, m = 3;
+    ADVectorXd X(n), Xdot(n);
+    vector<double> jac(n * n); // Create nxn Jacobian matrix
 
     // MUST set X to contain INDEPENDENT variables
     // Calling this function will BEGIN the recording sequence
     CppAD::Independent(X);
 
-    // 1. Set time derivatives of: xI, yI, zI,
-    Xdot[_xI] = (CppAD::cos(X[_psi]) * CppAD::cos(X[_theta])) * X[_U] +
-                (-CppAD::sin(X[_psi]) * CppAD::cos(X[_phi]) + CppAD::cos(X[_psi]) * CppAD::sin(X[_theta]) * CppAD::sin(X[_phi])) * X[_V] +
-                (CppAD::sin(X[_psi]) * CppAD::sin(X[_phi]) + CppAD::cos(X[_psi]) * CppAD::sin(X[_theta]) * CppAD::cos(X[_phi])) * X[_W];
+    // Get Rotation Matrices (Matrices filled by column-order)
+    ADMatrixXd ADRotX << 1, 0, 0, 0, CppAD::cos(X(_phi])), -CppAD::sin(X(_phi])), 0, CppAD::sin(X(_phi])), CppAD::cos(X(_phi]));
+    ADMatrixXd ADRotY << CppAD::cos(X(_theta])), 0, CppAD::sin(X(_theta])), 0, 1, 0, -CppAD::sin(X(_theta])), 0, CppAD::cos(X(_theta]));
+    ADMatrixXd ADRotZ << CppAD::cos(X(_psi])), -CppAD::sin(X(_psi])), 0, CppAD::sin(X(_psi])), CppAD::cos(X(_psi])), 0, 0, 0, 1;
+    ADMatrixXd ADRoti2b = ADRotX * ADRotY * ADRotZ; // Inertial to Body
+    ADMatrixXd ADRotb2i = ADRoti2b.transpose();     // Body to Inertial
 
-    Xdot[_yI] = (CppAD::sin(X[_psi]) * CppAD::cos(X[_theta])) * X[_U] +
-                (CppAD::cos(X[_psi]) * CppAD::cos(X[_phi]) + CppAD::sin(X[_psi]) * CppAD::sin(X[_theta]) * CppAD::sin(X[_phi])) * X[_V] +
-                (-CppAD::cos(X[_psi]) * CppAD::sin(X[_phi]) + CppAD::sin(X[_psi]) * CppAD::sin(X[_theta]) * CppAD::cos(X[_phi])) * X[_W];
+    // 1. Time derivatives of: xI, yI, zI,
+    Xdot.head<3>() = ADRotb2i * Xdot.segment<3>(_U);
 
-    Xdot[_zI] = -CppAD::sin(X[_theta]) * X[_U] + (CppAD::cos(X[_theta]) * CppAD::sin(X[_phi])) * X[_V] + (CppAD::cos(X[_theta]) + CppAD::cos(X[_phi])) * X[_W];
-
-    // 2. Set time-derivatives of: psi, theta, and phi
+    // 2. Time-derivatives of: psi, theta, and phi
     Xdot[_psi] = (X[_Q] * CppAD::sin(X[_phi]) + X[_R] * CppAD::cos(X[_phi])) / cos(X[_theta]);
 
     Xdot[_theta] = X[_Q] * CppAD::cos(X[_phi]) - X[_R] * CppAD::sin(X[_phi]);
 
     Xdot[_phi] = X[_P] + (X[_Q] * CppAD::sin(X[_phi]) + X[_R] * CppAD::cos(X[_phi])) * CppAD::tan(X[_theta]);
 
-    // 3. Set time-derivaivesof : U, V, W
-    Xdot[_U] = (-drag(0, 0) * X[_U] - 0.5 * Sgn(states(_U)) * rho * drag(0, 1) * X[_U] * X[_U]) / mass -
-               ((Fg - Fb) / mass) * CppAD::sin(X[_theta]) + X[_R] * X[_V] - X[_Q] * X[_W];
+    // 3. Time-derivatives of : U, V, W
+    ADVectorXd transportUVW = X.segment<3>(_P).cross(X.segment<3>(_U)); // [p, q, r] x [u, v, w]
+    Xdot[_U] = (-drag(0, 0) * X[_U] - 0.5 * Sgn(ref(_U)) * rho * drag(0, 1) * X[_U] * X[_U]) / mass -
+               ((Fg - Fb) / mass) * CppAD::sin(X[_theta]) - transportUVW(1);
 
-    Xdot[_V] = (-drag(1, 0) * X[_V] - 0.5 * Sgn(states(_V)) * rho * drag(1, 1) * X[_V] * X[_V]) / mass +
-               ((Fg - Fb) / mass) * CppAD::cos(X[_theta]) * CppAD::sin(X[_phi]) + X[_P] * X[_W] - X[_R] * X[_U];
+    Xdot[_V] = (-drag(1, 0) * X[_V] - 0.5 * Sgn(ref(_V)) * rho * drag(1, 1) * X[_V] * X[_V]) / mass +
+               ((Fg - Fb) / mass) * CppAD::cos(X[_theta]) * CppAD::sin(X[_phi]) - transportUVW(2);
 
-    Xdot[_W] = (-drag(2, 0) * X[_W] - 0.5 * Sgn(states(_W)) * rho * drag(2, 1) * X[_W] * X[_W]) / mass +
-               ((Fg - Fb) / mass) * CppAD::cos(X[_theta]) * CppAD::cos(X[_phi]) + X[_Q] * X[_U] - X[_P] * X[_V];
+    Xdot[_W] = (-drag(2, 0) * X[_W] - 0.5 * Sgn(ref(_W)) * rho * drag(2, 1) * X[_W] * X[_W]) / mass +
+               ((Fg - Fb) / mass) * CppAD::cos(X[_theta]) * CppAD::cos(X[_phi]) - transportUVW(3);
 
-    // 4. Set time-derivatives of: P, Q, R
+    // 4. Time-derivatives of: P, Q, R
+    ADVectorXd transportPQR = X.segment<3>(_P).cross(inertia * X.segment<3>(_P)); // [p, q, r] x I*[p, q, r]
+    Xdot.segment<3>(_P) = -inertia.inverse() * transportPQR;
+
+    // Compute Jacobian
+    vector<double> x;
+    for(int i = 0; i < 12; i++)
+        x.push_back(ref(i));
+    CppAD::ADFun<double> f(X, Xdot);
+    jac = f.Jacobian(x);
+
+    Matrix12f A;
+    A.setZero();
+
+    for(int i = 0; i < 12; i++)
+        for(int j = 0; j < 12; j++)
+            A(i,j) = (float)jac[i*12 + j];
+
+    return A;
 }

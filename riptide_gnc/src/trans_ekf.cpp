@@ -11,11 +11,10 @@
 //      The first row is for position, the second two rows are for vel and accel
 //      For simplicity, the bottom two rows will be used for the body-frame EKFs, but all three rows
 //      will be used for world-frame estimation (pos, vel, and accel)
-TransEKF::TransEKF(Matrix32f damping, Matrix3Xi posMaskw, Matrix3Xi velMaskbf, Matrix3Xi accelMaskbf,
+TransEKF::TransEKF(Matrix3Xi posMaskw, Matrix3Xi velMaskbf, Matrix3Xi accelMaskbf,
                    Matrix3Xf Rpos, Matrix3Xf Rvel, Matrix3Xf Raccel, Matrix9Xf Qin)
 {
     n = 9;
-    dragCoeffs = damping;
 
     // Add masks to sensorMask
     sensorMask.push_back(posMaskw);
@@ -160,28 +159,4 @@ MatrixX3f TransEKF::Update(RowXi dataMask, float time_step, Vector3 input_states
                                  Matrix3Xf Zvel, Matrix3Xf Zaccel)
 {
 
-}
-
-// Get rotation matrix from world-frame to body-frame using Euler Angles (roll, pitch, yaw)
-Matrix3f LinearMotionEKF::GetRotationRPY2Body(float roll, float pitch, float yaw)
-{
-    Matrix3f R = Matrix3f::Zero();
-    float s_phi = sin(roll);
-    float c_phi = cos(roll);
-    float s_theta = sin(pitch);
-    float c_theta = cos(pitch);
-    float s_psi = sin(yaw);
-    float c_psi = cos(yaw);
-
-    R(0, 0) = c_theta * c_psi;
-    R(0, 1) = c_theta * s_psi;
-    R(0, 2) = -s_theta;
-    R(1, 0) = s_phi * s_theta * c_psi - c_phi * s_psi;
-    R(1, 1) = s_phi * s_theta * s_psi + c_phi * c_psi;
-    R(1, 2) = s_phi * c_theta;
-    R(2, 0) = c_phi * s_theta * c_psi + s_phi * s_psi;
-    R(2, 1) = c_phi * s_theta * s_psi - s_phi * c_psi;
-    R(2, 2) = c_phi * c_theta;
-
-    return R;
 }
