@@ -11,8 +11,8 @@
 //      The first row is for position, the second two rows are for vel and accel
 //      For simplicity, the bottom two rows will be used for the body-frame EKFs, but all three rows
 //      will be used for world-frame estimation (pos, vel, and accel)
-TransEKF::TransEKF(Matrix3Xi posMaskw, Matrix3Xi velMaskbf, Matrix3Xi accelMaskbf,
-                   Matrix3Xf Rpos, Matrix3Xf Rvel, Matrix3Xf Raccel, Matrix9Xf Qin)
+TransEKF::TransEKF(const Ref<const Matrix3Xi> &posMaskw, const Ref<const Matrix3Xi> &velMaskbf, const Ref<const Matrix3Xi> &accelMaskbf,
+                   const Ref<const Matrix3Xf> &Rpos, const Ref<const Matrix3Xf> &Rvel, const Ref<const Matrix3Xf> &Raccel, const Ref<const Matrix9Xf> &Qin)
 {
     n = 9;
 
@@ -29,7 +29,21 @@ TransEKF::TransEKF(Matrix3Xi posMaskw, Matrix3Xi velMaskbf, Matrix3Xi accelMaskb
     // Get Q
     Q = Qin;
 
-    // Initialize sensors and sensorsRed arrays, get number of cols in each mask
+    Matrix9f A;
+    A.setIdentity();
+
+    int m = numMsmts[i];
+    MatrixXf H;
+    H.resize(m, n);
+    H.setZero();
+
+    MatrixXf R;
+    R.resize(m, m);
+    R.setIdentity();
+
+    EKF.push_back(new KalmanFilter(A, H, R, Q));
+
+    /*// Initialize sensors and sensorsRed arrays, get number of cols in each mask
     for (int i = 0; i < 3; i++)
     {
         sensors[i] = false;                 // Primary sensors
@@ -95,7 +109,7 @@ TransEKF::TransEKF(Matrix3Xi posMaskw, Matrix3Xi velMaskbf, Matrix3Xi accelMaskb
         R.setIdentity();
 
         EKF.push_back(new KalmanFilter(A, H, R, Q));
-    }
+    }*/
 }
 
 // Find all combinations b/w two types of sensors provided
@@ -156,7 +170,6 @@ void TransEKF::InitLMEDKF(VectorXf Xo)
 // Zvel = measurements from vel sensors (must have same number of columns as velIn)
 // Zaccel = measurements from accel sensors (must have same number of columns as accelIn)
 MatrixX3f TransEKF::Update(RowXi dataMask, float time_step, Vector3 input_states,
-                                 Matrix3Xf Zvel, Matrix3Xf Zaccel)
+                           Matrix3Xf Zvel, Matrix3Xf Zaccel)
 {
-
 }

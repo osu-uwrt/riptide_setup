@@ -28,10 +28,10 @@ class KalmanFilter
                  const Ref<const MatrixXf> &Qo, const Ref<const MatrixXf> &Ro);
     void InitKF(const Ref<const VectorXf> &Xo);
     VectorXf UpdateKF(const Ref<const VectorXf> &Z);
-    VectorXf UpdateEKF(const Ref<const MatrixXf> &Anew, const Ref<const MatrixXf> &Hnew,
+    VectorXf UpdateGenEKF(const Ref<const MatrixXf> &Anew, const Ref<const MatrixXf> &Hnew, const Ref<const MatrixXf> &Rnew
                        const Ref<const VectorXf> &Xpredict, const Ref<const VectorXf> &Z);
-    void GetXhat(Ref<VectorXf> x);
-    void GetErrorCovariance(Ref<MatrixXf> mat);
+    VectorXf GetXhat();
+    MatrixXf GetErrorCovariance();
 };
 
 #endif

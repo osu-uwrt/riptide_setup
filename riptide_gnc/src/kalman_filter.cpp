@@ -6,45 +6,40 @@ KalmanFilter::KalmanFilter(const Ref<const MatrixXf> &Ao, const Ref<const Matrix
     // Verify Parameter Dimensions
     int Arows = Ao.rows(), Acols = Ao.cols(), Hrows = Ho.rows(), Hcols = Ho.cols();
     int Qrows = Qo.rows(), Qcols = Qo.cols(), Rrows = Ro.rows(), Rcols = Ro.cols();
+
+    stringstream ss;
+    bool throw_error = false;
     if (Arows != Acols)
     {
-        stringstream ss;
         ss << "Dimension mismatch in call to KalmanFilter::KalmanFilter(...): Param 'Ao' of size(" << Arows << "," << Acols << ") is not a square matrix" << endl;
-        throw std::runtime_error(ss.str());
+        throw_error = true;
     }
-    if (Qrows != Qcols)
+    if (!Qo.isApprox(Qo.transpose()))
     {
-        stringstream ss;
-        ss << "Dimension mismatch in call to KalmanFilter::KalmanFilter(...): Param 'Qo' of size(" << Qrows << "," Qcols << ") is not a square matrix" << endl;
-        throw std::runtime_error(ss.str());
+        ss << "Dimension mismatch in call to KalmanFilter::KalmanFilter(...): Param 'Qo' of size(" << Qrows << "," Qcols << ") is not symmetric" << endl;
+        throw_error = true;
     }
-    if (Rrows != Rcols)
+    if (!Ro.isApprox(Ro.transpose()))
     {
-        stringstream ss;
-        ss << "Dimension mismatch in call to KalmanFilter::KalmanFilter(...): Param 'Ro' of size(" << Rrows << "," Rcols << ") is not a square matrix" << endl;
-        throw std::runtime_error(ss.str());
+        ss << "Dimension mismatch in call to KalmanFilter::KalmanFilter(...): Param 'Ro' of size(" << Rrows << "," Rcols << ") is not symmetric" << endl;
+        throw_error = true;
     }
     if (Arows != Hcols)
     {
-        stringstream ss;
         ss << "Dimension mismatch in call to KalmanFilter::KalmanFilter(...): Param 'Ao' row_size(" << Arows << ") must match param 'Ho' col_size(" << Hcols << ")" << endl;
-        throw std::runtime_error(ss.str());
+        throw_error = true;
     }
     if (Hrows != Rrows)
     {
-        stringstream ss;
         ss << "Dimension mismatch in call to KalmanFilter::KalmanFilter(...): Param 'Ho' row_size(" << Hrows << ") must match param 'Ro' row_size(" << Rrows << ")" << endl;
-        throw std::runtime_error(ss.str());
+        throw_error = true;
     }
+    if (throw_error) // Throw error, notifying user of all errors made
+        throw std::runtime_error(ss.str());
 
     // Resize matrices and initialize
     n = Ao.rows();
     m = Ho.rows();
-    /*A.resize(n, n);
-    H.resize(m, n);
-    Q.resize(n, n);
-    R.resize(m, m);
-    P.resize(n, n);*/
     A = Ao;
     H = Ho;
     Q = Qo;
@@ -98,55 +93,67 @@ void KalmanFilter::UpdateKF(const Ref<const VectorXf> &Z)
     P = (I - K * H) * P;
 }
 
-// Update Kalman Filter with overridden state vector and system matrices
+// Generic Extended Kalman Filter Update with overridden state vector and system matrices
 // To be called by an Extended Kalman Filter (EKF)
 // A and H matrices are Jacobians calculated by the EKF
-void KalmanFilter::UpdateEKF(const Ref<const MatrixXf> &Anew, const Ref<const MatrixXf> &Hnew,
-                             const Ref<const VectorXf> &Xpredict, const Ref<const VectorXf> &Z)
+// R is a subset of the complete (original) R for the filter
+void KalmanFilter::UpdateGenEKF(const Ref<const MatrixXf> &Anew, const Ref<const MatrixXf> &Hnew, const Ref<const MatrixXf> &Rnew,
+                                const Ref<const VectorXf> &Xpredict, const Ref<const VectorXf> &Z)
 {
     // Verify Parameter Dimensions
     int Xrows = Xpredict.rows(), Zrows = Z.rows();
-    int Arows = Anew.rows(), Acols = Anew.cols(), Hrows = Hnew.rows(), Hcols = Hnew.cols();
+    int Arows = Anew.rows(), Acols = Anew.cols(), Hrows = Hnew.rows(), Hcols = Hnew.cols(), Rrows = Rnew.rows(), Rcols = Rnew.cols();
 
+    stringstream ss;
+    bool throw_error = false;
     if (Xrows != n)
     {
-        stringstream ss;
         ss << "Dimension mismatch in call to KalmanFilter::UpdateEKF(...): Param 'Xpredict' row_size(" << Xrows << ") does not match expected row_size(" << n ")" << endl;
-        throw std::runtime_error(ss.str());
+        throw_error = true;
     }
-    if (Zrows != m)
+    if (Zrows != Hrows)
     {
-        stringstream ss;
-        ss << "Dimension mismatch in call to KalmanFilter::UpdateEKF(...): Param 'Z' row_size(" << Zrows << ") does not match expected row_size(" << m << ")" << endl;
-        throw std::runtime_error(ss.str());
+        ss << "Dimension mismatch in call to KalmanFilter::UpdateEKF(...): Param 'Z' row_size(" << Zrows << ") does not match param 'Hnew' row_size(" << Hrows << ")" << endl;
+        throw_error = true;
     }
     if ((Arows != n) && (Acols != n)
     {
-        stringstream ss;
         ss << "Dimension mismatch in call to KalmanFilter::UpdateEKF(...): Param 'Anew' of size(" << Arows << "," << Acols << ") does not match expected size(" << n << "," << n << ")" << endl;
-        throw std::runtime_error(ss.str());
+        throw_error = true;
     }
-    if ((Hrows != m) && (Hcols != n))
+    if (Hcols != n)
     {
-        stringstream ss;
-        ss << "Dimension mismatch in call to KalmanFilter::UpdateEKF(...): Param 'Hnew' of size(" << Hrows << "," << Hcols << ") does not match expected size(" << m << "," << n << ")" << endl;
-        throw std::runtime_error(ss.str());
+        ss << "Dimension mismatch in call to KalmanFilter::UpdateEKF(...): Param 'Hnew' of col_size(" << Hcols << ") does not match expected col_size(" << n << ")" << endl;
+        throw_error = true;
     }
+    if (!Rnew.isApprox(Rnew.transpose()))
+    {
+        ss << "Dimension mismatch in call to KalmanFilter::UpdateEKF(...): Param 'Rnew' of size(" << Rrows << "," Rcols << ") is not symmetric" << endl;
+        throw_error = true;
+    }
+    if (Rrows != Hrows)
+    {
+        ss << "Dimension mismatch in call to KalmanFilter::UpdateEKF(...): Param 'Hnew' of row_size(" << Hrows << ") does not match expected param 'Rnew' row_size(" << Rrows << ")" << endl;
+        throw_error = true;
+    }
+    if (throw_error) // Throw error, notifying user of all errors made
+        throw std::runtime_error(ss.str());
 
     A = Anew;
     H = Hnew;
+    R = Rnew;
     P = A * P * A.transpose() + Q;
     K = P * H.transpose() * ((H * P * H.transpose() + R).inverse());
     Xhat = Xpredict + K * (Z - H * Xpredict);
     P = (I - K * H) * P;
 }
 
-void KalmanFilter::GetXhat(Ref<VectorXf> x)
+VectorXf KalmanFilter::GetXhat()
 {
-    x = Xhat;
+    return Xhat;
 }
 
-void KalmanFilter::GetErrorCovariance(Ref<MatrixXf> mat)
+MatrixXf KalmanFilter::GetErrorCovariance()
 {
-    mat = P;
+    return P;
 }
