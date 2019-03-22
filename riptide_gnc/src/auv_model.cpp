@@ -139,6 +139,7 @@ Matrix12f AUVModel::GetStateJacobian(const Ref<const Vector12f> &ref)
     Matrix12f A;
     A.setZero();
 
+    // Put jac elements into matrix format
     for(int i = 0; i < 12; i++)
         for(int j = 0; j < 12; j++)
             A(i,j) = (float)jac[i*12 + j];

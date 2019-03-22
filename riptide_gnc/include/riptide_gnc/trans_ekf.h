@@ -10,39 +10,29 @@ using namespace Eigen;
 using namespace std;
 typedef Matrix<int, 1, Dynamic> RowXi;
 typedef Matrix<float, 3, 2> Matrix32f;
-typedef Matrix<float, 9, 9> Matrix9Xf;
+typedef Matrix<float, 9, 9> Matrix9f;
 
 // Translational Extended Kalman Filter
-// This class is designed to estimate a vehicle's body-frame linear velocity and acceleration from a
-// series of sensors running at different rates (which is most probable in practice). Based on the
-// indicated vehicle's on-board sensors, this class will determine all possible combinations of sensory
-// data and will automatically determine which EKF to run based on the new sensor data provided.
-// NOTE: This class assumes at least one sensor input is provided
-// NOTE: For practical reasons, at most TWO of the same type of sensor may be provided
+// This class is designed to estimate a vehicle's position as expressed in the I-frame,
+// and the vehicle's linear velocity and acceleration as expressed in the B-frame.
+// Since the sensory input come from INERTIAL sensors, state predictions are ALSO inertial.
 class TransEKF
 {
 private:
-  vector<KalmanFilter> EKF;
-  int n, numEKF;
-  vector<Matrix3Xi> sensorMask;
-  vector<Matrix3Xf> Rmat;
-  RowXi maskCols;
+  KalmanFilter *EKF;
+  Vector9f Xhat;
+  Marix3i sensorMask;
+  Matrix3f Rpos, Rvel, Raccel;
   Matrix9Xf Q;
-  Matrix32f dragCoeffs;
-
-  bool sensorsExist;
-  bool sensors[3], sensorsRed[3]; // Red = redundant
-  bool indexRed[3];
-  int axialData[3], axialDataRed[3], numMsmts[2];
-
-  vector<RowXi> sensorCombosBF, sensorCombosW;
+  bool init;
+  int n;
 
 public:
-  TransEKF(Matrix3Xi posMaskw, Matrix3Xi velMaskbf, Matrix3Xi accelMaskbf,
-           Matrix3Xf Rpos, Matrix3Xf Rvel, Matrix3Xf Raccel, Matrix9Xf Qin);
-  void FindDataCombos(vector<RowXi> &list, int numSensors1, int numSensors2);
-  void InitLMEDKF(VectorXf Xo);
-  MatrixX3f UpdateEKF(float time_step, Vector3f input_states, Matrix3Xf Zpos, Matrix3Xf Zvel, Matrix3Xf Zaccel);
+  TransEKF(const Ref<const Matrix3i> &sensorMaskIn, const Ref<const MatrixXf> &RposIn, const Ref<const MatrixXf> &RvelIn,
+           const Ref<const MatrixXf> &RaccelIn, const Ref<const Matrix9f> &Qin);
+  void Init(const Ref<const VectorXf> &Xo);
+  VectorXf IMUpdate(float dt, const Ref<const Matrix3Xf> &Zpos, const Ref<const Matrix3Xf> Zvel,
+                    const Ref<const Matrix3Xf> &Zaccel);
 };
 
 #endif

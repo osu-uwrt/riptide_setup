@@ -170,6 +170,13 @@ PoseEDKFInterface::PoseEDKFInterface() : nh("pose_edkf")
     cout << "Eigen CppAD jac[0,0] = " << jac[8] << endl;
     
     //cout << "New f'(-2),2 = " << jac[1] << endl;
+
+    VectorXf test(3,1), test1(3,1), test2(3,1);
+    test.resize(3,1);
+    test1 << 1, 2, 3;
+    test2 << 2, 4, 6;
+    test = test1.cwiseProduct(test2);
+    cout << "test: " << test << endl;
 }
 
 void PoseEDKFInterface::copy(const Ref<const MatrixXf> &m)

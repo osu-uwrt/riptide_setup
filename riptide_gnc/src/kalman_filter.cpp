@@ -50,17 +50,19 @@ KalmanFilter::KalmanFilter(const Ref<const MatrixXf> &Ao, const Ref<const Matrix
     K.setZero();
     I.resize(n, n);
     I.setIdentity();
+    Xhat.resize(n,1);
+    Xhat.setZero();
     init = false;
 }
 
-void KalmanFilter::InitKF(const Ref<const VectorXf> &Xo)
+void KalmanFilter::Init(const Ref<const VectorXf> &Xo)
 {
     // Verify Parameter Dimensions
     int Xorows = Xo.rows();
     if (Xorows != n)
     {
         stringstream ss;
-        ss << "Dimension mismatch in call to KalmanFilter::InitKF(...): Param 'Xo' row_size(" << Xorows << ") does not match expected row_size(" << n << ")" << endl;
+        ss << "Dimension mismatch in call to KalmanFilter::Init(...): Param 'Xo' row_size(" << Xorows << ") does not match expected row_size(" << n << ")" << endl;
         throw std::runtime_error(ss.str());
     }
 
@@ -69,35 +71,37 @@ void KalmanFilter::InitKF(const Ref<const VectorXf> &Xo)
 }
 
 // Update Kalman Filter, assuming linear system
-void KalmanFilter::UpdateKF(const Ref<const VectorXf> &Z)
+VectorXf KalmanFilter::Update(const Ref<const VectorXf> &Z)
 {
+    // Check for initialization of KF
+    // If not, default is to leave Xhat as the zero vector
+    if (!init)
+        init = true;
+
     // Verify Parameter Dimensions
     int Zrows = Z.rows();
     if (Zrows != m)
     {
         stringstream ss;
-        ss << "Dimension mismatch in call to KalmanFilter::UpdateKF(...): Param 'Z' row_size(" << Zrows << ") does not match expected row_size(" << m << ")" << endl;
+        ss << "Dimension mismatch in call to KalmanFilter::Update(...): Param 'Z' row_size(" << Zrows << ") does not match expected row_size(" << m << ")" << endl;
         throw std::runtime_error(ss.str());
     }
 
-    if (!init)
-    {
-        init = true;
-        Xhat.setZero();
-    }
+    
 
     Xhat = A * Xhat;
     P = A * P * A.transpose() + Q;
     K = P * H.transpose() * ((H * P * H.transpose() + R).inverse());
     Xhat = Xhat + K * (Z - H * Xhat);
     P = (I - K * H) * P;
+    return Xhat;
 }
 
-// Generic Extended Kalman Filter Update with overridden state vector and system matrices
+// Generic Update - can override state apriori and system matrices
 // To be called by an Extended Kalman Filter (EKF)
 // A and H matrices are Jacobians calculated by the EKF
 // R is a subset of the complete (original) R for the filter
-void KalmanFilter::UpdateGenEKF(const Ref<const MatrixXf> &Anew, const Ref<const MatrixXf> &Hnew, const Ref<const MatrixXf> &Rnew,
+VectorXf KalmanFilter::GenericUpdate(const Ref<const MatrixXf> &Anew, const Ref<const MatrixXf> &Hnew, const Ref<const MatrixXf> &Rnew,
                                 const Ref<const VectorXf> &Xpredict, const Ref<const VectorXf> &Z)
 {
     // Verify Parameter Dimensions
@@ -106,39 +110,43 @@ void KalmanFilter::UpdateGenEKF(const Ref<const MatrixXf> &Anew, const Ref<const
 
     stringstream ss;
     bool throw_error = false;
-    if (Xrows != n)
-    {
-        ss << "Dimension mismatch in call to KalmanFilter::UpdateEKF(...): Param 'Xpredict' row_size(" << Xrows << ") does not match expected row_size(" << n ")" << endl;
-        throw_error = true;
-    }
-    if (Zrows != Hrows)
-    {
-        ss << "Dimension mismatch in call to KalmanFilter::UpdateEKF(...): Param 'Z' row_size(" << Zrows << ") does not match param 'Hnew' row_size(" << Hrows << ")" << endl;
-        throw_error = true;
-    }
+    
     if ((Arows != n) && (Acols != n)
     {
-        ss << "Dimension mismatch in call to KalmanFilter::UpdateEKF(...): Param 'Anew' of size(" << Arows << "," << Acols << ") does not match expected size(" << n << "," << n << ")" << endl;
+        ss << "Dimension mismatch in call to KalmanFilter::GenericUpdate(...): Param 'Anew' of size(" << Arows << "," << Acols << ") does not match expected size(" << n << "," << n << ")" << endl;
         throw_error = true;
     }
     if (Hcols != n)
     {
-        ss << "Dimension mismatch in call to KalmanFilter::UpdateEKF(...): Param 'Hnew' of col_size(" << Hcols << ") does not match expected col_size(" << n << ")" << endl;
+        ss << "Dimension mismatch in call to KalmanFilter::GenericUpdate(...): Param 'Hnew' of col_size(" << Hcols << ") does not match expected col_size(" << n << ")" << endl;
         throw_error = true;
     }
     if (!Rnew.isApprox(Rnew.transpose()))
     {
-        ss << "Dimension mismatch in call to KalmanFilter::UpdateEKF(...): Param 'Rnew' of size(" << Rrows << "," Rcols << ") is not symmetric" << endl;
+        ss << "Dimension mismatch in call to KalmanFilter::GenericUpdate(...): Param 'Rnew' of size(" << Rrows << "," Rcols << ") is not symmetric" << endl;
         throw_error = true;
     }
     if (Rrows != Hrows)
     {
-        ss << "Dimension mismatch in call to KalmanFilter::UpdateEKF(...): Param 'Hnew' of row_size(" << Hrows << ") does not match expected param 'Rnew' row_size(" << Rrows << ")" << endl;
+        ss << "Dimension mismatch in call to KalmanFilter::GenericUpdate(...): Param 'Hnew' of row_size(" << Hrows << ") does not match expected param 'Rnew' row_size(" << Rrows << ")" << endl;
+        throw_error = true;
+    }
+    if (Xrows != n)
+    {
+        ss << "Dimension mismatch in call to KalmanFilter::GenericUpdate(...): Param 'Xpredict' row_size(" << Xrows << ") does not match expected row_size(" << n ")" << endl;
+        throw_error = true;
+    }
+    if (Zrows != Hrows)
+    {
+        ss << "Dimension mismatch in call to KalmanFilter::GenericUpdate(...): Param 'Z' row_size(" << Zrows << ") does not match param 'Hnew' row_size(" << Hrows << ")" << endl;
         throw_error = true;
     }
     if (throw_error) // Throw error, notifying user of all errors made
         throw std::runtime_error(ss.str());
 
+    A.resize(Arows, Acols);
+    H.resize(Hrows, Hcols);
+    R.resize(Rrows, Rcols);
     A = Anew;
     H = Hnew;
     R = Rnew;
@@ -146,6 +154,8 @@ void KalmanFilter::UpdateGenEKF(const Ref<const MatrixXf> &Anew, const Ref<const
     K = P * H.transpose() * ((H * P * H.transpose() + R).inverse());
     Xhat = Xpredict + K * (Z - H * Xpredict);
     P = (I - K * H) * P;
+
+    return Xhat;
 }
 
 VectorXf KalmanFilter::GetXhat()

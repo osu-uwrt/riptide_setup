@@ -1,6 +1,6 @@
 #include "riptide_gnc/trans_ekf.h"
 
-// NOTE: vel and accel sensors are BODY-FRAME, where pos sensors are WORLD-FRAME
+// NOTE: pos sensors are Inertial-FRAME, and vel and accel sensors are BODY-FRAME
 // posIn, velIn, accelIn = matrices indicating which sensors are provided to this EKF
 //      Row 0 = X; Row 1 = Y; Row 2 = Z
 //      Each column represents data from a different sensor
@@ -11,165 +11,115 @@
 //      The first row is for position, the second two rows are for vel and accel
 //      For simplicity, the bottom two rows will be used for the body-frame EKFs, but all three rows
 //      will be used for world-frame estimation (pos, vel, and accel)
-TransEKF::TransEKF(const Ref<const Matrix3Xi> &posMaskw, const Ref<const Matrix3Xi> &velMaskbf, const Ref<const Matrix3Xi> &accelMaskbf,
-                   const Ref<const Matrix3Xf> &Rpos, const Ref<const Matrix3Xf> &Rvel, const Ref<const Matrix3Xf> &Raccel, const Ref<const Matrix9Xf> &Qin)
+TransEKF::TransEKF(const Ref<const Matrix3i> &sensorMaskIn, const Ref<const MatrixXf> &RposIn, const Ref<const MatrixXf> &RvelIn,
+                   const Ref<const MatrixXf> &RaccelIn, const Ref<const Matrix9f> &Qin)
 {
     n = 9;
-
-    // Add masks to sensorMask
-    sensorMask.push_back(posMaskw);
-    sensorMask.push_back(velMaskbf);
-    sensorMask.push_back(accelMaskbf);
-
-    // Add R matrices to Rmat
-    Rmat.push_back(Rpos);
-    Rmat.push_back(Rvel);
-    Rmat.push_back(Raccel);
-
-    // Get Q
+    init = false;
+    Xhat.setZero();
+    sensorMask = sensorMaskIn;
+    Rpos = RposIn;
+    Rvel = RvelIn;
+    Raccel = RaccelIn;
     Q = Qin;
 
+    // Initialize the EKF using generic matrices, as they will be overridden with each update call
     Matrix9f A;
     A.setIdentity();
 
-    int m = numMsmts[i];
-    MatrixXf H;
-    H.resize(m, n);
+    int m = sensorMask.sum();
+    MatrixXf H(m,n);
     H.setZero();
 
-    MatrixXf R;
-    R.resize(m, m);
+    MatrixXf R(m,m);
     R.setIdentity();
 
-    EKF.push_back(new KalmanFilter(A, H, R, Q));
+    EKF = new KalmanFilter(A, H, Q, R);
+}
 
-    /*// Initialize sensors and sensorsRed arrays, get number of cols in each mask
-    for (int i = 0; i < 3; i++)
+void TransEKF::Init(const Ref<const VectorXf>& Xo)
+{
+    // Verify Parameter Dimensions
+    int Xorows = Xo.rows();
+    if (Xorows != n)
     {
-        sensors[i] = false;                 // Primary sensors
-        sensorsRed[i] = false;              // Redundant sensors
-        maskCols[i] = sensorMask[i].cols(); // Number of cols in each mask
-        indexRed[i] = maskCols[i];          // Index for redundant data, initialize to maskCols[i]
-        axialData[i] = 0;
-        axialDataRed[i] = 0;
+        stringstream ss;
+        ss << "Dimension mismatch in call to TransEKF::Init(...): Param 'Xo' row_size(" << Xorows << ") does not match expected row_size(" << n << ")" << endl;
+        throw std::runtime_error(ss.str());
     }
 
-    // Determine which sensors exist
-    for (int i = 0; i < 3; i++)
-    {
-        for (int j = 0; j < maskCols[i]; j++)
-        {
-            if (sensorMask[i].col(j).sum() > 0)
-            {
-                sensors[i] = true;
-                sensorsExist = true;
-            }
-            else if ((sensorMask[i].col(j).sum() == 0) && (j != maskCols[i] - 1))
-            {
-                // Redundancy separator (column of zeroes) cannot occur in the last column of mask
-                sensorsRed[i] = true; // Have redundant sensors
-                indexRed[i] = j + 1;  // We want the index where the redundant info BEGINS
-            }
-        }
-    }
+    Xhat = Xo;
+    init = true;
+}
 
-    // See which axes the primary and redundant sensor groups provide data for
-    int numMsmts[0] = 0, numMsmts[1] = 0;
-    for (int i = 0; i < 3; i++)
-    {
-        if (sensors[i])
-        {
-            int c = indexRed[i]; // Will equal number of columns if no redundant sensors exist
-            axialData[i] = sensorMask[i].block<3, c>(0, 0).sum();
-            numMsmts[0] += axialData[i];
+// Inertial Measurement Update - sensor readings are from inertial sensors
+// dt = time step [s] since last call of this update function
+// attitude = Euler Angles in the order of (yaw, pitch, roll)
+// newData = indicates if the sensor (pos, vel, and/or accel) has new data
+// Z = the actual sensor data, same format as Zmask
+VectorXf TransEKF::IMUpdate(float dt, const Ref<const Vector3f> &attitude, const Ref<const Vector3i> &newData, const Ref<const Matrix3f> &Zmat)
+{
+    // Check for initialization of KF
+    // If not, default is to leave Xhat as the zero vector
+    if (!init)
+        init = true;
+    
+    // Create A (state transition matrix) 
+    // Using kinematic relationships in a constant acceleration model
+    Matrix9f A;
+    A.setIdentity();
 
-            if (sensorsRed[i])
+    Vector3f dtVector;
+    dtVector << dt, dt, dt;
+    Matrix3f dtMat = diag(dtVector); // Diagonal matrix of dt
+
+    // Rotation matrix from B-frame to I-frame
+    Matrix3f Rotb2i = AUVMathLib::GetEulerRotMat(attitude).transpose();
+
+    // Constant Acceleration model:
+    // x = x_prev + dt*v + (0.5*dt^2)*a
+    // v = v_prev + dt*a
+    // a = a_prev
+    A.block<3, 3>(0, 3) = dt * Rotb2i;
+    A.block<3, 3>(0, 6) = 0.5 * pow(dt, 2) * Rotb2i;
+    A.block<3, 3>(3, 6) = dtMat;
+
+    // Get mask for which data fields are present
+    Matrix3i dataMask = sensorMask * newData;
+    int m = dataMask.sum();
+    
+    // Create H (observation/measurement matrix) and Z (measurement vector)
+    MatrixXf H(m, n);
+    VectorXf Z(m, 1);
+    H.setZero();
+    Z.setZero();
+    int i = 0;
+    for (int j = 0; j < 3; j++)
+    {
+        for (int k = 0; k < 3; k++)
+        {
+            if(sensorMask(j,k))
             {
-                int c2 = maskCols[i] - c;
-                axialDataRed[i] = sensorMask[i].block<3, c2>(0, c).sum();
-                numMsmts[1] += axialDataRed[i];
+                H(i, (j+1) * (k+1)) = 1;
+                Z(i++) = Zmat(j,k);
             }
         }
     }
     
-    // Create EKFs
-    numEKF = (int)(sensorsExist) + (int)(sensorsRed[0] || (sensorsRed[1] || sensorsRed[2]);
-    for (int i = 0; i < numEKF; i++)
-    {
-        Matrix9f A;
-        A.setIdentity();
+    // Create R (measurement noise covariance matrix) with help from dataMask
+    MatrixXf R(m,m);
+    R.setZero();
+    int p = dataMask.col(0).sum();
+    int v = dataMask.col(1).sum();
+    int a = dataMask.col(2).sum();
+    R.block<p,p>(0,0) = Rpos;
+    R.block<v,v>(p,p) = Rvel;
+    R.block<a,a>(p+v, p+v) = Raccel;
 
-        int m = numMsmts[i];
-        MatrixXf H;
-        H.resize(m, n);
-        H.setZero();
+    // Populate Xpredict vector
+    Vector9f Xpredict = A*Xhat;
 
-        MatrixXf R;
-        R.resize(m, m);
-        R.setIdentity();
-
-        EKF.push_back(new KalmanFilter(A, H, R, Q));
-    }*/
-}
-
-// Find all combinations b/w two types of sensors provided
-// list = address of std::vector to append a new combinations
-// numSensors1 = number of sensor1's provided
-// numSensors2 = number of sensor2's provided
-void TransEKF::FindDataCombos(vector<RowXi> &list, int numSensors1, int numSensors2)
-{
-    // Determine number of sensors and columns needed
-    // Add a ones column at the front if numSensors1 = 0, and/or at end if numSensors = 0
-    int numSensors = numSensors1 + numSensors2;
-    int numCols = numSensors + (int)(numSensors1 == 0) + (int)(numSensors2 == 0);
-    int noSensor1 = (int)(numSensors1 == 0); // Sensor 1 not provided
-
-    RowXi combo;
-    combo.resize(1, numCols);
-    combo.setZero();
-    if (numSensors1 == 0)
-        combo(0) = -1; // Add a -1 at beginning if numSensors1 = 0
-    if (numSensors2 == 0)
-        combo(numCols - 1) = -1; // Add a 1 at end if numSensors2 = 0
-
-    // Now create all combos (looking only at the columns that started with 0)
-    // numSensors1 on the left, numSensors2 on the right
-    // Ex: numSensors1 = numSensors2 = 1 (there are only 3 possible combinations)
-    // combinations =
-    //      00 (no data, this is not considered an option)
-    //      10 (only sensor1 data)
-    //      01 (only sensor2 data)
-    //      11 (both sensor1 and sensor2 data)
-    //      First entry is then removed b/c it's all 0's
-    for (int i = 0; i < numSensors; i++)
-    {
-        if (i == 0)
-            list.push_back(combo); // Start with initialized combo row
-        int num2add = list.size();
-        int index = 0;
-        while (index < num2add)
-        {
-            combo = list[index++];        // Copy the (2^i)th earlier entries
-            combo.col(i + noSensor1) = 1; // And change (i+noSensor1)th column to 1
-            list.push_back(combo);
-        }
-    }
-    list.erase(list.begin()); // Erase first element, since it's all 0's
-}
-
-void TransEKF::InitLMEDKF(VectorXf Xo)
-{
-}
-
-// dataMask = row vector indicating which measurements are new
-//      Follows same format as when creating all sensor combinations in which the first and/or last
-//      column is a 1 depending if there were no vel or accel sensors initialized
-// time_step = time step [s] since last call of this update function
-// Xpredict = predicted state values
-//      Col 0 = X-axis, Col 1 = Y-axis, Col 2 = Z-axis
-// Zvel = measurements from vel sensors (must have same number of columns as velIn)
-// Zaccel = measurements from accel sensors (must have same number of columns as accelIn)
-MatrixX3f TransEKF::Update(RowXi dataMask, float time_step, Vector3 input_states,
-                           Matrix3Xf Zvel, Matrix3Xf Zaccel)
-{
+    // Run update step
+    Xhat = EKF->GenericUpdate(A, H, R, Xpredict, Z);
+    return Xhat;
 }

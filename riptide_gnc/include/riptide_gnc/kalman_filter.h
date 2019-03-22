@@ -15,7 +15,7 @@ class KalmanFilter
     float m, n;    // m = # measurements, n = # states
     VectorXf Xhat; // State Vector
     MatrixXf A;    // State-transition Matrix
-    MatrixXf H;    // Measurement Matrix
+    MatrixXf H;    // Observation/Measurement Matrix
     MatrixXf K;    // Kalman Gain
     MatrixXf P;    // Error Covariance Matrix
     MatrixXf Q;    // Process Noise Covariance Matrix
@@ -26,9 +26,9 @@ class KalmanFilter
   public:
     KalmanFilter(const Ref<const MatrixXf> &Ao, const Ref<const MatrixXf> &Ho,
                  const Ref<const MatrixXf> &Qo, const Ref<const MatrixXf> &Ro);
-    void InitKF(const Ref<const VectorXf> &Xo);
-    VectorXf UpdateKF(const Ref<const VectorXf> &Z);
-    VectorXf UpdateGenEKF(const Ref<const MatrixXf> &Anew, const Ref<const MatrixXf> &Hnew, const Ref<const MatrixXf> &Rnew
+    void Init(const Ref<const VectorXf> &Xo);
+    VectorXf Update(const Ref<const VectorXf> &Z);
+    VectorXf GenericUpdate(const Ref<const MatrixXf> &Anew, const Ref<const MatrixXf> &Hnew, const Ref<const MatrixXf> &Rnew
                        const Ref<const VectorXf> &Xpredict, const Ref<const VectorXf> &Z);
     VectorXf GetXhat();
     MatrixXf GetErrorCovariance();
