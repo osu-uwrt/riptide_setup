@@ -9,18 +9,15 @@ namespace gazebo
 GZ_REGISTER_MODEL_PLUGIN(IMU);
 IMU::IMU()
 {
-  this->IMU_.euler_rpy.x = 0;
-  this->IMU_.euler_rpy.y = 0;
-  this->IMU_.euler_rpy.z = 0;
-  this->IMU_.ang_vel.x = 0;
-  this->IMU_.ang_vel.y = 0;
-  this->IMU_.ang_vel.z = 0;
+  this->IMU_.rpy_deg.x = 0;
+  this->IMU_.rpy_deg.y = 0;
+  this->IMU_.rpy_deg.z = 0;
+  this->IMU_.ang_vel_deg.x = 0;
+  this->IMU_.ang_vel_deg.y = 0;
+  this->IMU_.ang_vel_deg.z = 0;
   this->IMU_.linear_accel.x = 0;
   this->IMU_.linear_accel.y = 0;
   this->IMU_.linear_accel.z = 0;
-  this->IMU_.ang_accel.x = 0;
-  this->IMU_.ang_accel.y = 0;
-  this->IMU_.ang_accel.z = 0;
 }
 
 IMU::~IMU()
@@ -65,17 +62,13 @@ void IMU::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     linearAccel = sensor_link_->GetWorldLinearAccel();
     modelPose = sensor_link_->GetWorldPose();
 
-    this->IMU_.euler_rpy.x = this->modelPose.rot.GetRoll()*180/M_PI;
-    this->IMU_.euler_rpy.y = this->modelPose.rot.GetPitch()*180/M_PI;
-    this->IMU_.euler_rpy.z = this->modelPose.rot.GetYaw()*180/M_PI;
+    this->IMU_.rpy_deg.x = this->modelPose.rot.GetRoll()*180/M_PI;
+    this->IMU_.rpy_deg.y = this->modelPose.rot.GetPitch()*180/M_PI;
+    this->IMU_.rpy_deg.z = this->modelPose.rot.GetYaw()*180/M_PI;
 
-    this->IMU_.ang_vel.x = angularVelocity.x;
-    this->IMU_.ang_vel.y = angularVelocity.y;
-    this->IMU_.ang_vel.z = angularVelocity.z;
-
-    this->IMU_.ang_accel.x = angularAccel.x;
-    this->IMU_.ang_accel.y = angularAccel.y;
-    this->IMU_.ang_accel.z = angularAccel.z;
+    this->IMU_.ang_vel_deg.x = angularVelocity.x;
+    this->IMU_.ang_vel_deg.y = angularVelocity.y;
+    this->IMU_.ang_vel_deg.z = angularVelocity.z;
 
     this->IMU_.linear_accel.x = linearAccel.x;
     this->IMU_.linear_accel.y = linearAccel.y;

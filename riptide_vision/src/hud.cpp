@@ -138,9 +138,9 @@ Mat HUD::CreateHUD(Mat &img) {
 
 // Get current orientation and linear accel
 void HUD::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg) {
-  euler_rpy.x = imu_msg->euler_rpy.x;
-  euler_rpy.y = imu_msg->euler_rpy.y;
-  euler_rpy.z = imu_msg->euler_rpy.z;
+  euler_rpy.x = imu_msg->rpy_deg.x;
+  euler_rpy.y = imu_msg->rpy_deg.y;
+  euler_rpy.z = imu_msg->rpy_deg.z;
 
   linear_accel.x = imu_msg->linear_accel.x;
   linear_accel.y = imu_msg->linear_accel.y;

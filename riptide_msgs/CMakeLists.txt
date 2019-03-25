@@ -18,7 +18,6 @@ add_message_files(
     Pwm.msg
     PwmStamped.msg
     Imu.msg
-    ImuVerbose.msg
     SwitchState.msg
     TaskAlignment.msg
     GateData.msg

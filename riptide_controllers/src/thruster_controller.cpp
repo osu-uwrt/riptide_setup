@@ -80,7 +80,6 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller") 
 
   R_b2w.setIdentity();
   R_w2b.setIdentity();
-  euler_deg.setZero();
   euler_rpy.setZero();
   ang_v.setZero();
 
@@ -239,15 +238,13 @@ void ThrusterController::DynamicReconfigCallback(riptide_controllers::VehiclePro
 //Get orientation from IMU
 void ThrusterController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
 {
-  //Get euler angles, convert to radians, and make two rotation matrices
-  vector3MsgToTF(imu_msg->euler_rpy, euler_deg);
-  euler_rpy.setValue(euler_deg.x()*PI/180, euler_deg.y()*PI/180, euler_deg.z()*PI/180);
+  //Get euler angles in radians and make two rotation matrices
+  vector3MsgToTF(imu_msg->rpy_rad, euler_rpy);
   R_b2w.setRPY(euler_rpy.x(), euler_rpy.y(), euler_rpy.z()); //Body to world rotations --> world_vector =  R_b2w * body_vector
   R_w2b = R_b2w.transpose(); //World to body rotations --> body_vector = R_w2b * world_vector
 
   //Get angular velocity and convert to [rad/s]
-  vector3MsgToTF(imu_msg->ang_vel, ang_v);
-  ang_v.setValue(ang_v.x()*PI/180, ang_v.y()*PI/180, ang_v.y()*PI/180);
+  vector3MsgToTF(imu_msg->ang_vel_rad, ang_v);
 }
 
 //Get depth and determine if buoyancy should be included
