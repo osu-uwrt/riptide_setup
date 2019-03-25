@@ -109,13 +109,13 @@ void DepthController::UpdateError()
     output = depth_controller_pid.computeCommand(depth_error, depth_error_dot, sample_duration);
 
     // Apply rotation matrix to control on depth regarldess of orientation
-    // Use a world vector of [0 0 -1].
-    // The z-value of -1 accounts for the proper direction of thrust force
+    // Use a world vector of [0 0 1].
+    // The z-value of +1 accounts for the proper direction of thrust force
     // since depth is positive downward, which does not adhere to the
     // body-frame coordinate system.
-    accel.x = output * R_w2b.getRow(0).z() * -1;
-    accel.y = output * R_w2b.getRow(1).z() * -1;
-    accel.z = output * R_w2b.getRow(2).z() * -1;
+    accel.x = output * R_w2b.getRow(0).z();
+    accel.y = output * R_w2b.getRow(1).z();
+    accel.z = output * R_w2b.getRow(2).z();
     status_msg.header.stamp = ros::Time::now();
     status_pub.publish(status_msg);
     cmd_pub.publish(accel);
@@ -170,8 +170,7 @@ void DepthController::CommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd)
 // Create rotation matrix from IMU orientation
 void DepthController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
 {
-  vector3MsgToTF(imu_msg->euler_rpy, tf);
-  tf.setValue(tf.x() * PI / 180, tf.y() * PI / 180, tf.z() * PI / 180);
+  vector3MsgToTF(imu_msg->rpy_rad, tf);
   R_b2w.setRPY(tf.x(), tf.y(), tf.z()); //Body to world rotations --> world_vector =  R_b2w * body_vector
   R_w2b = R_b2w.transpose();            //World to body rotations --> body_vector = R_w2b * world_vector
   DepthController::UpdateError();

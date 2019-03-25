@@ -1,30 +1,21 @@
 <launch>
-    <arg name="name" default="imu_front" />
-    <arg name="city" default="san_diego"/>
-    <arg name="location" default="hotel"/>
-    <arg name="device" default="/dev/imu_front" />
-    <arg name="mag_LPF_bandwidth" default="15" /> <!-- (15 Hz) Set to -1 to disable internal IMU IIR LPF -->
-    <arg name="accel_LPF_bandwidth" default="50" /> <!-- (50 Hz) Set to -1 to disable internal IMU IIR LPF -->
-    <arg name="gyro_LPF_bandwidth" default="50" /> <!-- (50 Hz) Set to -1 to disable internal IMU IIR LPF -->
-    <arg name="enable_iron_offset" default="false" />
+    <arg name="imu_name" default="imu" />
+    <arg name="device" default="/dev/imu_riptide" />
+    <arg name="settings" value="$(find riptide_hardware)/cfg/imu_columbus.yaml"/>
     <arg name="post_IIR_LPF_bandwidth" default="17" />
-    <arg name="filter_rate" default="100"/> <!-- MUST be an integer, gets passed to actual imu.launch file -->
 
-    <node pkg="riptide_hardware" name="imu_processor" type="imu_processor" output="screen" >
-      <rosparam file="$(find riptide_hardware)/cfg/$(arg city).yaml" command="load"/>
-      <param name="post_IIR_LPF_bandwidth" type="double" value="$(arg post_IIR_LPF_bandwidth)" />
-      <param name="filter_rate" type="int" value="$(arg filter_rate)" />
-    </node>
+    <group ns="$(arg imu_name)">
+        <rosparam command="load" file="$(arg settings)" />
+        <param name="imu_name" type="string" value="$(arg imu_name)" />
+        <param name="frame_id" type="string" value="$(arg imu_name)"/>
+        <param name="device" type="string" value="$(arg device)" />
+        
+        <node pkg="imu_3dm_gx4" name="$(arg imu_name)" type="imu_3dm_gx4" output="screen"/>
 
-    <include file="$(find imu_3dm_gx4)/launch/imu.launch" >
-      <arg name="device" value="$(arg device)" />
-      <arg name="name" value="$(arg name)" />
-      <arg name="city" value="$(arg city)" />
-      <arg name="location" value="$(arg location)" />
-      <arg name="filter_rate" value="$(arg filter_rate)" />
-      <arg name="mag_LPF_bandwidth" value="$(arg mag_LPF_bandwidth)" />
-      <arg name="accel_LPF_bandwidth" value="$(arg accel_LPF_bandwidth)" />
-      <arg name="gyro_LPF_bandwidth" value="$(arg gyro_LPF_bandwidth)" />
-      <arg name="enable_iron_offset" value="$(arg enable_iron_offset)" />
-    </include>
+        <node pkg="riptide_hardware" name="imu_processor" type="imu_processor" output="screen" >
+            <rosparam command="load" file="$(arg settings)" />
+            <param name="imu_name" type="string" value="$(arg imu_name)" />
+            <param name="post_IIR_LPF_bandwidth" type="double" value="$(arg post_IIR_LPF_bandwidth)" />
+        </node>
+    </group>
 </launch>

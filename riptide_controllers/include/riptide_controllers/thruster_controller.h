@@ -203,7 +203,7 @@ double buoyancy_depth_thresh;
 // Rotation Matrices: world to body, and body to world
 // Angular Velocity
 tf::Matrix3x3 R_w2b, R_b2w;
-tf::Vector3 euler_deg, euler_rpy, ang_v;
+tf::Vector3 euler_rpy, ang_v;
 
 // Debug variables
 geometry_msgs::Vector3Stamped buoyancy_pos;

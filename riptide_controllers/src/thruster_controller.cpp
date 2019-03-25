@@ -96,7 +96,6 @@ ThrusterController::ThrusterController(char **argv) : nh("thruster_controller")
 
   R_b2w.setIdentity();
   R_w2b.setIdentity();
-  euler_deg.setZero();
   euler_rpy.setZero();
   ang_v.setZero();
 

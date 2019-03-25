@@ -1,0 +1,39 @@
+imu_rate: 100 # Interger [Hz]
+filter_rate: 100 # Integer [Hz]
+baudrate: 115200
+verbose: false # Verbose logging
+
+# Sensor to Vehicle TF
+yaw: 0.0 # [deg]
+pitch: 0.0 # [deg]
+roll: 0.0 # [deg]
+
+# Sensor Low Pass Filter Bandwidths
+mag_LPF_bandwidth: 15 # Integer [Hz], -1 to disable
+accel_LPF_bandwidth: 50 # Integer [Hz], -1 to disable
+gyro_LPF_bandwidth: 50 # Integer [Hz], -1 to disable
+
+# Reference Position and Heading Update
+latitude: 39.9984 # [deg]
+longitude: -83.0179 # [deg]
+altitude: 224.0 # [m]
+declination: -7.110 # [deg]
+heading_update_source: magnetometer
+declination_source: wmm
+
+# Hard and Soft Iron Offsets
+# hx, hy, hz = hard-iron offsets along each axis of the sensor
+# mij = soft-iron matrix element from ith row and jth col
+enable_iron_offset: false
+hx: 0.0
+hy: 0.0
+hz: 0.0
+m11: 1.0
+m12: 0.0
+m13: 0.0
+m21: 0.0
+m22: 1.0
+m23: 0.0
+m31: 0.0
+m32: 0.0
+m33: 1.0
