@@ -4,7 +4,7 @@
 # CW: Defines thrusters in which CW rotation of propeller generates POSITIVE thrust
 # CCW: Defines thrusters in which CCW rotation of propeller generates POSITIVE thrust
 # NOTE: Three regions - Deadband, Startup (SU), and Primary
-CCW:
+TYPE0:
   MIN_THRUST: 0.200000
   STARTUP_THRUST: 1.500000
   SU_POS_THRUST:
@@ -19,7 +19,7 @@ CCW:
   NEG_THRUST:
     SLOPE: -7.500000
     YINT: 1527
-CW:
+TYPE1:
   MIN_THRUST: 0.200000
   STARTUP_THRUST: 1.500000
   SU_POS_THRUST:
@@ -34,11 +34,3 @@ CW:
   NEG_THRUST:
     SLOPE: 7.500000
     YINT: 1423
-ENABLE_SPL: true
-ENABLE_SSL: true
-ENABLE_SWF: true
-ENABLE_SWA: true
-ENABLE_HPF: true
-ENABLE_HSF: true
-ENABLE_HPA: true
-ENABLE_HSA: true

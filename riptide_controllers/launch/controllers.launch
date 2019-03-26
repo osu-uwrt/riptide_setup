@@ -1,9 +1,9 @@
 <launch>
-  <arg name="debug" default="false" />
+  <arg name="tune" default="false" />
 
   <include file="$(find riptide_controllers)/launch/pwm_controller.launch" />
   <include file="$(find riptide_controllers)/launch/thruster_controller.launch" >
-    <arg name="debug" value="$(arg debug)" />
+    <arg name="tune" value="$(arg tune)" />
   </include>
 
   <include file="$(find riptide_controllers)/launch/command_combinator.launch" />

@@ -75,16 +75,6 @@ PWMController::PWMController() : nh("pwm_controller")
   PWMController::LoadParam<float>("CCW/NEG_THRUST/SLOPE", primary_config[CCW][NEG_SLOPE]);
   PWMController::LoadParam<float>("CCW/NEG_THRUST/YINT", primary_config[CCW][NEG_YINT]);
 
-  // Enable Status
-  PWMController::LoadParam<bool>("ENABLE_SPL", enable[SPL]);
-  PWMController::LoadParam<bool>("ENABLE_SSL", enable[SSL]);
-  PWMController::LoadParam<bool>("ENABLE_SWA", enable[SWA]);
-  PWMController::LoadParam<bool>("ENABLE_SWF", enable[SWF]);
-  PWMController::LoadParam<bool>("ENABLE_HPF", enable[HPF]);
-  PWMController::LoadParam<bool>("ENABLE_HSF", enable[HSF]);
-  PWMController::LoadParam<bool>("ENABLE_HPA", enable[HPA]);
-  PWMController::LoadParam<bool>("ENABLE_HSA", enable[HSA]);
-
   alive_timeout = ros::Duration(2);
   last_alive_time = ros::Time::now();
   silent = true;    // Silent refers to not receiving commands from the control stack
@@ -153,26 +143,23 @@ int PWMController::Thrust2pwm(double raw_force, int thruster)
   int pwm = NEUTRAL_PWM;
   int type = thruster % 2;
 
-  if (enable[thruster])
-  {
-    if (abs(raw_force) < critical_thrusts[type][MIN_THRUST])
-      pwm = NEUTRAL_PWM;
+  if (abs(raw_force) < critical_thrusts[type][MIN_THRUST])
+    pwm = NEUTRAL_PWM;
 
-    else if (raw_force > 0 && raw_force <= critical_thrusts[type][STARTUP_THRUST]) // +Startup Thrust
-      pwm = (int)(startup_config[type][POS_SLOPE] * raw_force + startup_config[type][POS_YINT]) + OFFSET;
+  else if (raw_force > 0 && raw_force <= critical_thrusts[type][STARTUP_THRUST]) // +Startup Thrust
+    pwm = (int)(startup_config[type][POS_SLOPE] * raw_force + startup_config[type][POS_YINT]) + OFFSET;
 
-    else if (raw_force > 0 && raw_force > critical_thrusts[type][STARTUP_THRUST]) // +Thrust
-      pwm = (int)(primary_config[type][POS_SLOPE] * raw_force + primary_config[type][POS_YINT]) + OFFSET;
+  else if (raw_force > 0 && raw_force > critical_thrusts[type][STARTUP_THRUST]) // +Thrust
+    pwm = (int)(primary_config[type][POS_SLOPE] * raw_force + primary_config[type][POS_YINT]) + OFFSET;
 
-    else if (raw_force < 0 && raw_force >= -critical_thrusts[type][STARTUP_THRUST]) // -Startup Thrust
-      pwm = (int)(startup_config[type][NEG_SLOPE] * raw_force + startup_config[type][NEG_YINT]) + OFFSET;
+  else if (raw_force < 0 && raw_force >= -critical_thrusts[type][STARTUP_THRUST]) // -Startup Thrust
+    pwm = (int)(startup_config[type][NEG_SLOPE] * raw_force + startup_config[type][NEG_YINT]) + OFFSET;
 
-    else if (raw_force < 0 && raw_force < -critical_thrusts[type][STARTUP_THRUST]) // -Thrust
-      pwm = (int)(primary_config[type][NEG_SLOPE] * raw_force + primary_config[type][NEG_YINT]) + OFFSET;
+  else if (raw_force < 0 && raw_force < -critical_thrusts[type][STARTUP_THRUST]) // -Thrust
+    pwm = (int)(primary_config[type][NEG_SLOPE] * raw_force + primary_config[type][NEG_YINT]) + OFFSET;
 
-    else
-      pwm = NEUTRAL_PWM;
-  }
+  else
+    pwm = NEUTRAL_PWM;
 
   // Constrain pwm output due to physical limitations of the ESCs
   if (pwm > MAX_PWM)

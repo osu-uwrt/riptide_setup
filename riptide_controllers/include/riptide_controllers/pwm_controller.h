@@ -22,7 +22,6 @@ class PWMController
   bool dead, silent, reset_pwm;
   ros::Time last_alive_time;
   ros::Duration alive_timeout;
-  bool enable[8];
 
   void PublishZeroPWM();
   int Thrust2pwm(double raw_force, int thruster);
