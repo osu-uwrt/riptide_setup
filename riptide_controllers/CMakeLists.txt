@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(riptide_controllers)
-add_compile_options(-std=c++11)
+#add_compile_options(-std=c++11)
 
 # NOTE: Most dependencies can be taken care of with $(catkin_EXPORTED_TARGETS).
 # There is no need to add mention the specific dependency, such as
@@ -25,6 +25,8 @@ find_package(catkin REQUIRED
 
 find_package(Ceres REQUIRED)
 
+find_package(Eigen3 3.3 REQUIRED)
+
 generate_dynamic_reconfigure_options(
   cfg/VehicleProperties.cfg
 )
@@ -41,10 +43,11 @@ roslint_cpp()
 include_directories(include ${catkin_INCLUDE_DIRS}
   ${CERES_INCLUDE_DIRS}
   ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake
+  {Eigen3_INCLUDE_DIRS}
 )
 
 add_executable(thruster_controller src/thruster_controller.cpp)
-target_link_libraries(thruster_controller ${catkin_LIBRARIES} ${CERES_LIBRARIES})
+target_link_libraries(thruster_controller ${catkin_LIBRARIES} ${CERES_LIBRARIES} yaml-cpp)
 add_dependencies(thruster_controller ${catkin_EXPORTED_TARGETS})
 #add_dependencies(thruster_controller riptide_controllers_gencfg)
 
@@ -57,7 +60,7 @@ target_link_libraries(alignment_controller ${catkin_LIBRARIES})
 add_dependencies(alignment_controller ${catkin_EXPORTED_TARGETS})
 
 add_executable(pwm_controller src/pwm_controller.cpp)
-target_link_libraries(pwm_controller ${catkin_LIBRARIES})
+target_link_libraries(pwm_controller ${catkin_LIBRARIES} yaml-cpp)
 add_dependencies(pwm_controller ${catkin_EXPORTED_TARGETS})
 
 add_executable(attitude_controller src/attitude_controller.cpp)

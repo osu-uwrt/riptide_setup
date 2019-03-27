@@ -1,8 +1,0 @@
-<launch>
-  <param name="robot_description" command="xacro --check-order --inorder '$(find riptide_description)/urdf/riptide.xacro'"/>
-  <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find sim_common)/worlds/qualify.world"/>
-    <arg name="paused" value="true" />
-  </include>
-  <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf" args="-param robot_description -urdf -x 0 -y 0 -z 0 -Y 1.72 -model riptide" />
-</launch>
