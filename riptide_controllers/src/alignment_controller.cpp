@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
 }
 
 // Constructor: AlignmentController()
-AlignmentController::AlignmentController() : nh("alignment_controller") {
+AlignmentController::AlignmentController() : nh("~") {
     ros::NodeHandle surge("surge_controller");
     ros::NodeHandle sway("sway_controller");
     ros::NodeHandle heave("heave_controller");

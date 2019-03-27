@@ -24,7 +24,7 @@ int main(int argc, char **argv)
   }
 }
 
-DepthController::DepthController() : nh("depth_controller")
+DepthController::DepthController() : nh("~")
 {
   ros::NodeHandle dcpid("depth_controller");
   R_b2w.setIdentity();

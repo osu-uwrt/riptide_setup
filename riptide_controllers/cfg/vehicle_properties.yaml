@@ -27,14 +27,14 @@ properties: {
     {
       id: 2,
       name: "VPA",
-      type: 1,
+      type: 0, # Should be 1
       enable: true,
       pose: [-0.362, -0.318, -0.085, -45.0, 0.0]
     },
     {
       id: 3,
       name: "VSA",
-      type: 1,
+      type: 0, # Should be 1
       enable: true,
       pose: [-0.362, 0.294, -0.085, 45.0, 0.0]
     },
@@ -48,14 +48,14 @@ properties: {
     {
       id: 5,
       name: "HSF",
-      type: 0,
+      type: 1, # Should be 0
       enable: true,
       pose: [0.383, 0.174, 0.039, 0.0, 90.0]
     },
     {
       id: 6,
       name: "HPA",
-      type: 0,
+      type: 1, # Should be 0
       enable: true,
       pose: [-0.315, -0.198, 0.039, 0.0, 90.0]
     },

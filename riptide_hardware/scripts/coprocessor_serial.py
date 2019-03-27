@@ -185,36 +185,6 @@ def main():
             # enable the thrusters
             enqueueCommand(2, [1])
 
-    print("Connecting to copro...")
-    while not connect(1.0) and not rospy.is_shutdown():
-        rospy.sleep(1)
-    print("Connected!!!")
-
-    # add publishers
-    depth_pub = rospy.Publisher('/depth/raw', Depth, queue_size=1)
-    switch_pub = rospy.Publisher('/state/switches', SwitchState, queue_size=1)
-    connection_pub = rospy.Publisher('/state/copro', Bool, queue_size=1)
-
-    rospy.Subscriber('/command/pwm', PwmStamped, pwm_callback, queue_size=1)
-    # rospy.Subscriber('/status/light', StatusLight, light_callback, queue_size=1)
-
-    # initalize and start background thread
-    thread = Thread(name='connection daemon', target=background_thread)
-    thread.daemon = True
-    thread.start()
-
-    # enable the thrusters
-    command_queue.append(bytearray([3, 2, 1]))
-    response_queue.append(2)
-
-    # 20 Hz update rate for depth and switches (this is the max)
-    rate = rospy.Rate(20)
-
-    while not rospy.is_shutdown():
-        # request switch state and depth value
-        command_queue.append(bytearray([3, 11, 0, 3, 10, 0]))
-        response_queue.append(11)
-        response_queue.append(10)
         rate.sleep()
 
 
