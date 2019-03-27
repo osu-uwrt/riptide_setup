@@ -104,8 +104,16 @@ void CommandCombinator::DepthCB(const geometry_msgs::Vector3Stamped::ConstPtr &f
   force_depth.x = force_msg->vector.x;
   force_depth.y = force_msg->vector.y;
   force_depth.z = force_msg->vector.z;
+
+  cmd_load.force.x = force.x + force_depth.x;
+  cmd_load.force.y = force.y + force_depth.y;
+  cmd_load.force.z = force.z + force_depth.z;
+
+  cmd_load.force.x = CommandCombinator::Constrain(cmd_load.force.x, MAX_X_FORCE);
+  cmd_load.force.y = CommandCombinator::Constrain(cmd_load.force.y, MAX_Y_FORCE);
+  cmd_load.force.z = CommandCombinator::Constrain(cmd_load.force.z, MAX_Z_FORCE);
   cmd_load.header.stamp = ros::Time::now();
-  cmd_pub.publish(cmd_accel);
+  cmd_pub.publish(cmd_load);
 }
 
 void CommandCombinator::MomentCB(const geometry_msgs::Vector3Stamped::ConstPtr &moment_msg)

@@ -39,9 +39,11 @@ class PS3Controller
   double rt, current_depth, buoyancy_depth_thresh, delta_depth;
   bool publish_pneumatics;
 
+  float axes_rear_R2, axes_rear_L2;
+
   // Max values, and command rates
   double MAX_ROLL, MAX_PITCH, MAX_DEPTH, MAX_X_FORCE, MAX_Y_FORCE, MAX_Z_FORCE;
-  double MAX_X_MOMENT, MAX_Y_MOMENT, MAX_Y_MOMENT;
+  double MAX_X_MOMENT, MAX_Y_MOMENT, MAX_Z_MOMENT;
   double CMD_ROLL_RATE, CMD_PITCH_RATE, CMD_YAW_RATE, CMD_DEPTH_RATE;
 
   // Multiplication Factors (based on command rates)
