@@ -28,7 +28,6 @@ PS3Controller::PS3Controller() : nh("ps3_controller")
   PS3Controller::LoadParam<bool>("is_depth_working", isDepthWorking);               // Is depth sensor working?
   PS3Controller::LoadParam<bool>("is_imu_working", isIMUWorking);                   // Is IMU sensor working?
   PS3Controller::LoadParam<double>("rate", rt);                                     // [Hz]
-  PS3Controller::LoadParam<double>("buoyancy_depth_thresh", buoyancy_depth_thresh); // [m]
   PS3Controller::LoadParam<double>("max_roll_limit", MAX_ROLL);                     // [m/s^2]
   PS3Controller::LoadParam<double>("max_pitch_limit", MAX_PITCH);                   // [m/s^2]
   PS3Controller::LoadParam<double>("max_x_accel", MAX_X_ACCEL);                     // [m/s^2]

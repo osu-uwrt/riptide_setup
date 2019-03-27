@@ -17,7 +17,7 @@ class AttitudeController
   private:
     // Comms
     ros::NodeHandle nh;
-    ros::Subscriber imu_sub, cmd_sub, reset_sub;
+    ros::Subscriber imu_sub, cmd_sub;
     ros::Publisher cmd_pub, status_pub;
 
     control_toolbox::Pid roll_controller_pid;
@@ -39,9 +39,9 @@ class AttitudeController
 
     geometry_msgs::Vector3 current_attitude, ang_vel, last_error, last_error_dot;
 
-    bool pid_attitude_reset, pid_attitude_active;
-    bool pid_roll_reset, pid_pitch_reset, pid_yaw_reset;
-    bool pid_roll_active, pid_pitch_active, pid_yaw_active;
+    //bool pid_attitude_reset, pid_attitude_active;
+    //bool pid_roll_reset, pid_pitch_reset, pid_yaw_reset;
+    bool pid_roll_active, pid_pitch_active, pid_yaw_active, pid_attitude_active;
 
     ros::Time sample_start;
     ros::Duration sample_duration;
@@ -51,9 +51,9 @@ class AttitudeController
     void UpdateError();
     double Constrain(double current, double max);
     double SmoothErrorIIR(double input, double prev);
-    void ResetRoll(int id);
-    void ResetPitch(int id);
-    void ResetYaw(int id);
+    void ResetRoll();
+    void ResetPitch();
+    void ResetYaw();
 
   public:
     AttitudeController();
@@ -61,7 +61,7 @@ class AttitudeController
     void LoadParam(string param, T &var);
     void CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr &cmd);
     void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
-    void ResetCB(const riptide_msgs::ResetControls::ConstPtr& reset_msg);
+    //void ResetCB(const riptide_msgs::ResetControls::ConstPtr& reset_msg);
  };
 
  #endif

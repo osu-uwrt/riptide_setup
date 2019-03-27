@@ -2,16 +2,6 @@
 
 // CW Thrusters (odd numbers): SSL(1), SWF(3), HSF(5), HPA(7)
 // CCW Thrusters (even numbers): SPL(0), SWA(2), HPF(4), HSA(6)
-#define CCW 0
-#define CW 1
-#define SPL 0
-#define SSL 1
-#define SWA 2
-#define SWF 3
-#define HPF 4
-#define HSF 5
-#define HSA 6
-#define HPA 7
 
 // Critical Thrust Indeces
 #define MIN_THRUST 0
@@ -26,7 +16,6 @@
 #define MIN_PWM 1100
 #define MAX_PWM 1900
 #define NEUTRAL_PWM 1500
-#define OFFSET 20 // Copro driver subtracts 20, but the thruster_config contains actual PWMs
 
 int main(int argc, char **argv)
 {
@@ -35,55 +24,16 @@ int main(int argc, char **argv)
   pwm_controller.Loop();
 }
 
-PWMController::PWMController() : nh("pwm_controller")
+PWMController::PWMController() : nh("~")
 {
   cmd_sub = nh.subscribe<riptide_msgs::ThrustStamped>("/command/thrust", 1, &PWMController::ThrustCB, this);
   kill_sub = nh.subscribe<riptide_msgs::SwitchState>("/state/switches", 1, &PWMController::SwitchCB, this);
   reset_sub = nh.subscribe<riptide_msgs::ResetControls>("/controls/reset", 1, &PWMController::ResetController, this);
   pwm_pub = nh.advertise<riptide_msgs::PwmStamped>("/command/pwm", 1);
 
-  // There are 3 regions of thrust: deadband, startup, and primary
-  // Deadband is a region where the propeller will not move due to internal friction and inertia
-  // Startup is nonlinear, but is approximated as a line (for now)
-  // Primary is linear, but has different slope than startup
-
-  // Critical Thrusts
-  PWMController::LoadParam<float>("CW/MIN_THRUST", critical_thrusts[CW][MIN_THRUST]);
-  PWMController::LoadParam<float>("CW/STARTUP_THRUST", critical_thrusts[CW][STARTUP_THRUST]);
-  PWMController::LoadParam<float>("CCW/MIN_THRUST", critical_thrusts[CCW][MIN_THRUST]);
-  PWMController::LoadParam<float>("CCW/STARTUP_THRUST", critical_thrusts[CCW][STARTUP_THRUST]);
-
-  // Startup Config (Linear Fit: y = mx + b)
-  PWMController::LoadParam<float>("CW/SU_POS_THRUST/SLOPE", startup_config[CW][POS_SLOPE]);
-  PWMController::LoadParam<float>("CW/SU_POS_THRUST/YINT", startup_config[CW][POS_YINT]);
-  PWMController::LoadParam<float>("CW/SU_NEG_THRUST/SLOPE", startup_config[CW][NEG_SLOPE]);
-  PWMController::LoadParam<float>("CW/SU_NEG_THRUST/YINT", startup_config[CW][NEG_YINT]);
-
-  PWMController::LoadParam<float>("CCW/SU_POS_THRUST/SLOPE", startup_config[CCW][POS_SLOPE]);
-  PWMController::LoadParam<float>("CCW/SU_POS_THRUST/YINT", startup_config[CCW][POS_YINT]);
-  PWMController::LoadParam<float>("CCW/SU_NEG_THRUST/SLOPE", startup_config[CCW][NEG_SLOPE]);
-  PWMController::LoadParam<float>("CCW/SU_NEG_THRUST/YINT", startup_config[CCW][NEG_YINT]);
-
-  // Primary Config (Linear Fit: y = mx + b)
-  PWMController::LoadParam<float>("CW/POS_THRUST/SLOPE", primary_config[CW][POS_SLOPE]);
-  PWMController::LoadParam<float>("CW/POS_THRUST/YINT", primary_config[CW][POS_YINT]);
-  PWMController::LoadParam<float>("CW/NEG_THRUST/SLOPE", primary_config[CW][NEG_SLOPE]);
-  PWMController::LoadParam<float>("CW/NEG_THRUST/YINT", primary_config[CW][NEG_YINT]);
-
-  PWMController::LoadParam<float>("CCW/POS_THRUST/SLOPE", primary_config[CCW][POS_SLOPE]);
-  PWMController::LoadParam<float>("CCW/POS_THRUST/YINT", primary_config[CCW][POS_YINT]);
-  PWMController::LoadParam<float>("CCW/NEG_THRUST/SLOPE", primary_config[CCW][NEG_SLOPE]);
-  PWMController::LoadParam<float>("CCW/NEG_THRUST/YINT", primary_config[CCW][NEG_YINT]);
-
-  // Enable Status
-  PWMController::LoadParam<bool>("ENABLE_SPL", enable[SPL]);
-  PWMController::LoadParam<bool>("ENABLE_SSL", enable[SSL]);
-  PWMController::LoadParam<bool>("ENABLE_SWA", enable[SWA]);
-  PWMController::LoadParam<bool>("ENABLE_SWF", enable[SWF]);
-  PWMController::LoadParam<bool>("ENABLE_HPF", enable[HPF]);
-  PWMController::LoadParam<bool>("ENABLE_HSF", enable[HSF]);
-  PWMController::LoadParam<bool>("ENABLE_HPA", enable[HPA]);
-  PWMController::LoadParam<bool>("ENABLE_HSA", enable[HSA]);
+  PWMController::LoadParam<string>("properties_file", properties_file);
+  properties = YAML::LoadFile(properties_file);
+  PWMController::LoadThrusterProperties();
 
   alive_timeout = ros::Duration(2);
   last_alive_time = ros::Time::now();
@@ -112,24 +62,67 @@ void PWMController::LoadParam(string param, T &var)
   }
 }
 
+void PWMController::LoadThrusterProperties()
+{
+  // Load thruster types
+  int numThrusters = properties["properties"]["thrusters"].size();
+  for (int i = 0; i < numThrusters; i++)
+  {
+    int type = properties["properties"]["thrusters"][i]["type"].as<int>();
+    thrusterType[i] = type;
+  }
+  
+  // There are 3 regions of thrust: deadband, startup, and primary
+  // Deadband is a region where the propeller will not move due to internal friction and inertia
+  // Startup is nonlinear, but is approximated as a line (for now)
+  // Primary is linear, but has different slope than startup
+
+  // Critical Thrusts
+  PWMController::LoadParam<float>("TYPE0/MIN_THRUST", critical_thrusts[0][MIN_THRUST]);
+  PWMController::LoadParam<float>("TYPE0/STARTUP_THRUST", critical_thrusts[0][STARTUP_THRUST]);
+  PWMController::LoadParam<float>("TYPE1/MIN_THRUST", critical_thrusts[1][MIN_THRUST]);
+  PWMController::LoadParam<float>("TYPE1/STARTUP_THRUST", critical_thrusts[1][STARTUP_THRUST]);
+
+  // Startup Config (Linear Fit: y = mx + b)
+  PWMController::LoadParam<float>("TYPE0/SU_POS_THRUST/SLOPE", startup_config[0][POS_SLOPE]);
+  PWMController::LoadParam<float>("TYPE0/SU_POS_THRUST/YINT", startup_config[0][POS_YINT]);
+  PWMController::LoadParam<float>("TYPE0/SU_NEG_THRUST/SLOPE", startup_config[0][NEG_SLOPE]);
+  PWMController::LoadParam<float>("TYPE0/SU_NEG_THRUST/YINT", startup_config[0][NEG_YINT]);
+
+  PWMController::LoadParam<float>("TYPE1/SU_POS_THRUST/SLOPE", startup_config[1][POS_SLOPE]);
+  PWMController::LoadParam<float>("TYPE1/SU_POS_THRUST/YINT", startup_config[1][POS_YINT]);
+  PWMController::LoadParam<float>("TYPE1/SU_NEG_THRUST/SLOPE", startup_config[1][NEG_SLOPE]);
+  PWMController::LoadParam<float>("TYPE1/SU_NEG_THRUST/YINT", startup_config[1][NEG_YINT]);
+
+  // Primary Config (Linear Fit: y = mx + b)
+  PWMController::LoadParam<float>("TYPE0/POS_THRUST/SLOPE", primary_config[0][POS_SLOPE]);
+  PWMController::LoadParam<float>("TYPE0/POS_THRUST/YINT", primary_config[0][POS_YINT]);
+  PWMController::LoadParam<float>("TYPE0/NEG_THRUST/SLOPE", primary_config[0][NEG_SLOPE]);
+  PWMController::LoadParam<float>("TYPE0/NEG_THRUST/YINT", primary_config[0][NEG_YINT]);
+
+  PWMController::LoadParam<float>("TYPE1/POS_THRUST/SLOPE", primary_config[1][POS_SLOPE]);
+  PWMController::LoadParam<float>("TYPE1/POS_THRUST/YINT", primary_config[1][POS_YINT]);
+  PWMController::LoadParam<float>("TYPE1/NEG_THRUST/SLOPE", primary_config[1][NEG_SLOPE]);
+  PWMController::LoadParam<float>("TYPE1/NEG_THRUST/YINT", primary_config[1][NEG_YINT]);
+}
+
 void PWMController::ThrustCB(const riptide_msgs::ThrustStamped::ConstPtr &thrust)
 {
   if (!dead && !reset_pwm)
   {
-    msg.header.stamp = thrust->header.stamp;
+    pwm_msg.header.stamp = thrust->header.stamp;
 
-    msg.pwm.surge_port_lo = Thrust2pwm(thrust->force.surge_port_lo, SPL);
-    msg.pwm.surge_stbd_lo = Thrust2pwm(thrust->force.surge_stbd_lo, SSL);
+    pwm_msg.pwm.vector_port_fwd = Thrust2pwm(thrust->force.vector_port_fwd, thrusterType[thrust->force.VPF]);
+    pwm_msg.pwm.vector_stbd_fwd = Thrust2pwm(thrust->force.vector_stbd_fwd, thrusterType[thrust->force.VSF]);
+    pwm_msg.pwm.vector_port_aft = Thrust2pwm(thrust->force.vector_port_aft, thrusterType[thrust->force.VPA]);
+    pwm_msg.pwm.vector_stbd_aft = Thrust2pwm(thrust->force.vector_stbd_aft, thrusterType[thrust->force.VSA]);
 
-    msg.pwm.sway_fwd = Thrust2pwm(thrust->force.sway_fwd, SWF);
-    msg.pwm.sway_aft = Thrust2pwm(thrust->force.sway_aft, SWA);
+    pwm_msg.pwm.heave_port_fwd = Thrust2pwm(thrust->force.heave_port_fwd, thrusterType[thrust->force.HPF]);
+    pwm_msg.pwm.heave_stbd_fwd = Thrust2pwm(thrust->force.heave_stbd_fwd, thrusterType[thrust->force.HSF]);
+    pwm_msg.pwm.heave_port_aft = Thrust2pwm(thrust->force.heave_port_aft, thrusterType[thrust->force.HPA]);
+    pwm_msg.pwm.heave_stbd_aft = Thrust2pwm(thrust->force.heave_stbd_aft, thrusterType[thrust->force.HSA]);
 
-    msg.pwm.heave_stbd_fwd = Thrust2pwm(thrust->force.heave_stbd_fwd, HSF);
-    msg.pwm.heave_stbd_aft = Thrust2pwm(thrust->force.heave_stbd_aft, HSA);
-
-    msg.pwm.heave_port_aft = Thrust2pwm(thrust->force.heave_port_aft, HPA);
-    msg.pwm.heave_port_fwd = Thrust2pwm(thrust->force.heave_port_fwd, HPF);
-    pwm_pub.publish(msg);
+    pwm_pub.publish(pwm_msg);
     last_alive_time = ros::Time::now();
     silent = false;
   }
@@ -148,31 +141,27 @@ void PWMController::ResetController(const riptide_msgs::ResetControls::ConstPtr 
     reset_pwm = false;
 }
 
-int PWMController::Thrust2pwm(double raw_force, int thruster)
+int PWMController::Thrust2pwm(double raw_force, int type)
 {
   int pwm = NEUTRAL_PWM;
-  int type = thruster % 2;
 
-  if (enable[thruster])
-  {
-    if (abs(raw_force) < critical_thrusts[type][MIN_THRUST])
-      pwm = NEUTRAL_PWM;
+  if (abs(raw_force) < critical_thrusts[type][MIN_THRUST])
+    pwm = NEUTRAL_PWM;
 
-    else if (raw_force > 0 && raw_force <= critical_thrusts[type][STARTUP_THRUST]) // +Startup Thrust
-      pwm = (int)(startup_config[type][POS_SLOPE] * raw_force + startup_config[type][POS_YINT]) + OFFSET;
+  else if (raw_force > 0 && raw_force <= critical_thrusts[type][STARTUP_THRUST]) // +Startup Thrust
+    pwm = (int)(startup_config[type][POS_SLOPE] * raw_force + startup_config[type][POS_YINT]);
 
-    else if (raw_force > 0 && raw_force > critical_thrusts[type][STARTUP_THRUST]) // +Thrust
-      pwm = (int)(primary_config[type][POS_SLOPE] * raw_force + primary_config[type][POS_YINT]) + OFFSET;
+  else if (raw_force > 0 && raw_force > critical_thrusts[type][STARTUP_THRUST]) // +Thrust
+    pwm = (int)(primary_config[type][POS_SLOPE] * raw_force + primary_config[type][POS_YINT]);
 
-    else if (raw_force < 0 && raw_force >= -critical_thrusts[type][STARTUP_THRUST]) // -Startup Thrust
-      pwm = (int)(startup_config[type][NEG_SLOPE] * raw_force + startup_config[type][NEG_YINT]) + OFFSET;
+  else if (raw_force < 0 && raw_force >= -critical_thrusts[type][STARTUP_THRUST]) // -Startup Thrust
+    pwm = (int)(startup_config[type][NEG_SLOPE] * raw_force + startup_config[type][NEG_YINT]);
 
-    else if (raw_force < 0 && raw_force < -critical_thrusts[type][STARTUP_THRUST]) // -Thrust
-      pwm = (int)(primary_config[type][NEG_SLOPE] * raw_force + primary_config[type][NEG_YINT]) + OFFSET;
+  else if (raw_force < 0 && raw_force < -critical_thrusts[type][STARTUP_THRUST]) // -Thrust
+    pwm = (int)(primary_config[type][NEG_SLOPE] * raw_force + primary_config[type][NEG_YINT]);
 
-    else
-      pwm = NEUTRAL_PWM;
-  }
+  else
+    pwm = NEUTRAL_PWM;
 
   // Constrain pwm output due to physical limitations of the ESCs
   if (pwm > MAX_PWM)
@@ -185,17 +174,18 @@ int PWMController::Thrust2pwm(double raw_force, int thruster)
 
 void PWMController::PublishZeroPWM()
 {
-  msg.header.stamp = ros::Time::now();
+  pwm_msg.header.stamp = ros::Time::now();
 
-  msg.pwm.surge_port_lo = NEUTRAL_PWM;
-  msg.pwm.surge_stbd_lo = NEUTRAL_PWM;
-  msg.pwm.sway_fwd = NEUTRAL_PWM;
-  msg.pwm.sway_aft = NEUTRAL_PWM;
-  msg.pwm.heave_stbd_fwd = NEUTRAL_PWM;
-  msg.pwm.heave_stbd_aft = NEUTRAL_PWM;
-  msg.pwm.heave_port_aft = NEUTRAL_PWM;
-  msg.pwm.heave_port_fwd = NEUTRAL_PWM;
-  pwm_pub.publish(msg);
+  pwm_msg.pwm.vector_port_fwd = NEUTRAL_PWM;
+  pwm_msg.pwm.vector_stbd_fwd = NEUTRAL_PWM;
+  pwm_msg.pwm.vector_port_aft = NEUTRAL_PWM;
+  pwm_msg.pwm.vector_stbd_aft = NEUTRAL_PWM;
+  pwm_msg.pwm.heave_port_fwd = NEUTRAL_PWM;
+  pwm_msg.pwm.heave_stbd_fwd = NEUTRAL_PWM;
+  pwm_msg.pwm.heave_port_aft = NEUTRAL_PWM;
+  pwm_msg.pwm.heave_stbd_aft = NEUTRAL_PWM;
+  
+  pwm_pub.publish(pwm_msg);
 }
 
 void PWMController::Loop()

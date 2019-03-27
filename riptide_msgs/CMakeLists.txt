@@ -34,7 +34,6 @@ add_message_files(
     AcousticsCommand.msg
     Pneumatics.msg
     Constants.msg
-    ThrusterResiduals.msg
     TaskInfo.msg
     Object.msg
     MissionState.msg

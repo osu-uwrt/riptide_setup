@@ -1,4 +1,0 @@
-<launch>
-  <include file="$(find riptide_description)/launch/riptide_description.launch"/>
-  <node pkg="rviz" type="rviz" name="rviz" required="true" />
-</launch>
