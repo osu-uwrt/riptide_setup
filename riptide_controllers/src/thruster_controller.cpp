@@ -142,14 +142,15 @@ void ThrusterController::SetThrusterCoeffs()
 void ThrusterController::InitThrustMsg()
 {
   thrust_msg.header.stamp = ros::Time::now();
-  thrust_msg.force.surge_port_lo = 0;
-  thrust_msg.force.surge_stbd_lo = 0;
-  thrust_msg.force.sway_fwd = 0;
-  thrust_msg.force.sway_aft = 0;
+  thrust_msg.force.vector_port_fwd = 0;
+  thrust_msg.force.vector_stbd_fwd = 0;
+  thrust_msg.force.vector_port_aft = 0;
+  thrust_msg.force.vector_stbd_aft = 0;
+  thrust_msg.force.heave_port_fwd = 0;
+  thrust_msg.force.heave_stbd_fwd = 0;
   thrust_msg.force.heave_port_aft = 0;
   thrust_msg.force.heave_stbd_aft = 0;
-  thrust_msg.force.heave_stbd_fwd = 0;
-  thrust_msg.force.heave_port_fwd = 0;
+  
   cmd_pub.publish(thrust_msg);
 }
 
@@ -220,14 +221,14 @@ void ThrusterController::AccelCB(const geometry_msgs::Accel::ConstPtr &a)
   ceres::Solve(optionsEOM, &problemEOM, &summaryEOM);
 
   thrust_msg.header.stamp = ros::Time::now();
-  thrust_msg.force.heave_port_fwd = -solver_forces[0];
-  thrust_msg.force.heave_port_aft = -solver_forces[1];
-  thrust_msg.force.heave_stbd_fwd = -solver_forces[2];
-  thrust_msg.force.heave_stbd_aft = -solver_forces[3];
-  thrust_msg.force.sway_fwd = -solver_forces[4];
-  thrust_msg.force.sway_aft = -solver_forces[5];
-  thrust_msg.force.surge_port_lo = -solver_forces[6];
-  thrust_msg.force.surge_stbd_lo = -solver_forces[7];
+  thrust_msg.force.vector_port_fwd = solver_forces[thrust_msg.force.VPF];
+  thrust_msg.force.vector_stbd_fwd = solver_forces[thrust_msg.force.VSF];
+  thrust_msg.force.vector_port_aft = solver_forces[thrust_msg.force.VPA];
+  thrust_msg.force.vector_stbd_aft = solver_forces[thrust_msg.force.VSA];
+  thrust_msg.force.heave_port_fwd = solver_forces[thrust_msg.force.HPF];
+  thrust_msg.force.heave_stbd_fwd = solver_forces[thrust_msg.force.HSF];
+  thrust_msg.force.heave_port_aft = solver_forces[thrust_msg.force.HPA];
+  thrust_msg.force.heave_stbd_aft = solver_forces[thrust_msg.force.HSA];
   cmd_pub.publish(thrust_msg);
 
   // Tune Buoyancy - locate the center of buoyancy

@@ -60,7 +60,7 @@ target_link_libraries(alignment_controller ${catkin_LIBRARIES})
 add_dependencies(alignment_controller ${catkin_EXPORTED_TARGETS})
 
 add_executable(pwm_controller src/pwm_controller.cpp)
-target_link_libraries(pwm_controller ${catkin_LIBRARIES})
+target_link_libraries(pwm_controller ${catkin_LIBRARIES} yaml-cpp)
 add_dependencies(pwm_controller ${catkin_EXPORTED_TARGETS})
 
 add_executable(attitude_controller src/attitude_controller.cpp)
