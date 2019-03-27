@@ -118,11 +118,11 @@ void PWMController::ThrustCB(const riptide_msgs::ThrustStamped::ConstPtr &thrust
   {
     msg.header.stamp = thrust->header.stamp;
 
-    msg.pwm.surge_port_lo = Thrust2pwm(thrust->force.surge_port_lo, SPL);
-    msg.pwm.surge_stbd_lo = Thrust2pwm(thrust->force.surge_stbd_lo, SSL);
+    //msg.pwm.surge_port_lo = Thrust2pwm(thrust->force.surge_port_lo, SPL);
+    //msg.pwm.surge_stbd_lo = Thrust2pwm(thrust->force.surge_stbd_lo, SSL);
 
-    msg.pwm.sway_fwd = Thrust2pwm(thrust->force.sway_fwd, SWF);
-    msg.pwm.sway_aft = Thrust2pwm(thrust->force.sway_aft, SWA);
+    //msg.pwm.sway_fwd = Thrust2pwm(thrust->force.sway_fwd, SWF);
+    //msg.pwm.sway_aft = Thrust2pwm(thrust->force.sway_aft, SWA);
 
     msg.pwm.heave_stbd_fwd = Thrust2pwm(thrust->force.heave_stbd_fwd, HSF);
     msg.pwm.heave_stbd_aft = Thrust2pwm(thrust->force.heave_stbd_aft, HSA);
@@ -187,10 +187,10 @@ void PWMController::PublishZeroPWM()
 {
   msg.header.stamp = ros::Time::now();
 
-  msg.pwm.surge_port_lo = NEUTRAL_PWM;
-  msg.pwm.surge_stbd_lo = NEUTRAL_PWM;
-  msg.pwm.sway_fwd = NEUTRAL_PWM;
-  msg.pwm.sway_aft = NEUTRAL_PWM;
+  //msg.pwm.surge_port_lo = NEUTRAL_PWM;
+  //msg.pwm.surge_stbd_lo = NEUTRAL_PWM;
+  //msg.pwm.sway_fwd = NEUTRAL_PWM;
+  //msg.pwm.sway_aft = NEUTRAL_PWM;
   msg.pwm.heave_stbd_fwd = NEUTRAL_PWM;
   msg.pwm.heave_stbd_aft = NEUTRAL_PWM;
   msg.pwm.heave_port_aft = NEUTRAL_PWM;
