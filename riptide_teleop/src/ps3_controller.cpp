@@ -16,32 +16,32 @@ PS3Controller::PS3Controller() : nh("ps3_controller")
   depth_sub = nh.subscribe<riptide_msgs::Depth>("/state/depth", 1, &PS3Controller::DepthCB, this);
   imu_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &PS3Controller::ImuCB, this);
   attitude_pub = nh.advertise<riptide_msgs::AttitudeCommand>("/command/attitude", 1);
-  ang_accel_pub = nh.advertise<geometry_msgs::Vector3>("/command/accel_angular", 1);
-  x_accel_pub = nh.advertise<std_msgs::Float64>("/command/accel_x", 1);
-  y_accel_pub = nh.advertise<std_msgs::Float64>("/command/accel_y", 1);
-  z_accel_pub = nh.advertise<std_msgs::Float64>("/command/accel_z", 1);
+  moment_pub = nh.advertise<geometry_msgs::Vector3>("/command/moment", 1);
+  x_force_pub = nh.advertise<std_msgs::Float64>("/command/force_x", 1);
+  y_force_pub = nh.advertise<std_msgs::Float64>("/command/force_y", 1);
+  z_force_pub = nh.advertise<std_msgs::Float64>("/command/force_z", 1);
   depth_pub = nh.advertise<riptide_msgs::DepthCommand>("/command/depth", 1);
   reset_pub = nh.advertise<riptide_msgs::ResetControls>("/controls/reset", 1);
   plane_pub = nh.advertise<std_msgs::Int8>("/command/ps3_plane", 1);
   pneumatics_pub = nh.advertise<riptide_msgs::Pneumatics>("/command/pneumatics", 1);
 
-  PS3Controller::LoadParam<bool>("is_depth_working", isDepthWorking);               // Is depth sensor working?
-  PS3Controller::LoadParam<bool>("is_imu_working", isIMUWorking);                   // Is IMU sensor working?
-  PS3Controller::LoadParam<double>("rate", rt);                                     // [Hz]
-  PS3Controller::LoadParam<double>("max_roll_limit", MAX_ROLL);                     // [m/s^2]
-  PS3Controller::LoadParam<double>("max_pitch_limit", MAX_PITCH);                   // [m/s^2]
-  PS3Controller::LoadParam<double>("max_x_accel", MAX_X_ACCEL);                     // [m/s^2]
-  PS3Controller::LoadParam<double>("max_y_accel", MAX_Y_ACCEL);                     // [m/s^2]
-  PS3Controller::LoadParam<double>("max_z_accel", MAX_Z_ACCEL);                     // [m/s^2]
-  PS3Controller::LoadParam<double>("max_roll_accel", MAX_ROLL_ACCEL);               // [rad/s^2]
-  PS3Controller::LoadParam<double>("max_pitch_accel", MAX_PITCH_ACCEL);             // [rad/s^2]
-  PS3Controller::LoadParam<double>("max_yaw_accel", MAX_YAW_ACCEL);                 // [rad/s^2]
-  PS3Controller::LoadParam<double>("max_depth", MAX_DEPTH);                         // [m]
-  PS3Controller::LoadParam<double>("cmd_roll_rate", CMD_ROLL_RATE);                 // [deg/s]
-  PS3Controller::LoadParam<double>("cmd_pitch_rate", CMD_PITCH_RATE);               // [deg/s]
-  PS3Controller::LoadParam<double>("cmd_yaw_rate", CMD_YAW_RATE);                   // [deg/s]
-  PS3Controller::LoadParam<double>("cmd_depth_rate", CMD_DEPTH_RATE);               // [deg/s]
-  PS3Controller::LoadParam<double>("boost", boost);                                 // Factor to multiply pressed button/axis for faster rate
+  PS3Controller::LoadParam<bool>("enable_depth", enableDepth); // Is depth sensor working?
+  PS3Controller::LoadParam<bool>("enable_attitude", enableAttitude);     // Is IMU sensor working?
+  PS3Controller::LoadParam<double>("rate", rt);                       // [Hz]
+  PS3Controller::LoadParam<double>("max_roll_limit", MAX_ROLL);       // [m/s^2]
+  PS3Controller::LoadParam<double>("max_pitch_limit", MAX_PITCH);     // [m/s^2]
+  PS3Controller::LoadParam<double>("max_x_force", MAX_X_FORCE);       // [m/s^2]
+  PS3Controller::LoadParam<double>("max_y_force", MAX_Y_FORCE);       // [m/s^2]
+  PS3Controller::LoadParam<double>("max_z_force", MAX_Z_FORCE);       // [m/s^2]
+  PS3Controller::LoadParam<double>("max_x_moment", MAX_X_MOMENT);     // [rad/s^2]
+  PS3Controller::LoadParam<double>("max_y_moment", MAX_Y_MOMENT);     // [rad/s^2]
+  PS3Controller::LoadParam<double>("max_z_moment", MAX_Z_MOMENT);     // [rad/s^2]
+  PS3Controller::LoadParam<double>("max_depth", MAX_DEPTH);           // [m]
+  PS3Controller::LoadParam<double>("cmd_roll_rate", CMD_ROLL_RATE);   // [deg/s]
+  PS3Controller::LoadParam<double>("cmd_pitch_rate", CMD_PITCH_RATE); // [deg/s]
+  PS3Controller::LoadParam<double>("cmd_yaw_rate", CMD_YAW_RATE);     // [deg/s]
+  PS3Controller::LoadParam<double>("cmd_depth_rate", CMD_DEPTH_RATE); // [deg/s]
+  PS3Controller::LoadParam<double>("boost", boost);                   // Factor to multiply pressed button/axis for faster rate
   // When using the boost factor, you must subtract one from its value for it
   // to have the desired effect. See below for implementation
 
@@ -69,13 +69,6 @@ PS3Controller::PS3Controller() : nh("ps3_controller")
 
 void PS3Controller::InitMsgs()
 {
-  reset_msg.reset_surge = true;
-  reset_msg.reset_sway = true;
-  reset_msg.reset_heave = true;
-  reset_msg.reset_roll = false;
-  reset_msg.reset_pitch = false;
-  reset_msg.reset_yaw = false;
-  reset_msg.reset_depth = false;
   reset_msg.reset_pwm = true;
 
   euler_rpy.x = 0;
@@ -118,6 +111,25 @@ void PS3Controller::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
 
 void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr &joy)
 {
+  // Disable/Re-enable Depth Controller and Attitude Controller
+  if (joy->buttons[BUTTON_REAR_L1])
+  {
+    enableAttitude = !enableAttitude;
+    if (enableAttitude)
+      ROS_INFO("PS3: Re-enabling Attitude Controller");
+    else
+      ROS_INFO("PS3: Disabling Attitude Controller");
+  }
+
+  if (joy->buttons[BUTTON_REAR_R1])
+  {
+    enableDepth = !enableDepth;
+    if (enableDepth)
+      ROS_INFO("PS3: Re-enabling Depth Controller");
+    else
+      ROS_INFO("PS3: Disabling Depth Controller");
+  }
+
   if (!isReset && joy->buttons[BUTTON_SHAPE_X])
   { // Reset Vehicle (The "X" button)
     isReset = true;
@@ -158,19 +170,22 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr &joy)
       }
       else
       { // Update roll/pitch angles with CROSS
-        if (joy->buttons[BUTTON_CROSS_RIGHT])
-          delta_attitude.x = roll_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); // Right -> inc roll
-        else if (joy->buttons[BUTTON_CROSS_LEFT])
-          delta_attitude.x = -roll_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); // Left -> dec roll
-        else
-          delta_attitude.x = 0;
+        if (enableAttitude)
+        {
+          if (joy->buttons[BUTTON_CROSS_RIGHT])
+            delta_attitude.x = roll_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); // Right -> inc roll
+          else if (joy->buttons[BUTTON_CROSS_LEFT])
+            delta_attitude.x = -roll_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); // Left -> dec roll
+          else
+            delta_attitude.x = 0;
 
-        if (joy->buttons[BUTTON_CROSS_UP])
-          delta_attitude.y = -pitch_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); // Up -> dec pitch (Nose points upward)
-        else if (joy->buttons[BUTTON_CROSS_DOWN])
-          delta_attitude.y = pitch_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); //Down -> inc pitch (Nose points downward)
-        else
-          delta_attitude.y = 0;
+          if (joy->buttons[BUTTON_CROSS_UP])
+            delta_attitude.y = -pitch_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); // Up -> dec pitch (Nose points upward)
+          else if (joy->buttons[BUTTON_CROSS_DOWN])
+            delta_attitude.y = pitch_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); //Down -> inc pitch (Nose points downward)
+          else
+            delta_attitude.y = 0;
+        }
       }
 
       // Update Yaw
@@ -190,17 +205,17 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr &joy)
       { // Enable depth controller
         isDepthInit = true;
         reset_msg.reset_depth = false;
-        z_cmd.data = 0;
+        cmd_force_z.data = 0;
       }
       else if (isDepthInit && abs(joy->axes[AXES_STICK_LEFT_LR]) < 0.7) // Try to avoid yaw and depth simultaneously
       {
         delta_depth = -joy->axes[AXES_STICK_LEFT_UD] * depth_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); // Up -> dec depth, Down -> inc depth
-        z_cmd.data = -joy->axes[AXES_STICK_LEFT_UD] * MAX_Z_ACCEL;                                                           // For when depth sensor isn't working
+        cmd_force_z.data = -joy->axes[AXES_STICK_LEFT_UD] * MAX_Z_FORCE;                                                           // For when depth sensor isn't working
       }
       else
       {
         delta_depth = 0;
-        z_cmd.data = 0;
+        cmd_force_z.data = 0;
       }
 
       /* Old Code for using R2 and L2
@@ -219,13 +234,13 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr &joy)
     }
 
     // Update Linear XY Accel
-    x_cmd.data = joy->axes[AXES_STICK_RIGHT_UD] * MAX_X_ACCEL; // Surge (X) positive forward
-    y_cmd.data = joy->axes[AXES_STICK_RIGHT_LR] * MAX_Y_ACCEL; // Sway (Y) positive left
+    cmd_force_x.data = joy->axes[AXES_STICK_RIGHT_UD] * MAX_X_FORCE; // Surge (X) positive forward
+    cmd_force_y.data = joy->axes[AXES_STICK_RIGHT_LR] * MAX_Y_FORCE; // Sway (Y) positive left
 
     if (joy->buttons[BUTTON_SELECT])
       alignment_plane = !alignment_plane;
 
-    if (joy->buttons[BUTTON_REAR_L1])
+    /*if (joy->buttons[BUTTON_REAR_L1])
     {
       pneumatics_cmd.torpedo_port = true;
       publish_pneumatics = true;
@@ -242,7 +257,7 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr &joy)
       pneumatics_cmd.markerdropper = true;
       publish_pneumatics = true;
       ROS_INFO("marker");
-    }
+    }*/
   }
 }
 
@@ -261,17 +276,17 @@ void PS3Controller::DisableControllers()
   delta_attitude.y = 0;
   delta_attitude.z = 0;
 
-  cmd_ang_accel.x = 0;
-  cmd_ang_accel.y = 0;
-  cmd_ang_accel.z = 0;
+  cmd_moment.vector.x = 0;
+  cmd_moment.vector.y = 0;
+  cmd_moment.vector.z = 0;
 
   cmd_depth.active = false;
   cmd_depth.depth = 0;
   delta_depth = 0;
 
-  x_cmd.data = 0;
-  y_cmd.data = 0;
-  z_cmd.data = 0;
+  cmd_force_x.data = 0;
+  cmd_force_y.data = 0;
+  cmd_force_z.data = 0;
 
   reset_pub.publish(reset_msg);
 
@@ -310,7 +325,7 @@ void PS3Controller::UpdateCommands()
   if (cmd_attitude.euler_rpy.z < -180)
     cmd_attitude.euler_rpy.z += 360;
 
-  if (!isIMUWorking)
+  if (!enableAttitude)
   {
     cmd_attitude.roll_active = false;
     cmd_attitude.pitch_active = false;
@@ -323,7 +338,7 @@ void PS3Controller::UpdateCommands()
   if (cmd_depth.depth < 0)
     cmd_depth.depth = 0;
 
-  if (!isDepthWorking)
+  if (!enableDepth)
     cmd_depth.active = false;
 
   plane_msg.data = (int)alignment_plane;
@@ -331,29 +346,29 @@ void PS3Controller::UpdateCommands()
 
 void PS3Controller::PublishCommands()
 {
-  if (isIMUWorking)
+  if (enableAttitude)
     attitude_pub.publish(cmd_attitude);
   else
     ang_accel_pub.publish(cmd_ang_accel);
 
-  x_accel_pub.publish(x_cmd);
-  y_accel_pub.publish(y_cmd);
+  x_force_pub.publish(cmd_force_x);
+  y_force_pub.publish(cmd_force_y);
 
-  if (isDepthWorking)
+  if (enableDepth)
     depth_pub.publish(cmd_depth);
   else
-    z_accel_pub.publish(z_cmd);
+    z_force_pub.publish(cmd_force_z);
 
   plane_pub.publish(plane_msg);
 
-  if (publish_pneumatics)
+  /*if (publish_pneumatics)
     pneumatics_pub.publish(pneumatics_cmd);
 
   pneumatics_cmd.torpedo_port = false;
   pneumatics_cmd.torpedo_stbd = false;
   pneumatics_cmd.manipulator = false;
   pneumatics_cmd.markerdropper = false;
-  publish_pneumatics = false;
+  publish_pneumatics = false;*/
 }
 
 // This loop function is critical because it allows for different command rates

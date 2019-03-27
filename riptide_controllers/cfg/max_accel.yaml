@@ -1,6 +1,0 @@
-max_x_accel: 1.25 # [m/s^2]
-max_y_accel: 1.25 # [m/s^2]
-max_z_accel: 1.25 # [m/s^2]
-max_roll_accel: 9.5 # [rad/s^2]
-max_pitch_accel: 6.5 # [rad/s^2]
-max_yaw_accel: 8 # [rad/s^2]

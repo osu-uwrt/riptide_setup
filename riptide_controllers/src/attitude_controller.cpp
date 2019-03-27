@@ -41,7 +41,7 @@ AttitudeController::AttitudeController() : nh("~")
   cmd_sub = nh.subscribe<riptide_msgs::AttitudeCommand>("/command/attitude", 1, &AttitudeController::CommandCB, this);
   imu_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &AttitudeController::ImuCB, this);
 
-  cmd_pub = nh.advertise<geometry_msgs::Vector3>("/command/accel_angular", 1);
+  cmd_pub = nh.advertise<geometry_msgs::Vector3Stamped>("/command/moment", 1);
   status_pub = nh.advertise<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1);
 
   AttitudeController::LoadParam<double>("max_roll_error", MAX_ROLL_ERROR);
@@ -64,13 +64,16 @@ AttitudeController::AttitudeController() : nh("~")
 
   sample_start = ros::Time::now();
 
-  AttitudeController::InitMsgs();
+  //AttitudeController::InitMsgs();
+  status_msg.roll.current = 0;
+  status_msg.pitch.current = 0;
+  status_msg.yaw.current = 0;
   AttitudeController::ResetRoll();
   AttitudeController::ResetPitch();
   AttitudeController::ResetYaw();
 }
 
-void AttitudeController::InitMsgs()
+/*void AttitudeController::InitMsgs()
 {
   status_msg.roll.reference = 0;
   status_msg.roll.current = 0;
@@ -84,10 +87,10 @@ void AttitudeController::InitMsgs()
   status_msg.yaw.current = 0;
   status_msg.yaw.error = 0;
 
-  ang_accel_cmd.x = 0;
-  ang_accel_cmd.y = 0;
-  ang_accel_cmd.z = 0;
-}
+  cmd_moment.x = 0;
+  cmd_moment.y = 0;
+  cmd_moment.z = 0;
+}*/
 
 // Load parameter from namespace
 template <typename T>
@@ -123,7 +126,7 @@ void AttitudeController::UpdateError()
     last_error.x = roll_error;
     status_msg.roll.error = roll_error;
 
-    ang_accel_cmd.x = roll_controller_pid.computeCommand(roll_error, roll_error_dot, sample_duration);
+    cmd_moment.vector.x = roll_controller_pid.computeCommand(roll_error, roll_error_dot, sample_duration);
   }
 
   // Pitch error
@@ -135,7 +138,7 @@ void AttitudeController::UpdateError()
     last_error.y = pitch_error;
     status_msg.pitch.error = pitch_error;
 
-    ang_accel_cmd.y = pitch_controller_pid.computeCommand(pitch_error, pitch_error_dot, sample_duration);
+    cmd_moment.vector.y = pitch_controller_pid.computeCommand(pitch_error, pitch_error_dot, sample_duration);
   }
 
   // Yaw error
@@ -153,12 +156,13 @@ void AttitudeController::UpdateError()
     last_error.z = yaw_error;
     status_msg.yaw.error = yaw_error;
 
-    ang_accel_cmd.z = yaw_controller_pid.computeCommand(yaw_error, yaw_error_dot, sample_duration);
+    cmd_moment.vector.z = yaw_controller_pid.computeCommand(yaw_error, yaw_error_dot, sample_duration);
   }
 
   if (pid_attitude_active)
   {
-    cmd_pub.publish(ang_accel_cmd);
+    cmd_moment.header.stamp = ros::Time::now();
+    cmd_pub.publish(cmd_moment);
     status_msg.header.stamp = sample_start;
     status_pub.publish(status_msg);
   }
@@ -254,8 +258,9 @@ void AttitudeController::ResetRoll()
   status_msg.header.stamp = ros::Time::now();
   status_pub.publish(status_msg);
 
-  ang_accel_cmd.x = 0;
-  cmd_pub.publish(ang_accel_cmd);
+  cmd_moment.header.stamp = ros::Time::now();
+  cmd_moment.vector.x = 0;
+  cmd_pub.publish(cmd_moment);
 }
 
 void AttitudeController::ResetPitch()
@@ -271,8 +276,9 @@ void AttitudeController::ResetPitch()
   status_msg.header.stamp = ros::Time::now();
   status_pub.publish(status_msg);
 
-  ang_accel_cmd.y = 0;
-  cmd_pub.publish(ang_accel_cmd);
+  cmd_moment.header.stamp = ros::Time::now();
+  cmd_moment.vector.y = 0;
+  cmd_pub.publish(cmd_moment);
 }
 
 void AttitudeController::ResetYaw()
@@ -288,6 +294,7 @@ void AttitudeController::ResetYaw()
   status_msg.header.stamp = ros::Time::now();
   status_pub.publish(status_msg);
 
-  ang_accel_cmd.z = 0;
-  cmd_pub.publish(ang_accel_cmd);
+  cmd_moment.header.stamp = ros::Time::now();
+  cmd_moment.vector.z = 0;
+  cmd_pub.publish(cmd_moment);
 }

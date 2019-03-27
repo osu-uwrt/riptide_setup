@@ -1,0 +1,6 @@
+max_x_force: 45.0 # [N]
+max_y_force: 45.0 # [N]
+max_z_force: 45.0 # [N]
+max_x_moment: 10.0 # [Nm]
+max_y_moment: 18.0 # [Nm]
+max_z_moment: 28.0 # [Nm]

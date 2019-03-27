@@ -35,7 +35,7 @@ ThrusterController::ThrusterController(/*char **argv*/) : nh("~")
 
   state_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &ThrusterController::ImuCB, this);
   depth_sub = nh.subscribe<riptide_msgs::Depth>("/state/depth", 1, &ThrusterController::DepthCB, this);
-  cmd_sub = nh.subscribe<geometry_msgs::Accel>("/command/accel", 1, &ThrusterController::AccelCB, this);
+  cmd_sub = nh.subscribe<riptide_msgs::NetLoad>("/command/net_load", 1, &ThrusterController::NetLoadCB, this);
   cmd_pub = nh.advertise<riptide_msgs::ThrustStamped>("/command/thrust", 1);
 
   if (tune)
@@ -167,7 +167,6 @@ void ThrusterController::DynamicReconfigCallback(riptide_controllers::VehiclePro
   }
 }
 
-//Get orientation from IMU
 void ThrusterController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
 {
   float phi = imu_msg->rpy_deg.x * PI / 180;
@@ -204,14 +203,14 @@ void ThrusterController::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg)
   isSubmerged = (bool)(depth_msg->depth > depth_fully_submerged);
 }
 
-void ThrusterController::AccelCB(const geometry_msgs::Accel::ConstPtr &a)
+void ThrusterController::NetLoadCB(const riptide_msgs::NetLoad::ConstPtr &load_msg)
 {
-  command[0] = a->linear.x;
-  command[1] = a->linear.y;
-  command[2] = a->linear.z;
-  command[3] = a->angular.x;
-  command[4] = a->angular.y;
-  command[5] = a->angular.z;
+  command[0] = load_msg->force.x;
+  command[1] = load_msg->force.y;
+  command[2] = load_msg->force.z;
+  command[3] = load_msg->moment.x;
+  command[4] = load_msg->moment.y;
+  command[5] = load_msg->moment.z;
 
   // These initial guesses don't make much of a difference.
   for (int i = 0; i < numThrusters; i++)

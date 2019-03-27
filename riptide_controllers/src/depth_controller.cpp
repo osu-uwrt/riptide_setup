@@ -37,7 +37,7 @@ DepthController::DepthController() : nh("~")
   depth_sub = nh.subscribe<riptide_msgs::Depth>("/state/depth", 1, &DepthController::DepthCB, this);
   imu_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &DepthController::ImuCB, this);
 
-  cmd_pub = nh.advertise<geometry_msgs::Vector3>("/command/accel_depth", 1);
+  cmd_pub = nh.advertise<geometry_msgs::Vector3Stamped>("/command/force_depth", 1);
   status_pub = nh.advertise<riptide_msgs::ControlStatus>("/status/controls/depth", 1);
 
   DepthController::LoadParam<double>("max_depth", MAX_DEPTH);
@@ -55,19 +55,19 @@ DepthController::DepthController() : nh("~")
 
   sample_start = ros::Time::now();
 
-  DepthController::InitMsgs();
+  status_msg.current = current_depth;
   DepthController::ResetDepth();
 }
 
-void DepthController::InitMsgs()
+/*void DepthController::InitMsgs()
 {
   status_msg.reference = 0;
   status_msg.current = 0;
   status_msg.error = 0;
-  accel.x = 0;
-  accel.y = 0;
-  accel.z = 0;
-}
+  cmd_force.vector.x = 0;
+  cmd_force.vector.y = 0;
+  cmd_force.vector.z = 0;
+}*/
 
 // Load parameter from namespace
 template <typename T>
@@ -106,17 +106,14 @@ void DepthController::UpdateError()
 
     output = depth_controller_pid.computeCommand(depth_error, depth_error_dot, sample_duration);
 
-    // Apply rotation matrix to control on depth regarldess of orientation
-    // Use a world vector of [0 0 1].
-    // The z-value of +1 accounts for the proper direction of thrust force
-    // since depth is positive downward, which does not adhere to the
-    // body-frame coordinate system.
-    accel.x = output * R_w2b.getRow(0).z();
-    accel.y = output * R_w2b.getRow(1).z();
-    accel.z = output * R_w2b.getRow(2).z();
+    cmd_force.header.stamp = ros::Time::now();
+    cmd_force.vector.x = -output * sin(theta);
+    cmd_force.vector.y = output * sin(phi) * cos(theta);
+    cmd_force.vector.z = output * cos(phi) * cos(theta);
+    cmd_pub.publish(cmd_force);
+
     status_msg.header.stamp = ros::Time::now();
     status_pub.publish(status_msg);
-    cmd_pub.publish(accel);
   }
   sample_start = ros::Time::now();
 }
@@ -168,9 +165,8 @@ void DepthController::CommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd)
 // Create rotation matrix from IMU orientation
 void DepthController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
 {
-  vector3MsgToTF(imu_msg->rpy_rad, tf);
-  R_b2w.setRPY(tf.x(), tf.y(), tf.z()); //Body to world rotations --> world_vector =  R_b2w * body_vector
-  R_w2b = R_b2w.transpose();            //World to body rotations --> body_vector = R_w2b * world_vector
+  phi = imu_msg->rpy_deg.x * PI / 180;
+  theta = imu_msg->rpy_deg.y * PI / 180;
   DepthController::UpdateError();
 }
 
@@ -189,8 +185,9 @@ void DepthController::ResetDepth()
   status_pub.publish(status_msg);
 
   output = 0;
-  accel.x = 0;
-  accel.y = 0;
-  accel.z = 0;
-  cmd_pub.publish(accel);
+  cmd_force.header.stamp = ros::Time::now();
+  cmd_force.vector.x = 0;
+  cmd_force.vector.y = 0;
+  cmd_force.vector.z = 0;
+  cmd_pub.publish(cmd_force);
 }

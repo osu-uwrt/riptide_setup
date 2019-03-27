@@ -31,8 +31,8 @@ class AlignmentController
     double max_zero_detect_duration;
 
     control_toolbox::Pid x_pid, y_pid, z_pid;
-    double heave_cmd;
-    std_msgs::Float64 x_cmd, y_cmd;
+    double cmd_heave;
+    std_msgs::Float64 cmd_force_x, cmd_force_y;
     riptide_msgs::DepthCommand depth_cmd;
 
     riptide_msgs::ControlStatusLinear status_msg;

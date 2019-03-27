@@ -1,8 +1,5 @@
 #include "riptide_controllers/pwm_controller.h"
 
-// CW Thrusters (odd numbers): SSL(1), SWF(3), HSF(5), HPA(7)
-// CCW Thrusters (even numbers): SPL(0), SWA(2), HPF(4), HSA(6)
-
 // Critical Thrust Indeces
 #define MIN_THRUST 0
 #define STARTUP_THRUST 1
