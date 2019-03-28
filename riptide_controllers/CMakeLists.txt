@@ -25,7 +25,7 @@ find_package(catkin REQUIRED
 
 find_package(Ceres REQUIRED)
 
-find_package(Eigen3 3.3 REQUIRED)
+find_package(Eigen3 3.2 REQUIRED)
 
 generate_dynamic_reconfigure_options(
   cfg/VehicleProperties.cfg
@@ -46,9 +46,14 @@ include_directories(include ${catkin_INCLUDE_DIRS}
   {Eigen3_INCLUDE_DIRS}
 )
 
+cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)
+message("-- Computer name: " ${_host_name})
+
+#if(NOT _host_name MATCHES "riptide")
 add_executable(thruster_controller src/thruster_controller.cpp)
 target_link_libraries(thruster_controller ${catkin_LIBRARIES} ${CERES_LIBRARIES} yaml-cpp)
 add_dependencies(thruster_controller ${catkin_EXPORTED_TARGETS})
+#endif()
 #add_dependencies(thruster_controller riptide_controllers_gencfg)
 
 add_executable(depth_controller src/depth_controller.cpp)

@@ -66,6 +66,7 @@ PS3Controller::PS3Controller() : nh("ps3_controller")
 
   axes_rear_R2 = 0;
   axes_rear_L2 = 0;
+  publishedIMUDisable = false;
 
   PS3Controller::InitMsgs();
 }
@@ -378,7 +379,8 @@ void PS3Controller::UpdateCommands()
 
 void PS3Controller::PublishCommands()
 {
-  attitude_pub.publish(cmd_attitude);
+  if(enableAttitude)
+    attitude_pub.publish(cmd_attitude);
   if (!enableAttitude)
   {
     cmd_moment.header.stamp = ros::Time::now();

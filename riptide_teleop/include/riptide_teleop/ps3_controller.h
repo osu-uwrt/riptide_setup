@@ -38,6 +38,7 @@ class PS3Controller
   bool isDepthInit, alignment_plane;
   double rt, current_depth, buoyancy_depth_thresh, delta_depth;
   bool publish_pneumatics;
+  bool publishedIMUDisable;
 
   float axes_rear_R2, axes_rear_L2;
 
