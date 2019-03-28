@@ -25,7 +25,7 @@ find_package(catkin REQUIRED
 
 find_package(Ceres REQUIRED)
 
-find_package(Eigen3 3.2 REQUIRED)
+find_package(Eigen3 3.3 REQUIRED)
 
 generate_dynamic_reconfigure_options(
   cfg/VehicleProperties.cfg
