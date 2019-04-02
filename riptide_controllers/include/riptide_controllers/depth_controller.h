@@ -3,7 +3,7 @@
 
 #include "ros/ros.h"
 #include "control_toolbox/pid.h"
-#include "geometry_msgs/Vector3.h"
+#include "geometry_msgs/Vector3Stamped.h"
 #include "tf/transform_listener.h"
 #include "riptide_msgs/Depth.h"
 #include "riptide_msgs/DepthCommand.h"
@@ -21,7 +21,7 @@ class DepthController
     ros::Publisher cmd_pub, status_pub;
 
     control_toolbox::Pid depth_controller_pid;
-    geometry_msgs::Vector3 accel;
+    geometry_msgs::Vector3Stamped cmd_force;
     double output, MAX_DEPTH, MAX_DEPTH_ERROR;
 
     // IIR Filter variables for error_dot
@@ -31,6 +31,7 @@ class DepthController
 
     tf::Matrix3x3 R_b2w, R_w2b;
     tf::Vector3 tf;
+    float phi, theta;
 
     //PID
     double depth_error, depth_error_dot;
@@ -43,7 +44,6 @@ class DepthController
 
     bool pid_depth_active;
 
-    void InitMsgs();
     void UpdateError();
     double Constrain(double current, double max);
     double SmoothErrorIIR(double input, double prev);
@@ -56,7 +56,6 @@ class DepthController
     void CommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd);
     void DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg);
     void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
-    //void ResetCB(const riptide_msgs::ResetControls::ConstPtr &reset_msg);
  };
 
  #endif

@@ -7,6 +7,7 @@
 #include "std_msgs/Int8.h"
 #include "std_msgs/Float64.h"
 #include "geometry_msgs/Vector3.h"
+#include "geometry_msgs/Vector3Stamped.h"
 #include "riptide_teleop/ps3_button_mapping.h"
 #include "riptide_msgs/Imu.h"
 #include "riptide_msgs/AttitudeCommand.h"
@@ -21,25 +22,29 @@ class PS3Controller
 {
  private:
   ros::NodeHandle nh;
-  ros::Publisher attitude_pub, depth_pub, x_accel_pub, y_accel_pub, z_accel_pub, ang_accel_pub, reset_pub;
+  ros::Publisher attitude_pub, depth_pub, x_force_pub, y_force_pub, z_force_pub, moment_pub, reset_pub;
   ros::Publisher plane_pub, pneumatics_pub;
   ros::Subscriber joy_sub, depth_sub, imu_sub;
 
-  geometry_msgs::Vector3 delta_attitude, euler_rpy, cmd_ang_accel;
-  std_msgs::Float64 x_cmd, y_cmd, z_cmd;
+  geometry_msgs::Vector3 delta_attitude, euler_rpy;
+  geometry_msgs::Vector3Stamped cmd_moment;
+  std_msgs::Float64 cmd_force_x, cmd_force_y, cmd_force_z;
   riptide_msgs::DepthCommand cmd_depth;
   riptide_msgs::ResetControls reset_msg;
   riptide_msgs::AttitudeCommand cmd_attitude;
   riptide_msgs::Pneumatics pneumatics_cmd;
   std_msgs::Int8 plane_msg;
-  bool isReset, isStarted, isInit, isDepthWorking, isIMUWorking, isR2Init, isL2Init;
+  bool isReset, isStarted, isInit, enableDepth, enableAttitude, isR2Init, isL2Init;
   bool isDepthInit, alignment_plane;
   double rt, current_depth, buoyancy_depth_thresh, delta_depth;
   bool publish_pneumatics;
+  bool publishedIMUDisable;
+
+  float axes_rear_R2, axes_rear_L2;
 
   // Max values, and command rates
-  double MAX_ROLL, MAX_PITCH, MAX_DEPTH, MAX_X_ACCEL, MAX_Y_ACCEL, MAX_Z_ACCEL;
-  double MAX_ROLL_ACCEL, MAX_PITCH_ACCEL, MAX_YAW_ACCEL;
+  double MAX_ROLL, MAX_PITCH, MAX_DEPTH, MAX_X_FORCE, MAX_Y_FORCE, MAX_Z_FORCE;
+  double MAX_X_MOMENT, MAX_Y_MOMENT, MAX_Z_MOMENT;
   double CMD_ROLL_RATE, CMD_PITCH_RATE, CMD_YAW_RATE, CMD_DEPTH_RATE;
 
   // Multiplication Factors (based on command rates)

@@ -1,5 +1,5 @@
 <launch>
   <node pkg="riptide_controllers" type="command_combinator" name="command_combinator" output="screen" >
-    <rosparam file="$(find riptide_controllers)/cfg/max_accel.yaml" command="load" />
+    <rosparam file="$(find riptide_controllers)/cfg/max_load.yaml" command="load" />
   </node>
 </launch>

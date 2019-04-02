@@ -1,0 +1,9 @@
+<launch>
+  <arg name="tune" default="false" />
+
+  <include file="$(find riptide_hardware)/launch/coprocessor.launch" />
+  <include file="$(find riptide_controllers)/launch/controllers.launch" >
+    <arg name="tune" value="$(arg tune)" />
+  </include>
+
+</launch>

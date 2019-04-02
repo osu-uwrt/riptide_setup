@@ -41,7 +41,7 @@ AttitudeController::AttitudeController() : nh("~")
   cmd_sub = nh.subscribe<riptide_msgs::AttitudeCommand>("/command/attitude", 1, &AttitudeController::CommandCB, this);
   imu_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &AttitudeController::ImuCB, this);
 
-  cmd_pub = nh.advertise<geometry_msgs::Vector3>("/command/accel_angular", 1);
+  cmd_pub = nh.advertise<geometry_msgs::Vector3Stamped>("/command/moment", 1);
   status_pub = nh.advertise<riptide_msgs::ControlStatusAngular>("/status/controls/angular", 1);
 
   AttitudeController::LoadParam<double>("max_roll_error", MAX_ROLL_ERROR);
@@ -64,29 +64,13 @@ AttitudeController::AttitudeController() : nh("~")
 
   sample_start = ros::Time::now();
 
-  AttitudeController::InitMsgs();
+  //AttitudeController::InitMsgs();
+  status_msg.roll.current = 0;
+  status_msg.pitch.current = 0;
+  status_msg.yaw.current = 0;
   AttitudeController::ResetRoll();
   AttitudeController::ResetPitch();
   AttitudeController::ResetYaw();
-}
-
-void AttitudeController::InitMsgs()
-{
-  status_msg.roll.reference = 0;
-  status_msg.roll.current = 0;
-  status_msg.roll.error = 0;
-
-  status_msg.pitch.reference = 0;
-  status_msg.pitch.current = 0;
-  status_msg.pitch.error = 0;
-
-  status_msg.yaw.reference = 0;
-  status_msg.yaw.current = 0;
-  status_msg.yaw.error = 0;
-
-  ang_accel_cmd.x = 0;
-  ang_accel_cmd.y = 0;
-  ang_accel_cmd.z = 0;
 }
 
 // Load parameter from namespace
@@ -123,7 +107,7 @@ void AttitudeController::UpdateError()
     last_error.x = roll_error;
     status_msg.roll.error = roll_error;
 
-    ang_accel_cmd.x = roll_controller_pid.computeCommand(roll_error, roll_error_dot, sample_duration);
+    cmd_moment.vector.x = roll_controller_pid.computeCommand(roll_error, roll_error_dot, sample_duration);
   }
 
   // Pitch error
@@ -135,7 +119,7 @@ void AttitudeController::UpdateError()
     last_error.y = pitch_error;
     status_msg.pitch.error = pitch_error;
 
-    ang_accel_cmd.y = pitch_controller_pid.computeCommand(pitch_error, pitch_error_dot, sample_duration);
+    cmd_moment.vector.y = pitch_controller_pid.computeCommand(pitch_error, pitch_error_dot, sample_duration);
   }
 
   // Yaw error
@@ -153,12 +137,13 @@ void AttitudeController::UpdateError()
     last_error.z = yaw_error;
     status_msg.yaw.error = yaw_error;
 
-    ang_accel_cmd.z = yaw_controller_pid.computeCommand(yaw_error, yaw_error_dot, sample_duration);
+    cmd_moment.vector.z = yaw_controller_pid.computeCommand(yaw_error, yaw_error_dot, sample_duration);
   }
 
   if (pid_attitude_active)
   {
-    cmd_pub.publish(ang_accel_cmd);
+    cmd_moment.header.stamp = ros::Time::now();
+    cmd_pub.publish(cmd_moment);
     status_msg.header.stamp = sample_start;
     status_pub.publish(status_msg);
   }
@@ -184,19 +169,6 @@ double AttitudeController::SmoothErrorIIR(double input, double prev)
   return (alpha * input + (1 - alpha) * prev);
 }
 
-// Subscribe to state/imu
-void AttitudeController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
-{
-  current_attitude = imu_msg->rpy_deg;
-  status_msg.roll.current = current_attitude.x;
-  status_msg.pitch.current = current_attitude.y;
-  status_msg.yaw.current = current_attitude.z;
-
-  //Get angular velocity (leave in [deg/s])
-  ang_vel = imu_msg->ang_vel_deg;
-  AttitudeController::UpdateError();
-}
-
 void AttitudeController::CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr &cmd)
 {
   pid_roll_active = cmd->roll_active;
@@ -211,7 +183,7 @@ void AttitudeController::CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr
   }
   else
   {
-    AttitudeController::ResetRoll();
+    AttitudeController::ResetRoll(); // Should not execute consecutive times
   }
 
   if (pid_pitch_active)
@@ -222,7 +194,7 @@ void AttitudeController::CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr
   }
   else
   {
-    AttitudeController::ResetPitch();
+    AttitudeController::ResetPitch(); // Should not execute consecutive times
   }
 
   if (pid_yaw_active)
@@ -232,7 +204,7 @@ void AttitudeController::CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr
   }
   else
   {
-    AttitudeController::ResetYaw();
+    AttitudeController::ResetYaw(); // Should not execute consecutive times
   }
 
   if (pid_roll_active || pid_pitch_active || pid_yaw_active)
@@ -241,6 +213,20 @@ void AttitudeController::CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr
     pid_attitude_active = false;
 }
 
+// Subscribe to state/imu
+void AttitudeController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
+{
+  current_attitude = imu_msg->rpy_deg;
+  status_msg.roll.current = current_attitude.x;
+  status_msg.pitch.current = current_attitude.y;
+  status_msg.yaw.current = current_attitude.z;
+
+  //Get angular velocity (leave in [deg/s])
+  ang_vel = imu_msg->ang_vel_deg;
+  AttitudeController::UpdateError();
+}
+
+// Should not execute consecutive times
 void AttitudeController::ResetRoll()
 {
   roll_controller_pid.reset();
@@ -254,10 +240,12 @@ void AttitudeController::ResetRoll()
   status_msg.header.stamp = ros::Time::now();
   status_pub.publish(status_msg);
 
-  ang_accel_cmd.x = 0;
-  cmd_pub.publish(ang_accel_cmd);
+  cmd_moment.header.stamp = ros::Time::now();
+  cmd_moment.vector.x = 0;
+  cmd_pub.publish(cmd_moment);
 }
 
+// Should not execute consecutive times
 void AttitudeController::ResetPitch()
 {
   pitch_controller_pid.reset();
@@ -271,10 +259,12 @@ void AttitudeController::ResetPitch()
   status_msg.header.stamp = ros::Time::now();
   status_pub.publish(status_msg);
 
-  ang_accel_cmd.y = 0;
-  cmd_pub.publish(ang_accel_cmd);
+  cmd_moment.header.stamp = ros::Time::now();
+  cmd_moment.vector.y = 0;
+  cmd_pub.publish(cmd_moment);
 }
 
+// Should not execute consecutive times
 void AttitudeController::ResetYaw()
 {
   yaw_controller_pid.reset();
@@ -288,6 +278,7 @@ void AttitudeController::ResetYaw()
   status_msg.header.stamp = ros::Time::now();
   status_pub.publish(status_msg);
 
-  ang_accel_cmd.z = 0;
-  cmd_pub.publish(ang_accel_cmd);
+  cmd_moment.header.stamp = ros::Time::now();
+  cmd_moment.vector.z = 0;
+  cmd_pub.publish(cmd_moment);
 }

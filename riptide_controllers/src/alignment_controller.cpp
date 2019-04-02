@@ -37,8 +37,8 @@ AlignmentController::AlignmentController() : nh("~") {
     depth_sub = nh.subscribe<riptide_msgs::Depth>("/state/depth", 1, &AlignmentController::DepthCB, this);
     task_info_sub = nh.subscribe<riptide_msgs::TaskInfo>("/task/info", 1, &AlignmentController::TaskInfoCB, this);
 
-    x_pub = nh.advertise<std_msgs::Float64>("/command/accel_x", 1);
-    y_pub = nh.advertise<std_msgs::Float64>("/command/accel_y", 1);
+    x_pub = nh.advertise<std_msgs::Float64>("/command/force_x", 1);
+    y_pub = nh.advertise<std_msgs::Float64>("/command/force_y", 1);
     depth_pub = nh.advertise<riptide_msgs::DepthCommand>("/command/depth", 1);
     status_pub = nh.advertise<riptide_msgs::ControlStatusLinear>("/status/controls/linear", 1);
 
@@ -128,8 +128,9 @@ void AlignmentController::UpdateError() {
     error_dot.y = AlignmentController::SmoothErrorIIR(error_dot.y, last_error_dot.y);
     last_error.y = error.y;
     last_error_dot.y = error_dot.y;
-    y_cmd.data = y_pid.computeCommand(error.y, error_dot.y, sample_duration);
-    y_pub.publish(y_cmd);
+
+    cmd_force_y.data = y_pid.computeCommand(error.y, error_dot.y, sample_duration);
+    y_pub.publish(cmd_force_y);
   }
 
   // If we are aligning in the YZ plane (forward cam), then X acceleration is
@@ -154,8 +155,9 @@ void AlignmentController::UpdateError() {
     error_dot.x = AlignmentController::SmoothErrorIIR(error_dot.x, last_error_dot.x);
     last_error.x = error.x;
     last_error_dot.x = error_dot.x;
-    x_cmd.data = x_pid.computeCommand(error.x, error_dot.x, sample_duration);
-    x_pub.publish(x_cmd);
+
+    cmd_force_x.data = x_pid.computeCommand(error.x, error_dot.x, sample_duration);
+    x_pub.publish(cmd_force_x);
   }
 
   if(pid_heave_active) {
@@ -174,10 +176,10 @@ void AlignmentController::UpdateError() {
     error_dot.z = AlignmentController::SmoothErrorIIR(error_dot.z, last_error_dot.z);
     last_error.z = error.z;
     last_error_dot.z = error_dot.z;
-    heave_cmd = z_pid.computeCommand(error.z, error_dot.z, sample_duration);
 
+    cmd_heave = z_pid.computeCommand(error.z, error_dot.z, sample_duration);
     depth_cmd.active = true;
-    depth_cmd.depth = current_depth + heave_cmd;
+    depth_cmd.depth = current_depth + cmd_heave;
     depth_pub.publish(depth_cmd);
   }
 
@@ -234,14 +236,14 @@ void AlignmentController::ObjectCB(const riptide_msgs::Object::ConstPtr &obj_msg
 // Send zero accel if an object has not been seen for 'x' seconds to keep the
 // vehicle from moving endlessly
 void AlignmentController::DisableControllerTimer(const ros::TimerEvent& event) {
-  x_cmd.data = 0;
-  y_cmd.data = 0;
+  cmd_force_x.data = 0;
+  cmd_force_y.data = 0;
 
   // MUST be active and NOT reset to publish the zero
   if(pid_surge_active)
-    x_pub.publish(x_cmd);
+    x_pub.publish(cmd_force_x);
   if(pid_sway_active) 
-    y_pub.publish(y_cmd);
+    y_pub.publish(cmd_force_y);
 }
 
 // Do NOT call UpdateError in this callback.
@@ -328,8 +330,8 @@ void AlignmentController::ResetSurge() {
     status_msg.header.stamp = ros::Time::now();
     status_pub.publish(status_msg);
 
-    x_cmd.data = 0;
-    x_pub.publish(x_cmd);
+    cmd_force_x.data = 0;
+    x_pub.publish(cmd_force_x);
 }
 
 void AlignmentController::ResetSway() {
@@ -345,8 +347,8 @@ void AlignmentController::ResetSway() {
     status_msg.header.stamp = ros::Time::now();
     status_pub.publish(status_msg);
 
-    y_cmd.data = 0;
-    y_pub.publish(y_cmd);
+    cmd_force_y.data = 0;
+    y_pub.publish(cmd_force_y);
 }
 
 void AlignmentController::ResetHeave() {
@@ -362,8 +364,8 @@ void AlignmentController::ResetHeave() {
     status_msg.header.stamp = ros::Time::now();
     status_pub.publish(status_msg);
 
-    heave_cmd = 0;
+    cmd_heave = 0;
     depth_cmd.active = true;
-    depth_cmd.depth = current_depth + heave_cmd;
+    depth_cmd.depth = current_depth + cmd_heave;
     depth_pub.publish(depth_cmd);
 }
