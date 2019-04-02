@@ -4,9 +4,9 @@
 properties: {
   mass: 40.85, # [kg]
   volume: 0.0370, # [m^3]
-  CoB: [0.0, 0.0, 0.0], # Position relative to CoM [m]
+  CoB: [0.0, 0.0, 0.0], # Center of buoyancy/volume position relative to CoM [m]
   inertia: [1.32, 2.84, 3.65], # Principle Inertias [kg-m^2]
-  depth_fully_submerged: 0.15,
+  depth_fully_submerged: 0.15, # [m]
   thrusters: [ 
     # Pose (from center of mass): [x (m, y (m), z (m), yaw (deg), pitch (deg)]
     # Type: 0 = CCW spin (symbol: -->), 1 = CW spin (symbol: <--)

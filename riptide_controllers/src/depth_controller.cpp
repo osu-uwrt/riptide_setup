@@ -59,16 +59,6 @@ DepthController::DepthController() : nh("~")
   DepthController::ResetDepth();
 }
 
-/*void DepthController::InitMsgs()
-{
-  status_msg.reference = 0;
-  status_msg.current = 0;
-  status_msg.error = 0;
-  cmd_force.vector.x = 0;
-  cmd_force.vector.y = 0;
-  cmd_force.vector.z = 0;
-}*/
-
 // Load parameter from namespace
 template <typename T>
 void DepthController::LoadParam(string param, T &var)
@@ -136,14 +126,6 @@ double DepthController::SmoothErrorIIR(double input, double prev)
   return (alpha * input + (1 - alpha) * prev);
 }
 
-// Subscribe to state/depth
-void DepthController::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg)
-{
-  current_depth = depth_msg->depth;
-  status_msg.current = current_depth;
-  DepthController::UpdateError();
-}
-
 // Subscribe to manual depth command
 void DepthController::CommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd)
 {
@@ -158,8 +140,16 @@ void DepthController::CommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd)
   }
   else
   {
-    DepthController::ResetDepth();
+    DepthController::ResetDepth(); // Should not execute consecutive times
   }
+}
+
+// Subscribe to state/depth
+void DepthController::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg)
+{
+  current_depth = depth_msg->depth;
+  status_msg.current = current_depth;
+  DepthController::UpdateError();
 }
 
 // Create rotation matrix from IMU orientation
@@ -170,6 +160,7 @@ void DepthController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
   DepthController::UpdateError();
 }
 
+// Should not execute consecutive times
 void DepthController::ResetDepth()
 {
   depth_controller_pid.reset();

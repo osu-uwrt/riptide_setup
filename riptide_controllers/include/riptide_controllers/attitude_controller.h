@@ -39,15 +39,12 @@ class AttitudeController
 
     geometry_msgs::Vector3 current_attitude, ang_vel, last_error, last_error_dot;
 
-    //bool pid_attitude_reset, pid_attitude_active;
-    //bool pid_roll_reset, pid_pitch_reset, pid_yaw_reset;
     bool pid_roll_active, pid_pitch_active, pid_yaw_active, pid_attitude_active;
 
     ros::Time sample_start;
     ros::Duration sample_duration;
     double dt;
 
-    //void InitMsgs();
     void UpdateError();
     double Constrain(double current, double max);
     double SmoothErrorIIR(double input, double prev);
@@ -61,7 +58,6 @@ class AttitudeController
     void LoadParam(string param, T &var);
     void CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr &cmd);
     void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
-    //void ResetCB(const riptide_msgs::ResetControls::ConstPtr& reset_msg);
  };
 
  #endif

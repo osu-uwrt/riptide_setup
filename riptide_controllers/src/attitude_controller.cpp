@@ -73,25 +73,6 @@ AttitudeController::AttitudeController() : nh("~")
   AttitudeController::ResetYaw();
 }
 
-/*void AttitudeController::InitMsgs()
-{
-  status_msg.roll.reference = 0;
-  status_msg.roll.current = 0;
-  status_msg.roll.error = 0;
-
-  status_msg.pitch.reference = 0;
-  status_msg.pitch.current = 0;
-  status_msg.pitch.error = 0;
-
-  status_msg.yaw.reference = 0;
-  status_msg.yaw.current = 0;
-  status_msg.yaw.error = 0;
-
-  cmd_moment.x = 0;
-  cmd_moment.y = 0;
-  cmd_moment.z = 0;
-}*/
-
 // Load parameter from namespace
 template <typename T>
 void AttitudeController::LoadParam(string param, T &var)
@@ -188,19 +169,6 @@ double AttitudeController::SmoothErrorIIR(double input, double prev)
   return (alpha * input + (1 - alpha) * prev);
 }
 
-// Subscribe to state/imu
-void AttitudeController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
-{
-  current_attitude = imu_msg->rpy_deg;
-  status_msg.roll.current = current_attitude.x;
-  status_msg.pitch.current = current_attitude.y;
-  status_msg.yaw.current = current_attitude.z;
-
-  //Get angular velocity (leave in [deg/s])
-  ang_vel = imu_msg->ang_vel_deg;
-  AttitudeController::UpdateError();
-}
-
 void AttitudeController::CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr &cmd)
 {
   pid_roll_active = cmd->roll_active;
@@ -215,7 +183,7 @@ void AttitudeController::CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr
   }
   else
   {
-    AttitudeController::ResetRoll();
+    AttitudeController::ResetRoll(); // Should not execute consecutive times
   }
 
   if (pid_pitch_active)
@@ -226,7 +194,7 @@ void AttitudeController::CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr
   }
   else
   {
-    AttitudeController::ResetPitch();
+    AttitudeController::ResetPitch(); // Should not execute consecutive times
   }
 
   if (pid_yaw_active)
@@ -236,7 +204,7 @@ void AttitudeController::CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr
   }
   else
   {
-    AttitudeController::ResetYaw();
+    AttitudeController::ResetYaw(); // Should not execute consecutive times
   }
 
   if (pid_roll_active || pid_pitch_active || pid_yaw_active)
@@ -245,6 +213,20 @@ void AttitudeController::CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr
     pid_attitude_active = false;
 }
 
+// Subscribe to state/imu
+void AttitudeController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
+{
+  current_attitude = imu_msg->rpy_deg;
+  status_msg.roll.current = current_attitude.x;
+  status_msg.pitch.current = current_attitude.y;
+  status_msg.yaw.current = current_attitude.z;
+
+  //Get angular velocity (leave in [deg/s])
+  ang_vel = imu_msg->ang_vel_deg;
+  AttitudeController::UpdateError();
+}
+
+// Should not execute consecutive times
 void AttitudeController::ResetRoll()
 {
   roll_controller_pid.reset();
@@ -263,6 +245,7 @@ void AttitudeController::ResetRoll()
   cmd_pub.publish(cmd_moment);
 }
 
+// Should not execute consecutive times
 void AttitudeController::ResetPitch()
 {
   pitch_controller_pid.reset();
@@ -281,6 +264,7 @@ void AttitudeController::ResetPitch()
   cmd_pub.publish(cmd_moment);
 }
 
+// Should not execute consecutive times
 void AttitudeController::ResetYaw()
 {
   yaw_controller_pid.reset();

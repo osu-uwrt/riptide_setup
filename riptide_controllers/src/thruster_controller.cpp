@@ -7,7 +7,7 @@ int main(int argc, char **argv)
   tc.Loop();
 }
 
-ThrusterController::ThrusterController(/*char **argv*/) : nh("~")
+ThrusterController::ThrusterController() : nh("~")
 {
   // Load parameters from .yaml files or launch files
   ThrusterController::LoadParam<bool>("tune", tune);
@@ -47,8 +47,6 @@ ThrusterController::ThrusterController(/*char **argv*/) : nh("~")
 
   ThrusterController::InitThrustMsg();
 
-  //google::InitGoogleLogging(argv[0]);
-
   // EOM problem
   problemEOM.AddResidualBlock(new ceres::AutoDiffCostFunction<EOM, 6, 8>(new EOM(numThrusters, thrustCoeffs, inertia, weightLoad, transportThm, command)), NULL, solver_forces);
   optionsEOM.max_num_iterations = 100;
@@ -85,6 +83,9 @@ void ThrusterController::LoadVehicleProperties()
   mass = properties["properties"]["mass"].as<double>();
   volume = properties["properties"]["volume"].as<double>();
   depth_fully_submerged = properties["properties"]["depth_fully_submerged"].as<double>();
+
+  Fg = mass * GRAVITY;
+  Fb = WATER_DENSITY * volume * GRAVITY;
 
   for (int i = 0; i < 3; i++)
     CoB(i) = properties["properties"]["CoB"][i].as<double>();
@@ -150,7 +151,7 @@ void ThrusterController::InitThrustMsg()
   thrust_msg.force.heave_stbd_fwd = 0;
   thrust_msg.force.heave_port_aft = 0;
   thrust_msg.force.heave_stbd_aft = 0;
-  
+
   cmd_pub.publish(thrust_msg);
 }
 
@@ -164,6 +165,8 @@ void ThrusterController::DynamicReconfigCallback(riptide_controllers::VehiclePro
     CoB(0) = config.Buoyancy_X_POS;
     CoB(1) = config.Buoyancy_Y_POS;
     CoB(2) = config.Buoyancy_Z_POS;
+    Fg = mass * GRAVITY;
+    Fb = WATER_DENSITY * volume * GRAVITY;
   }
 }
 
@@ -171,16 +174,14 @@ void ThrusterController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
 {
   float phi = imu_msg->rpy_deg.x * PI / 180;
   float theta = imu_msg->rpy_deg.y * PI / 180;
-  float p = imu_msg->ang_vel_rad.x;
-  float q = imu_msg->ang_vel_rad.y;
-  float r = imu_msg->ang_vel_rad.z;
+  float p = imu_msg->ang_vel_deg.x * PI / 180;
+  float q = imu_msg->ang_vel_deg.y * PI / 180;
+  float r = imu_msg->ang_vel_deg.z * PI / 180;
 
   transportThm[3] = -q * r * (Izz - Iyy);
   transportThm[4] = -p * r * (Ixx - Izz);
   transportThm[5] = -p * q * (Iyy - Ixx);
 
-  Fg = mass * GRAVITY;
-  Fb = WATER_DENSITY * volume * GRAVITY;
   Vector3d Fb_eig;
   Fb_eig(0) = Fb * sin(theta);
   Fb_eig(1) = -Fb * sin(phi) * cos(theta);
@@ -192,7 +193,7 @@ void ThrusterController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
   weightLoad_eig.segment<3>(3) = CoB.cross(Fb_eig);
   weightLoad_eig = weightLoad_eig * ((int)(isSubmerged));
 
-  // Convert Eigen::Vector6d to c++ double[6]
+  // Convert Eigen::VectorXd to c++ double[X]
   Map<RowMatrixXd>(&weightLoad[0], weightLoad_eig.rows(), weightLoad_eig.cols()) = weightLoad_eig;
   Map<Vector3d>(&Fb_vector[0], Fb_eig.rows(), Fb_eig.cols()) = Fb_eig;
 }

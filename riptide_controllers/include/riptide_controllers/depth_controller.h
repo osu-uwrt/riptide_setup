@@ -44,7 +44,6 @@ class DepthController
 
     bool pid_depth_active;
 
-    //void InitMsgs();
     void UpdateError();
     double Constrain(double current, double max);
     double SmoothErrorIIR(double input, double prev);
@@ -57,7 +56,6 @@ class DepthController
     void CommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd);
     void DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg);
     void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
-    //void ResetCB(const riptide_msgs::ResetControls::ConstPtr &reset_msg);
  };
 
  #endif
