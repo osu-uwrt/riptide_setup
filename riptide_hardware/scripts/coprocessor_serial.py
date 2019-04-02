@@ -12,7 +12,7 @@ from riptide_msgs.msg import PwmStamped
 from riptide_msgs.msg import StatusLight
 from riptide_msgs.msg import SwitchState
 
-IP_ADDR = '192.168.1.42'
+IP_ADDR = '127.0.0.1'
 copro = None
 connected = False
 # only add byte arrays to this queue
@@ -80,6 +80,7 @@ def shutdown_copro():
     if connected:
         # disable thrusters
         copro.sendall(bytearray([3, 2, 0]))
+        copro.sendall(bytearray([0]))
         copro.close()
 
 def main():
