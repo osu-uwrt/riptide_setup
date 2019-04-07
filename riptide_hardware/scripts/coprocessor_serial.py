@@ -12,7 +12,7 @@ from riptide_msgs.msg import PwmStamped
 from riptide_msgs.msg import StatusLight
 from riptide_msgs.msg import SwitchState
 
-IP_ADDR = '127.0.0.1'
+IP_ADDR = '192.168.1.42'
 copro = None
 connected = False
 # only add byte arrays to this queue
@@ -90,6 +90,7 @@ def main():
     global connection_pub
     global connected
     global buffer
+
 
     rospy.init_node('coprocessor_serial')
 
