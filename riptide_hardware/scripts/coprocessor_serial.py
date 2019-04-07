@@ -80,6 +80,7 @@ def shutdown_copro():
     if connected:
         # disable thrusters
         copro.sendall(bytearray([3, 2, 0]))
+        copro.sendall(bytearray([0]))
         copro.close()
 
 def main():
@@ -89,6 +90,7 @@ def main():
     global connection_pub
     global connected
     global buffer
+
 
     rospy.init_node('coprocessor_serial')
 
