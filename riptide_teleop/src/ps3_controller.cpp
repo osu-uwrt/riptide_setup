@@ -221,16 +221,16 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr &joy)
         }
         else
         {
-          cmd_moment.vector.y = -joy->axes[AXES_STICK_LEFT_UD] * MAX_Y_MOMENT;
+          cmd_moment.vector.y = joy->axes[AXES_STICK_LEFT_UD] * MAX_Y_MOMENT;
           cmd_moment.vector.x = 0;
         }
 
         // Z Moment - USE CROSS (not the left joystick)
         //cmd_ang_accel.z = -joy->axes[AXES_STICK_LEFT_LR] * MAX_Z_MOMENT; // CW is positive
         if (joy->buttons[BUTTON_CROSS_RIGHT])
-          cmd_moment.vector.z = 0.25 * MAX_Z_MOMENT; // CW is positive
+          cmd_moment.vector.z = -0.25 * MAX_Z_MOMENT; // CW is positive
         else if (joy->buttons[BUTTON_CROSS_LEFT])
-          cmd_moment.vector.z = -0.25 * MAX_Z_MOMENT;
+          cmd_moment.vector.z = 0.25 * MAX_Z_MOMENT;
         else
           cmd_moment.vector.z = 0;
       }
@@ -343,35 +343,39 @@ double PS3Controller::Constrain(double current, double max)
 
 void PS3Controller::UpdateCommands()
 {
-  cmd_attitude.roll_active = true;
-  cmd_attitude.pitch_active = true;
-  cmd_attitude.yaw_active = true;
-  cmd_attitude.euler_rpy.x += delta_attitude.x;
-  cmd_attitude.euler_rpy.y += delta_attitude.y;
-  cmd_attitude.euler_rpy.z += delta_attitude.z;
+  if (enableAttitude)
+  {
+    cmd_attitude.roll_active = true;
+    cmd_attitude.pitch_active = true;
+    cmd_attitude.yaw_active = true;
+    cmd_attitude.euler_rpy.x += delta_attitude.x;
+    cmd_attitude.euler_rpy.y += delta_attitude.y;
+    cmd_attitude.euler_rpy.z += delta_attitude.z;
 
-  cmd_attitude.euler_rpy.x = PS3Controller::Constrain(cmd_attitude.euler_rpy.x, MAX_ROLL);
-  cmd_attitude.euler_rpy.y = PS3Controller::Constrain(cmd_attitude.euler_rpy.y, MAX_PITCH);
+    cmd_attitude.euler_rpy.x = PS3Controller::Constrain(cmd_attitude.euler_rpy.x, MAX_ROLL);
+    cmd_attitude.euler_rpy.y = PS3Controller::Constrain(cmd_attitude.euler_rpy.y, MAX_PITCH);
 
-  if (cmd_attitude.euler_rpy.z > 180)
-    cmd_attitude.euler_rpy.z -= 360;
-  if (cmd_attitude.euler_rpy.z < -180)
-    cmd_attitude.euler_rpy.z += 360;
-
-  if (!enableAttitude)
+    if (cmd_attitude.euler_rpy.z > 180)
+      cmd_attitude.euler_rpy.z -= 360;
+    if (cmd_attitude.euler_rpy.z < -180)
+      cmd_attitude.euler_rpy.z += 360;
+  }
+  else
   {
     cmd_attitude.roll_active = false;
     cmd_attitude.pitch_active = false;
     cmd_attitude.yaw_active = false;
   }
 
-  cmd_depth.active = true;
-  cmd_depth.depth += delta_depth;
-  cmd_depth.depth = PS3Controller::Constrain(cmd_depth.depth, MAX_DEPTH);
-  if (cmd_depth.depth < 0)
-    cmd_depth.depth = 0;
-
-  if (!enableDepth)
+  if (enableDepth)
+  {
+    cmd_depth.active = true;
+    cmd_depth.depth += delta_depth;
+    cmd_depth.depth = PS3Controller::Constrain(cmd_depth.depth, MAX_DEPTH);
+    if (cmd_depth.depth < 0)
+      cmd_depth.depth = 0;
+  }
+  else
     cmd_depth.active = false;
 
   plane_msg.data = (int)alignment_plane;
@@ -379,9 +383,9 @@ void PS3Controller::UpdateCommands()
 
 void PS3Controller::PublishCommands()
 {
-  if(enableAttitude)
+  if (enableAttitude)
     attitude_pub.publish(cmd_attitude);
-  if (!enableAttitude)
+  else
   {
     cmd_moment.header.stamp = ros::Time::now();
     moment_pub.publish(cmd_moment);
@@ -390,7 +394,10 @@ void PS3Controller::PublishCommands()
   x_force_pub.publish(cmd_force_x);
   y_force_pub.publish(cmd_force_y);
 
-  depth_pub.publish(cmd_depth);
+  if (enableDepth)
+  {
+    depth_pub.publish(cmd_depth);
+  }
   if (!enableDepth)
     z_force_pub.publish(cmd_force_z);
 
