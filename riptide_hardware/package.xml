@@ -17,6 +17,7 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <build_depend>riptide_msgs</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>roslint</build_depend>
   <build_depend>message_generation</build_depend>
@@ -26,6 +27,7 @@
   <build_depend>cv_bridge</build_depend>
   <build_depend>OpenCV</build_depend>
 
+  <run_depend>riptide_msgs</run_depend>
   <run_depend>roslaunch</run_depend>
   <run_depend>rosserial_msgs</run_depend>
   <run_depend>rosserial_python</run_depend>
