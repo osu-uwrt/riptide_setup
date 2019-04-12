@@ -109,13 +109,6 @@ void PWMController::ThrustCB(const riptide_msgs::ThrustStamped::ConstPtr &thrust
   {
     pwm_msg.header.stamp = thrust->header.stamp;
 
-<<<<<<< HEAD
-    //msg.pwm.surge_port_lo = Thrust2pwm(thrust->force.surge_port_lo, SPL);
-    //msg.pwm.surge_stbd_lo = Thrust2pwm(thrust->force.surge_stbd_lo, SSL);
-
-    //msg.pwm.sway_fwd = Thrust2pwm(thrust->force.sway_fwd, SWF);
-    //msg.pwm.sway_aft = Thrust2pwm(thrust->force.sway_aft, SWA);
-=======
     pwm_msg.pwm.vector_port_fwd = Thrust2pwm(thrust->force.vector_port_fwd, thrusterType[thrust->force.VPF]);
     pwm_msg.pwm.vector_stbd_fwd = Thrust2pwm(thrust->force.vector_stbd_fwd, thrusterType[thrust->force.VSF]);
     pwm_msg.pwm.vector_port_aft = Thrust2pwm(thrust->force.vector_port_aft, thrusterType[thrust->force.VPA]);
@@ -125,7 +118,6 @@ void PWMController::ThrustCB(const riptide_msgs::ThrustStamped::ConstPtr &thrust
     pwm_msg.pwm.heave_stbd_fwd = Thrust2pwm(thrust->force.heave_stbd_fwd, thrusterType[thrust->force.HSF]);
     pwm_msg.pwm.heave_port_aft = Thrust2pwm(thrust->force.heave_port_aft, thrusterType[thrust->force.HPA]);
     pwm_msg.pwm.heave_stbd_aft = Thrust2pwm(thrust->force.heave_stbd_aft, thrusterType[thrust->force.HSA]);
->>>>>>> Acoustics2
 
     pwm_pub.publish(pwm_msg);
     last_alive_time = ros::Time::now();
@@ -179,19 +171,6 @@ int PWMController::Thrust2pwm(double raw_force, int type)
 
 void PWMController::PublishZeroPWM()
 {
-<<<<<<< HEAD
-  msg.header.stamp = ros::Time::now();
-
-  //msg.pwm.surge_port_lo = NEUTRAL_PWM;
-  //msg.pwm.surge_stbd_lo = NEUTRAL_PWM;
-  //msg.pwm.sway_fwd = NEUTRAL_PWM;
-  //msg.pwm.sway_aft = NEUTRAL_PWM;
-  msg.pwm.heave_stbd_fwd = NEUTRAL_PWM;
-  msg.pwm.heave_stbd_aft = NEUTRAL_PWM;
-  msg.pwm.heave_port_aft = NEUTRAL_PWM;
-  msg.pwm.heave_port_fwd = NEUTRAL_PWM;
-  pwm_pub.publish(msg);
-=======
   pwm_msg.header.stamp = ros::Time::now();
 
   pwm_msg.pwm.vector_port_fwd = NEUTRAL_PWM;
@@ -204,7 +183,6 @@ void PWMController::PublishZeroPWM()
   pwm_msg.pwm.heave_stbd_aft = NEUTRAL_PWM;
   
   pwm_pub.publish(pwm_msg);
->>>>>>> Acoustics2
 }
 
 void PWMController::Loop()
