@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find riptide_controllers)/launch/depth_controller.launch" />
+  <test test-name="test_depth_controller" pkg="riptide_controllers" type="depth_controller_test.py" />
+</launch>
