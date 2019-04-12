@@ -25,6 +25,8 @@ find_package(catkin REQUIRED
 
 find_package(Ceres REQUIRED)
 
+find_package(Eigen3 3.3 REQUIRED)
+
 generate_dynamic_reconfigure_options(
   cfg/VehicleProperties.cfg
 )
@@ -41,11 +43,16 @@ roslint_cpp()
 include_directories(include ${catkin_INCLUDE_DIRS}
   ${CERES_INCLUDE_DIRS}
   ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake
+  {Eigen3_INCLUDE_DIRS}
 )
 
+cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)
+
+#if(NOT _host_name MATCHES "riptide")
 add_executable(thruster_controller src/thruster_controller.cpp)
-target_link_libraries(thruster_controller ${catkin_LIBRARIES} ${CERES_LIBRARIES})
+target_link_libraries(thruster_controller ${catkin_LIBRARIES} ${CERES_LIBRARIES} yaml-cpp)
 add_dependencies(thruster_controller ${catkin_EXPORTED_TARGETS})
+#endif()
 #add_dependencies(thruster_controller riptide_controllers_gencfg)
 
 add_executable(depth_controller src/depth_controller.cpp)
@@ -57,7 +64,7 @@ target_link_libraries(alignment_controller ${catkin_LIBRARIES})
 add_dependencies(alignment_controller ${catkin_EXPORTED_TARGETS})
 
 add_executable(pwm_controller src/pwm_controller.cpp)
-target_link_libraries(pwm_controller ${catkin_LIBRARIES})
+target_link_libraries(pwm_controller ${catkin_LIBRARIES} yaml-cpp)
 add_dependencies(pwm_controller ${catkin_EXPORTED_TARGETS})
 
 add_executable(attitude_controller src/attitude_controller.cpp)
@@ -67,3 +74,8 @@ add_dependencies(attitude_controller ${catkin_EXPORTED_TARGETS})
 add_executable(command_combinator src/command_combinator.cpp)
 target_link_libraries(command_combinator ${catkin_LIBRARIES})
 add_dependencies(command_combinator ${catkin_EXPORTED_TARGETS})
+
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  add_rostest(test/controller_tests.test)
+endif()

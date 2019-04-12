@@ -39,8 +39,8 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
 
 cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)
 
-if(NOT _host_name MATCHES "jetson")
-  add_executable(be_autonomous src/be_autonomous.cpp ${AUTONOMY_OBJECTS})
-  target_link_libraries(be_autonomous ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} yaml-cpp)
-  add_dependencies(be_autonomous ${catkin_EXPORTED_TARGETS})
-endif()
+# if(NOT _host_name MATCHES "jetson")
+#  add_executable(be_autonomous src/be_autonomous.cpp ${AUTONOMY_OBJECTS})
+#  target_link_libraries(be_autonomous ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} yaml-cpp)
+#  add_dependencies(be_autonomous ${catkin_EXPORTED_TARGETS})
+# endif()

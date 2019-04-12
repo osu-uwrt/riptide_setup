@@ -1,8 +1,8 @@
 <launch>
   <arg name="port" default="1" />
   <arg name="rate" default="100" />
-  <arg name="is_depth_working" default="true" />
-  <arg name="is_imu_working" default="true" />
+  <arg name="enable_depth" default="true" />
+  <arg name="enable_attitude" default="true" />
 
   <node pkg="joy" type="joy_node" name="joystick_driver">
     <param name="dev" value="/dev/input/js$(arg port)" />
@@ -12,11 +12,10 @@
     <rosparam command="load" file="$(find riptide_teleop)/cfg/ps3_command_rates.yaml" />
     <rosparam command="load" file="$(find riptide_controllers)/cfg/controller_properties_attitude.yaml" />
     <rosparam command="load" file="$(find riptide_controllers)/cfg/controller_properties_depth.yaml" />
-    <rosparam command="load" file="$(find riptide_controllers)/cfg/controller_properties_thruster.yaml" />
-    <rosparam command="load" file="$(find riptide_controllers)/cfg/max_accel.yaml" />
+    <rosparam command="load" file="$(find riptide_controllers)/cfg/max_load.yaml" />
     <rosparam command="load" file="$(find riptide_controllers)/cfg/vehicle_properties.yaml" />
     <param name="rate" type="double" value="$(arg rate)" />
-    <param name="is_depth_working" type="bool" value="$(arg is_depth_working)" />
-    <param name="is_imu_working" type="bool" value="$(arg is_imu_working)" />
+    <param name="enable_depth" type="bool" value="$(arg enable_depth)" />
+    <param name="enable_attitude" type="bool" value="$(arg enable_attitude)" />
   </node>
 </launch>

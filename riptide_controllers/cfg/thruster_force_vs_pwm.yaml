@@ -1,0 +1,34 @@
+# Linear Fit for Thruster Force to ESC pwm: y = mx + b
+# All SLOPEs in [pwm/N], all YINTs in [pwm]
+# NOTE: Three regions - Deadband, Startup (SU), and Primary
+TYPE0:
+  MIN_THRUST: 0.200000
+  STARTUP_THRUST: 1.500000
+  SU_POS_THRUST:
+    SLOPE: 22.500000
+    YINT: 1523
+  SU_NEG_THRUST:
+    SLOPE: 28.600000
+    YINT: 1480
+  POS_THRUST:
+    SLOPE: 5.700000
+    YINT: 1553
+  NEG_THRUST:
+    SLOPE: 7.500000
+    YINT: 1446
+TYPE1:
+  MIN_THRUST: 0.200000
+  STARTUP_THRUST: 1.500000
+  SU_POS_THRUST:
+    SLOPE: -22.500000
+    YINT: 1473
+  SU_NEG_THRUST:
+    SLOPE: -28.600000
+    YINT: 1516
+  POS_THRUST:
+    SLOPE: -5.700000
+    YINT: 1443
+  NEG_THRUST:
+    SLOPE: -7.500000
+    YINT: 1550
+  

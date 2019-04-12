@@ -24,7 +24,7 @@ int main(int argc, char **argv)
   }
 }
 
-DepthController::DepthController() : nh("depth_controller")
+DepthController::DepthController() : nh("~")
 {
   ros::NodeHandle dcpid("depth_controller");
   R_b2w.setIdentity();
@@ -36,9 +36,8 @@ DepthController::DepthController() : nh("depth_controller")
   cmd_sub = nh.subscribe<riptide_msgs::DepthCommand>("/command/depth", 1, &DepthController::CommandCB, this);
   depth_sub = nh.subscribe<riptide_msgs::Depth>("/state/depth", 1, &DepthController::DepthCB, this);
   imu_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &DepthController::ImuCB, this);
-  reset_sub = nh.subscribe<riptide_msgs::ResetControls>("/controls/reset", 1, &DepthController::ResetCB, this);
 
-  cmd_pub = nh.advertise<geometry_msgs::Vector3>("/command/accel_depth", 1);
+  cmd_pub = nh.advertise<geometry_msgs::Vector3Stamped>("/command/force_depth", 1);
   status_pub = nh.advertise<riptide_msgs::ControlStatus>("/status/controls/depth", 1);
 
   DepthController::LoadParam<double>("max_depth", MAX_DEPTH);
@@ -46,7 +45,6 @@ DepthController::DepthController() : nh("depth_controller")
   DepthController::LoadParam<double>("PID_IIR_LPF_bandwidth", PID_IIR_LPF_bandwidth);
   DepthController::LoadParam<double>("sensor_rate", sensor_rate);
 
-  pid_depth_reset = true;
   pid_depth_active = false;
   current_depth = 0;
 
@@ -57,18 +55,8 @@ DepthController::DepthController() : nh("depth_controller")
 
   sample_start = ros::Time::now();
 
-  DepthController::InitMsgs();
-  DepthController::ResetDepth(RESET_ID);
-}
-
-void DepthController::InitMsgs()
-{
-  status_msg.reference = 0;
-  status_msg.current = 0;
-  status_msg.error = 0;
-  accel.x = 0;
-  accel.y = 0;
-  accel.z = 0;
+  status_msg.current = current_depth;
+  DepthController::ResetDepth();
 }
 
 // Load parameter from namespace
@@ -96,7 +84,7 @@ void DepthController::UpdateError()
   sample_duration = ros::Time::now() - sample_start;
   dt = sample_duration.toSec();
 
-  if (!pid_depth_reset && pid_depth_active)
+  if (pid_depth_active)
   {
     depth_error = depth_cmd - current_depth;
     depth_error = DepthController::Constrain(depth_error, MAX_DEPTH_ERROR);
@@ -108,17 +96,14 @@ void DepthController::UpdateError()
 
     output = depth_controller_pid.computeCommand(depth_error, depth_error_dot, sample_duration);
 
-    // Apply rotation matrix to control on depth regarldess of orientation
-    // Use a world vector of [0 0 1].
-    // The z-value of +1 accounts for the proper direction of thrust force
-    // since depth is positive downward, which does not adhere to the
-    // body-frame coordinate system.
-    accel.x = output * R_w2b.getRow(0).z();
-    accel.y = output * R_w2b.getRow(1).z();
-    accel.z = output * R_w2b.getRow(2).z();
+    cmd_force.header.stamp = ros::Time::now();
+    cmd_force.vector.x = -output * sin(theta);
+    cmd_force.vector.y = output * sin(phi) * cos(theta);
+    cmd_force.vector.z = output * cos(phi) * cos(theta);
+    cmd_pub.publish(cmd_force);
+
     status_msg.header.stamp = ros::Time::now();
     status_pub.publish(status_msg);
-    cmd_pub.publish(accel);
   }
   sample_start = ros::Time::now();
 }
@@ -141,19 +126,11 @@ double DepthController::SmoothErrorIIR(double input, double prev)
   return (alpha * input + (1 - alpha) * prev);
 }
 
-// Subscribe to state/depth
-void DepthController::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg)
-{
-  current_depth = depth_msg->depth;
-  status_msg.current = current_depth;
-  DepthController::UpdateError();
-}
-
 // Subscribe to manual depth command
 void DepthController::CommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd)
 {
   pid_depth_active = cmd->active;
-  if (!pid_depth_reset && pid_depth_active)
+  if (pid_depth_active)
   {
     depth_cmd = cmd->depth;
     depth_cmd = DepthController::Constrain(depth_cmd, MAX_DEPTH);
@@ -163,30 +140,28 @@ void DepthController::CommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd)
   }
   else
   {
-    DepthController::ResetDepth(DISABLE_ID);
+    DepthController::ResetDepth(); // Should not execute consecutive times
   }
+}
+
+// Subscribe to state/depth
+void DepthController::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg)
+{
+  current_depth = depth_msg->depth;
+  status_msg.current = current_depth;
+  DepthController::UpdateError();
 }
 
 // Create rotation matrix from IMU orientation
 void DepthController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
 {
-  vector3MsgToTF(imu_msg->rpy_rad, tf);
-  R_b2w.setRPY(tf.x(), tf.y(), tf.z()); //Body to world rotations --> world_vector =  R_b2w * body_vector
-  R_w2b = R_b2w.transpose();            //World to body rotations --> body_vector = R_w2b * world_vector
+  phi = imu_msg->rpy_deg.x * PI / 180;
+  theta = imu_msg->rpy_deg.y * PI / 180;
   DepthController::UpdateError();
 }
 
-void DepthController::ResetCB(const riptide_msgs::ResetControls::ConstPtr &reset_msg)
-{
-  if (reset_msg->reset_depth)
-  { // Reset
-    DepthController::ResetDepth(RESET_ID);
-  }
-  else
-    pid_depth_reset = false;
-}
-
-void DepthController::ResetDepth(int id)
+// Should not execute consecutive times
+void DepthController::ResetDepth()
 {
   depth_controller_pid.reset();
   depth_cmd = 0;
@@ -201,14 +176,9 @@ void DepthController::ResetDepth(int id)
   status_pub.publish(status_msg);
 
   output = 0;
-  accel.x = 0;
-  accel.y = 0;
-  accel.z = 0;
-  cmd_pub.publish(accel);
-
-  // Disable depth controller
-  if (id == RESET_ID)
-    pid_depth_reset = true;
-  else if (id == DISABLE_ID)
-    pid_depth_active = false;
+  cmd_force.header.stamp = ros::Time::now();
+  cmd_force.vector.x = 0;
+  cmd_force.vector.y = 0;
+  cmd_force.vector.z = 0;
+  cmd_pub.publish(cmd_force);
 }

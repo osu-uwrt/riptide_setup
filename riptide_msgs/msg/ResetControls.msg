@@ -1,9 +1,2 @@
 std_msgs/Header header
-bool reset_surge
-bool reset_sway
-bool reset_heave
-bool reset_roll
-bool reset_pitch
-bool reset_yaw
-bool reset_depth
 bool reset_pwm

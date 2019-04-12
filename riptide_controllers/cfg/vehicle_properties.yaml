@@ -1,8 +1,70 @@
-Mass: 36.1 # [kg]
-Volume: 0.0386 # [m^3]
-Ixx: 0.69 # [kg-m^2]
-Iyy: 2.62 # [kg-m^2]
-Izz: 2.51 # [kg-m^2]
-Buoyancy_X_POS: 0.0205 # [m]
-Buoyancy_Y_POS: 0.0 # [m]
-Buoyancy_Z_POS: 0.04 # [m]
+# The motor housing for the thruster points in the thruster's positive x-direction
+# All thrusters are assumed to be pointing in the positive body-frame x-direction
+# You MUST define the correct yaw and pitch angle from body-frame TO the thruster frame
+properties: {
+  mass: 40.85, # [kg]
+  volume: 0.0370, # [m^3]
+  CoB: [0.0, 0.0, 0.0], # Center of buoyancy/volume position relative to CoM [m]
+  inertia: [1.32, 2.84, 3.65], # Principle Inertias [kg-m^2]
+  depth_fully_submerged: 0.15, # [m]
+  thrusters: [ 
+    # Pose (from center of mass): [x (m, y (m), z (m), yaw (deg), pitch (deg)]
+    # Type: 0 = CCW spin (symbol: -->), 1 = CW spin (symbol: <--)
+    {
+      id: 0,
+      name: "VPF",
+      type: 0,
+      enable: true,
+      pose: [0.43, -0.318, -0.085, -135.0, 0.0]
+    },
+    {
+      id: 1,
+      name: "VSF",
+      type: 0,
+      enable: true,
+      pose: [0.43, 0.294, -0.085, 135.0, 0.0]
+    },
+    {
+      id: 2,
+      name: "VPA",
+      type: 0, # Should be 1
+      enable: true,
+      pose: [-0.362, -0.318, -0.085, -45.0, 0.0]
+    },
+    {
+      id: 3,
+      name: "VSA",
+      type: 0, # Should be 1
+      enable: true,
+      pose: [-0.362, 0.294, -0.085, 45.0, 0.0]
+    },
+    {
+      id: 4,
+      name: "HPF",
+      type: 1,
+      enable: true,
+      pose: [0.383, -0.198, 0.039, 0.0, 90.0]
+    },
+    {
+      id: 5,
+      name: "HSF",
+      type: 1, # Should be 0
+      enable: true,
+      pose: [0.383, 0.174, 0.039, 0.0, 90.0]
+    },
+    {
+      id: 6,
+      name: "HPA",
+      type: 1, # Should be 0
+      enable: true,
+      pose: [-0.315, -0.198, 0.039, 0.0, 90.0]
+    },
+    {
+      id: 7,
+      name: "HSA",
+      type: 1,
+      enable: true,
+      pose: [-0.315, 0.174, 0.039, 0.0, 90.0]
+    }
+  ]
+}

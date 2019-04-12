@@ -44,9 +44,9 @@ message("-- Computer name: " ${_host_name})
 
 if(NOT _host_name MATCHES "jetson")
 
-    add_executable(acoustics src/acoustics.cpp)
-    target_link_libraries(acoustics ${catkin_LIBRARIES} okFrontPanel fftw3)
-    add_dependencies(acoustics ${catkin_EXPORTED_TARGETS})
+    # add_executable(acoustics src/acoustics.cpp)
+    # target_link_libraries(acoustics ${catkin_LIBRARIES} okFrontPanel fftw3)
+    # add_dependencies(acoustics ${catkin_EXPORTED_TARGETS})
 
     add_executable(depth_processor src/depth_processor.cpp)
     target_link_libraries(depth_processor ${catkin_LIBRARIES})

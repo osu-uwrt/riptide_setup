@@ -1,11 +1,9 @@
 <launch>
-  <arg name="debug" default="false" />
-  <!--<include file="$(find riptide_description)/launch/riptide_description.launch"/> -->
+  <arg name="tune" default="false" />
+  <arg name="properties_file" value="$(find riptide_controllers)/cfg/vehicle_properties.yaml" />
+
   <node pkg="riptide_controllers" type="thruster_controller" name="thruster_controller" output="screen" >
-    <param name="debug" type="bool" value="$(arg debug)" />
-    <rosparam file="$(find riptide_controllers)/cfg/vehicle_properties.yaml" command="load"/>
-    <rosparam file="$(find riptide_controllers)/cfg/controller_properties_thruster.yaml" command="load"/>
-    <rosparam file="$(find riptide_controllers)/cfg/thruster2com.yaml" command="load"/>
-    <rosparam file="$(find riptide_controllers)/cfg/thruster_config_copro.yaml" command="load"/>
+    <param name="tune" type="bool" value="$(arg tune)" />
+    <param name="properties_file" type="string" value="$(arg properties_file)" />
   </node>
 </launch>

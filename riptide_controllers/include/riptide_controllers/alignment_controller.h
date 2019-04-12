@@ -21,7 +21,7 @@ class AlignmentController
   private:
     // Comms
     ros::NodeHandle nh;
-    ros::Subscriber alignment_cmd_sub, object_sub, depth_sub, reset_sub, task_info_sub;
+    ros::Subscriber alignment_cmd_sub, object_sub, depth_sub, task_info_sub;
     ros::Publisher x_pub, y_pub, depth_pub, status_pub;
     ros::Timer timer;
 
@@ -31,8 +31,8 @@ class AlignmentController
     double max_zero_detect_duration;
 
     control_toolbox::Pid x_pid, y_pid, z_pid;
-    double heave_cmd;
-    std_msgs::Float64 x_cmd, y_cmd;
+    double cmd_heave;
+    std_msgs::Float64 cmd_force_x, cmd_force_y;
     riptide_msgs::DepthCommand depth_cmd;
 
     riptide_msgs::ControlStatusLinear status_msg;
@@ -49,17 +49,17 @@ class AlignmentController
     ros::Duration sample_duration;
 
     // Reset and active variables
-    bool pid_alignment_reset, pid_alignment_active;
-    bool pid_surge_reset, pid_sway_reset, pid_heave_reset;
-    bool pid_surge_active, pid_sway_active, pid_heave_active;
+    //bool pid_alignment_reset, pid_alignment_active;
+    //bool pid_surge_reset, pid_sway_reset, pid_heave_reset;
+    bool pid_surge_active, pid_sway_active, pid_heave_active, pid_alignment_active;
 
     void InitMsgs();
     void UpdateError();
     double Constrain(double current, double max);
     double SmoothErrorIIR(double input, double prev);
-    void ResetSurge(int id);
-    void ResetSway(int id);
-    void ResetHeave(int id);
+    void ResetSurge();
+    void ResetSway();
+    void ResetHeave();
 
   public:
     AlignmentController();
@@ -70,7 +70,7 @@ class AlignmentController
     void CommandCB(const riptide_msgs::AlignmentCommand::ConstPtr &cmd);
     void DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg);
     void TaskInfoCB(const riptide_msgs::TaskInfo::ConstPtr& task_msg);
-    void ResetCB(const riptide_msgs::ResetControls::ConstPtr &reset_msg);
+    //void ResetCB(const riptide_msgs::ResetControls::ConstPtr &reset_msg);
  };
 
  #endif
