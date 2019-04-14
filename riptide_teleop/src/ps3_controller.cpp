@@ -343,8 +343,11 @@ double PS3Controller::Constrain(double current, double max)
 
 void PS3Controller::UpdateCommands()
 {
+  int RESET_ATTITUDE_1, RESET_ATTITUDE_2 = 0;
   if (enableAttitude)
   {
+    RESET_ATTITUDE_2 = 1;
+
     cmd_attitude.roll_active = true;
     cmd_attitude.pitch_active = true;
     cmd_attitude.yaw_active = true;
@@ -360,24 +363,29 @@ void PS3Controller::UpdateCommands()
     if (cmd_attitude.euler_rpy.z < -180)
       cmd_attitude.euler_rpy.z += 360;
   }
-  else
+  else if (RESET_ATTITUDE_1 != RESET_ATTITUDE_2)
   {
     cmd_attitude.roll_active = false;
     cmd_attitude.pitch_active = false;
     cmd_attitude.yaw_active = false;
+    RESET_ATTITUDE_2 = 0;
   }
 
+  int RESET_DEPTH_1, RESET_DEPTH_2 = 0;
   if (enableDepth)
   {
+    RESET_DEPTH_2 = 1;
+
     cmd_depth.active = true;
     cmd_depth.depth += delta_depth;
     cmd_depth.depth = PS3Controller::Constrain(cmd_depth.depth, MAX_DEPTH);
     if (cmd_depth.depth < 0)
       cmd_depth.depth = 0;
   }
-  else
+  else if (RESET_DEPTH_1 != RESET_DEPTH_2) {
     cmd_depth.active = false;
-
+    RESET_DEPTH_2 = 0;
+  }
   plane_msg.data = (int)alignment_plane;
 }
 
