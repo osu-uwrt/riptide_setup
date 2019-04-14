@@ -6,9 +6,8 @@
 
 #define PI 3.141592653
 #define MIN_DEPTH 0
-int RESET_STATE_1 = 0;  // Previous state
-int RESET_STATE_2 = 0;  // Current state
-#define DISABLE_ID 1
+
+bool IS_DEPTH_RESET = false;
 
 int main(int argc, char **argv)
 {
@@ -132,27 +131,16 @@ void DepthController::CommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd)
 {
   pid_depth_active = cmd->active;
   if (pid_depth_active) {
-    RESET_STATE_2 = 1;
-  }
-  else {
-    if (RESET_STATE_1 != RESET_STATE_2) {
-      RESET_STATE_1 = 1;
-      RESET_STATE_2 = 0;
-    }
-  }
-  
-
-  if (RESET_STATE_2 == 1) {
+    IS_DEPTH_RESET = false;
     depth_cmd = cmd->depth;
     depth_cmd = DepthController::Constrain(depth_cmd, MAX_DEPTH);
     if (depth_cmd < 0) // Min. depth is zero
       depth_cmd = 0;
     status_msg.reference = depth_cmd;
   }
-  else if (RESET_STATE_1 == 1)
+  else
   {
     DepthController::ResetDepth();
-    RESET_STATE_1 = 0;
   }
 }
 
@@ -175,22 +163,26 @@ void DepthController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
 // Should not execute consecutive times
 void DepthController::ResetDepth()
 {
-  depth_controller_pid.reset();
-  depth_cmd = 0;
-  depth_error = 0;
-  depth_error_dot = 0;
-  last_error = 0;
-  last_error_dot = 0;
+  if (! IS_DEPTH_RESET) {
+    depth_controller_pid.reset();
+    depth_cmd = 0;
+    depth_error = 0;
+    depth_error_dot = 0;
+    last_error = 0;
+    last_error_dot = 0;
 
-  status_msg.reference = 0;
-  status_msg.error = 0;
-  status_msg.header.stamp = ros::Time::now();
-  status_pub.publish(status_msg);
+    status_msg.reference = 0;
+    status_msg.error = 0;
+    status_msg.header.stamp = ros::Time::now();
+    status_pub.publish(status_msg);
 
-  output = 0;
-  cmd_force.header.stamp = ros::Time::now();
-  cmd_force.vector.x = 0;
-  cmd_force.vector.y = 0;
-  cmd_force.vector.z = 0;
-  cmd_pub.publish(cmd_force);
+    output = 0;
+    cmd_force.header.stamp = ros::Time::now();
+    cmd_force.vector.x = 0;
+    cmd_force.vector.y = 0;
+    cmd_force.vector.z = 0;
+    cmd_pub.publish(cmd_force);
+
+    IS_DEPTH_RESET = true;
+  }
 }

@@ -3,6 +3,9 @@
 #define GRAVITY 9.81       // [m/s^2]
 #define WATER_DENSITY 1000 // [kg/m^3]
 
+bool IS_ATTITUDE_RESET = false;
+bool IS_DEPTH_RESET = false;
+
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "ps3_controller");
@@ -47,7 +50,6 @@ PS3Controller::PS3Controller() : nh("ps3_controller")
 
   isReset = true;
   isStarted = false;
-  isInit = false;
   isR2Init = false;
   isL2Init = false;
   isDepthInit = false;
@@ -69,6 +71,9 @@ PS3Controller::PS3Controller() : nh("ps3_controller")
   publishedIMUDisable = false;
 
   PS3Controller::InitMsgs();
+
+  ROS_INFO("PS3 Controller Reset. Press Start to begin.");
+  ROS_INFO("PS3: Press Triangle to begin depth command.");
 }
 
 void PS3Controller::InitMsgs()
@@ -140,17 +145,32 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr &joy)
   if (!isL2Init && (joy->axes[AXES_REAR_L2] != 0))
     isL2Init = true;
 
-  // Scale rear R2 and L2 axes from 0 to 1
-  axes_rear_R2 = 0.5 * (1 - joy->axes[AXES_REAR_R2]);
-  axes_rear_L2 = 0.5 * (1 - joy->axes[AXES_REAR_L2]);
+  if (isR2Init)
+  {
+    axes_rear_R2 = 0.5 * (1 - joy->axes[AXES_REAR_R2]);
+  }
+  else
+  {
+    axes_rear_R2 = 0;
+  }
+
+  if (isL2Init)
+  {
+    axes_rear_L2 = 0.5 * (1 - joy->axes[AXES_REAR_L2]);
+  }
+  else
+  {
+    axes_rear_L2 = 0;
+  }
 
   if (!isReset && joy->buttons[BUTTON_SHAPE_X])
   { // Reset Vehicle (The "X" button)
     isReset = true;
     isStarted = false;
-    isInit = false;
     isDepthInit = false;
     PS3Controller::DisableControllers();
+    ROS_INFO("PS3 Controller Reset. Press Start to begin.");
+    ROS_INFO("PS3: Press Triangle to begin depth command.");
   }
   else if (isReset)
   { // If reset, must wait for Start button to be pressed
@@ -160,120 +180,120 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr &joy)
       isReset = false;
       reset_msg.reset_pwm = false;
       reset_pub.publish(reset_msg);
+      cmd_attitude.euler_rpy.z = (int)euler_rpy.z;
+      cmd_depth.depth = current_depth;
     }
   }
   else if (isStarted)
   {
-    if (!isInit)
-    { // Initialize to roll and pitch of 0 [deg], and set yaw to current heading
-      isInit = true;
+    // Update Roll and Pitch
+    if (joy->buttons[BUTTON_SHAPE_CIRCLE])
+    { // Set both roll and pitch to 0 [deg]
+      cmd_attitude.euler_rpy.x = 0;
+      cmd_attitude.euler_rpy.y = 0;
+      delta_attitude.x = 0;
+      delta_attitude.y = 0;
+      cmd_moment.vector.x = 0; // For when IMU sin't working, do NOT change roll or pitch
+      cmd_moment.vector.y = 0; // For when IMU sin't working, do NOT change roll or pitch
+    }
+    else
+    { // Update roll/pitch angles with CROSS
+      if (enableAttitude)
+      {
+        // Roll
+        if (joy->buttons[BUTTON_CROSS_RIGHT])
+          delta_attitude.x = roll_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); // Right -> inc roll
+        else if (joy->buttons[BUTTON_CROSS_LEFT])
+          delta_attitude.x = -roll_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); // Left -> dec roll
+        else
+        {
+          delta_attitude.x = 0;
+          // ROS_INFO("FALSE FROM ENABLE");
+        }
+
+        // Pitch
+        if (joy->buttons[BUTTON_CROSS_UP])
+          delta_attitude.y = pitch_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); // Up -> inc pitch (Nose points upward)
+        else if (joy->buttons[BUTTON_CROSS_DOWN])
+          delta_attitude.y = -pitch_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); //Down -> dec pitch (Nose points downward)
+        else
+          delta_attitude.y = 0;
+
+        // Yaw
+        delta_attitude.z = joy->axes[AXES_STICK_LEFT_LR] * yaw_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]);
+      }
+    }
+
+    if (!enableAttitude)
+    {
+      delta_attitude.x = 0;
+      delta_attitude.y = 0;
+      delta_attitude.z = 0;
       cmd_attitude.euler_rpy.z = (int)euler_rpy.z;
+
+      // XY Moment
+      if (abs(joy->axes[AXES_STICK_LEFT_UD]) < 0.5)
+      {
+        cmd_moment.vector.x = -joy->axes[AXES_STICK_LEFT_LR] * MAX_X_MOMENT;
+        cmd_moment.vector.y = 0;
+      }
+      else
+      {
+        cmd_moment.vector.y = joy->axes[AXES_STICK_LEFT_UD] * MAX_Y_MOMENT;
+        cmd_moment.vector.x = 0;
+      }
+
+      // Z Moment - USE CROSS (not the left joystick)
+      //cmd_ang_accel.z = -joy->axes[AXES_STICK_LEFT_LR] * MAX_Z_MOMENT; // CW is positive
+      if (joy->buttons[BUTTON_CROSS_RIGHT])
+        cmd_moment.vector.z = -0.25 * MAX_Z_MOMENT; // CW is positive
+      else if (joy->buttons[BUTTON_CROSS_LEFT])
+        cmd_moment.vector.z = 0.25 * MAX_Z_MOMENT;
+      else
+        cmd_moment.vector.z = 0;
+    }
+
+    // Update Depth/Z-accel
+    if (joy->buttons[BUTTON_SHAPE_TRIANGLE])
+    { // Enable depth controller
+      isDepthInit = true;
+      //reset_msg.reset_depth = false;
+      cmd_force_z.data = 0;
+    }
+    else if (isDepthInit && enableDepth)
+    {
+      delta_depth = axes_rear_R2 * depth_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); // Up -> dec depth, Down -> inc depth
+      delta_depth -= axes_rear_L2 * depth_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]);
+      //cmd_force_z.data = -joy->axes[AXES_STICK_LEFT_UD] * MAX_Z_FORCE; // For when depth sensor isn't working
+    }
+    else if (isDepthInit && !enableDepth)
+    {
+      cmd_force_z.data = axes_rear_R2 * MAX_Z_FORCE;
+      cmd_force_z.data -= axes_rear_L2 * MAX_Z_FORCE;
       cmd_depth.depth = current_depth;
     }
-    else if (isInit)
+    else
     {
-      // Update Roll and Pitch
-      if (joy->buttons[BUTTON_SHAPE_CIRCLE])
-      { // Set both roll and pitch to 0 [deg]
-        cmd_attitude.euler_rpy.x = 0;
-        cmd_attitude.euler_rpy.y = 0;
-        delta_attitude.x = 0;
-        delta_attitude.y = 0;
-        cmd_moment.vector.x = 0; // For when IMU sin't working, do NOT change roll or pitch
-        cmd_moment.vector.y = 0; // For when IMU sin't working, do NOT change roll or pitch
-      }
-      else
-      { // Update roll/pitch angles with CROSS
-        if (enableAttitude)
-        {
-          // Roll
-          if (joy->buttons[BUTTON_CROSS_RIGHT])
-            delta_attitude.x = roll_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); // Right -> inc roll
-          else if (joy->buttons[BUTTON_CROSS_LEFT])
-            delta_attitude.x = -roll_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); // Left -> dec roll
-          else
-            delta_attitude.x = 0;
+      delta_depth = 0;
+      cmd_force_z.data = 0;
+      cmd_depth.depth = current_depth;
+    }
 
-          // Pitch
-          if (joy->buttons[BUTTON_CROSS_UP])
-            delta_attitude.y = pitch_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); // Up -> inc pitch (Nose points upward)
-          else if (joy->buttons[BUTTON_CROSS_DOWN])
-            delta_attitude.y = -pitch_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); //Down -> dec pitch (Nose points downward)
-          else
-            delta_attitude.y = 0;
-
-          // Yaw
-          delta_attitude.z = joy->axes[AXES_STICK_LEFT_LR] * yaw_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]);
-        }
-      }
-
-      if (!enableAttitude)
-      {
-        delta_attitude.x = 0;
-        delta_attitude.y = 0;
-        delta_attitude.z = 0;
-
-        // XY Moment
-        if (abs(joy->axes[AXES_STICK_LEFT_UD]) < 0.5)
-        {
-          cmd_moment.vector.x = -joy->axes[AXES_STICK_LEFT_LR] * MAX_X_MOMENT;
-          cmd_moment.vector.y = 0;
-        }
-        else
-        {
-          cmd_moment.vector.y = joy->axes[AXES_STICK_LEFT_UD] * MAX_Y_MOMENT;
-          cmd_moment.vector.x = 0;
-        }
-
-        // Z Moment - USE CROSS (not the left joystick)
-        //cmd_ang_accel.z = -joy->axes[AXES_STICK_LEFT_LR] * MAX_Z_MOMENT; // CW is positive
-        if (joy->buttons[BUTTON_CROSS_RIGHT])
-          cmd_moment.vector.z = -0.25 * MAX_Z_MOMENT; // CW is positive
-        else if (joy->buttons[BUTTON_CROSS_LEFT])
-          cmd_moment.vector.z = 0.25 * MAX_Z_MOMENT;
-        else
-          cmd_moment.vector.z = 0;
-      }
-
-      // Update Depth/Z-accel
-      if (joy->buttons[BUTTON_SHAPE_TRIANGLE])
-      { // Enable depth controller
-        isDepthInit = true;
-        //reset_msg.reset_depth = false;
-        cmd_force_z.data = 0;
-      }
-      else if (isDepthInit && enableDepth)
-      {
-        delta_depth = axes_rear_R2 * depth_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); // Up -> dec depth, Down -> inc depth
-        delta_depth -= axes_rear_L2 * depth_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]);
-        //cmd_force_z.data = -joy->axes[AXES_STICK_LEFT_UD] * MAX_Z_FORCE; // For when depth sensor isn't working
-      }
-      else if (isDepthInit && !enableDepth)
-      {
-        cmd_force_z.data = axes_rear_R2 * MAX_Z_FORCE;
-        cmd_force_z.data -= axes_rear_L2 * MAX_Z_FORCE;
-      }
-      else
-      {
-        delta_depth = 0;
-        cmd_force_z.data = 0;
-      }
-
-      /*// Code for using R2 and L2
+    /*// Code for using R2 and L2
       if (isR2Init && (1 - joy->axes[AXES_REAR_R2] != 0))                     // If pressed at all, inc z-accel
         cmd_force_z.data = 0.5 * (1 - joy->axes[AXES_REAR_R2]) * MAX_Z_FORCE; // Multiplied by 0.5 to scale axes value from 0 to 1
       else if (isL2Init && (1 - joy->axes[AXES_REAR_L2] != 0))                // If pressed at all, dec z-accel
         cmd_force_z.data = 0.5 * (1 - joy->axes[AXES_REAR_L2]) * MAX_Z_FORCE; // Multiplied by 0.5 to scale axes value from 0 to 1*/
-    }
+  }
 
-    // Update Linear XY Accel
-    cmd_force_x.data = joy->axes[AXES_STICK_RIGHT_UD] * MAX_X_FORCE;  // Surge (X) positive forward
-    cmd_force_y.data = -joy->axes[AXES_STICK_RIGHT_LR] * MAX_Y_FORCE; // Sway (Y) positive left
+  // Update Linear XY Accel
+  cmd_force_x.data = joy->axes[AXES_STICK_RIGHT_UD] * MAX_X_FORCE;  // Surge (X) positive forward
+  cmd_force_y.data = -joy->axes[AXES_STICK_RIGHT_LR] * MAX_Y_FORCE; // Sway (Y) positive left
 
-    if (joy->buttons[BUTTON_SELECT])
-      alignment_plane = !alignment_plane;
+  if (joy->buttons[BUTTON_SELECT])
+    alignment_plane = !alignment_plane;
 
-    /*if (joy->buttons[BUTTON_REAR_L1])
+  /*if (joy->buttons[BUTTON_REAR_L1])
     {
       pneumatics_cmd.torpedo_port = true;
       publish_pneumatics = true;
@@ -291,7 +311,6 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr &joy)
       publish_pneumatics = true;
       ROS_INFO("marker");
     }*/
-  }
 }
 
 // Run when Reset button is pressed
@@ -299,12 +318,8 @@ void PS3Controller::DisableControllers()
 {
   reset_msg.reset_pwm = true;
 
-  cmd_attitude.roll_active = false;
-  cmd_attitude.pitch_active = false;
-  cmd_attitude.yaw_active = false;
-  cmd_attitude.euler_rpy.x = 0;
-  cmd_attitude.euler_rpy.y = 0;
-  cmd_attitude.euler_rpy.z = 0;
+  PS3Controller::DisableAttitude();
+
   delta_attitude.x = 0;
   delta_attitude.y = 0;
   delta_attitude.z = 0;
@@ -313,8 +328,7 @@ void PS3Controller::DisableControllers()
   cmd_moment.vector.y = 0;
   cmd_moment.vector.z = 0;
 
-  cmd_depth.active = false;
-  cmd_depth.depth = 0;
+  PS3Controller::DisableDepth();
   delta_depth = 0;
 
   cmd_force_x.data = 0;
@@ -332,6 +346,35 @@ void PS3Controller::DisableControllers()
   PS3Controller::PublishCommands();
 }
 
+void PS3Controller::DisableAttitude()
+{
+  if (!IS_ATTITUDE_RESET)
+  {
+    cmd_attitude.roll_active = false;
+    cmd_attitude.pitch_active = false;
+    cmd_attitude.yaw_active = false;
+
+    cmd_attitude.euler_rpy.x = 0;
+    cmd_attitude.euler_rpy.y = 0;
+    cmd_attitude.euler_rpy.z = 0;
+
+    IS_ATTITUDE_RESET = true;
+    attitude_pub.publish(cmd_attitude);
+  }
+}
+
+void PS3Controller::DisableDepth()
+{
+  if (!IS_DEPTH_RESET)
+  {
+    cmd_depth.active = false;
+    cmd_depth.depth = 0;
+
+    IS_DEPTH_RESET = true;
+    depth_pub.publish(cmd_depth);
+  }
+}
+
 double PS3Controller::Constrain(double current, double max)
 {
   if (current > max)
@@ -343,10 +386,10 @@ double PS3Controller::Constrain(double current, double max)
 
 void PS3Controller::UpdateCommands()
 {
-  int RESET_ATTITUDE_1, RESET_ATTITUDE_2 = 0;
+
   if (enableAttitude)
   {
-    RESET_ATTITUDE_2 = 1;
+    IS_ATTITUDE_RESET = false;
 
     cmd_attitude.roll_active = true;
     cmd_attitude.pitch_active = true;
@@ -363,18 +406,14 @@ void PS3Controller::UpdateCommands()
     if (cmd_attitude.euler_rpy.z < -180)
       cmd_attitude.euler_rpy.z += 360;
   }
-  else if (RESET_ATTITUDE_1 != RESET_ATTITUDE_2)
+  else
   {
-    cmd_attitude.roll_active = false;
-    cmd_attitude.pitch_active = false;
-    cmd_attitude.yaw_active = false;
-    RESET_ATTITUDE_2 = 0;
+    PS3Controller::DisableAttitude();
   }
 
-  int RESET_DEPTH_1, RESET_DEPTH_2 = 0;
   if (enableDepth)
   {
-    RESET_DEPTH_2 = 1;
+    IS_DEPTH_RESET = false;
 
     cmd_depth.active = true;
     cmd_depth.depth += delta_depth;
@@ -382,17 +421,19 @@ void PS3Controller::UpdateCommands()
     if (cmd_depth.depth < 0)
       cmd_depth.depth = 0;
   }
-  else if (RESET_DEPTH_1 != RESET_DEPTH_2) {
-    cmd_depth.active = false;
-    RESET_DEPTH_2 = 0;
+  else
+  {
+    PS3Controller::DisableDepth();
   }
   plane_msg.data = (int)alignment_plane;
 }
 
 void PS3Controller::PublishCommands()
 {
-  if (enableAttitude)
+  if (enableAttitude && !IS_ATTITUDE_RESET)
+  {
     attitude_pub.publish(cmd_attitude);
+  }
   else
   {
     cmd_moment.header.stamp = ros::Time::now();
@@ -402,18 +443,15 @@ void PS3Controller::PublishCommands()
   x_force_pub.publish(cmd_force_x);
   y_force_pub.publish(cmd_force_y);
 
-  if (enableDepth)
-  {
+  if (enableDepth && !IS_DEPTH_RESET)
     depth_pub.publish(cmd_depth);
-  }
-  if (!enableDepth)
+  else
     z_force_pub.publish(cmd_force_z);
 
   plane_pub.publish(plane_msg);
 
   /*if (publish_pneumatics)
     pneumatics_pub.publish(pneumatics_cmd);
-
   pneumatics_cmd.torpedo_port = false;
   pneumatics_cmd.torpedo_stbd = false;
   pneumatics_cmd.manipulator = false;

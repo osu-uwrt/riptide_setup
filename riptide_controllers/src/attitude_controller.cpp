@@ -5,11 +5,11 @@
 #undef progress
 
 #define PI 3.141592653
-// #define RESET_ID 0
 #define DISABLE_ID 1
 
-int RESET[6] = {0, 0, 0, 0, 0, 0};  // ROLL_1, 2; PITCH_1, 2; YAW_1, 2. 1 is the previous state, 2 is the current state. 
-
+bool IS_ROLL_RESET = false;
+bool IS_PITCH_RESET = false;
+bool IS_YAW_RESET = false;
 
 float round(float d)
 {
@@ -180,67 +180,39 @@ void AttitudeController::CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr
 
   // Judge reset for roll
   if (pid_roll_active) {
-    RESET[1] = 1;
-  }
-  else if (RESET[0] != RESET[1]) {
-    RESET[0] = 1;
-    RESET[1] = 0;
-  }
-
-  if (RESET[1] == 1)
-  {
     roll_cmd = cmd->euler_rpy.x;
     roll_cmd = AttitudeController::Constrain(roll_cmd, MAX_ROLL_LIMIT);
     status_msg.roll.reference = roll_cmd;
+    IS_ROLL_RESET = false;
   }
-  else if (RESET[0] == 1)
-  {
+  else {
     AttitudeController::ResetRoll(); // Should not execute consecutive times
-    RESET[0] = 0;
   }
 
-  // Judge reset for pitch
+  // Judge reset for PITCH
   if (pid_pitch_active) {
-    RESET[3] = 1;
-  }
-  else if (RESET[2] != RESET[3]) {
-    RESET[2] = 1;
-    RESET[3] = 0;
-  }
-
-  if (RESET[3] == 1)
-  {
     pitch_cmd = cmd->euler_rpy.y;
     pitch_cmd = AttitudeController::Constrain(pitch_cmd, MAX_PITCH_LIMIT);
-    status_msg.pitch.reference = pitch_cmd;
+    status_msg.roll.reference = pitch_cmd;
+    IS_PITCH_RESET = false;
   }
-  else if (RESET[0] == 1)
+  else
   {
     AttitudeController::ResetPitch(); // Should not execute consecutive times
-    RESET[2] = 0;
   }
 
   // Judge reset for yaw
-  if (pid_pitch_active)
-  {
-    RESET[4] = 1;
-  }
-  else if (RESET[4] != RESET[5])
-  {
-    RESET[4] = 1;
-    RESET[5] = 0;
-  }
-
-  if (RESET[4] == 1)
+  if (pid_yaw_active)
   {
     yaw_cmd = cmd->euler_rpy.z;
     status_msg.yaw.reference = yaw_cmd;
+    IS_YAW_RESET = false;
   }
   else
   {
     AttitudeController::ResetYaw(); // Should not execute consecutive times
-    RESET[4] = 0; 
   }
+
 
   if (pid_roll_active || pid_pitch_active || pid_yaw_active)
     pid_attitude_active = true; // Only need one to be active
@@ -264,56 +236,68 @@ void AttitudeController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
 // Should not execute consecutive times
 void AttitudeController::ResetRoll()
 {
-  roll_controller_pid.reset();
-  roll_cmd = 0;
-  roll_error = 0;
-  roll_error_dot = 0;
-  last_error.x = 0;
+  if (! IS_ROLL_RESET) {  // If roll is not reseted
+    roll_controller_pid.reset();
+    roll_cmd = 0;
+    roll_error = 0;
+    roll_error_dot = 0;
+    last_error.x = 0;
 
-  status_msg.roll.reference = 0;
-  status_msg.roll.error = 0;
-  status_msg.header.stamp = ros::Time::now();
-  status_pub.publish(status_msg);
+    status_msg.roll.reference = 0;
+    status_msg.roll.error = 0;
+    status_msg.header.stamp = ros::Time::now();
+    status_pub.publish(status_msg);
 
-  cmd_moment.header.stamp = ros::Time::now();
-  cmd_moment.vector.x = 0;
-  cmd_pub.publish(cmd_moment);
+    cmd_moment.header.stamp = ros::Time::now();
+    cmd_moment.vector.x = 0;
+    cmd_pub.publish(cmd_moment);
+
+    IS_ROLL_RESET = true;
+  }
 }
 
 // Should not execute consecutive times
 void AttitudeController::ResetPitch()
 {
-  pitch_controller_pid.reset();
-  pitch_cmd = 0;
-  pitch_error = 0;
-  pitch_error_dot = 0;
-  last_error.y = 0;
+  if (! IS_PITCH_RESET) {
+    pitch_controller_pid.reset();
+    pitch_cmd = 0;
+    pitch_error = 0;
+    pitch_error_dot = 0;
+    last_error.y = 0;
 
-  status_msg.pitch.reference = 0;
-  status_msg.pitch.error = 0;
-  status_msg.header.stamp = ros::Time::now();
-  status_pub.publish(status_msg);
+    status_msg.pitch.reference = 0;
+    status_msg.pitch.error = 0;
+    status_msg.header.stamp = ros::Time::now();
+    status_pub.publish(status_msg);
 
-  cmd_moment.header.stamp = ros::Time::now();
-  cmd_moment.vector.y = 0;
-  cmd_pub.publish(cmd_moment);
+    cmd_moment.header.stamp = ros::Time::now();
+    cmd_moment.vector.y = 0;
+    cmd_pub.publish(cmd_moment);
+
+    IS_PITCH_RESET = true;
+  }
 }
 
 // Should not execute consecutive times
 void AttitudeController::ResetYaw()
 {
-  yaw_controller_pid.reset();
-  yaw_cmd = 0;
-  yaw_error = 0;
-  yaw_error_dot = 0;
-  last_error.z = 0;
+  if (! IS_YAW_RESET) {
+    yaw_controller_pid.reset();
+    yaw_cmd = 0;
+    yaw_error = 0;
+    yaw_error_dot = 0;
+    last_error.z = 0;
 
-  status_msg.yaw.reference = 0;
-  status_msg.yaw.error = 0;
-  status_msg.header.stamp = ros::Time::now();
-  status_pub.publish(status_msg);
+    status_msg.yaw.reference = 0;
+    status_msg.yaw.error = 0;
+    status_msg.header.stamp = ros::Time::now();
+    status_pub.publish(status_msg);
 
-  cmd_moment.header.stamp = ros::Time::now();
-  cmd_moment.vector.z = 0;
-  cmd_pub.publish(cmd_moment);
+    cmd_moment.header.stamp = ros::Time::now();
+    cmd_moment.vector.z = 0;
+    cmd_pub.publish(cmd_moment);
+
+    IS_YAW_RESET = true;
+  }
 }
