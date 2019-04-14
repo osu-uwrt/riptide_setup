@@ -5,8 +5,11 @@
 #undef progress
 
 #define PI 3.141592653
-#define RESET_ID 0
+// #define RESET_ID 0
 #define DISABLE_ID 1
+
+int RESET[6] = {0, 0, 0, 0, 0, 0};  // ROLL_1, 2; PITCH_1, 2; YAW_1, 2. 1 is the previous state, 2 is the current state. 
+
 
 float round(float d)
 {
@@ -175,29 +178,60 @@ void AttitudeController::CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr
   pid_pitch_active = cmd->pitch_active;
   pid_yaw_active = cmd->yaw_active;
 
-  if (pid_roll_active)
+  // Judge reset for roll
+  if (pid_roll_active) {
+    RESET[1] = 1;
+  }
+  else if (RESET[0] != RESET[1]) {
+    RESET[0] = 1;
+    RESET[1] = 0;
+  }
+
+  if (RESET[1] == 1)
   {
     roll_cmd = cmd->euler_rpy.x;
     roll_cmd = AttitudeController::Constrain(roll_cmd, MAX_ROLL_LIMIT);
     status_msg.roll.reference = roll_cmd;
   }
-  else
+  else if (RESET[0] == 1)
   {
     AttitudeController::ResetRoll(); // Should not execute consecutive times
+    RESET[0] = 0;
   }
 
-  if (pid_pitch_active)
+  // Judge reset for pitch
+  if (pid_pitch_active) {
+    RESET[3] = 1;
+  }
+  else if (RESET[2] != RESET[3]) {
+    RESET[2] = 1;
+    RESET[3] = 0;
+  }
+
+  if (RESET[3] == 1)
   {
     pitch_cmd = cmd->euler_rpy.y;
     pitch_cmd = AttitudeController::Constrain(pitch_cmd, MAX_PITCH_LIMIT);
     status_msg.pitch.reference = pitch_cmd;
   }
-  else
+  else if (RESET[0] == 1)
   {
     AttitudeController::ResetPitch(); // Should not execute consecutive times
+    RESET[2] = 0;
   }
 
-  if (pid_yaw_active)
+  // Judge reset for yaw
+  if (pid_pitch_active)
+  {
+    RESET[4] = 1;
+  }
+  else if (RESET[4] != RESET[5])
+  {
+    RESET[4] = 1;
+    RESET[5] = 0;
+  }
+
+  if (RESET[4] == 1)
   {
     yaw_cmd = cmd->euler_rpy.z;
     status_msg.yaw.reference = yaw_cmd;
@@ -205,6 +239,7 @@ void AttitudeController::CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr
   else
   {
     AttitudeController::ResetYaw(); // Should not execute consecutive times
+    RESET[4] = 0; 
   }
 
   if (pid_roll_active || pid_pitch_active || pid_yaw_active)

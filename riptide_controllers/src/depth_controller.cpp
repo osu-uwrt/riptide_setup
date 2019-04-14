@@ -6,7 +6,8 @@
 
 #define PI 3.141592653
 #define MIN_DEPTH 0
-#define RESET_ID 0
+int RESET_STATE_1 = 0;  // Previous state
+int RESET_STATE_2 = 0;  // Current state
 #define DISABLE_ID 1
 
 int main(int argc, char **argv)
@@ -130,17 +131,28 @@ double DepthController::SmoothErrorIIR(double input, double prev)
 void DepthController::CommandCB(const riptide_msgs::DepthCommand::ConstPtr &cmd)
 {
   pid_depth_active = cmd->active;
-  if (pid_depth_active)
-  {
+  if (pid_depth_active) {
+    RESET_STATE_2 = 1;
+  }
+  else {
+    if (RESET_STATE_1 != RESET_STATE_2) {
+      RESET_STATE_1 = 1;
+      RESET_STATE_2 = 0;
+    }
+  }
+  
+
+  if (RESET_STATE_2 == 1) {
     depth_cmd = cmd->depth;
     depth_cmd = DepthController::Constrain(depth_cmd, MAX_DEPTH);
     if (depth_cmd < 0) // Min. depth is zero
       depth_cmd = 0;
     status_msg.reference = depth_cmd;
   }
-  else
+  else if (RESET_STATE_1 == 1)
   {
-    DepthController::ResetDepth(); // Should not execute consecutive times
+    DepthController::ResetDepth();
+    RESET_STATE_1 = 0;
   }
 }
 
