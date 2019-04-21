@@ -7,13 +7,13 @@
 
   <include file="$(find riptide_hardware)/launch/camera.launch">
     <arg name="camera_name" value="forward" />
-    <arg name="serial_number" value="$(arg fwd_serial_number)" />
+    <arg name="serial_number" value="$(arg forward_serial_number)" />
     <arg name="frame_rate" value="$(arg frame_rate)" />
   </include>
 
   <include file="$(find riptide_hardware)/launch/camera.launch">
     <arg name="camera_name" value="downward" />
-    <arg name="serial_number" value="$(arg down_serial_number)" />
+    <arg name="serial_number" value="$(arg downward_serial_number)" />
     <arg name="frame_rate" value="$(arg frame_rate)" />
   </include>
 </launch>
