@@ -1,5 +1,5 @@
 <launch>
-  <include file="$(find riptide_hardware)/launch/cameras_jetson.launch" />
+<include file="$(find riptide_hardware)/launch/cameras_jetson.launch" />
   
   <machine address="jetson" name="jetson" user="ros" env-loader="~/osu-uwrt/riptide_software/src/riptide_utilities/riptide_master.sh"/>
 	<arg name="machine_name" default="jetson"/>
@@ -8,9 +8,10 @@
   <arg name="launch_prefix" default=""/>
 
   <!-- Config and weights folder -->
-  <arg name="jetson_weights_dir"         value="/home/ros/ssd/osu-uwrt/riptide_software/yolo_weights" />
+  <arg name="jetson_software"            value="/home/ros/ssd/osu-uwrt/riptide_software" />
+  <arg name="jetson_weights_dir"         value="$(arg jetson_software)/yolo_weights" />
   <arg name="yolo_weights_path"          default="$(arg jetson_weights_dir)"/>
-  <arg name="yolo_config_path"           default="$(find riptide_hardware)/yolo_network_config"/>
+  <arg name="yolo_config_path"           default="$(arg jetson_software)/src/riptide_hardware/yolo_network_config"/>
 
   <!-- Load parameters -->
   <rosparam command="load" ns="darknet_ros" file="$(find darknet_ros)/config/ros.yaml"/>

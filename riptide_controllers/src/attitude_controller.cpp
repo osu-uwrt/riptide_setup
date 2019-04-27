@@ -5,8 +5,11 @@
 #undef progress
 
 #define PI 3.141592653
-#define RESET_ID 0
 #define DISABLE_ID 1
+
+bool IS_ROLL_RESET = false;
+bool IS_PITCH_RESET = false;
+bool IS_YAW_RESET = false;
 
 float round(float d)
 {
@@ -175,37 +178,41 @@ void AttitudeController::CommandCB(const riptide_msgs::AttitudeCommand::ConstPtr
   pid_pitch_active = cmd->pitch_active;
   pid_yaw_active = cmd->yaw_active;
 
-  if (pid_roll_active)
-  {
+  // Judge reset for roll
+  if (pid_roll_active) {
     roll_cmd = cmd->euler_rpy.x;
     roll_cmd = AttitudeController::Constrain(roll_cmd, MAX_ROLL_LIMIT);
     status_msg.roll.reference = roll_cmd;
+    IS_ROLL_RESET = false;
   }
-  else
-  {
+  else {
     AttitudeController::ResetRoll(); // Should not execute consecutive times
   }
 
-  if (pid_pitch_active)
-  {
+  // Judge reset for PITCH
+  if (pid_pitch_active) {
     pitch_cmd = cmd->euler_rpy.y;
     pitch_cmd = AttitudeController::Constrain(pitch_cmd, MAX_PITCH_LIMIT);
-    status_msg.pitch.reference = pitch_cmd;
+    status_msg.roll.reference = pitch_cmd;
+    IS_PITCH_RESET = false;
   }
   else
   {
     AttitudeController::ResetPitch(); // Should not execute consecutive times
   }
 
+  // Judge reset for yaw
   if (pid_yaw_active)
   {
     yaw_cmd = cmd->euler_rpy.z;
     status_msg.yaw.reference = yaw_cmd;
+    IS_YAW_RESET = false;
   }
   else
   {
     AttitudeController::ResetYaw(); // Should not execute consecutive times
   }
+
 
   if (pid_roll_active || pid_pitch_active || pid_yaw_active)
     pid_attitude_active = true; // Only need one to be active
@@ -229,56 +236,68 @@ void AttitudeController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
 // Should not execute consecutive times
 void AttitudeController::ResetRoll()
 {
-  roll_controller_pid.reset();
-  roll_cmd = 0;
-  roll_error = 0;
-  roll_error_dot = 0;
-  last_error.x = 0;
+  if (! IS_ROLL_RESET) {  // If roll is not reseted
+    roll_controller_pid.reset();
+    roll_cmd = 0;
+    roll_error = 0;
+    roll_error_dot = 0;
+    last_error.x = 0;
 
-  status_msg.roll.reference = 0;
-  status_msg.roll.error = 0;
-  status_msg.header.stamp = ros::Time::now();
-  status_pub.publish(status_msg);
+    status_msg.roll.reference = 0;
+    status_msg.roll.error = 0;
+    status_msg.header.stamp = ros::Time::now();
+    status_pub.publish(status_msg);
 
-  cmd_moment.header.stamp = ros::Time::now();
-  cmd_moment.vector.x = 0;
-  cmd_pub.publish(cmd_moment);
+    cmd_moment.header.stamp = ros::Time::now();
+    cmd_moment.vector.x = 0;
+    cmd_pub.publish(cmd_moment);
+
+    IS_ROLL_RESET = true;
+  }
 }
 
 // Should not execute consecutive times
 void AttitudeController::ResetPitch()
 {
-  pitch_controller_pid.reset();
-  pitch_cmd = 0;
-  pitch_error = 0;
-  pitch_error_dot = 0;
-  last_error.y = 0;
+  if (! IS_PITCH_RESET) {
+    pitch_controller_pid.reset();
+    pitch_cmd = 0;
+    pitch_error = 0;
+    pitch_error_dot = 0;
+    last_error.y = 0;
 
-  status_msg.pitch.reference = 0;
-  status_msg.pitch.error = 0;
-  status_msg.header.stamp = ros::Time::now();
-  status_pub.publish(status_msg);
+    status_msg.pitch.reference = 0;
+    status_msg.pitch.error = 0;
+    status_msg.header.stamp = ros::Time::now();
+    status_pub.publish(status_msg);
 
-  cmd_moment.header.stamp = ros::Time::now();
-  cmd_moment.vector.y = 0;
-  cmd_pub.publish(cmd_moment);
+    cmd_moment.header.stamp = ros::Time::now();
+    cmd_moment.vector.y = 0;
+    cmd_pub.publish(cmd_moment);
+
+    IS_PITCH_RESET = true;
+  }
 }
 
 // Should not execute consecutive times
 void AttitudeController::ResetYaw()
 {
-  yaw_controller_pid.reset();
-  yaw_cmd = 0;
-  yaw_error = 0;
-  yaw_error_dot = 0;
-  last_error.z = 0;
+  if (! IS_YAW_RESET) {
+    yaw_controller_pid.reset();
+    yaw_cmd = 0;
+    yaw_error = 0;
+    yaw_error_dot = 0;
+    last_error.z = 0;
 
-  status_msg.yaw.reference = 0;
-  status_msg.yaw.error = 0;
-  status_msg.header.stamp = ros::Time::now();
-  status_pub.publish(status_msg);
+    status_msg.yaw.reference = 0;
+    status_msg.yaw.error = 0;
+    status_msg.header.stamp = ros::Time::now();
+    status_pub.publish(status_msg);
 
-  cmd_moment.header.stamp = ros::Time::now();
-  cmd_moment.vector.z = 0;
-  cmd_pub.publish(cmd_moment);
+    cmd_moment.header.stamp = ros::Time::now();
+    cmd_moment.vector.z = 0;
+    cmd_pub.publish(cmd_moment);
+
+    IS_YAW_RESET = true;
+  }
 }

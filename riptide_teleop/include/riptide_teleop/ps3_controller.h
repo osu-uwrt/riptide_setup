@@ -34,7 +34,7 @@ class PS3Controller
   riptide_msgs::AttitudeCommand cmd_attitude;
   riptide_msgs::Pneumatics pneumatics_cmd;
   std_msgs::Int8 plane_msg;
-  bool isReset, isStarted, isInit, enableDepth, enableAttitude, isR2Init, isL2Init;
+  bool isReset, isStarted, enableDepth, enableAttitude, isR2Init, isL2Init;
   bool isDepthInit, alignment_plane;
   double rt, current_depth, buoyancy_depth_thresh, delta_depth;
   bool publish_pneumatics;
@@ -54,6 +54,8 @@ class PS3Controller
   double Constrain(double current, double max);
   void DisableControllers();
   void UpdateCommands();
+  void DisableAttitude();
+  void DisableDepth();
   void PublishCommands();
 
  public:
