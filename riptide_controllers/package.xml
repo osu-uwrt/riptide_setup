@@ -17,6 +17,7 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <build_depend>rostest</build_depend>
   <build_depend>libceres-dev</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>imu_3dm_gx4</build_depend>
