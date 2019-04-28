@@ -45,6 +45,10 @@ ThrusterController::ThrusterController() : nh("~")
   cb = boost::bind(&ThrusterController::DynamicReconfigCallback, this, _1, _2);
   server.setCallback(cb);
 
+  /*dyn_reconfig_mutex_.lock();
+  server->updateConfig(config);
+  dyn_reconfig_mutex_.unlock();*/
+
   ThrusterController::InitThrustMsg();
 
   // EOM problem
