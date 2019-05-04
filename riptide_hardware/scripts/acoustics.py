@@ -7,7 +7,7 @@ from riptide_msgs.msg import AcousticsCommand
 fpga = None
 
 def commandCB(command):
-	if fpga.IsOpen():
+	if not fpga.IsOpen():
 		rospy.logerr("Housing not connected")
 		return
 
