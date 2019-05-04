@@ -45,6 +45,10 @@ ThrusterController::ThrusterController() : nh("~")
   cb = boost::bind(&ThrusterController::DynamicReconfigCallback, this, _1, _2);
   server.setCallback(cb);
 
+  /*dyn_reconfig_mutex_.lock();
+  server->updateConfig(config);
+  dyn_reconfig_mutex_.unlock();*/
+
   ThrusterController::InitThrustMsg();
 
   // EOM problem
@@ -244,7 +248,7 @@ void ThrusterController::NetLoadCB(const riptide_msgs::NetLoad::ConstPtr &load_m
     solver_cob[1] = 0.0;
     solver_cob[2] = 0.0;
 
-    ceres::Solve(optionsBuoyancy, &problemBuoyancy, &summaryBuoyancy);
+    //ceres::Solve(optionsBuoyancy, &problemBuoyancy, &summaryBuoyancy);
     cob_msg.header.stamp = ros::Time::now();
     cob_msg.vector.x = solver_cob[0];
     cob_msg.vector.y = solver_cob[1];
