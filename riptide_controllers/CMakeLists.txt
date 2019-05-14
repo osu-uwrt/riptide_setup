@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(riptide_controllers)
-#add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
 
 # NOTE: Most dependencies can be taken care of with $(catkin_EXPORTED_TARGETS).
 # There is no need to add mention the specific dependency, such as
@@ -48,7 +48,6 @@ include_directories(include ${catkin_INCLUDE_DIRS}
 )
 
 cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)
-message("-- Computer name: " ${_host_name})
 
 #if(NOT _host_name MATCHES "riptide")
 add_executable(thruster_controller src/thruster_controller.cpp)
@@ -76,3 +75,8 @@ add_dependencies(attitude_controller ${catkin_EXPORTED_TARGETS})
 add_executable(command_combinator src/command_combinator.cpp)
 target_link_libraries(command_combinator ${catkin_LIBRARIES})
 add_dependencies(command_combinator ${catkin_EXPORTED_TARGETS})
+
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  add_rostest(test/controller_tests.test)
+endif()

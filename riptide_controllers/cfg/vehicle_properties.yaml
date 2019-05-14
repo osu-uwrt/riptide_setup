@@ -3,8 +3,8 @@
 # You MUST define the correct yaw and pitch angle from body-frame TO the thruster frame
 properties: {
   mass: 40.85, # [kg]
-  volume: 0.0370, # [m^3]
-  CoB: [0.0, 0.0, 0.0], # Center of buoyancy/volume position relative to CoM [m]
+  volume: 0.0428, # [m^3]
+  CoB: [0.027, -0.002, 0.08], # Center of buoyancy/volume position relative to CoM [m]
   inertia: [1.32, 2.84, 3.65], # Principle Inertias [kg-m^2]
   depth_fully_submerged: 0.15, # [m]
   thrusters: [ 

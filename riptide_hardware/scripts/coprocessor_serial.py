@@ -91,7 +91,6 @@ def main():
     global connected
     global buffer
 
-
     rospy.init_node('coprocessor_serial')
 
     # add publishers
