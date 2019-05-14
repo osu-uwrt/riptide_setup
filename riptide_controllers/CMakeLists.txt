@@ -29,6 +29,7 @@ find_package(Eigen3 3.3 REQUIRED)
 
 generate_dynamic_reconfigure_options(
   cfg/VehicleProperties.cfg
+  cfg/AttitudeController.cfg
 )
 
 catkin_package(
