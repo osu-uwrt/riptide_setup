@@ -19,6 +19,8 @@ find_package(catkin REQUIRED
     darknet_ros_msgs
     sensor_msgs
     cv_bridge
+    image_transport
+    compressed_image_transport
 )
 
 catkin_package(INCLUDE_DIRS include)
