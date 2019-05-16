@@ -30,11 +30,16 @@ class RotationController():
         self.positionCmd = None
 
     def updateState(self, position, velocity):
+        # If there is desired position
         if self.positionCmd != None:
+            # Set velocity porportional to position error
             error = ((self.positionCmd - position + 180 + 360) % 360) - 180
             self.velocityCmd = self.DECEL_RATE * error
             self.velocityCmd = min(max(-self.MAX_VELOCITY, self.velocityCmd), self.MAX_VELOCITY)
+
+        # If there is a desired velocity
         if self.velocityCmd != None:
+            # Set moment porportional to velocity error
             self.moment = self.VELOCITY_P * (self.velocityCmd - velocity)
 
     def reconfigure(self, config, name):
@@ -51,13 +56,16 @@ yawController = RotationController()
 momentPub = rospy.Publisher("/command/moment", Vector3Stamped, queue_size=5)
 
 def imuCb(msg):
+    # Update state of each controller
     rollController.updateState(msg.rpy_deg.x, msg.ang_vel_deg.x)
     pitchController.updateState(msg.rpy_deg.y, msg.ang_vel_deg.y)
     yawController.updateState(msg.rpy_deg.z, msg.ang_vel_deg.z)
 
+    # Publish new moments
     momentPub.publish(Header(), Vector3(rollController.moment, pitchController.moment, yawController.moment))
 
 def dynamicReconfigureCb(config, level):
+    # On dynamic reconfiguration
     rollController.reconfigure(config, "r")
     pitchController.reconfigure(config, "p")
     yawController.reconfigure(config, "y")
@@ -68,6 +76,7 @@ if __name__ == '__main__':
 
     rospy.init_node("attitude_controller")
 
+    # Set subscribers
     rospy.Subscriber("/command/roll/position", Float32, rollController.positionCmdCb)
     rospy.Subscriber("/command/roll/velocity", Float32, rollController.velocityCmdCb)
     rospy.Subscriber("/command/roll/moment", Float32, rollController.momentCmdCb)
