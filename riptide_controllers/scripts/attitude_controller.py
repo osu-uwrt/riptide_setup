@@ -62,7 +62,9 @@ def imuCb(msg):
     yawController.updateState(msg.rpy_deg.z, msg.ang_vel_deg.z)
 
     # Publish new moments
-    momentPub.publish(Header(), Vector3(rollController.moment, pitchController.moment, yawController.moment))
+    header = Header()
+    header.stamp = rospy.Time.now()
+    momentPub.publish(header, Vector3(rollController.moment, pitchController.moment, yawController.moment))
 
 def dynamicReconfigureCb(config, level):
     # On dynamic reconfiguration
