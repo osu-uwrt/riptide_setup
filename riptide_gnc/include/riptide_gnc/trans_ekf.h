@@ -21,18 +21,17 @@ class TransEKF
 private:
   KalmanFilter *EKF;
   Vector9f Xhat;
-  Marix3i sensorMask;
+  Marix3i fullMsmtMask;
   Matrix3f Rpos, Rvel, Raccel;
   Matrix9Xf Q;
   bool init;
-  int n;
+  int n; // Size of A matrix (nxn = 9x9)
 
 public:
   TransEKF(const Ref<const Matrix3i> &sensorMaskIn, const Ref<const MatrixXf> &RposIn, const Ref<const MatrixXf> &RvelIn,
            const Ref<const MatrixXf> &RaccelIn, const Ref<const Matrix9f> &Qin);
   void Init(const Ref<const VectorXf> &Xo);
-  VectorXf IMUpdate(float dt, const Ref<const Matrix3Xf> &Zpos, const Ref<const Matrix3Xf> Zvel,
-                    const Ref<const Matrix3Xf> &Zaccel);
+  VectorXf Update(float dt, const Ref<const Vector3f> &attitude, const Ref<const Vector3i> &sensorMask, const Ref<const Matrix3f> &Zmat)
 };
 
 #endif

@@ -1,7 +1,9 @@
 #include "riptide_gnc/auv_math_lib.h"
 
+namepsace AUVMathLib
+{
 // Return rotation matrix about a single axis
-Matrix3f AUVMathLib::GetAxisRotation(int axis, float angle)
+Matrix3f GetAxisRotation(int axis, float angle)
 {
     Matrix3f R = Matrix3f::Zero();
     RowVector3f row1, row2, row3;
@@ -39,7 +41,7 @@ Matrix3f AUVMathLib::GetAxisRotation(int axis, float angle)
 // Ex. Vb = R * Vw, Vb = vector in B-frame coordinates, Vw = vector in world-frame coordinates
 // Parameters:
 //      attitude = Eigen::Vector3f of yaw, pitch, and roll (in this order)
-Matrix3f AUVMathLib::GetEulerRotMat(const Ref<const Vector3f> &attitude)
+Matrix3f GetEulerRotMat(const Ref<const Vector3f> &attitude)
 {
     Matrix3f R = Matrix3f::Identity();
 
@@ -54,7 +56,7 @@ Matrix3f AUVMathLib::GetEulerRotMat(const Ref<const Vector3f> &attitude)
 // Parameters:
 //   velBF = vel expressed in body-frame
 //   angVelBF = ang. vel expressed in the body-frame
-MatrixXf AUVMathLib::SgnMat(const Ref<const MatrixXf>& mat)
+MatrixXf SgnMat(const Ref<const MatrixXf>& mat)
 {
     MatrixXf sgnMat = mat;
 
@@ -74,28 +76,28 @@ MatrixXf AUVMathLib::SgnMat(const Ref<const MatrixXf>& mat)
 }
 
 //template <typename T>
-int AUVMathLib::Sgn(double &x){
+int Sgn(double &x){
     if (x > 0)
         return 1;
     else 
         return -1;
 }
 
-int AUVMathLib::Sgn(float &x){
+int Sgn(float &x){
     if (x > 0)
         return 1;
     else 
         return -1;
 }
 
-int AUVMathLib::Sgn(int &x){
+int Sgn(int &x){
     if (x > 0)
         return 1;
     else 
         return -1;
 }
 
-Matrix3f AUVMathLib::SkewSym(const Ref<const Vector3f> &v)
+Matrix3f SkewSym(const Ref<const Vector3f> &v)
 {
     Matrix3f skew = Matrix3f::Zero();
     RowVector3f row1, row2, row3;
@@ -107,3 +109,32 @@ Matrix3f AUVMathLib::SkewSym(const Ref<const Vector3f> &v)
     skew << row1, row2, row3;
     return skew;
 }
+
+// Constrain 'x' to conform to the sawtooth profile
+float SawtoothWave(float x, float period, float max)
+{
+    return max * 2 * (x/period - floor(0.5 + x/period));
+}
+
+
+// Constrain 'x' to conform to the triangulat profile
+float TriangularWave(float x, float period, float max)
+{
+    float f = floor(0.5 + 2*x/period);
+    return max * 2 * (2*x/period - f) * (-1)^(f);
+}
+
+// Returns value within the bounds of roll/yaw values: [-180, +180] deg
+// Follows sawtooth profile
+float RollYawMap(float x)
+{
+    return SawtoothWave(x, 360, 180);
+}
+
+// Returns value within the bounds of pitch values: [-90, +90] deg
+// Follows triangular profile
+float PitchMap(float x)
+{
+    return TriangularWave(x, 360, 90);
+}
+} // namespace AUVMathLib

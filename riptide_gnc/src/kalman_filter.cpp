@@ -101,7 +101,7 @@ VectorXf KalmanFilter::Update(const Ref<const VectorXf> &Z)
 // To be called by an Extended Kalman Filter (EKF)
 // A and H matrices are Jacobians calculated by the EKF
 // R is a subset of the complete (original) R for the filter
-VectorXf KalmanFilter::GenericUpdate(const Ref<const MatrixXf> &Anew, const Ref<const MatrixXf> &Hnew, const Ref<const MatrixXf> &Rnew,
+VectorXf KalmanFilter::EKFUpdate(const Ref<const MatrixXf> &Anew, const Ref<const MatrixXf> &Hnew, const Ref<const MatrixXf> &Rnew,
                                 const Ref<const VectorXf> &Xpredict, const Ref<const VectorXf> &Z)
 {
     // Verify Parameter Dimensions

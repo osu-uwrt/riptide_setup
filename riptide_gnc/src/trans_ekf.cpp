@@ -1,23 +1,13 @@
 #include "riptide_gnc/trans_ekf.h"
 
-// NOTE: pos sensors are Inertial-FRAME, and vel and accel sensors are BODY-FRAME
-// posIn, velIn, accelIn = matrices indicating which sensors are provided to this EKF
-//      Row 0 = X; Row 1 = Y; Row 2 = Z
-//      Each column represents data from a different sensor
-//      1 = msmt provided, 0 = msmt not provided
-// Rp, Rv, and Ra = the main-diagonal elements for the sensor noise covariance matrices
-//      Row 0 = X; Row 1 = Y; Row 2 = Z
-// Q = horizontal concatenation of process coviariance matrices for each axis (Qx, Qy, and Qz)
-//      The first row is for position, the second two rows are for vel and accel
-//      For simplicity, the bottom two rows will be used for the body-frame EKFs, but all three rows
-//      will be used for world-frame estimation (pos, vel, and accel)
-TransEKF::TransEKF(const Ref<const Matrix3i> &sensorMaskIn, const Ref<const MatrixXf> &RposIn, const Ref<const MatrixXf> &RvelIn,
+// NOTE: pos sensors are Inertial-FRAME, and vel and accel sensors are Body-FRAME
+TransEKF::TransEKF(const Ref<const Matrix3i> &fullMsmtMaskIn, const Ref<const MatrixXf> &RposIn, const Ref<const MatrixXf> &RvelIn,
                    const Ref<const MatrixXf> &RaccelIn, const Ref<const Matrix9f> &Qin)
 {
     n = 9;
     init = false;
     Xhat.setZero();
-    sensorMask = sensorMaskIn;
+    fullMsmtMask = fullMsmtMaskIn; // Mask of all measurements that the provided sensors measure
     Rpos = RposIn;
     Rvel = RvelIn;
     Raccel = RaccelIn;
@@ -27,7 +17,7 @@ TransEKF::TransEKF(const Ref<const Matrix3i> &sensorMaskIn, const Ref<const Matr
     Matrix9f A;
     A.setIdentity();
 
-    int m = sensorMask.sum();
+    int m = fullMsmtMask.sum();
     MatrixXf H(m,n);
     H.setZero();
 
@@ -55,9 +45,9 @@ void TransEKF::Init(const Ref<const VectorXf>& Xo)
 // Inertial Measurement Update - sensor readings are from inertial sensors
 // dt = time step [s] since last call of this update function
 // attitude = Euler Angles in the order of (yaw, pitch, roll)
-// newData = indicates if the sensor (pos, vel, and/or accel) has new data
+// sensorMask = indicates if the sensor (pos, vel, and/or accel) has new data
 // Z = the actual sensor data, same format as Zmask
-VectorXf TransEKF::IMUpdate(float dt, const Ref<const Vector3f> &attitude, const Ref<const Vector3i> &newData, const Ref<const Matrix3f> &Zmat)
+VectorXf TransEKF::Update(float dt, const Ref<const Vector3f> &attitude, const Ref<const Vector3i> &sensorMask, const Ref<const Matrix3f> &Zmat)
 {
     // Check for initialization of KF
     // If not, default is to leave Xhat as the zero vector
@@ -85,8 +75,9 @@ VectorXf TransEKF::IMUpdate(float dt, const Ref<const Vector3f> &attitude, const
     A.block<3, 3>(3, 6) = dtMat;
 
     // Get mask for which data fields are present
-    Matrix3i dataMask = sensorMask * newData;
-    int m = dataMask.sum();
+    // diag(sensorMask) acts as a filter on fullmsmtMask to provide the dataMask
+    Matrix3i dataMask = fullMsmtMask * diag(sensorMask);
+    int m = dataMask.sum(); // Number of msmts in this iteration
     
     // Create H (observation/measurement matrix) and Z (measurement vector)
     MatrixXf H(m, n);
@@ -94,13 +85,15 @@ VectorXf TransEKF::IMUpdate(float dt, const Ref<const Vector3f> &attitude, const
     H.setZero();
     Z.setZero();
     int i = 0;
-    for (int j = 0; j < 3; j++)
+
+    // Fill in H matrix based on dataMask
+    for (int k = 0; k < 3; j++) // Traverse across cols
     {
-        for (int k = 0; k < 3; k++)
+        for (int j = 0; j < 3; k++) // Traverse down rows
         {
-            if(sensorMask(j,k))
+            if(dataMask(j,k))
             {
-                H(i, (j+1) * (k+1)) = 1;
+                H(i, (3*k + j) = 1;
                 Z(i++) = Zmat(j,k);
             }
         }
@@ -112,14 +105,17 @@ VectorXf TransEKF::IMUpdate(float dt, const Ref<const Vector3f> &attitude, const
     int p = dataMask.col(0).sum();
     int v = dataMask.col(1).sum();
     int a = dataMask.col(2).sum();
-    R.block<p,p>(0,0) = Rpos;
-    R.block<v,v>(p,p) = Rvel;
-    R.block<a,a>(p+v, p+v) = Raccel;
+    if (p > 0)
+        R.block<p,p>(0,0) = Rpos;
+    if (v > 0)
+        R.block<v,v>(p,p) = Rvel;
+    if (a > 0)
+        R.block<a,a>(p+v, p+v) = Raccel;
 
     // Populate Xpredict vector
     Vector9f Xpredict = A*Xhat;
 
     // Run update step
-    Xhat = EKF->GenericUpdate(A, H, R, Xpredict, Z);
+    Xhat = EKF->EKFUpdate(A, H, R, Xpredict, Z);
     return Xhat;
 }

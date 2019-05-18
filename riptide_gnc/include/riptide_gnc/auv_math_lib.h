@@ -21,6 +21,11 @@ int Sgn(float &x);
 int Sgn(int &x);
 
 Matrix3f SkewSym(const Ref<const Vector3f> &v);
+
+float SawtoothWave(float x, float period, float max);
+float TriangularWave(float x, float period, float max);
+float RollYawMap(float x);
+float PitchMap(float x);
 } // namespace AUVMathLib
 
 #endif
