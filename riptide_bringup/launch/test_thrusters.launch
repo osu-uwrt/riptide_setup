@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find riptide_hardware)/launch/coprocessor.launch" />
+  <include file="$(find riptide_controllers)/launch/pwm_controller.launch" />
+</launch>

@@ -142,10 +142,10 @@ void UndistortCamera::ImageCB(const sensor_msgs::Image::ConstPtr &msg) {
   // This replaces the second function call in cv::undistort(). Only takes about 10 ms
   remap(cv_ptr->image, imageUndistorted, map1, map2, INTER_LINEAR);
 
-  // Rotate image 180 degrees for downward camera based on how its plositioned
+  /*// Rotate image 180 degrees for downward camera based on how its plositioned
   if(strcmp(camera_name.c_str(), "downward") == 0) {
     rotate(imageUndistorted, imageUndistorted, ROTATE_180);
-  }
+  }*/
 
   sensor_msgs::ImagePtr out_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", imageUndistorted).toImageMsg();
   undistorted_pub.publish(out_msg);

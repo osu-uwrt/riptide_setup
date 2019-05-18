@@ -13,6 +13,7 @@
 #include "riptide_msgs/Depth.h"
 #include "opencv2/opencv.hpp"
 #include "cv_bridge/cv_bridge.h"
+#include "image_transport/image_transport.h"
 using namespace cv;
 using namespace std;
 
@@ -22,7 +23,7 @@ class HUD
   ros::NodeHandle nh;
   ros::Subscriber imu_sub, depth_sub, fwd_img_sub, down_img_sub, darknet_img_sub;
   ros::Subscriber cmd_attitude_sub, cmd_depth_sub, cmd_accel_sub;
-  ros::Publisher fwd_img_pub, down_img_pub, darknet_img_pub;
+  image_transport::Publisher fwd_img_pub, down_img_pub, darknet_img_pub;
 
   geometry_msgs::Vector3 euler_rpy, cmd_euler_rpy, linear_accel, cmd_linear_accel;
   double depth, cmd_depth;

@@ -1,6 +1,3 @@
 <launch>
-	<machine address="riptide" name="riptide" user="ros" env-loader="~/osu-uwrt/riptide_software/src/riptide_utilities/riptide_master.sh"/>
-	<arg name="machine" default="riptide"/>
-	<!--<node pkg="riptide_hardware" type="coprocessor_serial.py" name="coprocessor_driver" output="screen" />-->
-	<node machine="$(arg machine)" pkg="riptide_hardware" type="coprocessor_serial.py" name="coprocessor_driver" output="screen" />
+	<node pkg="riptide_hardware" type="coprocessor_serial.py" name="coprocessor_driver" output="screen" />
 </launch>

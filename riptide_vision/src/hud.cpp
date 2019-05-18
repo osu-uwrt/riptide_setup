@@ -1,4 +1,5 @@
 #include "riptide_vision/hud.h"
+#include "image_transport/image_transport.h"
 
 #define GRAVITY 9.81 // [m/s^2]
 #define WATER_DENSITY 1000 // [kg/m^3]
@@ -23,9 +24,10 @@ HUD::HUD() : nh("hud") {
   cmd_accel_sub = nh.subscribe<geometry_msgs::Accel>("/command/accel", 1, &HUD::CmdAccelCB, this);
 
   // Outputs
-  fwd_img_pub = nh.advertise<sensor_msgs::Image>("/forward/image_hud", 1);
-  down_img_pub = nh.advertise<sensor_msgs::Image>("/downward/image_hud", 1);
-  darknet_img_pub = nh.advertise<sensor_msgs::Image>("/darknet_ros/image_hud", 1);
+  image_transport::ImageTransport it(nh);
+  fwd_img_pub = it.advertise("/forward/image_hud", 1);
+  down_img_pub = it.advertise("/downward/image_hud", 1);
+  darknet_img_pub = it.advertise("/darknet_ros/image_hud", 1);
 
   top_margin = 120;
   num_rows = 4;
