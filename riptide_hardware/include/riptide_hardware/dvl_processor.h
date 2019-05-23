@@ -37,7 +37,7 @@ public:
   void LoadParam(string param, T &var);
   void LoadDVLProperties();
   void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
-  void DvlCB(const riptide_msgs::Dvl::ConstPtr &dvl_msg);
+  void DvlCB(const nortek_dvl::Dvl::ConstPtr &dvl_msg);
   void Loop();
 };
 

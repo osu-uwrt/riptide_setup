@@ -74,5 +74,5 @@ target_link_libraries(imu_processor ${catkin_LIBRARIES})
 add_dependencies(imu_processor ${catkin_EXPORTED_TARGETS})
 
 add_executable(dvl_processor src/dvl_processor.cpp)
-target_link_libraries(dvl_processor ${catkin_LIBRARIES})
+target_link_libraries(dvl_processor ${catkin_LIBRARIES} yaml-cpp)
 add_dependencies(dvl_processor ${catkin_EXPORTED_TARGETS})

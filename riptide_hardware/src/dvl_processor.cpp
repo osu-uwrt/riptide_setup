@@ -57,11 +57,11 @@ void DVLProcessor::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
   relative_v(2) = angular_v(0) * dvl_position(1) + angular_v(1) * dvl_position(0);
 }
   
-void DVLProcessor::DvlCB(const riptide_msgs::Dvl::ConstPtr &dvl_msg)
+void DVLProcessor::DvlCB(const nortek_dvl::Dvl::ConstPtr &dvl_msg)
 {
-  state.vehicle_v.x = dvl_msg->vehicle_v.x - relative_v(0);
-  state.vehicle_v.y = dvl_msg->vehicle_v.y - relative_v(1);
-  state.vehicle_v.z = dvl_msg->vehicle_v.z - relative_v(2);
+  state.vehicle_v.x = dvl_msg->velocity.x - relative_v(0);
+  state.vehicle_v.y = dvl_msg->velocity.y - relative_v(1);
+  state.vehicle_v.z = dvl_msg->velocity.z - relative_v(2);
   dvl_state_pub.publish(state);
 }
 
