@@ -14,6 +14,7 @@ find_package(catkin REQUIRED
     roslint
     roscpp
     riptide_msgs
+    nortek_dvl
     geometry_msgs
     imu_3dm_gx4
     pointgrey_camera_driver
@@ -71,3 +72,7 @@ endif()
 add_executable(imu_processor src/imu_processor.cpp)
 target_link_libraries(imu_processor ${catkin_LIBRARIES})
 add_dependencies(imu_processor ${catkin_EXPORTED_TARGETS})
+
+add_executable(dvl_processor src/dvl_processor.cpp)
+target_link_libraries(dvl_processor ${catkin_LIBRARIES})
+add_dependencies(dvl_processor ${catkin_EXPORTED_TARGETS})

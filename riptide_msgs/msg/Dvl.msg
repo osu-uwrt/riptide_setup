@@ -1,0 +1,1 @@
+geometry_msgs/Vector3 vehicle_v # Unit in [m/s]

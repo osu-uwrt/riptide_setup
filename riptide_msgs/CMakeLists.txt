@@ -13,6 +13,7 @@ find_package(catkin REQUIRED
 add_message_files(
     FILES
     Depth.msg
+    Dvl.msg
     Thrust.msg
     ThrustStamped.msg
     Pwm.msg
