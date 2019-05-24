@@ -2,7 +2,8 @@
   <arg name="positions_file" value="$(find riptide_hardware)/cfg/dvl_positions.yaml" />
   <!-- Do I need to find device here? -->
   
-  <node pkg="riptide_hardware" type="dvl_processor" name="dvl" output="screen">
+  <!-- <remap from > -->
+  <node pkg="riptide_hardware" type="dvl_processor" name="dvl_processor" output="screen">
     <param name="positions_file" type="string" value="$(arg positions_file)" />
   </node>
 </launch>
