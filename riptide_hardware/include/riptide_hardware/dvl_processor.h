@@ -24,8 +24,8 @@ private:
   YAML::Node positions;
   string positions_file;
   Vector3d dvl_position;
-  Vector3d relative_v;
-  geometry_msgs::Vector3 dvl_v;
+  Vector3d relative_vel;
+  geometry_msgs::Vector3 dvl_vel;
 
   riptide_msgs::Dvl state;
 

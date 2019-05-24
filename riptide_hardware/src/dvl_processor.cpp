@@ -16,8 +16,6 @@ DVLProcessor::DVLProcessor() : nh("dvl_processor")
   // Load relative positions between DVL and COM from YAML file
   DVLProcessor::LoadParam<string>("positions_file", positions_file);
   positions = YAML::LoadFile(positions_file);
-
-  // DVLProcessor::LoadDVLPorperties();
 }
 
 template <typename T>
@@ -47,21 +45,34 @@ void DVLProcessor::LoadDVLProperties()
 
 void DVLProcessor::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
 {
-  Vector3d angular_v;
-  angular_v(0) = imu_msg->ang_vel_rad.x;
-  angular_v(1) = imu_msg->ang_vel_rad.y;
-  angular_v(2) = imu_msg->ang_vel_rad.z;
+  Vector3d angular_vel;
+  angular_vel(0) = imu_msg->ang_vel_rad.x;
+  angular_vel(1) = imu_msg->ang_vel_rad.y;
+  angular_vel(2) = imu_msg->ang_vel_rad.z;
 
-  relative_v(0) = angular_v(1) * dvl_position(2) + angular_v(2) * dvl_position(1);
-  relative_v(1) = angular_v(2) * dvl_position(0) + angular_v(0) * dvl_position(2);
-  relative_v(2) = angular_v(0) * dvl_position(1) + angular_v(1) * dvl_position(0);
+  relative_vel(0) = angular_vel(1) * dvl_position(2) + angular_vel(2) * dvl_position(1);
+  relative_vel(1) = angular_vel(2) * dvl_position(0) + angular_vel(0) * dvl_position(2);
+  relative_vel(2) = angular_vel(0) * dvl_position(1) + angular_vel(1) * dvl_position(0);
 }
   
 void DVLProcessor::DvlCB(const nortek_dvl::Dvl::ConstPtr &dvl_msg)
 {
-  state.vehicle_v.x = dvl_msg->velocity.x - relative_v(0);
-  state.vehicle_v.y = dvl_msg->velocity.y - relative_v(1);
-  state.vehicle_v.z = dvl_msg->velocity.z - relative_v(2);
+  // state.header = dvl_msg->header;
+  state.vehicle_time = dvl_msg->time;
+  state.vehicle_dt1 = dvl_msg->dt1;
+  state.vehicle_dt2 = dvl_msg->dt2;
+
+  state.vehicle_vel.x = dvl_msg->velocity.x - relative_vel(0);
+  state.vehicle_vel.y = dvl_msg->velocity.y - relative_vel(1);
+  state.vehicle_vel.z = dvl_msg->velocity.z - relative_vel(2);
+
+  state.vehicle_figureOfMerit = dvl_msg->figureOfMerit;
+  state.vehicle_beamDistance = dvl_msg->beamDistance;
+  state.vehicle_batteryVoltage = dvl_msg->batteryVoltage;
+  state.vehicle_speedSound = dvl_msg->speedSound;
+  state.vehicle_pressure = dvl_msg->pressure;
+  state.vehicle_temp = dvl_msg->temp;
+
   dvl_state_pub.publish(state);
 }
 

@@ -13,7 +13,6 @@ find_package(catkin REQUIRED
 add_message_files(
     FILES
     Depth.msg
-    Dvl.msg
     Thrust.msg
     ThrustStamped.msg
     Pwm.msg
@@ -41,10 +40,22 @@ add_message_files(
     StatusLight.msg
     CalibrateAlignment.msg
     NetLoad.msg
+    Dvl.msg
+
 )
 
-generate_messages(DEPENDENCIES std_msgs geometry_msgs darknet_ros_msgs)
+generate_messages(
+    DEPENDENCIES 
+    std_msgs 
+    geometry_msgs 
+    darknet_ros_msgs
 
-catkin_package(CATKIN_DEPENDS message_runtime)
+)
+
+catkin_package(
+    CATKIN_DEPENDS 
+    message_runtime
+    
+)
 
 include_directories(${catkin_INCLUDE_DIRS})
