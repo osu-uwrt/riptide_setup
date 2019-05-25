@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="riptide_controllers" type="calibrationAction.py" name="calibrationAction" output="screen" />
+</launch>

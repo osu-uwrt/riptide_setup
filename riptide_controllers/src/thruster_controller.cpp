@@ -35,6 +35,8 @@ ThrusterController::ThrusterController() : nh("~")
 
   state_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &ThrusterController::ImuCB, this);
   depth_sub = nh.subscribe<riptide_msgs::Depth>("/state/depth", 1, &ThrusterController::DepthCB, this);
+  fob_sub = nh.subscribe<std_msgs::Float32>("/state/fob", 1, &ThrusterController::FobCB, this);
+  cob_sub = nh.subscribe<geometry_msgs::Vector3>("/state/cob", 1, &ThrusterController::CobCB, this);
   cmd_sub = nh.subscribe<riptide_msgs::NetLoad>("/command/net_load", 1, &ThrusterController::NetLoadCB, this);
   cmd_pub = nh.advertise<riptide_msgs::ThrustStamped>("/command/thrust", 1);
 
@@ -255,6 +257,18 @@ void ThrusterController::NetLoadCB(const riptide_msgs::NetLoad::ConstPtr &load_m
     cob_msg.vector.z = solver_cob[2];
     cob_pub.publish(cob_msg);
   }
+}
+
+void ThrusterController::FobCB(const std_msgs::Float32::ConstPtr &fob_msg)
+{
+  Fb = fob_msg->data;
+}
+
+void ThrusterController::CobCB(const geometry_msgs::Vector3::ConstPtr &cob_msg)
+{
+  CoB(0) = cob_msg->x;
+  CoB(1) = cob_msg->y;
+  CoB(2) = cob_msg->z;
 }
 
 void ThrusterController::Loop()

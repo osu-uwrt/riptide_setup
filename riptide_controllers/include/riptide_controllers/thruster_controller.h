@@ -10,6 +10,7 @@
 #include <dynamic_reconfigure/server.h>
 #include <riptide_controllers/VehiclePropertiesConfig.h>
 
+#include "std_msgs/Float32.h"
 #include "geometry_msgs/Vector3.h"
 #include "geometry_msgs/Vector3Stamped.h"
 #include "geometry_msgs/Accel.h"
@@ -35,7 +36,7 @@ class ThrusterController
 {
 private:
   ros::NodeHandle nh;
-  ros::Subscriber state_sub, cmd_sub, depth_sub;
+  ros::Subscriber state_sub, cmd_sub, depth_sub, fob_sub, cob_sub;
   ros::Publisher cmd_pub, cob_pub;
 
   riptide_msgs::ThrustStamped thrust_msg;
@@ -84,6 +85,8 @@ public:
   void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
   void DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg);
   void NetLoadCB(const riptide_msgs::NetLoad::ConstPtr &load_msg);
+  void FobCB(const std_msgs::Float32::ConstPtr &fob_msg);
+  void CobCB(const geometry_msgs::Vector3::ConstPtr &cob_msg);
   void Loop();
 };
 

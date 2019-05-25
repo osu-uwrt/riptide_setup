@@ -21,6 +21,7 @@ find_package(catkin REQUIRED
     riptide_msgs
     tf
     control_toolbox
+    actionlib_msgs
 )
 
 find_package(Ceres REQUIRED)
@@ -31,11 +32,21 @@ generate_dynamic_reconfigure_options(
   cfg/VehicleProperties.cfg
 )
 
+add_action_files(
+  DIRECTORY action
+  FILES Calibration.action
+)
+
+generate_messages(
+  DEPENDENCIES actionlib_msgs std_msgs  # Or other packages containing msgs
+)
+
 catkin_package(
   INCLUDE_DIRS
     include
   CATKIN_DEPENDS
     dynamic_reconfigure
+    actionlib_msgs
 )
 
 roslint_cpp()
