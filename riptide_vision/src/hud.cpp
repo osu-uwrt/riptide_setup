@@ -13,7 +13,7 @@ int main(int argc, char** argv)
 
 // Heads Up Display
 HUD::HUD() : nh("hud") {
-  fwd_img_sub = nh.subscribe<sensor_msgs::Image>("/stereo/left/image_undistorted", 1, &HUD::ForwardImgCB, this);
+  fwd_img_sub = nh.subscribe<sensor_msgs::Image>("/forward/image_undistorted", 1, &HUD::ForwardImgCB, this);
   down_img_sub = nh.subscribe<sensor_msgs::Image>("/downward/image_undistorted", 1, &HUD::DownwardImgCB, this);
   darknet_img_sub = nh.subscribe<sensor_msgs::Image>("/darknet_ros/detection_image", 1, &HUD::DarknetImgCB, this);
   imu_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &HUD::ImuCB, this);
@@ -25,7 +25,7 @@ HUD::HUD() : nh("hud") {
 
   // Outputs
   image_transport::ImageTransport it(nh);
-  fwd_img_pub = it.advertise("/stereo/left/image_hud", 1);
+  fwd_img_pub = it.advertise("/forward/image_hud", 1);
   down_img_pub = it.advertise("/downward/image_hud", 1);
   darknet_img_pub = it.advertise("/darknet_ros/image_hud", 1);
 

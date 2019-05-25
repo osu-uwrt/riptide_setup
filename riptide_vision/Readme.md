@@ -14,7 +14,7 @@ This node reads in the bounding box data from darknet and outputs the same type 
 * Output Topics: /task/bboxes, /task/low_detections
 #### object_processor
 This node reads in data from yolo_processor and outputs specific information about the bounding box (width, height, and center) for the alignment_controller. Without known our position, we were forced to create an controller that aligns the vehicle to a detected object.
-* Input Topics: /task/bboxes, /stereo/left/image_undistorted, /task/info, /command/alignment
+* Input Topics: /task/bboxes, /forward/image_undistorted, /task/info, /command/alignment
 * Output Topics: /state/object
 
 ### Utility ROS Nodes

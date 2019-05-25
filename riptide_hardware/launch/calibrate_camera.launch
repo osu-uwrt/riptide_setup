@@ -1,0 +1,20 @@
+<launch>
+  <arg name="numBoards" default="25" />
+  <arg name="numCornersHor" default="8"/>
+  <arg name="numCornersVer" default="6"/>
+
+  <arg name="frame_rate" default="30" /> <!-- Use 15 fps w/USB 2.0 port, or 30 fps w/USB 3.0 port -->
+  <arg name="camera_name" default="forward" />
+
+  <include file="$(find riptide_hardware)/launch/cameras.launch" >
+    <arg name="frame_rate" value="$(arg frame_rate)" />
+  </include>
+
+  <node pkg="riptide_hardware" type="calibrate_camera" name="calibrate_camera" output="screen">
+    <param name="numBoards" type="double" value="$(arg numBoards)" />
+    <param name="numCornersHor" type="double" value="$(arg numCornersHor)" />
+    <param name="numCornersVer" type="double" value="$(arg numCornersVer)" />
+    <param name="frame_rate" type="double" value="$(arg frame_rate)" />
+    <param name="camera_name" type="string" value="$(arg camera_name)" />
+  </node>
+</launch>
