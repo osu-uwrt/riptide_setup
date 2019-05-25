@@ -24,7 +24,7 @@ class YoloProcessor
   ros::Publisher task_bbox_pub, low_detections_pub, task_image_pub;
 
   darknet_ros_msgs::BoundingBoxes task_bboxes, low_detections;
-  string camera_topics[2] = {"/stereo/left/image_undistorted", "/downward/image_undistorted"};
+  string camera_topics[2] = {"/forward/image_undistorted", "/downward/image_undistorted"};
   cv_bridge::CvImagePtr cv_ptr;
   Mat task_image;
   int top_margin, num_rows, offset, text_start[4];
