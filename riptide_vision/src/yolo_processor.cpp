@@ -17,7 +17,7 @@ int main(int argc, char** argv)
 
 YoloProcessor::YoloProcessor() : nh("yolo_processor") {
   darknet_bbox_sub = nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/darknet_ros/bounding_boxes", 1, &YoloProcessor::DarknetBBoxCB, this);
-  image_sub = nh.subscribe<sensor_msgs::Image>("/forward/image_undistorted", 1, &YoloProcessor::ImageCB, this);
+  image_sub = nh.subscribe<sensor_msgs::Image>("/stereo/left/image_undistorted", 1, &YoloProcessor::ImageCB, this);
   task_info_sub = nh.subscribe<riptide_msgs::TaskInfo>("/task/info", 1, &YoloProcessor::TaskInfoCB, this);
 
   task_bbox_pub = nh.advertise<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1);
