@@ -30,7 +30,7 @@ class ObjectProcessor
 
   darknet_ros_msgs::BoundingBox object_bbox;
   riptide_msgs::Object object;
-  string camera_topics[2] = {"/forward/image_undistorted", "/downward/image_undistorted"};
+  string camera_topics[2] = {"/stereo/left/image_undistorted", "/downward/image_undistorted"};
   cv_bridge::CvImagePtr cv_ptr;
   int width, height, cam_center_x, cam_center_y;
   vector<Scalar> colors;
