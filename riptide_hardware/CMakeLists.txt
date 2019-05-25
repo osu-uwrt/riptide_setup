@@ -40,7 +40,6 @@ find_package(Boost REQUIRED)
 include_directories(${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIR})
 
 cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)
-message("-- Computer name: " ${_host_name})
 
 if(NOT _host_name MATCHES "jetson")
 
@@ -51,21 +50,6 @@ if(NOT _host_name MATCHES "jetson")
     add_executable(depth_processor src/depth_processor.cpp)
     target_link_libraries(depth_processor ${catkin_LIBRARIES})
     add_dependencies(depth_processor ${catkin_EXPORTED_TARGETS})
-else()
-    message("-- Skipping riptide code on jetson")
-endif()
-
-if(NOT _host_name MATCHES "riptide")
-
-    add_executable(calibrate_camera src/calibrate_camera.cpp)
-    target_link_libraries(calibrate_camera ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
-    add_dependencies(calibrate_camera ${catkin_EXPORTED_TARGETS})
-
-    add_executable(undistort_camera src/undistort_camera.cpp)
-    target_link_libraries(undistort_camera ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
-    add_dependencies(undistort_camera ${catkin_EXPORTED_TARGETS})
-else()
-    message("-- Skipping jetson code on riptide")
 endif()
 
 add_executable(imu_processor src/imu_processor.cpp)
