@@ -36,7 +36,7 @@ class ThrusterController
 {
 private:
   ros::NodeHandle nh;
-  ros::Subscriber state_sub, cmd_sub, depth_sub, fob_sub, cob_sub;
+  ros::Subscriber state_sub, cmd_sub, depth_sub;
   ros::Publisher cmd_pub, cob_pub;
 
   riptide_msgs::ThrustStamped thrust_msg;
@@ -51,7 +51,7 @@ private:
   string properties_file;
   vector<int> thrustersEnabled;
   Vector3d CoB;
-  double mass, volume, Fg, Fb, Ixx, Iyy, Izz, depth_fully_submerged;
+  double mass, Fg,  Fb, Ixx, Iyy, Izz, depth_fully_submerged;
   bool isSubmerged;
 
   // Variables that get passed to class EOM and FindCoB
@@ -85,8 +85,6 @@ public:
   void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
   void DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg);
   void NetLoadCB(const riptide_msgs::NetLoad::ConstPtr &load_msg);
-  void FobCB(const std_msgs::Float32::ConstPtr &fob_msg);
-  void CobCB(const geometry_msgs::Vector3::ConstPtr &cob_msg);
   void Loop();
 };
 

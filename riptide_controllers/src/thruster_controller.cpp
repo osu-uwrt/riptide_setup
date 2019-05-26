@@ -35,8 +35,6 @@ ThrusterController::ThrusterController() : nh("~")
 
   state_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &ThrusterController::ImuCB, this);
   depth_sub = nh.subscribe<riptide_msgs::Depth>("/state/depth", 1, &ThrusterController::DepthCB, this);
-  fob_sub = nh.subscribe<std_msgs::Float32>("/state/fob", 1, &ThrusterController::FobCB, this);
-  cob_sub = nh.subscribe<geometry_msgs::Vector3>("/state/cob", 1, &ThrusterController::CobCB, this);
   cmd_sub = nh.subscribe<riptide_msgs::NetLoad>("/command/net_load", 1, &ThrusterController::NetLoadCB, this);
   cmd_pub = nh.advertise<riptide_msgs::ThrustStamped>("/command/thrust", 1);
 
@@ -87,14 +85,8 @@ void ThrusterController::LoadParam(std::string param, T &var)
 void ThrusterController::LoadVehicleProperties()
 {
   mass = properties["properties"]["mass"].as<double>();
-  volume = properties["properties"]["volume"].as<double>();
-  depth_fully_submerged = properties["properties"]["depth_fully_submerged"].as<double>();
-
   Fg = mass * GRAVITY;
-  Fb = WATER_DENSITY * volume * GRAVITY;
-
-  for (int i = 0; i < 3; i++)
-    CoB(i) = properties["properties"]["CoB"][i].as<double>();
+  depth_fully_submerged = properties["properties"]["depth_fully_submerged"].as<double>();
 
   Ixx = properties["properties"]["inertia"][0].as<double>();
   Iyy = properties["properties"]["inertia"][1].as<double>();
@@ -164,16 +156,10 @@ void ThrusterController::InitThrustMsg()
 // Callback for dynamic reconfigure
 void ThrusterController::DynamicReconfigCallback(riptide_controllers::VehiclePropertiesConfig &config, uint32_t levels)
 {
-  if (tune)
-  {
-    mass = config.Mass;
-    volume = config.Volume;
-    CoB(0) = config.Buoyancy_X_POS;
-    CoB(1) = config.Buoyancy_Y_POS;
-    CoB(2) = config.Buoyancy_Z_POS;
-    Fg = mass * GRAVITY;
-    Fb = WATER_DENSITY * volume * GRAVITY;
-  }
+  CoB(0) = config.Buoyancy_X_POS;
+  CoB(1) = config.Buoyancy_Y_POS;
+  CoB(2) = config.Buoyancy_Z_POS;
+  Fb = config.Buoyant_Force;
 }
 
 void ThrusterController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
@@ -257,18 +243,6 @@ void ThrusterController::NetLoadCB(const riptide_msgs::NetLoad::ConstPtr &load_m
     cob_msg.vector.z = solver_cob[2];
     cob_pub.publish(cob_msg);
   }
-}
-
-void ThrusterController::FobCB(const std_msgs::Float32::ConstPtr &fob_msg)
-{
-  Fb = fob_msg->data;
-}
-
-void ThrusterController::CobCB(const geometry_msgs::Vector3::ConstPtr &cob_msg)
-{
-  CoB(0) = cob_msg->x;
-  CoB(1) = cob_msg->y;
-  CoB(2) = cob_msg->z;
 }
 
 void ThrusterController::Loop()

@@ -1,3 +1,12 @@
 <launch>
-  <node pkg="riptide_controllers" type="calibrationAction.py" name="calibrationAction" output="screen" />
+  <arg name="properties_file" value="$(find riptide_controllers)/cfg/vehicle_properties.yaml" />
+
+  <node pkg="riptide_controllers" type="thruster_controller" name="thruster_controller" output="screen" >
+    <param name="tune" type="bool" value="False" />
+    <param name="properties_file" type="string" value="$(arg properties_file)" />
+  </node>
+  
+  <node pkg="riptide_controllers" type="calibrationAction.py" name="calibrationAction" output="screen">
+    <param name="properties_file" type="string" value="$(arg properties_file)" />
+  </node>
 </launch>
