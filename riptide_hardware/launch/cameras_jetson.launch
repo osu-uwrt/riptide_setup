@@ -1,5 +1,6 @@
 <launch>
-  <!--<arg name="machine_name" default="jetson"/>-->
+  <machine address="jetson" name="jetson" user="ros" env-loader="~/osu-uwrt/riptide_software/src/riptide_utilities/riptide_master.sh"/>
+	<arg name="machine_name" default="jetson"/>
 
   <arg name="frame_rate" default="30" />
   <arg name="fwd_serial_number" value="14490542 " />
@@ -7,15 +8,27 @@
   <arg name="spare_serial_number" value="14490573" />
   <arg name="flir_serial_number" value="14432788" />
 
-  <include file="$(find riptide_hardware)/launch/camera_jetson.launch">
-    <arg name="camera_name" value="forward" />
-    <arg name="serial_number" value="$(arg fwd_serial_number)" />
-    <arg name="frame_rate" value="$(arg frame_rate)" />
-  </include>
+  <group ns="stereo">
+    <include file="$(find riptide_hardware)/launch/camera_jetson.launch">
+      <arg name="camera_name" value="left" />
+      <arg name="serial_number" value="$(arg fwd_serial_number)" />
+      <arg name="frame_rate" value="$(arg frame_rate)" />
+    </include>
+
+    <include file="$(find riptide_hardware)/launch/camera_jetson.launch">
+      <arg name="camera_name" value="right" />
+      <arg name="serial_number" value="$(arg flir_serial_number)" />
+      <arg name="frame_rate" value="$(arg frame_rate)" />
+    </include>
+  </group>
+  <node machine="$(arg machine_name)" name="stereo_image_proc" pkg="stereo_image_proc" type="stereo_image_proc" ns="stereo">
+    <param name="approximate_sync" value="true" />
+  </node>
 
   <include file="$(find riptide_hardware)/launch/camera_jetson.launch">
-    <arg name="camera_name" value="downward" />
-    <arg name="serial_number" value="$(arg down_serial_number)" />
-    <arg name="frame_rate" value="$(arg frame_rate)" />
+      <arg name="camera_name" value="downward" />
+      <arg name="serial_number" value="$(arg down_serial_number)" />
+      <arg name="frame_rate" value="$(arg frame_rate)" />
   </include>
+  <node machine="$(arg machine_name)" name="image_proc" pkg="image_proc" type="image_proc" ns="downward"/>
 </launch>
