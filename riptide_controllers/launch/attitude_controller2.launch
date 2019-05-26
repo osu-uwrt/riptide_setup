@@ -1,0 +1,4 @@
+<launch>
+
+  <node pkg="riptide_controllers" type="attitude_controller.py" name="attitude_controller" output="screen" />
+</launch>
