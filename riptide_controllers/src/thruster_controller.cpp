@@ -10,7 +10,7 @@ int main(int argc, char **argv)
 ThrusterController::ThrusterController() : nh("~")
 {
   // Load parameters from .yaml files or launch files
-  ThrusterController::LoadParam<bool>("tune", tune);
+  //ThrusterController::LoadParam<bool>("tune", tune);
   ThrusterController::LoadParam<string>("properties_file", properties_file);
 
   properties = YAML::LoadFile(properties_file);
@@ -36,19 +36,10 @@ ThrusterController::ThrusterController() : nh("~")
   state_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &ThrusterController::ImuCB, this);
   depth_sub = nh.subscribe<riptide_msgs::Depth>("/state/depth", 1, &ThrusterController::DepthCB, this);
   cmd_sub = nh.subscribe<riptide_msgs::NetLoad>("/command/net_load", 1, &ThrusterController::NetLoadCB, this);
+  cob_pub = nh.advertise<geometry_msgs::Vector3Stamped>("/properties/cob", 1);
   cmd_pub = nh.advertise<riptide_msgs::ThrustStamped>("/command/thrust", 1);
 
-  if (tune)
-    cob_pub = nh.advertise<geometry_msgs::Vector3Stamped>("/properties/cob", 1);
-
-  // Dynamic Reconfigure Variables
-  cb = boost::bind(&ThrusterController::DynamicReconfigCallback, this, _1, _2);
-  server.setCallback(cb);
-
-  /*dyn_reconfig_mutex_.lock();
-  server->updateConfig(config);
-  dyn_reconfig_mutex_.unlock();*/
-
+  ThrusterController::InitDynamicReconfigure();
   ThrusterController::InitThrustMsg();
 
   // EOM problem
@@ -57,7 +48,7 @@ ThrusterController::ThrusterController() : nh("~")
   optionsEOM.linear_solver_type = ceres::DENSE_QR;
 
   // Buoyancy Problem
-  problemBuoyancy.AddResidualBlock(new ceres::AutoDiffCostFunction<FindCoB, 3, 3>(new FindCoB(numThrusters, thrustCoeffs, Fb_vector, transportThm, solver_forces)), NULL, solver_cob);
+  problemBuoyancy.AddResidualBlock(new ceres::AutoDiffCostFunction<FindCoB, 3, 3>(new FindCoB(numThrusters, thrustCoeffs, Fb_vector, solver_forces)), NULL, solver_cob);
   optionsBuoyancy.max_num_iterations = 100;
   optionsBuoyancy.linear_solver_type = ceres::DENSE_QR;
 }
@@ -104,6 +95,29 @@ void ThrusterController::LoadVehicleProperties()
   inertia[3] = Ixx;
   inertia[4] = Iyy;
   inertia[5] = Izz;
+}
+
+void ThrusterController::InitDynamicReconfigure()
+{
+  // Reset server
+  param_reconfig_server.reset(new DynamicReconfigServer(param_reconfig_mutex, nh));
+  
+  // Get initial params
+  riptide_controllers::VehiclePropertiesConfig config;
+  config.Mass = mass;
+  config.Volume = volume;
+  config.Buoyancy_X_POS = CoB(0);
+  config.Buoyancy_Y_POS = CoB(1);
+  config.Buoyancy_Z_POS = CoB(2);
+
+  // Set initial params
+  param_reconfig_mutex.lock();
+  param_reconfig_server->updateConfig(config);
+  param_reconfig_mutex.unlock();
+
+  // Now, we set the callback
+  param_reconfig_callback = boost::bind(&ThrusterController::DynamicReconfigCallback, this, _1, _2);
+  param_reconfig_server->setCallback(param_reconfig_callback);
 }
 
 void ThrusterController::SetThrusterCoeffs()
@@ -162,16 +176,13 @@ void ThrusterController::InitThrustMsg()
 // Callback for dynamic reconfigure
 void ThrusterController::DynamicReconfigCallback(riptide_controllers::VehiclePropertiesConfig &config, uint32_t levels)
 {
-  if (tune)
-  {
-    mass = config.Mass;
-    volume = config.Volume;
-    CoB(0) = config.Buoyancy_X_POS;
-    CoB(1) = config.Buoyancy_Y_POS;
-    CoB(2) = config.Buoyancy_Z_POS;
-    Fg = mass * GRAVITY;
-    Fb = WATER_DENSITY * volume * GRAVITY;
-  }
+  mass = config.Mass;
+  volume = config.Volume;
+  CoB(0) = config.Buoyancy_X_POS;
+  CoB(1) = config.Buoyancy_Y_POS;
+  CoB(2) = config.Buoyancy_Z_POS;
+  Fg = mass * GRAVITY;
+  Fb = WATER_DENSITY * volume * GRAVITY;
 }
 
 void ThrusterController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
@@ -241,20 +252,17 @@ void ThrusterController::NetLoadCB(const riptide_msgs::NetLoad::ConstPtr &load_m
   // The output should contain non-zero distances so long as the the vehicle is
   // unable to reach a target orientation along any axis.
   // The depth controller is used only to keep the vehicle fully submerged
-  if (tune)
-  {
-    // Initialize values
-    solver_cob[0] = 0.0;
-    solver_cob[1] = 0.0;
-    solver_cob[2] = 0.0;
+  // Initialize values
+  solver_cob[0] = 0.0;
+  solver_cob[1] = 0.0;
+  solver_cob[2] = 0.0;
 
-    //ceres::Solve(optionsBuoyancy, &problemBuoyancy, &summaryBuoyancy);
-    cob_msg.header.stamp = ros::Time::now();
-    cob_msg.vector.x = solver_cob[0];
-    cob_msg.vector.y = solver_cob[1];
-    cob_msg.vector.z = solver_cob[2];
-    cob_pub.publish(cob_msg);
-  }
+  ceres::Solve(optionsBuoyancy, &problemBuoyancy, &summaryBuoyancy);
+  cob_msg.header.stamp = ros::Time::now();
+  cob_msg.vector.x = solver_cob[0];
+  cob_msg.vector.y = solver_cob[1];
+  cob_msg.vector.z = solver_cob[2];
+  cob_pub.publish(cob_msg);
 }
 
 void ThrusterController::Loop()
