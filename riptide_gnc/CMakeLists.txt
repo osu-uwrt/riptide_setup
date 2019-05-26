@@ -22,10 +22,12 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${Eigen3_INCLUDE_DIRS})
 # src/linear_motion_ekf_suite.cpp
 # src/pose_ekf.cpp
 
-set(POSE_EDKF
-  src/auv_math_lib.cpp
-)
+#set(POSE_EDKF
+#  src/auv_math_lib.cpp
+#)
 
-add_executable(pose_edkf_interface src/pose_edkf_interface.cpp ${POSE_EDKF})
-target_link_libraries(pose_edkf_interface ${catkin_LIBRARIES})
-add_dependencies(pose_edkf_interface ${catkin_EXPORTED_TARGETS})
+#add_executable(pose_edkf_interface src/pose_edkf_interface.cpp ${POSE_EDKF})
+#target_link_libraries(pose_edkf_interface ${catkin_LIBRARIES})
+#add_dependencies(pose_edkf_interface ${catkin_EXPORTED_TARGETS})
+
+add_library(gnc src/kalman_filter.cpp)
