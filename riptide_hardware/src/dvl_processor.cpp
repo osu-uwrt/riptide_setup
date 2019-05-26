@@ -50,9 +50,13 @@ void DVLProcessor::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
   angular_vel(1) = imu_msg->ang_vel_rad.y;
   angular_vel(2) = imu_msg->ang_vel_rad.z;
 
+  /* Calculating without using the Eigen vector cross product
   relative_vel(0) = angular_vel(1) * dvl_position(2) + angular_vel(2) * dvl_position(1);
   relative_vel(1) = angular_vel(2) * dvl_position(0) + angular_vel(0) * dvl_position(2);
   relative_vel(2) = angular_vel(0) * dvl_position(1) + angular_vel(1) * dvl_position(0);
+  */
+   
+   relative_vel = angular_vel.cross(dvl_position);
 }
   
 void DVLProcessor::DvlCB(const nortek_dvl::Dvl::ConstPtr &dvl_msg)
