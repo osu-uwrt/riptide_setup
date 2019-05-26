@@ -8,12 +8,6 @@
 
   <group ns="$(arg camera_name)">
 
-    <!--<include file="$(find riptide_hardware)/launch/undistort_camera.launch" >
-      <arg name="camera_name" value="$(arg camera_name)" />
-      <arg name="frame_rate" value="$(arg frame_rate)" />
-      <arg name="video_mode" value="$(arg video_mode)" />
-    </include>-->
-
     <node pkg="nodelet" type="nodelet" name="camera_nodelet_manager" args="manager" />
     <node pkg="nodelet" type="nodelet" name="camera_nodelet"
           args="load pointgrey_camera_driver/PointGreyCameraNodelet camera_nodelet_manager" >
