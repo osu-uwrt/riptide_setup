@@ -5,7 +5,11 @@ if [[ $UID != 0 ]]; then
 	exit 1
 fi
 
-cd ~/osu-uwrt/riptide_software/src/riptide_utilities/setup_scripts/packages/src
+cd ~/osu-uwrt/
+mkdir dependencies
+cd dependencies
+mkdir src
+cd src
 git clone https://github.com/osu-uwrt/imu_3dm_gx4.git
 git clone --recursive https://github.com/osu-uwrt/darknet_ros.git
 cd ..

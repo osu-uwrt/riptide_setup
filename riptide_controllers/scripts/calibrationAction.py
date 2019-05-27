@@ -5,7 +5,7 @@ import actionlib
 import dynamic_reconfigure.client
 
 from riptide_msgs.msg import DepthCommand, AttitudeCommand
-from geometry_msgs.msg import Vector3
+from geometry_msgs.msg import Vector3Stamped
 from std_msgs.msg import Float32
 import riptide_controllers.msg
 
@@ -28,6 +28,8 @@ class CalibrationAction(object):
         with open(rospy.get_param('~properties_file'), 'r') as stream:
             mass = yaml.safe_load(stream)['properties']['mass']
 
+        rospy.loginfo("Starting calibration")
+
         Fb = mass * 9.81
         CobX = 0
         CobY = 0
@@ -47,7 +49,7 @@ class CalibrationAction(object):
 
         for i in range(1, 20):
             rospy.sleep(0.5)
-            forceMsg = rospy.wait_for_message("/command/force_depth", Vector3)
+            forceMsg = rospy.wait_for_message("/command/force_depth", Vector3Stamped).vector
             force = math.sqrt(forceMsg.x**2 + forceMsg.y**2 + forceMsg.z**2)
 
             if forceMsg.z < 0:
@@ -56,15 +58,18 @@ class CalibrationAction(object):
             Fb += force * 0.2
             client.update_configuration({"Buoyant_Force": Fb, "Buoyancy_X_POS": CobX, "Buoyancy_Y_POS": CobY, "Buoyancy_Z_POS": CobZ})
 
+        rospy.loginfo("Buoyant force calibration complete")
 
         for i in range(1, 20):
             rospy.sleep(0.5)
-            momentMsg = rospy.wait_for_message("/command/moment", Vector3Stamped)
+            momentMsg = rospy.wait_for_message("/command/moment", Vector3Stamped).vector
             
-            CobY += momentMsg.vector.X / Fb * 0.2
-            CobX += momentMsg.vector.Y / Fb * 0.2
+            CobY += momentMsg.x / Fb * 0.2
+            CobX += momentMsg.y / Fb * 0.2
 
             client.update_configuration({"Buoyant_Force": Fb, "Buoyancy_X_POS": CobX, "Buoyancy_Y_POS": CobY, "Buoyancy_Z_POS": CobZ})
+
+        rospy.loginfo("Buoyancy XY calibration complete")
 
         att.euler_rpy.x = 90
         self.attitudePub.publish(att)
@@ -73,14 +78,14 @@ class CalibrationAction(object):
 
         for i in range(1, 20):
             rospy.sleep(0.5)
-            momentMsg = rospy.wait_for_message("/command/moment", Vector3Stamped)
+            momentMsg = rospy.wait_for_message("/command/moment", Vector3Stamped).vector
             
-            CobZ -= momentMsg.vector.X / Fb * 0.2
+            CobZ -= momentMsg.x / Fb * 0.2
 
             client.update_configuration({"Buoyant_Force": Fb, "Buoyancy_X_POS": CobX, "Buoyancy_Y_POS": CobY, "Buoyancy_Z_POS": CobZ})
 
             
-
+        rospy.loginfo("Calibration complete")
         
         self._as.set_succeeded()
 
