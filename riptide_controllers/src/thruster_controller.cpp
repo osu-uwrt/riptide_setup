@@ -85,14 +85,8 @@ void ThrusterController::LoadParam(std::string param, T &var)
 void ThrusterController::LoadVehicleProperties()
 {
   mass = properties["properties"]["mass"].as<double>();
-  volume = properties["properties"]["volume"].as<double>();
-  depth_fully_submerged = properties["properties"]["depth_fully_submerged"].as<double>();
-
   Fg = mass * GRAVITY;
-  Fb = WATER_DENSITY * volume * GRAVITY;
-
-  for (int i = 0; i < 3; i++)
-    CoB(i) = properties["properties"]["CoB"][i].as<double>();
+  depth_fully_submerged = properties["properties"]["depth_fully_submerged"].as<double>();
 
   Ixx = properties["properties"]["inertia"][0].as<double>();
   Iyy = properties["properties"]["inertia"][1].as<double>();
@@ -162,16 +156,10 @@ void ThrusterController::InitThrustMsg()
 // Callback for dynamic reconfigure
 void ThrusterController::DynamicReconfigCallback(riptide_controllers::VehiclePropertiesConfig &config, uint32_t levels)
 {
-  if (tune)
-  {
-    mass = config.Mass;
-    volume = config.Volume;
-    CoB(0) = config.Buoyancy_X_POS;
-    CoB(1) = config.Buoyancy_Y_POS;
-    CoB(2) = config.Buoyancy_Z_POS;
-    Fg = mass * GRAVITY;
-    Fb = WATER_DENSITY * volume * GRAVITY;
-  }
+  CoB(0) = config.Buoyancy_X_POS;
+  CoB(1) = config.Buoyancy_Y_POS;
+  CoB(2) = config.Buoyancy_Z_POS;
+  Fb = config.Buoyant_Force;
 }
 
 void ThrusterController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)

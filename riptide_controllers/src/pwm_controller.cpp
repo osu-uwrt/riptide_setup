@@ -36,7 +36,7 @@ PWMController::PWMController() : nh("~")
   last_alive_time = ros::Time::now();
   silent = true;    // Silent refers to not receiving commands from the control stack
   dead = true;      // Dead refers to the kill switch being pulled
-  reset_pwm = true; // Refers to controller being reset via reset command
+  reset_pwm = false; // Refers to controller being reset via reset command
 }
 
 // Load parameter from namespace
