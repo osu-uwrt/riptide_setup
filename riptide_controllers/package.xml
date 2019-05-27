@@ -18,6 +18,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>rostest</build_depend>
+  <build_depend>actionlib_msgs</build_depend>
   <build_depend>libceres-dev</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>imu_3dm_gx4</build_depend>
@@ -29,6 +30,7 @@
   <build_depend>dynamic_reconfigure</build_depend>
   <build_depend>control_toolbox</build_depend>
 
+  <run_depend>actionlib_msgs</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>riptide_msgs</run_depend>
   <run_depend>roslaunch</run_depend>
