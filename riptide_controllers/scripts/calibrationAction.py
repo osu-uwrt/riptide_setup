@@ -37,7 +37,7 @@ class CalibrationAction(object):
 
         client.update_configuration({"Buoyant_Force": Fb, "Buoyancy_X_POS": CobX, "Buoyancy_Y_POS": CobY, "Buoyancy_Z_POS": CobZ})
 
-        self.depthPub.publish(True, 1)
+        self.depthPub.publish(True, .5)
         att = AttitudeCommand()
         att.roll_active = True
         att.pitch_active = True
@@ -65,7 +65,7 @@ class CalibrationAction(object):
             momentMsg = rospy.wait_for_message("/command/moment", Vector3Stamped).vector
             
             CobY += momentMsg.x / Fb * 0.2
-            CobX += momentMsg.y / Fb * 0.2
+            CobX -= momentMsg.y / Fb * 0.2
 
             client.update_configuration({"Buoyant_Force": Fb, "Buoyancy_X_POS": CobX, "Buoyancy_Y_POS": CobY, "Buoyancy_Z_POS": CobZ})
 

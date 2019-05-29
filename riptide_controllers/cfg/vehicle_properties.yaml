@@ -1,4 +1,4 @@
-# The motor housing for the thruster points in the thruster's positive x-direction
+ # The motor housing for the thruster points in the thruster's positive x-direction
 # All thrusters are assumed to be pointing in the positive body-frame x-direction
 # You MUST define the correct yaw and pitch angle from body-frame TO the thruster frame
 properties: {
