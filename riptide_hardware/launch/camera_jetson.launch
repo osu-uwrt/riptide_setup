@@ -9,6 +9,8 @@
   <!--mode0: Max res at 1288 x 964-->
   <!--mode1: Half res at 644 x 482-->
 
+  <node name="bfly_eov" pkg="riptide_hardware" type="bfly_enable_output_voltage" name="bfly_eov" />
+
   <group ns="$(arg camera_name)">
 
     <node machine="$(arg machine_name)" pkg="nodelet" type="nodelet" name="camera_nodelet_manager" args="manager" />
