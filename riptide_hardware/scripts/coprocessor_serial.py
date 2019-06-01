@@ -6,11 +6,8 @@ import select
 import traceback
 from threading import Thread
 from collections import deque
-from std_msgs.msg import String, Header, Bool
-from riptide_msgs.msg import Depth
-from riptide_msgs.msg import PwmStamped
-from riptide_msgs.msg import StatusLight
-from riptide_msgs.msg import SwitchState
+from std_msgs.msg import String, Header, Bool, Float32MultiArray
+from riptide_msgs.msg import Depth, PwmStamped, StatusLight, SwitchState
 
 IP_ADDR = '192.168.1.42'
 copro = None
@@ -26,6 +23,7 @@ buffer = []
 depth_pub = None
 switch_pub = None
 connection_pub = None
+thruster_current_pub = None
 
 def connect(timeout):
     global copro
@@ -75,6 +73,10 @@ def depth_callback(event):
 def switch_callback(event):
     if switch_pub.get_num_connections() > 0:
         enqueueCommand(10)
+
+def thruster_current_callback(event):
+    if thruster_current_pub.get_num_connections() > 0:
+        enqueueCommand(12)
     
 def shutdown_copro():
     if connected:
@@ -88,6 +90,7 @@ def main():
     global depth_pub
     global switch_pub
     global connection_pub
+    global thruster_current_pub
     global connected
     global buffer
 
@@ -97,6 +100,7 @@ def main():
     depth_pub = rospy.Publisher('/depth/raw', Depth, queue_size=1)
     switch_pub = rospy.Publisher('/state/switches', SwitchState, queue_size=1)
     connection_pub = rospy.Publisher('/state/copro', Bool, queue_size=1)
+    thruster_current_pub = rospy.Publisher('/state/thruster_currents', Float32MultiArray, queue_size=1)
 
     rospy.Subscriber('/command/pwm', PwmStamped, pwm_callback, queue_size=1)
     # rospy.Subscriber('/status/light', StatusLight, light_callback, queue_size=1)
@@ -104,6 +108,7 @@ def main():
     # setup timer for periodic depth/switches update
     rospy.Timer(rospy.Duration(0.05), depth_callback)
     rospy.Timer(rospy.Duration(0.2), switch_callback)
+    rospy.Timer(rospy.Duration(0.2), thruster_current_callback)
 
     # 200 Hz rate for checking for messages to send
     rate = rospy.Rate(100)
@@ -157,6 +162,13 @@ def main():
                                 switch_msg.sw4 = True if response[0] & 2 else False
                                 switch_msg.sw5 = True if response[0] & 1 else False
                                 switch_pub.publish(switch_msg)
+
+                        elif command == 12: # switches command
+                            if len(response) != 8:
+                                print("Improper thruster current response: " + str(response))
+                            else:
+                                current_msg = Float32MultiArray(data = [x/25.0 for x in response])
+                                thruster_current_pub.publish(current_msg)
 
                         # can add the responses for other commands here in the future
 
