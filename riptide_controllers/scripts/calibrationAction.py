@@ -37,7 +37,7 @@ class CalibrationAction(object):
 
         client.update_configuration({"Buoyant_Force": Fb, "Buoyancy_X_POS": CobX, "Buoyancy_Y_POS": CobY, "Buoyancy_Z_POS": CobZ})
 
-        self.depthPub.publish(True, .5)
+        self.depthPub.publish(True, 1)
         att = AttitudeCommand()
         att.roll_active = True
         att.pitch_active = True

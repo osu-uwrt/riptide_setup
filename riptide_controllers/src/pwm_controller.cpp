@@ -10,8 +10,8 @@
 #define NEG_SLOPE 2
 #define NEG_YINT 3
 
-#define MIN_PWM 1240
-#define MAX_PWM 1760
+#define MIN_PWM 1230
+#define MAX_PWM 1770
 #define NEUTRAL_PWM 1500
 
 int main(int argc, char **argv)
