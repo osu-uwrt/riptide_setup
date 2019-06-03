@@ -95,19 +95,6 @@ void ThrusterController::InitDynamicReconfigure()
 {
   // Reset server
   param_reconfig_server.reset(new DynamicReconfigServer(param_reconfig_mutex, nh));
-  
-  // Get initial params
-  riptide_controllers::VehiclePropertiesConfig config;
-  config.Mass = mass;
-  config.Volume = volume;
-  config.Buoyancy_X_POS = CoB(0);
-  config.Buoyancy_Y_POS = CoB(1);
-  config.Buoyancy_Z_POS = CoB(2);
-
-  // Set initial params
-  param_reconfig_mutex.lock();
-  param_reconfig_server->updateConfig(config);
-  param_reconfig_mutex.unlock();
 
   // Now, we set the callback
   param_reconfig_callback = boost::bind(&ThrusterController::DynamicReconfigCallback, this, _1, _2);
