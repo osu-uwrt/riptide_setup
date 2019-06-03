@@ -1,0 +1,7 @@
+<launch>
+  <include file="$(find riptide_controllers)/launch/pwm_controller.launch" />
+  <include file="$(find riptide_controllers)/launch/thruster_controller.launch" />
+  <include file="$(find riptide_controllers)/launch/command_combinator.launch" />
+  <include file="$(find riptide_controllers)/launch/depth_controller.launch" />
+  <node pkg="riptide_controllers" type="attitude_controller.py" name="attitude_controller" output="screen" />
+</launch>

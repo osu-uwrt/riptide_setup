@@ -11,7 +11,7 @@ import sys
 
 def main():
     FILE = "/home/tsender/rosbags/gold_chip_rpac.avi"
-    TOPIC = "/forward/image_undistorted"
+    TOPIC = "/stereo/left/image_undistorted"
     loop = False
 
     if len(sys.argv) >= 2:

@@ -17,7 +17,7 @@ int main(int argc, char** argv)
 
 ObjectProcessor::ObjectProcessor() : nh("object_processor") {
   task_bbox_sub = nh.subscribe<darknet_ros_msgs::BoundingBoxes>("/task/bboxes", 1, &ObjectProcessor::TaskBBoxCB, this);
-  image_sub = nh.subscribe<sensor_msgs::Image>("/forward/image_undistorted", 1, &ObjectProcessor::ImageCB, this);
+  image_sub = nh.subscribe<sensor_msgs::Image>("/stereo/left/image_undistorted", 1, &ObjectProcessor::ImageCB, this);
   task_info_sub = nh.subscribe<riptide_msgs::TaskInfo>("/task/info", 1, &ObjectProcessor::TaskInfoCB, this);
   alignment_cmd_sub = nh.subscribe<riptide_msgs::AlignmentCommand>("/command/alignment", 1, &ObjectProcessor::AlignmentCmdCB, this);
 

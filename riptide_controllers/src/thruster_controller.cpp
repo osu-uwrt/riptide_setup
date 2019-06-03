@@ -76,14 +76,8 @@ void ThrusterController::LoadParam(std::string param, T &var)
 void ThrusterController::LoadVehicleProperties()
 {
   mass = properties["properties"]["mass"].as<double>();
-  volume = properties["properties"]["volume"].as<double>();
-  depth_fully_submerged = properties["properties"]["depth_fully_submerged"].as<double>();
-
   Fg = mass * GRAVITY;
-  Fb = WATER_DENSITY * volume * GRAVITY;
-
-  for (int i = 0; i < 3; i++)
-    CoB(i) = properties["properties"]["CoB"][i].as<double>();
+  depth_fully_submerged = properties["properties"]["depth_fully_submerged"].as<double>();
 
   Ixx = properties["properties"]["inertia"][0].as<double>();
   Iyy = properties["properties"]["inertia"][1].as<double>();
@@ -101,19 +95,6 @@ void ThrusterController::InitDynamicReconfigure()
 {
   // Reset server
   param_reconfig_server.reset(new DynamicReconfigServer(param_reconfig_mutex, nh));
-  
-  // Get initial params
-  riptide_controllers::VehiclePropertiesConfig config;
-  config.Mass = mass;
-  config.Volume = volume;
-  config.Buoyancy_X_POS = CoB(0);
-  config.Buoyancy_Y_POS = CoB(1);
-  config.Buoyancy_Z_POS = CoB(2);
-
-  // Set initial params
-  param_reconfig_mutex.lock();
-  param_reconfig_server->updateConfig(config);
-  param_reconfig_mutex.unlock();
 
   // Now, we set the callback
   param_reconfig_callback = boost::bind(&ThrusterController::DynamicReconfigCallback, this, _1, _2);
@@ -176,13 +157,10 @@ void ThrusterController::InitThrustMsg()
 // Callback for dynamic reconfigure
 void ThrusterController::DynamicReconfigCallback(riptide_controllers::VehiclePropertiesConfig &config, uint32_t levels)
 {
-  mass = config.Mass;
-  volume = config.Volume;
   CoB(0) = config.Buoyancy_X_POS;
   CoB(1) = config.Buoyancy_Y_POS;
   CoB(2) = config.Buoyancy_Z_POS;
-  Fg = mass * GRAVITY;
-  Fb = WATER_DENSITY * volume * GRAVITY;
+  Fb = config.Buoyant_Force;
 }
 
 void ThrusterController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
