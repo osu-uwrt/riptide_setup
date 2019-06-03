@@ -10,8 +10,6 @@
   <!--mode1: Half res at 644 x 482-->
 
   <group ns="$(arg camera_name)">
-  
-    <node name="bfly_eov" pkg="riptide_hardware" type="bfly_enable_output_voltage" />
 
     <node machine="$(arg machine_name)" pkg="nodelet" type="nodelet" name="camera_nodelet_manager" args="manager" />
     <node machine="$(arg machine_name)" pkg="nodelet" type="nodelet" name="camera_nodelet"

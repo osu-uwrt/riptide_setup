@@ -8,8 +8,6 @@
 
   <group ns="$(arg camera_name)">
 
-    <node name="bfly_eov" pkg="riptide_hardware" type="bfly_enable_output_voltage" />
-
     <node pkg="nodelet" type="nodelet" name="camera_nodelet_manager" args="manager" />
     <node pkg="nodelet" type="nodelet" name="camera_nodelet"
           args="load pointgrey_camera_driver/PointGreyCameraNodelet camera_nodelet_manager" >
