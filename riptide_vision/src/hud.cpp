@@ -74,11 +74,13 @@ void HUD::StereoImgCB(const sensor_msgs::ImageConstPtr& msg) {
     ROS_ERROR("cv_bridge exception:  %s", e.what());
     return;
   }
+  width = msg->width;
+  height = msg->height;
 
   if((ros::Time::now() - object.header.stamp).toSec() < .1) {
     int w = object.bbox_width;
     int h = object.bbox_height;
-    cv::Rect rect(object.pos.x - w/2, object.pos.y - h/2, w, h);
+    cv::Rect rect(object.pos.y - w/2 + width/2, object.pos.z - h/2 + height/2, w, h);
     cv::rectangle(cv_ptr->image, rect, cv::Scalar(0, 255, 0));
   }
 

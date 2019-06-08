@@ -71,7 +71,7 @@ def imgCB(msg):
             img.publish(bridge.cv2_to_imgmsg(thresh))
             head = Header()
             head.stamp = rospy.Time.now()
-            center = Point(x+w/2, rows/2, depth)
+            center = Point(depth, (x+w/2) - cols/2, 0)
             pub.publish(head, "pole", w, rows, center)
             rospy.loginfo(time.time() - start)
             return
