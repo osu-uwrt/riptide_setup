@@ -69,7 +69,8 @@ RUN bin/bash -c "rosdep install --from-paths ~/osu-uwrt/riptide_software/src -i 
                  rm -rf src && \
                  git clone https://github.com/juched/riptide_software.git src &&  \
                  cd src && \
-                 git pull origin autonomy"
+                 git pull origin autonomy && \
+                 rosdep update"
 
 RUN bin/bash -c  "source /opt/ros/kinetic/setup.bash && \
                  cd ~/osu-uwrt/riptide_software/src/riptide_utilities/setup_scripts/ && \
