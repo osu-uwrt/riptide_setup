@@ -6,13 +6,13 @@ mkdir dependencies
 cd dependencies
 mkdir src
 cd src
-wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
+wget http://packages.ros.org/ros.key -O - | apt-key add -
 apt-get update
 apt-get install python-rosdep -y
-'which rosdep' init
+
 rosdep update
 rosdep install --default-yes --from-paths ./ --rosdistro kinetic
-
+rosdep install pointgrey_camera_driver
 
 git clone https://github.com/ros-drivers/pointgrey_camera_driver.git
 git clone https://github.com/osu-uwrt/imu_3dm_gx4.git
