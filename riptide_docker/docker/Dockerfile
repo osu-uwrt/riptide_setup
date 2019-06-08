@@ -73,10 +73,10 @@ RUN bin/bash -c "rosdep install --from-paths ~/osu-uwrt/riptide_software/src -i 
 
 RUN bin/bash -c  "source /opt/ros/kinetic/setup.bash && \
                  cd ~/osu-uwrt/riptide_software/src/riptide_utilities/setup_scripts/ && \
-                 ./install_rosdeps.sh && \
+                 ./install_imu_darknet.sh && \
                  ./install_eigen.sh && \
                  ./install_ceres.sh && \
-                 ./install_imu_darknet.sh && \
+                 ./install_rosdeps.sh && \
                  ./setup_uwrt_env.sh && \
                  cd ~/osu-uwrt/riptide_software/ && \
                  catkin_make"
