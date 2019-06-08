@@ -63,6 +63,7 @@ private:
   double inertia[6], weightLoad[6], transportThm[6], command[6], Fb_vector[3];
   double solver_forces[8]; // Solved forces go here
   double solver_cob[3];    // Solved buoyancy positions go here
+  double center_of_mass[3];
 
   // EOMs
   ceres::Problem problemEOM;
