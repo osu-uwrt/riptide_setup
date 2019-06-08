@@ -76,6 +76,12 @@ void ThrusterController::LoadParam(std::string param, T &var)
 void ThrusterController::LoadVehicleProperties()
 {
   mass = properties["properties"]["mass"].as<double>();
+  double comX = properties["properties"]["center_of_mass"][0].as<double>();
+  double comY = properties["properties"]["center_of_mass"][0].as<double>();
+  double comZ =  properties["properties"]["center_of_mass"][0].as<double>();
+  center_of_mass[0] = comX;
+  center_of_mass[1] = comY;
+  center_of_mass[2] = comZ;
   Fg = mass * GRAVITY;
   depth_fully_submerged = properties["properties"]["depth_fully_submerged"].as<double>();
 
@@ -119,8 +125,20 @@ void ThrusterController::SetThrusterCoeffs()
 
   for (int i = 0; i < numThrusters; i++)
     if (thrustersEnabled[i])
+    {
       for (int j = 0; j < 5; j++)
-        thrusters(j, i) = properties["properties"]["thrusters"][i]["pose"][j].as<double>();
+      {
+        // Transform X, Y, Z to COM reference frame
+        if (j < 3) 
+        {
+          thrusters(j, i) = properties["properties"]["thrusters"][i]["pose"][j].as<double>() - center_of_mass[j];
+        }
+        else 
+        {
+          thrusters(j, i) = properties["properties"]["thrusters"][i]["pose"][j].as<double>();
+        }
+      }
+    }
 
   for (int i = 0; i < numThrusters; i++)
   {
