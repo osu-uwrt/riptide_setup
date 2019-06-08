@@ -4,20 +4,24 @@ import rospy
 
 from cv_bridge import CvBridge, CvBridgeError
 import cv2
+import time
+import numpy as np
+import math
 
 from task_processor import TaskProcessor
-from riptide_msgs.msg import PoleData, BoundingBox
+from riptide_msgs.msg import PoleData, BoundingBox, Object
 from riptide_vision import RiptideVision
 from geometry_msgs.msg import Point
 from stereo_msgs.msg import DisparityImage
 from sensor_msgs.msg import Image
+from std_msgs.msg import Header
 
 
 
 def imgCB(msg):
     global bridge
 
-
+    start = time.time()
     try:
         cv_image = bridge.imgmsg_to_cv2(msg.image)
     except CvBridgeError as e:
@@ -25,27 +29,66 @@ def imgCB(msg):
 
     (rows,cols) = cv_image.shape
         
+    integral = cv2.integral(cv_image)
 
+
+    score_img = np.zeros((1,cols,1), np.float32)
     x = 0
     maxScore = 0
     for c in range(cols):
-        score = 0
-        for r in range(rows):
-            score += cv_image[r,c]
+        score = (integral[rows, c+1] - integral[rows,c])/rows
         if (score > maxScore):
             maxScore = score
             x = c
+        elif score < 0:
+            score = 0
+        score_img[0,c] = score
 
-    cv2.line(cv_image, (x, rows), (x, 0), 255)
+    [mean, std] = cv2.meanStdDev(score_img)
+    _, thresh = cv2.threshold(score_img, mean+3.5*std, 500000, cv2.THRESH_TOZERO)
 
-    try:
-        pub.publish(bridge.cv2_to_imgmsg(cv_image))
-    except CvBridgeError as e:
-        print(e)
+    kernel = np.ones((1,15),np.float32)
+    thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+    thresh = thresh / thresh.max() * 255
+    thresh = thresh.astype(np.uint8)
+
+    im2, contours,hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+
+
+    img2.publish(msg.image)
+
+    if len(contours) != 0:
+        #find the biggest area
+        c = max(contours, key = cv2.contourArea)
+
+        x,y,w,h = cv2.boundingRect(c)
+        
+        if w > 15:
+
+            disparity = (integral[rows * 3 / 4, x+w+1] - integral[rows * 1 / 4, x+w+1] - integral[rows* 3 / 4, x] + integral[rows* 1 / 4, x])*2 / rows / w
+            depth = msg.f * msg.T / disparity
+
+            img.publish(bridge.cv2_to_imgmsg(thresh))
+            head = Header()
+            head.stamp = rospy.Time.now()
+            center = Point(x+w/2, rows/2, depth)
+            pub.publish(head, "pole", w, rows, center)
+            rospy.loginfo(time.time() - start)
+            return
+    
+    # else
+    img.publish(bridge.cv2_to_imgmsg(score_img))
+
+    
+
+
+    
 
 rospy.init_node("pole_processor")
 rospy.Subscriber("/stereo/disparity", DisparityImage, imgCB)
-pub = rospy.Publisher("/debug/pole", Image, queue_size=5)
+pub = rospy.Publisher("/state/object", Object, queue_size=5)
+img = rospy.Publisher("/debug/pole", Image, queue_size=5)
+img2 = rospy.Publisher("/debug/pole2", Image, queue_size=5)
 bridge = CvBridge()
 rospy.spin()
 
