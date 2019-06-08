@@ -73,6 +73,7 @@ RUN bin/bash -c "rosdep install --from-paths ~/osu-uwrt/riptide_software/src -i 
 
 RUN bin/bash -c  "source /opt/ros/kinetic/setup.bash && \
                  cd ~/osu-uwrt/riptide_software/src/riptide_utilities/setup_scripts/ && \
+                 apt-get -y install libx11-dev && \
                  ./install_imu_darknet.sh && \
                  ./install_eigen.sh && \
                  ./install_ceres.sh && \
