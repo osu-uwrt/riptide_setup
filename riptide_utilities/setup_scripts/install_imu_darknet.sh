@@ -1,9 +1,5 @@
 #!/bin/bash
 
-if [[ $UID != 0 ]]; then
-	echo "Please run this as root"
-	exit 1
-fi
 
 cd ~/osu-uwrt/
 mkdir dependencies
