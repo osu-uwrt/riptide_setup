@@ -12,6 +12,7 @@
         <arg name="set_camera_fps" value="30"/>
         <arg name="fps" value="30" />
         <arg name="video_stream_provider" value="rtsp://192.168.1.10:554/user=admin_password=6QNMIQGe_channel=1_stream=1.sdp?real_stream" />
+        <arg name="camera_info_url" value="file:///$(find riptide_hardware)/cfg/underwater_cam.yaml" />
    </include>
    <node name="image_proc" pkg="image_proc" type="image_proc" ns="underwater_cam"/>
 

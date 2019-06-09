@@ -16,6 +16,7 @@
       <param name="serial" value="$(arg serial_number)" />
       <param name="frame_rate" value="$(arg frame_rate)" />
       <param name="video_mode" value="$(arg video_mode)" />
+      <param name="camera_info_url" value="file:///$(find riptide_hardware)/cfg/$(arg serial_number).yaml" />
     </node>
 
   </group>

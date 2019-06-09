@@ -129,7 +129,7 @@ def main():
                     copro.sendall(bytearray(command))
                 if len(readable) > 0:
                     # read the switch or depth data and publish
-                    buffer += copro.recv(1024)
+                    buffer += copro.recv(50)
                     if not isinstance(buffer[0], int):
                         buffer = list(map(ord, buffer))
                     while len(buffer) > 0 and buffer[0] <= len(buffer):
@@ -179,7 +179,8 @@ def main():
                 print(e)
                 command_queue.clear()
                 response_queue.clear()
-                copro.close()
+                buffer = []
+                shutdown_copro()
                 copro = None
                 connected = False
                 
