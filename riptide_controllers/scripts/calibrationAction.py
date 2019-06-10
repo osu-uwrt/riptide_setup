@@ -37,7 +37,7 @@ class CalibrationAction(object):
 
         client.update_configuration({"Buoyant_Force": Fb, "Buoyancy_X_POS": CobX, "Buoyancy_Y_POS": CobY, "Buoyancy_Z_POS": CobZ})
 
-        self.depthPub.publish(True, 1)
+        self.depthPub.publish(True, .5)
         att = AttitudeCommand()
         att.roll_active = True
         att.pitch_active = True
@@ -47,8 +47,8 @@ class CalibrationAction(object):
 
         rospy.sleep(3)
 
-        for i in range(1, 40):
-            rospy.sleep(0.5)
+        for i in range(1, 20):
+            rospy.sleep(1)
             forceMsg = rospy.wait_for_message("/command/force_depth", Vector3Stamped).vector
             force = math.sqrt(forceMsg.x**2 + forceMsg.y**2 + forceMsg.z**2)
 
@@ -60,8 +60,8 @@ class CalibrationAction(object):
 
         rospy.loginfo("Buoyant force calibration complete")
 
-        for i in range(1, 40):
-            rospy.sleep(0.5)
+        for i in range(1, 20):
+            rospy.sleep(1)
             momentMsg = rospy.wait_for_message("/command/moment", Vector3Stamped).vector
             
             CobY += momentMsg.x / Fb * 0.3
@@ -76,8 +76,8 @@ class CalibrationAction(object):
 
         rospy.sleep(3)
 
-        for i in range(1, 40):
-            rospy.sleep(0.5)
+        for i in range(1, 20):
+            rospy.sleep(1)
             momentMsg = rospy.wait_for_message("/command/moment", Vector3Stamped).vector
             
             CobZ -= momentMsg.x / Fb / math.sqrt(2) * 0.3

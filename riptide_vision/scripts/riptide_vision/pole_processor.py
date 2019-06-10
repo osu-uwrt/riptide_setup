@@ -45,7 +45,7 @@ def imgCB(msg):
         score_img[0,c] = score
 
     [mean, std] = cv2.meanStdDev(score_img)
-    _, thresh = cv2.threshold(score_img, mean+3.5*std, 500000, cv2.THRESH_TOZERO)
+    _, thresh = cv2.threshold(score_img, mean+2.5*std, 500000, cv2.THRESH_TOZERO)
 
     kernel = np.ones((1,15),np.float32)
     thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)

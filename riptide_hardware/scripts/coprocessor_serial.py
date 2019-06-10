@@ -102,7 +102,7 @@ def main():
     connection_pub = rospy.Publisher('/state/copro', Bool, queue_size=1)
     thruster_current_pub = rospy.Publisher('/state/thruster_currents', Float32MultiArray, queue_size=1)
 
-    rospy.Subscriber('/command/pwm', PwmStamped, pwm_callback, queue_size=1)
+    rospy.Subscriber('/command/pwm', PwmStamped, pwm_callback, queue_size=10)
     # rospy.Subscriber('/status/light', StatusLight, light_callback, queue_size=1)
     
     # setup timer for periodic depth/switches update
