@@ -47,25 +47,25 @@ class CalibrationAction(object):
 
         rospy.sleep(3)
 
-        for i in range(1, 20):
-            rospy.sleep(1)
+        for i in range(1, 10):
+            rospy.sleep(3)
             forceMsg = rospy.wait_for_message("/command/force_depth", Vector3Stamped).vector
             force = math.sqrt(forceMsg.x**2 + forceMsg.y**2 + forceMsg.z**2)
 
             if forceMsg.z < 0:
                 force *= -1
 
-            Fb += force * 0.3
+            Fb += force * 0.8
             client.update_configuration({"Buoyant_Force": Fb, "Buoyancy_X_POS": CobX, "Buoyancy_Y_POS": CobY, "Buoyancy_Z_POS": CobZ})
 
         rospy.loginfo("Buoyant force calibration complete")
 
-        for i in range(1, 20):
-            rospy.sleep(1)
+        for i in range(1, 10):
+            rospy.sleep(3)
             momentMsg = rospy.wait_for_message("/command/moment", Vector3Stamped).vector
             
-            CobY += momentMsg.x / Fb * 0.3
-            CobX -= momentMsg.y / Fb * 0.3
+            CobY += momentMsg.x / Fb * 0.8
+            CobX -= momentMsg.y / Fb * 0.8
 
             client.update_configuration({"Buoyant_Force": Fb, "Buoyancy_X_POS": CobX, "Buoyancy_Y_POS": CobY, "Buoyancy_Z_POS": CobZ})
 
@@ -76,11 +76,11 @@ class CalibrationAction(object):
 
         rospy.sleep(3)
 
-        for i in range(1, 20):
-            rospy.sleep(1)
+        for i in range(1, 10):
+            rospy.sleep(3)
             momentMsg = rospy.wait_for_message("/command/moment", Vector3Stamped).vector
             
-            CobZ -= momentMsg.x / Fb / math.sqrt(2) * 0.3
+            CobZ -= momentMsg.x / Fb / math.sqrt(2) * 0.8
 
             client.update_configuration({"Buoyant_Force": Fb, "Buoyancy_X_POS": CobX, "Buoyancy_Y_POS": CobY, "Buoyancy_Z_POS": CobZ})
 
