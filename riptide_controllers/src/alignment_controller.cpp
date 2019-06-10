@@ -140,17 +140,9 @@ void AlignmentController::UpdateError() {
   // dependent on boudning box size, while X acceleration is determined by offset
   // in the X axis.
   if(pid_surge_active) {
-    if (alignment_plane == rc::PLANE_YZ) { // Using fwd cam
-      error.x = (target_bbox_dim - obj_bbox_dim);
-      status_msg.x.error = error.x;
-      error.x = AlignmentController::Constrain(error.x, MAX_BBOX_SURGE_ERROR);
-    }
-    else if(alignment_plane == rc::PLANE_XY) { // Using dwn cam
-      error.x = (obj_pos.x - target_pos.x); // MUST subtract target pos from current pos
-      status_msg.x.error = error.x;
-      error.x = AlignmentController::Constrain(error.x, MAX_X_ERROR);
-    }
-
+    error.x = (obj_pos.x - target_pos.x); // MUST subtract target pos from current pos
+    status_msg.x.error = error.x;
+    error.x = AlignmentController::Constrain(error.x, MAX_X_ERROR);
     error_dot.x = (error.x - last_error.x) / dt;
     error_dot.x = AlignmentController::SmoothErrorIIR(error_dot.x, last_error_dot.x);
     last_error.x = error.x;
@@ -161,17 +153,9 @@ void AlignmentController::UpdateError() {
   }
 
   if(pid_heave_active) {
-    if (alignment_plane == rc::PLANE_YZ) { // Using fwd cam
-      error.z = (target_pos.z - obj_pos.z); // DO NOT subtract target pos from current pos. Depth is positive DOWNWARD
-      status_msg.z.error = error.z;
-      error.z = AlignmentController::Constrain(error.z, MAX_Z_ERROR);
-    }
-    else if(alignment_plane == rc::PLANE_XY) { // Using dwn cam
-      error.z = (target_bbox_dim - obj_bbox_dim);
-      status_msg.z.error = error.z;
-      error.z = AlignmentController::Constrain(error.z, MAX_BBOX_DEPTH_ERROR);
-    }
-
+    error.z = (target_pos.z - obj_pos.z); // DO NOT subtract target pos from current pos. Depth is positive DOWNWARD
+    status_msg.z.error = error.z;
+    error.z = AlignmentController::Constrain(error.z, MAX_Z_ERROR);
     error_dot.z = (error.z - last_error.z) / dt;
     error_dot.z = AlignmentController::SmoothErrorIIR(error_dot.z, last_error_dot.z);
     last_error.z = error.z;
@@ -269,6 +253,7 @@ void AlignmentController::CommandCB(const riptide_msgs::AlignmentCommand::ConstP
   else {
     AlignmentController::ResetSway();
   }
+  target_pos.x = cmd->target_pos.x;
   if(alignment_plane == rc::PLANE_YZ) { // Using fwd cam
     if(pid_surge_active) { // Surge
       status_msg.x.reference = target_bbox_dim;

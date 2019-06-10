@@ -1,0 +1,20 @@
+image_width: 704
+image_height: 576
+camera_name: underwater_cam
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [485.1375640428507, 0, 352.1712580653115, 0, 706.9651905667199, 286.0407037029662, 0, 0, 1]
+distortion_model: plumb_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [-0.3878132513704204, 0.1149824535882284, 0.0009993384108195726, -7.525793106864902e-05, 0]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1, 0, 0, 0, 1, 0, 0, 0, 1]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [355.0106506347656, 0, 352.1218698612447, 0, 0, 657.3402709960938, 286.1907775531563, 0, 0, 0, 1, 0]

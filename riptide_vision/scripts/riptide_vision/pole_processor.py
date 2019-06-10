@@ -1,71 +1,94 @@
+#! /usr/bin/env python
+
 import rospy
+
+from cv_bridge import CvBridge, CvBridgeError
+import cv2
+import time
+import numpy as np
+import math
+
 from task_processor import TaskProcessor
-from riptide_msgs.msg import PoleData, BoundingBox
+from riptide_msgs.msg import PoleData, BoundingBox, Object
 from riptide_vision import RiptideVision
 from geometry_msgs.msg import Point
+from stereo_msgs.msg import DisparityImage
+from sensor_msgs.msg import Image
+from std_msgs.msg import Header
 
-# Class PoleProcessor
-# Inherits from TaskProcessor
-class PoleProcessor(TaskProcessor):
-    def __init__(self):
-        pole_pub = rospy.Publisher("/task/pole", PoleData, queue_size=1)
-        TaskProcessor.__init__(self, pole_pub)
 
-    # Normal Processing
-    def Process(self, image, debug_pub=None):
-        pole_msg = PoleData()
-        pole_msg.roll_correction = 0
-        pole_msg.beam_thickness = 0
-        pos = None
-        bbox = None
 
-        # Process the image
-        response = RiptideVision().detect_pole(image)
+def imgCB(msg):
+    global bridge
 
-        # Package data (if there is any)
-        if (len(response) > 2):
-            x_min = response[2]
-            y_min = response[3]
-            x_max = response[4]
-            y_max = response[5]
-            x_mid = response[6]
-            y_mid = response[7]
-            cam_center_x = response[8]
-            cam_center_y = response[9]
+    start = time.time()
+    try:
+        cv_image = bridge.imgmsg_to_cv2(msg.image)
+    except CvBridgeError as e:
+        print(e)
 
-            # Adjust all X and Y positions to be relative to the center of the camera frame
-            # Also maintain the axes convention in here (X is pos. to the right, Y is pos. down)
-            x_min = x_min - cam_center_x
-            x_max = x_max - cam_center_x
-            x_mid = x_mid - cam_center_x
+    (rows,cols) = cv_image.shape
+        
+    integral = cv2.integral(cv_image)
 
-            y_min = y_min - cam_center_y
-            y_max = y_max - cam_center_y
-            y_mid = y_mid - cam_center_y
 
-            # pos = the middle of the pole in vehicle coordinate frame
-            pos = Point()
-            pos.x = 0
-            pos.y = -x_mid # Cam frame x negated
-            pos.z = -y_mid # Cam frame y negated
+    score_img = np.zeros((1,cols,1), np.float32)
+    x = 0
+    maxScore = 0
+    for c in range(cols):
+        score = (integral[rows, c+1] - integral[rows,c])/rows
+        if (score > maxScore):
+            maxScore = score
+            x = c
+        elif score < 0:
+            score = 0
+        score_img[0,c] = score
 
-            bbox = BoundingBox()
-            bbox.top_left = Point(0, -x_min, -y_min)
-            bbox.bottom_right = Point(0, -x_max, -y_max)
+    [mean, std] = cv2.meanStdDev(score_img)
+    _, thresh = cv2.threshold(score_img, mean+3.5*std, 500000, cv2.THRESH_TOZERO)
 
-            pole_msg.roll_correction = response[0]
-            pole_msg.beam_thickness = response[1]
-            image = response[10]
-        else:
-            pole_msg.roll_correction = response[0]
-            image = response[1]
+    kernel = np.ones((1,15),np.float32)
+    thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+    thresh = thresh / thresh.max() * 255
+    thresh = thresh.astype(np.uint8)
 
-        if debug_pub is not None:
-            # Compress debug image
-            debug_img = RiptideVision().detect_pole_vis(image, response)
-            self.publish_debug_image(debug_img, debug_pub)
+    im2, contours,hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
-        # Publish data
-        self.task_pub.publish(pole_msg)
 
-        return pos, bbox
+    img2.publish(msg.image)
+
+    if len(contours) != 0:
+        #find the biggest area
+        c = max(contours, key = cv2.contourArea)
+
+        x,y,w,h = cv2.boundingRect(c)
+        
+        if w > 15:
+
+            disparity = (integral[rows * 3 / 4, x+w+1] - integral[rows * 1 / 4, x+w+1] - integral[rows* 3 / 4, x] + integral[rows* 1 / 4, x])*2 / rows / w
+            depth = msg.f * msg.T / disparity
+
+            img.publish(bridge.cv2_to_imgmsg(thresh))
+            head = Header()
+            head.stamp = rospy.Time.now()
+            center = Point(depth, (x+w/2) - cols/2, 0)
+            pub.publish(head, "pole", w, rows, center)
+            rospy.loginfo(time.time() - start)
+            return
+    
+    # else
+    img.publish(bridge.cv2_to_imgmsg(score_img))
+
+    
+
+
+    
+
+rospy.init_node("pole_processor")
+rospy.Subscriber("/stereo/disparity", DisparityImage, imgCB)
+pub = rospy.Publisher("/state/object", Object, queue_size=5)
+img = rospy.Publisher("/debug/pole", Image, queue_size=5)
+img2 = rospy.Publisher("/debug/pole2", Image, queue_size=5)
+bridge = CvBridge()
+rospy.spin()
+
