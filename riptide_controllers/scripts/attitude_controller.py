@@ -17,17 +17,16 @@ class RotationController():
     velocityCmd = None
     moment = 0
 
-    def positionCmdCb(self, msg):
-        self.positionCmd = msg.data
-
-    def velocityCmdCb(self, msg):
-        self.velocityCmd = min(max(-self.MAX_VELOCITY, msg.data), self.MAX_VELOCITY)
-        self.positionCmd = None
-
-    def momentCmdCb(self, msg):
-        self.moment = msg.data
-        self.velocityCmd = None
-        self.positionCmd = None
+    def cmdCb(self, msg):
+        if msg.mode == AttitudeCommand.POSITION:
+            self.positionCmd = msg.value
+        elif msg.mode == AttitudeCommand.VELOCITY:
+            self.velocityCmd = min(max(-self.MAX_VELOCITY, msg.value), self.MAX_VELOCITY)
+            self.positionCmd = None
+        elif msg.mode == AttitudeCommand.MOMENT:
+            self.moment = msg.value
+            self.velocityCmd = None
+            self.positionCmd = None
 
     def updateState(self, position, velocity):
         # If there is desired position
@@ -79,15 +78,9 @@ if __name__ == '__main__':
     rospy.init_node("attitude_controller")
 
     # Set subscribers
-    rospy.Subscriber("/command/roll/position", Float32, rollController.positionCmdCb)
-    rospy.Subscriber("/command/roll/velocity", Float32, rollController.velocityCmdCb)
-    rospy.Subscriber("/command/roll/moment", Float32, rollController.momentCmdCb)
-    rospy.Subscriber("/command/pitch/position", Float32, pitchController.positionCmdCb)
-    rospy.Subscriber("/command/pitch/velocity", Float32, pitchController.velocityCmdCb)
-    rospy.Subscriber("/command/pitch/moment", Float32, pitchController.momentCmdCb)
-    rospy.Subscriber("/command/yaw/position", Float32, yawController.positionCmdCb)
-    rospy.Subscriber("/command/yaw/velocity", Float32, yawController.velocityCmdCb)
-    rospy.Subscriber("/command/yaw/moment", Float32, yawController.momentCmdCb)
+    rospy.Subscriber("/command/roll", Float32, rollController.cmdCb)
+    rospy.Subscriber("/command/pitch", Float32, pitchController.cmdCb)
+    rospy.Subscriber("/command/yaw", Float32, yawController.cmdCb)
     rospy.Subscriber("/state/imu", Imu, imuCb)
     
     Server(AttitudeControllerConfig, dynamicReconfigureCb)

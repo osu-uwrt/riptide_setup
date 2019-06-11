@@ -79,10 +79,6 @@ add_executable(pwm_controller src/pwm_controller.cpp)
 target_link_libraries(pwm_controller ${catkin_LIBRARIES} yaml-cpp)
 add_dependencies(pwm_controller ${catkin_EXPORTED_TARGETS})
 
-add_executable(attitude_controller src/attitude_controller.cpp)
-target_link_libraries(attitude_controller ${catkin_LIBRARIES})
-add_dependencies(attitude_controller ${catkin_EXPORTED_TARGETS})
-
 add_executable(command_combinator src/command_combinator.cpp)
 target_link_libraries(command_combinator ${catkin_LIBRARIES})
 add_dependencies(command_combinator ${catkin_EXPORTED_TARGETS})

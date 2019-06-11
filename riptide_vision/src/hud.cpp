@@ -20,7 +20,9 @@ HUD::HUD() : nh("hud") {
   depth_sub = nh.subscribe<riptide_msgs::Depth>("/state/depth", 1, &HUD::DepthCB, this);
   object_sub = nh.subscribe<riptide_msgs::Object>("/state/object", 1, &HUD::ObjectCB, this);
 
-  cmd_attitude_sub = nh.subscribe<riptide_msgs::AttitudeCommand>("/command/attitude", 1, &HUD::CmdAttitudeCB, this);
+  cmd_roll_sub = nh.subscribe<riptide_msgs::AttitudeCommand>("/command/roll", 1, &HUD::CmdRollCB, this);
+  cmd_pitch_sub = nh.subscribe<riptide_msgs::AttitudeCommand>("/command/pitch", 1, &HUD::CmdPitchCB, this);
+  cmd_yaw_sub = nh.subscribe<riptide_msgs::AttitudeCommand>("/command/yaw", 1, &HUD::CmdYawCB, this);
   cmd_depth_sub = nh.subscribe<riptide_msgs::DepthCommand>("/command/depth", 1, &HUD::CmdDepthCB, this);
   cmd_accel_sub = nh.subscribe<geometry_msgs::Accel>("/command/accel", 1, &HUD::CmdAccelCB, this);
 
@@ -168,11 +170,19 @@ void HUD::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg) {
   depth = depth_msg->depth;
 }
 
-// Get command attitude
-void HUD::CmdAttitudeCB(const riptide_msgs::AttitudeCommand::ConstPtr& cmd_msg) {
-  cmd_euler_rpy.x = cmd_msg->euler_rpy.x;
-  cmd_euler_rpy.y = cmd_msg->euler_rpy.y;
-  cmd_euler_rpy.z = cmd_msg->euler_rpy.z;
+void HUD::CmdRollCB(const riptide_msgs::AttitudeCommand::ConstPtr& cmd_msg) {
+  if (cmd_msg->mode == cmd_msg->POSITION)
+    cmd_euler_rpy.x = cmd_msg->value;
+}
+
+void HUD::CmdPitchCB(const riptide_msgs::AttitudeCommand::ConstPtr& cmd_msg) {
+  if (cmd_msg->mode == cmd_msg->POSITION)
+    cmd_euler_rpy.y = cmd_msg->value;
+}
+
+void HUD::CmdYawCB(const riptide_msgs::AttitudeCommand::ConstPtr& cmd_msg) {
+  if (cmd_msg->mode == cmd_msg->POSITION)
+    cmd_euler_rpy.z = cmd_msg->value;
 }
 
 // Get command depth

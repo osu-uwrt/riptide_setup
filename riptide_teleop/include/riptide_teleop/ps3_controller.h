@@ -22,11 +22,11 @@ class PS3Controller
 {
  private:
   ros::NodeHandle nh;
-  ros::Publisher attitude_pub, depth_pub, x_force_pub, y_force_pub, z_force_pub, moment_pub, reset_pub;
-  ros::Publisher plane_pub, pneumatics_pub;
+  ros::Publisher depth_pub, x_force_pub, y_force_pub, z_force_pub, moment_pub, reset_pub;
+  ros::Publisher plane_pub, pneumatics_pub, roll_pub, pitch_pub, yaw_pub;
   ros::Subscriber joy_sub, depth_sub, imu_sub;
 
-  geometry_msgs::Vector3 delta_attitude, euler_rpy;
+  geometry_msgs::Vector3 delta_attitude, euler_rpy, cmd_euler_rpy;
   geometry_msgs::Vector3Stamped cmd_moment;
   std_msgs::Float64 cmd_force_x, cmd_force_y, cmd_force_z;
   riptide_msgs::DepthCommand cmd_depth;
