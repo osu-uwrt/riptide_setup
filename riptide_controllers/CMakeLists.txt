@@ -36,6 +36,7 @@ generate_dynamic_reconfigure_options(
 add_action_files(
   DIRECTORY action
   FILES Calibration.action
+        depth_command.action
 )
 
 generate_messages(
