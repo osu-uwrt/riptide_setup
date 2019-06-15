@@ -3,7 +3,6 @@
 
 #include "ros/ros.h"
 #include "geometry_msgs/Vector3.h"
-#include "riptide_msgs/Dvl.h"
 #include "nortek_dvl/Dvl.h"
 #include "riptide_msgs/Imu.h"
 
