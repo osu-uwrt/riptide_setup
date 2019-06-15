@@ -56,6 +56,7 @@ void DVLProcessor::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
   
 void DVLProcessor::DvlCB(const nortek_dvl::Dvl::ConstPtr &dvl_msg)
 {
+  nortek_dvl::Dvl dvl_state(*dvl_msg);
   dvl_state.velocity.x = dvl_msg->velocity.x - relative_vel(0);
   dvl_state.velocity.y = dvl_msg->velocity.y - relative_vel(1);
   dvl_state.velocity.z = dvl_msg->velocity.z - relative_vel(2);
