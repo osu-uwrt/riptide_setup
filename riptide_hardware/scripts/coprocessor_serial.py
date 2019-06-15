@@ -80,9 +80,11 @@ def thruster_current_callback(event):
     
 def shutdown_copro():
     if connected:
-        # disable thrusters
-        copro.sendall(bytearray([3, 2, 0]))
+        # Stop thrusters
+        rospy.loginfo("Stopping thrusters")
+        copro.sendall(bytearray([18, 7, 5, 220, 5, 220, 5, 220, 5, 220, 5, 220, 5, 220, 5, 220, 5, 220]))
         copro.sendall(bytearray([0]))
+        rospy.sleep(.1)
         copro.close()
 
 def main():
@@ -195,9 +197,6 @@ def main():
             connection_pub.publish(True)
             response_queue.clear()
             command_queue.clear()
-
-            # enable the thrusters
-            enqueueCommand(2, [1])
 
         rate.sleep()
 

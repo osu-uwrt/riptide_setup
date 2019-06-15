@@ -1,5 +1,0 @@
-<launch>
-  <node pkg="riptide_controllers" type="calibrationAction.py" name="calibrationAction" output="screen">
-    <param name="properties_file" type="string" value="$(find riptide_controllers)/cfg/vehicle_properties.yaml" />
-  </node>
-</launch>

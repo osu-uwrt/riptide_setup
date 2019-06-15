@@ -30,11 +30,12 @@ roslint_cpp()
 
 cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)
 
-if(NOT _host_name MATCHES "riptide")
 
-  add_executable(hud src/hud.cpp)
-  target_link_libraries(hud ${catkin_LIBRARIES})
-  add_dependencies(hud ${catkin_EXPORTED_TARGETS} ${OpenCV_LIBRARIES})
+add_executable(hud src/hud.cpp)
+target_link_libraries(hud ${catkin_LIBRARIES})
+add_dependencies(hud ${catkin_EXPORTED_TARGETS} ${OpenCV_LIBRARIES})
+
+if(NOT _host_name MATCHES "riptide")
 
   add_executable(darknet_sim src/darknet_sim.cpp)
   target_link_libraries(darknet_sim ${catkin_LIBRARIES} yaml-cpp)

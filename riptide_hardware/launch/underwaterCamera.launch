@@ -1,5 +1,5 @@
 <!-- To record: 
-   rosrun image_view video_recorder image:=/underwater_cam/image_rect _fps:=30 _filename:=output2.avi
+   rosrun image_view video_recorder image:=/underwater_cam/image_rect_color _fps:=30 _filename:=output2.avi
    -->
 
 <!-- To calibrate: 
