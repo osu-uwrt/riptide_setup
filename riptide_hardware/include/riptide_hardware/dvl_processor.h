@@ -27,8 +27,6 @@ private:
   Vector3d relative_vel;
   geometry_msgs::Vector3 dvl_vel;
 
-  riptide_msgs::Dvl state;
-
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 

@@ -11,7 +11,6 @@ DVLProcessor::DVLProcessor() : nh("dvl_processor")
 {
   imu_state_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &DVLProcessor::ImuCB, this);
   dvl_data_sub = nh.subscribe<nortek_dvl::Dvl>("/dvl/dvl", 1, &DVLProcessor::DvlCB, this);
-  dvl_state_pub = nh.advertise<riptide_msgs::Dvl>("/state/dvl", 1);
 
   // Load relative positions between DVL and COM from YAML file
   DVLProcessor::LoadParam<string>("positions_file", positions_file);
@@ -55,11 +54,9 @@ void DVLProcessor::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
   
 void DVLProcessor::DvlCB(const nortek_dvl::Dvl::ConstPtr &dvl_msg)
 {
-  state.vehicle_vel.x = dvl_msg->velocity.x - relative_vel(0);
-  state.vehicle_vel.y = dvl_msg->velocity.y - relative_vel(1);
-  state.vehicle_vel.z = dvl_msg->velocity.z - relative_vel(2);
-
-  dvl_state_pub.publish(state);
+  dvl_msg.vehicle.x = dvl_msg->velocity.x - relative_vel(0);
+  dvl_msg.vehicle.y = dvl_msg->velocity.y - relative_vel(1);
+  dvl_msg.vehicle.z = dvl_msg->velocity.z - relative_vel(2);
 }
 
 void DVLProcessor::Loop()
