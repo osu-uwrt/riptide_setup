@@ -35,7 +35,8 @@ generate_dynamic_reconfigure_options(
 
 add_action_files(
   DIRECTORY action
-  FILES Calibration.action
+  FILES Calibrate.action
+  GoToDepth.action
 )
 
 generate_messages(
@@ -78,10 +79,6 @@ add_dependencies(alignment_controller ${catkin_EXPORTED_TARGETS})
 add_executable(pwm_controller src/pwm_controller.cpp)
 target_link_libraries(pwm_controller ${catkin_LIBRARIES} yaml-cpp)
 add_dependencies(pwm_controller ${catkin_EXPORTED_TARGETS})
-
-add_executable(attitude_controller src/attitude_controller.cpp)
-target_link_libraries(attitude_controller ${catkin_LIBRARIES})
-add_dependencies(attitude_controller ${catkin_EXPORTED_TARGETS})
 
 add_executable(command_combinator src/command_combinator.cpp)
 target_link_libraries(command_combinator ${catkin_LIBRARIES})

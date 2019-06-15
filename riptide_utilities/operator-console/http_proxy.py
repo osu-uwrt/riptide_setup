@@ -15,6 +15,7 @@ coproAddress = '192.168.1.42'
 print(str(sys.argv))
 if len(sys.argv) > 1:
     coproAddress = sys.argv[1]
+droppedCommand = False
 
 class commandWaiter:
 	def __init__(self, command):
@@ -28,32 +29,41 @@ class commandWaiter:
 #the browser 
 class myHandler(BaseHTTPRequestHandler):
 
-	#Handler for the POST requests
-	def do_POST(self):
-		requestData = json.loads(self.rfile.read(int(self.headers['Content-Length'])))
-		result = processCommand(requestData)
+    #Handler for the POST requests
+    def do_POST(self):
+        global droppedCommand
+        global coproConection
 
-		resultStr = ""
-		if result == None:
-			self.send_response(503)
-		else:
-			self.send_response(200)
-			resultStr = json.dumps(result)
-		self.send_header('Content-type','text/html')
-		self.send_header('Access-Control-Allow-Origin','*')
-		self.send_header('Access-Control-Allow-Headers', 'content-type')
-		self.end_headers()
-		self.wfile.write(resultStr.encode())
-		return
+        requestData = json.loads(self.rfile.read(int(self.headers['Content-Length'])))
 
-	#Handler for the GET requests
-	def do_OPTIONS(self):
-		self.send_response(200)
-		self.send_header('Access-Control-Allow-Headers', 'content-type')
-		self.send_header('Content-type','text/html')
-		self.send_header('Access-Control-Allow-Origin','*')
-		self.end_headers()
-		return
+        resultStr = ""
+
+        if coproConection is None:
+            self.send_response(503)
+        else:
+            result = processCommand(requestData)
+            if result == None:
+                self.send_response(503)
+                droppedCommand = True
+            else:
+                self.send_response(200)
+                resultStr = json.dumps(result)
+
+        self.send_header('Content-type','text/html')
+        self.send_header('Access-Control-Allow-Origin','*')
+        self.send_header('Access-Control-Allow-Headers', 'content-type')
+        self.end_headers()
+        self.wfile.write(resultStr.encode())
+        return
+
+    #Handler for the OPTIONS requests
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Headers', 'content-type')
+        self.send_header('Content-type','text/html')
+        self.send_header('Access-Control-Allow-Origin','*')
+        self.end_headers()
+        return
 
 toBeSentQueue = []
 toBeReceivedQueue = []
@@ -64,7 +74,7 @@ def processCommand(byteArray):
 
 	waiter = commandWaiter(byteArray)
 	toBeSentQueue += [waiter]   # Enqueue data to be sent later
-	waiter.event.wait(10)    # Wait for a response
+	waiter.event.wait(.5)    # Wait for a response
 	return waiter.response
 
 
@@ -72,6 +82,7 @@ def background():
     global coproConection
     global toBeReceivedQueue
     global toBeSentQueue
+    global droppedCommand
 
     inputBuffer = []
 
@@ -88,6 +99,8 @@ def background():
                         toBeReceivedQueue += [toBeSent]     # Wait for response
                 
                 if len(readable) > 0:
+                    if droppedCommand == True:
+                        raise Exception("Dropped a command")
                     data = coproConection.recv(1024)        # Get data
                     if data == None or len(data) == 0:      
                         raise TypeError
@@ -106,23 +119,25 @@ def background():
             except Exception as exc:
                 print("Lost copro connection")
                 print(exc)
-                inputBuffer = []
+                coproConection.sendall(bytearray([0]))
                 coproConection.close()
                 coproConection = None
+                inputBuffer = []
+                time.sleep(1)
+                droppedCommand = False          
         else:
             inputBuffer = []                        # If we are not connected, clear all buffers and queues
             while len(toBeReceivedQueue) != 0:
                 toBeReceivedQueue.pop().event.set()
+            while len(toBeSentQueue) != 0:  
+                toBeSentQueue.pop().event.set()
 
-            if len(toBeSentQueue) > 0:              # If we want to send something, try to connect
-                try:
-                    coproConection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    coproConection.settimeout(1)
-                    coproConection.connect((coproAddress, 50000))
-                except:
-                    coproConection = None           # If it failed, clear queue
-                    while len(toBeSentQueue) != 0:  
-                        toBeSentQueue.pop().event.set()
+            try:
+                coproConection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                coproConection.settimeout(1)
+                coproConection.connect((coproAddress, 50000))
+            except:
+                coproConection = None           # If it failed, clear queue
         time.sleep(0.01)
                 
 
@@ -142,5 +157,7 @@ try:
 	server.serve_forever()
 
 except KeyboardInterrupt:
-	print ('^C received, shutting down the web server')
-	server.socket.close()
+    print ('^C received, shutting down the web server')
+    server.socket.close()
+    coproConection.sendall(bytearray([0]))
+    coproConection.close()

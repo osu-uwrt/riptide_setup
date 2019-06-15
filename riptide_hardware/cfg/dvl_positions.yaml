@@ -2,6 +2,6 @@
 # Unit in meters
 properties: 
 {
-  DVL: [2, 2, 2]
+  DVL: [-.05, -.19, .11]
 }
 # ^ listed numebrs are just for tests
