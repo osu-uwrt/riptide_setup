@@ -24,14 +24,15 @@ find_package(catkin REQUIRED
     cv_bridge
 )
 
+find_package(Eigen3 REQUIRED)
+
 add_service_files(FILES Pneumatics.srv)
 
 generate_messages()
 
 catkin_package(INCLUDE_DIRS include)
 find_package(OpenCV REQUIRED) # To include, OpenCV, this MUST go BEFORE include_directories()
-include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS} resources/acoustics/include)
-
+include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS} {EIGEN3_INCLUDE_DIR} resources/acoustics/include)
 
 roslint_cpp()
 
