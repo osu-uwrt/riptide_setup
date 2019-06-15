@@ -78,9 +78,9 @@ if __name__ == '__main__':
     rospy.init_node("attitude_controller")
 
     # Set subscribers
-    rospy.Subscriber("/command/roll", Float32, rollController.cmdCb)
-    rospy.Subscriber("/command/pitch", Float32, pitchController.cmdCb)
-    rospy.Subscriber("/command/yaw", Float32, yawController.cmdCb)
+    rospy.Subscriber("/command/roll", AttitudeCommand, rollController.cmdCb)
+    rospy.Subscriber("/command/pitch", AttitudeCommand, pitchController.cmdCb)
+    rospy.Subscriber("/command/yaw", AttitudeCommand, yawController.cmdCb)
     rospy.Subscriber("/state/imu", Imu, imuCb)
     
     Server(AttitudeControllerConfig, dynamicReconfigureCb)

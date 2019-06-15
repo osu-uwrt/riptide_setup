@@ -1,5 +1,4 @@
 #! /usr/bin/env python
-
 import rospy
 import actionlib
 import dynamic_reconfigure.client
@@ -13,13 +12,14 @@ import time
 import math
 import yaml
 
-class CalibrationAction(object):
+class CalibrateAction(object):
 
     def __init__(self):
-        self.depthPub = rospy.Publisher("/command/depth", DepthCommand, queue_size=1)  
+        self.depthPub = rospy.Publisher("/command/depth", DepthCommand, queue_size=1)
         self.rollPub = rospy.Publisher("/command/roll", AttitudeCommand, queue_size=1)
         self.pitchPub = rospy.Publisher("/command/pitch", AttitudeCommand, queue_size=1)
-        self._as = actionlib.SimpleActionServer("calibration_action", riptide_controllers.msg.CalibrationAction, execute_cb=self.execute_cb, auto_start=False)
+        
+        self._as = actionlib.SimpleActionServer("calibrate", riptide_controllers.msg.CalibrateAction, execute_cb=self.execute_cb, auto_start=False)
         self._as.start()
 
       
@@ -110,6 +110,6 @@ class CalibrationAction(object):
         
         
 if __name__ == '__main__':
-    rospy.init_node('calibration')
-    server = CalibrationAction()
+    rospy.init_node('calibrate')
+    server = CalibrateAction()
     rospy.spin()

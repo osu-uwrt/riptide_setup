@@ -14,8 +14,17 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   sensor_msgs
   cv_bridge
+  actionlib_msgs
 )
 
+add_action_files(
+  DIRECTORY action
+  FILES Prequalify.action
+)
+
+generate_messages(
+  DEPENDENCIES actionlib_msgs
+)
 
 roslint_cpp()
 
@@ -33,7 +42,9 @@ set(AUTONOMY_OBJECTS
   src/validators.cpp
 )
 
-catkin_package(INCLUDE_DIRS include)
+catkin_package(INCLUDE_DIRS include
+  CATKIN_DEPENDS
+    actionlib_msgs)
 find_package(OpenCV REQUIRED) # To include, OpenCV, this MUST go BEFORE include_directories()
 include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
 
