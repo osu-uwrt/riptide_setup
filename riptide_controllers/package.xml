@@ -20,6 +20,7 @@
   <build_depend>rostest</build_depend>
   <build_depend>actionlib_msgs</build_depend>
   <build_depend>libceres-dev</build_depend>
+  <build_depend>eigen</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>imu_3dm_gx4</build_depend>
   <build_depend>riptide_msgs</build_depend>

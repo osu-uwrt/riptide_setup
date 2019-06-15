@@ -26,7 +26,7 @@ find_package(catkin REQUIRED
 
 find_package(Ceres REQUIRED)
 
-find_package(Eigen3 REQUIRED) #find_package(Eigen3 3.3 REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 generate_dynamic_reconfigure_options(
   cfg/VehicleProperties.cfg
@@ -56,7 +56,7 @@ roslint_cpp()
 include_directories(include ${catkin_INCLUDE_DIRS}
   ${CERES_INCLUDE_DIRS}
   ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake
-  {Eigen3_INCLUDE_DIRS}
+  {EIGEN3_INCLUDE_DIR}
 )
 
 cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)
