@@ -27,6 +27,9 @@ private:
   Vector3d relative_vel;
   geometry_msgs::Vector3 dvl_vel;
 
+  nortek_dvl::Dvl dvl_state;
+
+
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
