@@ -1,0 +1,7 @@
+# This yaml file inclues the distance from the com to the center of DVL
+# Unit in meters
+properties: 
+{
+  DVL: [2, 2, 2]
+}
+# ^ listed numebrs are just for tests
