@@ -63,13 +63,3 @@ void DVLProcessor::DvlCB(const nortek_dvl::Dvl::ConstPtr &dvl_msg)
 
   dvl_state_pub.publish(dvl_state);
 }
-
-void DVLProcessor::Loop()
-{
-  ros::Rate rate(100);
-  while (!ros::isShuttingDown())
-  {
-    ros::spinOnce();
-    rate.sleep();
-  }
-}
