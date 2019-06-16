@@ -65,7 +65,7 @@ def imgCB(msg):
         
         if w > 15:
 
-            disparity = (integral[rows * 3 / 4, x+w+1] - integral[rows * 1 / 4, x+w+1] - integral[rows* 3 / 4, x] + integral[rows* 1 / 4, x])*2 / rows / w
+            disparity = (integral[rows * 3 / 4, x+w] - integral[rows * 1 / 4, x+w] - integral[rows* 3 / 4, x] + integral[rows* 1 / 4, x])*2 / rows / w
             depth = msg.f * msg.T / disparity
 
             img.publish(bridge.cv2_to_imgmsg(thresh))
@@ -73,7 +73,6 @@ def imgCB(msg):
             head.stamp = rospy.Time.now()
             center = Point(depth, (x+w/2) - cols/2, 0)
             pub.publish(head, "pole", w, rows, center)
-            rospy.loginfo(time.time() - start)
             return
     
     # else
