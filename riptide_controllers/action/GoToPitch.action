@@ -1,0 +1,7 @@
+#goal definition
+float32 pitch
+---
+#result definition
+---
+#feedback
+int32[] sequence

@@ -37,6 +37,9 @@ add_action_files(
   DIRECTORY action
   FILES Calibrate.action
   GoToDepth.action
+  GoToYaw.action
+  GoToPitch.action
+  GoToRoll.action
 )
 
 generate_messages(

@@ -25,10 +25,10 @@
     <param name="approximate_sync" value="true" />
   </node>
 
-  <include file="$(find riptide_hardware)/launch/camera_jetson.launch">
+  <!-- <include file="$(find riptide_hardware)/launch/camera_jetson.launch">
       <arg name="camera_name" value="downward" />
       <arg name="serial_number" value="$(arg down_serial_number)" />
       <arg name="frame_rate" value="$(arg frame_rate)" />
   </include>
-  <node machine="$(arg machine_name)" name="image_proc" pkg="image_proc" type="image_proc" ns="downward"/>
+  <node machine="$(arg machine_name)" name="image_proc" pkg="image_proc" type="image_proc" ns="downward"/> -->
 </launch>

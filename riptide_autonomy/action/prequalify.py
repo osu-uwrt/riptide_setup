@@ -41,50 +41,46 @@ class PrequalifyAction(object):
             "prequalify", riptide_autonomy.msg.PrequalifyAction, execute_cb=self.execute_cb, auto_start=False)
         self._as.start()
 
-    def setDepth(self, depth):
-        # rospy.loginfo("Waiting for depth service")
-        # client = actionlib.SimpleActionClient(
-        #     "go_to_depth", riptide_controllers.msg.GoToDepthAction)
-        # client.wait_for_server()
-        # rospy.loginfo("Got depth service")
+    def performActions(self, *actions):
+        for a in actions:
+            a.wait_for_result()
 
-        # # Sends the goal to the action server.
-        # client.send_goal(riptide_controllers.msg.GoToDepthAction(depth))
-        # rospy.loginfo("Sent goal")
+    def depthAction(self, depth):
+        client = actionlib.SimpleActionClient(
+            "go_to_depth", riptide_controllers.msg.GoToDepthAction)
+        client.wait_for_server()
 
-        # # Waits for the server to finish performing the action.
-        # client.wait_for_result()
-        # rospy.loginfo("At depth")
-        self.depthPub.publish(True, depth)
+        # Sends the goal to the action server.
+        client.send_goal(riptide_controllers.msg.GoToDepthGoal(depth))
+        return client
 
-        rospy.loginfo("Waiting on depth")
-        while abs(rospy.wait_for_message("/state/depth", Depth).depth - depth) > 0.1:
-            rospy.sleep(0.05)
-        rospy.loginfo("At depth")
+    def rollAction(self, angle):
+        client = actionlib.SimpleActionClient(
+            "go_to_roll", riptide_controllers.msg.GoToRollAction)
+        client.wait_for_server()
 
-    def setHeading(self, angle):
-        self.yawPub.publish(angle, AttitudeCommand.POSITION)
+        # Sends the goal to the action server.
+        client.send_goal(riptide_controllers.msg.GoToRollGoal(angle))
+        return client
 
-        while abs(angleDiff(rospy.wait_for_message("/state/imu", Imu).rpy_deg.z, angle)) >= 5:
-            rospy.sleep(0.05)
+    def pitchAction(self, angle):
+        client = actionlib.SimpleActionClient(
+            "go_to_pitch", riptide_controllers.msg.GoToPitchAction)
+        client.wait_for_server()
 
-    def setPitch(self, angle):
-        self.pitchPub.publish(angle, AttitudeCommand.POSITION)
+        # Sends the goal to the action server.
+        client.send_goal(riptide_controllers.msg.GoToPitchGoal(angle))
+        return client
 
-        while abs(angleDiff(rospy.wait_for_message("/state/imu", Imu).rpy_deg.y, angle)) >= 5:
-            rospy.sleep(0.05)
+    def yawAction(self, angle):
+        client = actionlib.SimpleActionClient(
+            "go_to_yaw", riptide_controllers.msg.GoToYawAction)
+        client.wait_for_server()
 
-    def setRoll(self, angle):
-        self.rollPub.publish(angle, AttitudeCommand.POSITION)
+        # Sends the goal to the action server.
+        client.send_goal(riptide_controllers.msg.GoToYawGoal(angle))
+        return client
 
-        while abs(angleDiff(rospy.wait_for_message("/state/imu", Imu).rpy_deg.x, angle)) >= 5:
-            rospy.sleep(0.05)
-
-    def runParallel(self, procs):
-        for p in procs:
-            p.start()
-        for p in procs:
-            p.join()
 
     def execute_cb(self, goal):
 
@@ -95,11 +91,14 @@ class PrequalifyAction(object):
         rospy.sleep(5)
 
         rospy.loginfo("Going down")
+
         # Submerge and face gate
-        self.setDepth(1) 
-        self.setHeading(GATE_HEADING)
-        self.setPitch(0)
-        self.setRoll(0)
+        self.performActions(
+            self.depthAction(1),
+            self.rollAction(0),
+            self.pitchAction(0),
+            self.yawAction(GATE_HEADING)
+        )
 
         rospy.loginfo("Headed forward")
         # Drive forward

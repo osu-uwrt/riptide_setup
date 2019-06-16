@@ -3,4 +3,9 @@
   <include file="$(find riptide_vision)/launch/pole_processor.launch" />
   <include file="$(find riptide_controllers)/launch/controllers.launch" />
   <include file="$(find riptide_autonomy)/launch/prequalify.launch" />
+
+  <arg name="log" default="false" />
+  <node pkg="rosbag" type="record" name="record_autonomy" 
+        args="record -o ../mission /rosout_agg /stereo/left/image_hud /debug/pole2" 
+        if="$(arg log)" />
 </launch>

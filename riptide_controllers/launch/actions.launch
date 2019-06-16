@@ -3,4 +3,7 @@
     <param name="properties_file" type="string" value="$(find riptide_controllers)/cfg/vehicle_properties.yaml" />
   </node>
   <node pkg="riptide_controllers" type="goToDepth.py" name="go_to_depth" output="screen" />
+  <node pkg="riptide_controllers" type="goToRoll.py" name="go_to_roll" output="screen" />
+  <node pkg="riptide_controllers" type="goToPitch.py" name="go_to_pitch" output="screen" />
+  <node pkg="riptide_controllers" type="goToYaw.py" name="go_to_yaw" output="screen" />
 </launch>
