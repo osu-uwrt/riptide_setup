@@ -1,0 +1,7 @@
+#goal definition
+float32 yaw
+---
+#result definition
+---
+#feedback
+int32[] sequence
