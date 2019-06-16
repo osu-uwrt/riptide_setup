@@ -3,7 +3,6 @@
 
 #include "ros/ros.h"
 #include "geometry_msgs/Vector3.h"
-#include "riptide_msgs/Dvl.h"
 #include "nortek_dvl/Dvl.h"
 #include "riptide_msgs/Imu.h"
 
@@ -27,7 +26,8 @@ private:
   Vector3d relative_vel;
   geometry_msgs::Vector3 dvl_vel;
 
-  riptide_msgs::Dvl state;
+ 
+
 
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -38,7 +38,6 @@ public:
   void LoadDVLProperties();
   void ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg);
   void DvlCB(const nortek_dvl::Dvl::ConstPtr &dvl_msg);
-  void Loop();
 };
 
 #endif

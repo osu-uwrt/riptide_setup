@@ -40,8 +40,6 @@ add_message_files(
     StatusLight.msg
     CalibrateAlignment.msg
     NetLoad.msg
-    Dvl.msg
-
 )
 
 generate_messages(
