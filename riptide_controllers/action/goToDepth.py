@@ -16,7 +16,7 @@ class GoToDepthAction(object):
       
     def execute_cb(self, goal):
         rospy.loginfo("Going to depth " + str(goal.depth)+ "m")
-        self.depthPub.publish(True, .5)
+        self.depthPub.publish(True, goal.depth)
 
         while abs(rospy.wait_for_message("/state/depth", Depth).depth - goal.depth) > 0.1:
             rospy.sleep(0.05)
