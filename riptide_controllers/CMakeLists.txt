@@ -31,6 +31,7 @@ find_package(Eigen3 REQUIRED)
 generate_dynamic_reconfigure_options(
   cfg/VehicleProperties.cfg
   cfg/AttitudeController.cfg
+  cfg/LinearController.cfg
 )
 
 add_action_files(
