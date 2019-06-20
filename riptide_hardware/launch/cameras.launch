@@ -1,19 +1,35 @@
 <launch>
   <arg name="frame_rate" default="30" />
-  <arg name="fwd_serial_number" value="14490542 " />
+  <arg name="fwd_serial_number" value="14490542" />
   <arg name="down_serial_number" value="15662023" />
   <arg name="spare_serial_number" value="14490573" />
   <arg name="flir_serial_number" value="14432788" />
 
-  <include file="$(find riptide_hardware)/launch/camera.launch">
-    <arg name="camera_name" value="forward" />
-    <arg name="serial_number" value="$(arg forward_serial_number)" />
-    <arg name="frame_rate" value="$(arg frame_rate)" />
-  </include>
+  <!-- To calibrate: 
+    http://wiki.ros.org/camera_calibration
+  -->
+  
+  <group ns="stereo">
+    <include file="$(find riptide_hardware)/launch/camera.launch">
+      <arg name="camera_name" value="left" />
+      <arg name="serial_number" value="$(arg fwd_serial_number)" />
+      <arg name="frame_rate" value="$(arg frame_rate)" />
+    </include>
 
-  <include file="$(find riptide_hardware)/launch/camera.launch">
-    <arg name="camera_name" value="downward" />
-    <arg name="serial_number" value="$(arg downward_serial_number)" />
-    <arg name="frame_rate" value="$(arg frame_rate)" />
+    <include file="$(find riptide_hardware)/launch/camera.launch">
+      <arg name="camera_name" value="right" />
+      <arg name="serial_number" value="$(arg flir_serial_number)" />
+      <arg name="frame_rate" value="$(arg frame_rate)" />
+    </include>
+  </group>
+  <node name="stereo_image_proc" pkg="stereo_image_proc" type="stereo_image_proc" ns="stereo">
+    <param name="approximate_sync" value="true" />
+  </node>
+
+  <!-- <include file="$(find riptide_hardware)/launch/camera.launch">
+      <arg name="camera_name" value="downward" />
+      <arg name="serial_number" value="$(arg down_serial_number)" />
+      <arg name="frame_rate" value="$(arg frame_rate)" />
   </include>
+  <node name="image_proc" pkg="image_proc" type="image_proc" ns="downward"/> -->
 </launch>

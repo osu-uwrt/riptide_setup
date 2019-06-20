@@ -21,14 +21,29 @@ find_package(catkin REQUIRED
     riptide_msgs
     tf
     control_toolbox
+    actionlib_msgs
 )
 
 find_package(Ceres REQUIRED)
 
-find_package(Eigen3 3.3 REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 generate_dynamic_reconfigure_options(
   cfg/VehicleProperties.cfg
+  cfg/AttitudeController.cfg
+)
+
+add_action_files(
+  DIRECTORY action
+  FILES Calibrate.action
+  GoToDepth.action
+  GoToYaw.action
+  GoToPitch.action
+  GoToRoll.action
+)
+
+generate_messages(
+  DEPENDENCIES actionlib_msgs std_msgs  # Or other packages containing msgs
 )
 
 catkin_package(
@@ -36,6 +51,7 @@ catkin_package(
     include
   CATKIN_DEPENDS
     dynamic_reconfigure
+    actionlib_msgs
 )
 
 roslint_cpp()
@@ -43,15 +59,15 @@ roslint_cpp()
 include_directories(include ${catkin_INCLUDE_DIRS}
   ${CERES_INCLUDE_DIRS}
   ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake
-  {Eigen3_INCLUDE_DIRS}
+  {EIGEN3_INCLUDE_DIR}
 )
 
 cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)
 
 #if(NOT _host_name MATCHES "riptide")
-add_executable(thruster_controller src/thruster_controller.cpp)
-target_link_libraries(thruster_controller ${catkin_LIBRARIES} ${CERES_LIBRARIES} yaml-cpp)
-add_dependencies(thruster_controller ${catkin_EXPORTED_TARGETS})
+    add_executable(thruster_controller src/thruster_controller.cpp)
+    target_link_libraries(thruster_controller ${catkin_LIBRARIES} ${CERES_LIBRARIES} yaml-cpp)
+    add_dependencies(thruster_controller ${catkin_EXPORTED_TARGETS})
 #endif()
 #add_dependencies(thruster_controller riptide_controllers_gencfg)
 
@@ -66,10 +82,6 @@ add_dependencies(alignment_controller ${catkin_EXPORTED_TARGETS})
 add_executable(pwm_controller src/pwm_controller.cpp)
 target_link_libraries(pwm_controller ${catkin_LIBRARIES} yaml-cpp)
 add_dependencies(pwm_controller ${catkin_EXPORTED_TARGETS})
-
-add_executable(attitude_controller src/attitude_controller.cpp)
-target_link_libraries(attitude_controller ${catkin_LIBRARIES})
-add_dependencies(attitude_controller ${catkin_EXPORTED_TARGETS})
 
 add_executable(command_combinator src/command_combinator.cpp)
 target_link_libraries(command_combinator ${catkin_LIBRARIES})

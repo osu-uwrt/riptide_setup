@@ -9,7 +9,9 @@
 #include "ros/ros.h"
 #include <dynamic_reconfigure/server.h>
 #include <riptide_controllers/VehiclePropertiesConfig.h>
+#include <boost/thread/mutex.hpp>
 
+#include "std_msgs/Float32.h"
 #include "geometry_msgs/Vector3.h"
 #include "geometry_msgs/Vector3Stamped.h"
 #include "geometry_msgs/Accel.h"
@@ -42,15 +44,16 @@ private:
   geometry_msgs::Vector3Stamped cob_msg;
 
   // Dynamic Reconfigure Setup
-  bool tune; // If true, key params can be input via messages
-  dynamic_reconfigure::Server<riptide_controllers::VehiclePropertiesConfig> server;
-  dynamic_reconfigure::Server<riptide_controllers::VehiclePropertiesConfig>::CallbackType cb;
+  typedef dynamic_reconfigure::Server<riptide_controllers::VehiclePropertiesConfig> DynamicReconfigServer;
+  boost::shared_ptr<DynamicReconfigServer> param_reconfig_server;
+  DynamicReconfigServer::CallbackType param_reconfig_callback;
+  boost::recursive_mutex param_reconfig_mutex;
 
   YAML::Node properties;
   string properties_file;
   vector<int> thrustersEnabled;
   Vector3d CoB;
-  double mass, volume, Fg, Fb, Ixx, Iyy, Izz, depth_fully_submerged;
+  double mass, Fg,  Fb, Ixx, Iyy, Izz, depth_fully_submerged;
   bool isSubmerged;
 
   // Variables that get passed to class EOM and FindCoB
@@ -60,6 +63,7 @@ private:
   double inertia[6], weightLoad[6], transportThm[6], command[6], Fb_vector[3];
   double solver_forces[8]; // Solved forces go here
   double solver_cob[3];    // Solved buoyancy positions go here
+  double center_of_mass[3];
 
   // EOMs
   ceres::Problem problemEOM;
@@ -78,6 +82,7 @@ public:
   template <typename T>
   void LoadParam(std::string param, T &var);
   void LoadVehicleProperties();
+  void InitDynamicReconfigure();
   void SetThrusterCoeffs();
   void InitThrustMsg();
   void DynamicReconfigCallback(riptide_controllers::VehiclePropertiesConfig &config, uint32_t levels);
@@ -139,16 +144,14 @@ private:
   int x, y, z;           // Axis indeces
   MatrixXd thrustCoeffs; // Thrust coefficients (effective contributions of each thruster for force and moments)
   double *Fb;            // (Pointer) Buoyant forces along body-frame x, y, and x axes
-  double *transportThm;  // (Pointer) Vector containng terms related to the transport theorem
   double *forces;        // (Pointer) Solved thruster forces from class EOM
 
 public:
-  FindCoB(int &numThrust, const Ref<const MatrixXd> &thrustCoeffsIn, double *FbIn, double *transportThmIn, double *forcesIn)
+  FindCoB(int &numThrust, const Ref<const MatrixXd> &thrustCoeffsIn, double *FbIn, double *forcesIn)
   {
     numThrusters = numThrust;
     thrustCoeffs = thrustCoeffsIn;
     Fb = FbIn;
-    transportThm = transportThmIn;
     forces = forcesIn;
     x = 0, y = 1, z = 2;
   }
@@ -159,13 +162,14 @@ public:
   {
     for (int i = 0; i < 3; i++)
     {
-      residual[i] = T(transportThm[i + 3]);
+      residual[i] = T(0);
       for (int j = 0; j < numThrusters; j++)
-        residual[i] = residual[i] + T(thrustCoeffs(j, i) * forces[j]);
+        residual[i] = residual[i] + T(thrustCoeffs(i+3, j) * forces[j]);
     }
-    residual[x] = residual[x] + rFb[y] * Fb[z] - rFb[z] * Fb[y];
-    residual[y] = residual[y] + rFb[z] * Fb[x] - rFb[x] * Fb[z];
-    residual[z] = residual[z] + rFb[x] * Fb[y] - rFb[y] * Fb[x];
+    residual[x] = residual[x] + (rFb[y] * T(Fb[z]) - rFb[z] * T(Fb[y]));
+    residual[y] = residual[y] + (rFb[z] * T(Fb[x]) - rFb[x] * T(Fb[z]));
+    residual[z] = residual[z] + (rFb[x] * T(Fb[y]) - rFb[y] * T(Fb[x]));
+    return true;
   }
 };
 

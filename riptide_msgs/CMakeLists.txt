@@ -42,8 +42,18 @@ add_message_files(
     NetLoad.msg
 )
 
-generate_messages(DEPENDENCIES std_msgs geometry_msgs darknet_ros_msgs)
+generate_messages(
+    DEPENDENCIES 
+    std_msgs 
+    geometry_msgs 
+    darknet_ros_msgs
 
-catkin_package(CATKIN_DEPENDS message_runtime)
+)
+
+catkin_package(
+    CATKIN_DEPENDS 
+    message_runtime
+    
+)
 
 include_directories(${catkin_INCLUDE_DIRS})

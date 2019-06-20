@@ -29,17 +29,13 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
 roslint_cpp()
 
 cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)
-message("-- Computer name: " ${_host_name})
 
-add_executable(extract_video src/extract_video.cpp)
-target_link_libraries(extract_video ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
-add_dependencies(extract_video ${catkin_EXPORTED_TARGETS})
+
+add_executable(hud src/hud.cpp)
+target_link_libraries(hud ${catkin_LIBRARIES})
+add_dependencies(hud ${catkin_EXPORTED_TARGETS} ${OpenCV_LIBRARIES})
 
 if(NOT _host_name MATCHES "riptide")
-
-  add_executable(hud src/hud.cpp)
-  target_link_libraries(hud ${catkin_LIBRARIES})
-  add_dependencies(hud ${catkin_EXPORTED_TARGETS} ${OpenCV_LIBRARIES})
 
   add_executable(darknet_sim src/darknet_sim.cpp)
   target_link_libraries(darknet_sim ${catkin_LIBRARIES} yaml-cpp)
@@ -57,6 +53,4 @@ if(NOT _host_name MATCHES "riptide")
   target_link_libraries(bbox_pub ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
   add_dependencies(bbox_pub ${catkin_EXPORTED_TARGETS})
 
-else()
-    message("-- Skipping jetson code on riptide")
 endif()
