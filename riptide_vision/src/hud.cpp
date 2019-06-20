@@ -13,19 +13,22 @@ int main(int argc, char** argv)
 
 // Heads Up Display
 HUD::HUD() : nh("hud") {
-  fwd_img_sub = nh.subscribe<sensor_msgs::Image>("/stereo/left/image_undistorted", 1, &HUD::ForwardImgCB, this);
-  down_img_sub = nh.subscribe<sensor_msgs::Image>("/downward/image_undistorted", 1, &HUD::DownwardImgCB, this);
+  stereo_img_sub = nh.subscribe<sensor_msgs::Image>("/stereo/left/image_rect_color", 1, &HUD::StereoImgCB, this);
+  down_img_sub = nh.subscribe<sensor_msgs::Image>("/downward/image_rect_color", 1, &HUD::DownwardImgCB, this);
   darknet_img_sub = nh.subscribe<sensor_msgs::Image>("/darknet_ros/detection_image", 1, &HUD::DarknetImgCB, this);
   imu_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &HUD::ImuCB, this);
   depth_sub = nh.subscribe<riptide_msgs::Depth>("/state/depth", 1, &HUD::DepthCB, this);
+  object_sub = nh.subscribe<riptide_msgs::Object>("/state/object", 1, &HUD::ObjectCB, this);
 
-  cmd_attitude_sub = nh.subscribe<riptide_msgs::AttitudeCommand>("/command/attitude", 1, &HUD::CmdAttitudeCB, this);
+  cmd_roll_sub = nh.subscribe<riptide_msgs::AttitudeCommand>("/command/roll", 1, &HUD::CmdRollCB, this);
+  cmd_pitch_sub = nh.subscribe<riptide_msgs::AttitudeCommand>("/command/pitch", 1, &HUD::CmdPitchCB, this);
+  cmd_yaw_sub = nh.subscribe<riptide_msgs::AttitudeCommand>("/command/yaw", 1, &HUD::CmdYawCB, this);
   cmd_depth_sub = nh.subscribe<riptide_msgs::DepthCommand>("/command/depth", 1, &HUD::CmdDepthCB, this);
   cmd_accel_sub = nh.subscribe<geometry_msgs::Accel>("/command/accel", 1, &HUD::CmdAccelCB, this);
 
   // Outputs
   image_transport::ImageTransport it(nh);
-  fwd_img_pub = it.advertise("/stereo/left/image_hud", 1);
+  stereo_img_pub = it.advertise("/stereo/left/image_hud", 1);
   down_img_pub = it.advertise("/downward/image_hud", 1);
   darknet_img_pub = it.advertise("/darknet_ros/image_hud", 1);
 
@@ -63,7 +66,7 @@ void HUD::InitMsgs() {
   cmd_depth = 0;
 }
 
-void HUD::ForwardImgCB(const sensor_msgs::ImageConstPtr& msg) {
+void HUD::StereoImgCB(const sensor_msgs::ImageConstPtr& msg) {
   cv_bridge::CvImagePtr cv_ptr;
   try {
     // Use the BGR8 image_encoding for proper color encoding
@@ -73,10 +76,23 @@ void HUD::ForwardImgCB(const sensor_msgs::ImageConstPtr& msg) {
     ROS_ERROR("cv_bridge exception:  %s", e.what());
     return;
   }
+  width = msg->width;
+  height = msg->height;
+
+  if((ros::Time::now() - object.header.stamp).toSec() < .1) {
+    int w = object.bbox_width;
+    int h = object.bbox_height;
+    cv::Rect rect(object.pos.y - w/2 + width/2, object.pos.z - h/2 + height/2, w, h);
+    cv::rectangle(cv_ptr->image, rect, cv::Scalar(0, 255, 0));
+  }
 
   Mat img = HUD::CreateHUD(cv_ptr->image);
   sensor_msgs::ImagePtr out_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", img).toImageMsg();
-  fwd_img_pub.publish(out_msg);
+  stereo_img_pub.publish(out_msg);
+}
+
+void HUD::ObjectCB(const riptide_msgs::Object::ConstPtr& msg) {
+  object = *msg;
 }
 
 void HUD::DownwardImgCB(const sensor_msgs::ImageConstPtr& msg) {
@@ -154,11 +170,19 @@ void HUD::DepthCB(const riptide_msgs::Depth::ConstPtr &depth_msg) {
   depth = depth_msg->depth;
 }
 
-// Get command attitude
-void HUD::CmdAttitudeCB(const riptide_msgs::AttitudeCommand::ConstPtr& cmd_msg) {
-  cmd_euler_rpy.x = cmd_msg->euler_rpy.x;
-  cmd_euler_rpy.y = cmd_msg->euler_rpy.y;
-  cmd_euler_rpy.z = cmd_msg->euler_rpy.z;
+void HUD::CmdRollCB(const riptide_msgs::AttitudeCommand::ConstPtr& cmd_msg) {
+  if (cmd_msg->mode == cmd_msg->POSITION)
+    cmd_euler_rpy.x = cmd_msg->value;
+}
+
+void HUD::CmdPitchCB(const riptide_msgs::AttitudeCommand::ConstPtr& cmd_msg) {
+  if (cmd_msg->mode == cmd_msg->POSITION)
+    cmd_euler_rpy.y = cmd_msg->value;
+}
+
+void HUD::CmdYawCB(const riptide_msgs::AttitudeCommand::ConstPtr& cmd_msg) {
+  if (cmd_msg->mode == cmd_msg->POSITION)
+    cmd_euler_rpy.z = cmd_msg->value;
 }
 
 // Get command depth

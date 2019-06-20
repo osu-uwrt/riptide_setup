@@ -1,9 +1,3 @@
 <launch>
-  <arg name="properties_file" value="$(find riptide_controllers)/cfg/vehicle_properties.yaml" />
-
-  <include file="$(find riptide_controllers)/launch/controllers.launch" />
-  
-  <node pkg="riptide_controllers" type="calibrationAction.py" name="calibrationAction" output="screen">
-    <param name="properties_file" type="string" value="$(arg properties_file)" />
-  </node>
+   <node pkg="riptide_controllers" type="calibrate.py" name="calibrate" output="screen"/>
 </launch>

@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find riptide_vision)/launch/hud.launch" />
+  <node pkg="riptide_vision" type="pole_processor.py" name="pole_processor" output="screen" />
+</launch>

@@ -1,0 +1,3 @@
+<launch>
+   <node pkg="riptide_autonomy" type="prequalify.py" name="prequalify" output="screen"/>
+</launch>

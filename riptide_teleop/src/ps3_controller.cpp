@@ -18,7 +18,9 @@ PS3Controller::PS3Controller() : nh("ps3_controller")
   joy_sub = nh.subscribe<sensor_msgs::Joy>("/joy", 1, &PS3Controller::JoyCB, this);
   depth_sub = nh.subscribe<riptide_msgs::Depth>("/state/depth", 1, &PS3Controller::DepthCB, this);
   imu_sub = nh.subscribe<riptide_msgs::Imu>("/state/imu", 1, &PS3Controller::ImuCB, this);
-  attitude_pub = nh.advertise<riptide_msgs::AttitudeCommand>("/command/attitude", 1);
+  roll_pub = nh.advertise<riptide_msgs::AttitudeCommand>("/command/roll", 1);
+  pitch_pub = nh.advertise<riptide_msgs::AttitudeCommand>("/command/pitch", 1);
+  yaw_pub = nh.advertise<riptide_msgs::AttitudeCommand>("/command/yaw", 1);
   moment_pub = nh.advertise<geometry_msgs::Vector3Stamped>("/command/moment", 1);
   x_force_pub = nh.advertise<std_msgs::Float64>("/command/force_x", 1);
   y_force_pub = nh.advertise<std_msgs::Float64>("/command/force_y", 1);
@@ -180,7 +182,7 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr &joy)
       isReset = false;
       reset_msg.reset_pwm = false;
       reset_pub.publish(reset_msg);
-      cmd_attitude.euler_rpy.z = (int)euler_rpy.z;
+      cmd_euler_rpy.z = (int)euler_rpy.z;
       cmd_depth.depth = current_depth;
     }
   }
@@ -189,8 +191,8 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr &joy)
     // Update Roll and Pitch
     if (joy->buttons[BUTTON_SHAPE_CIRCLE])
     { // Set both roll and pitch to 0 [deg]
-      cmd_attitude.euler_rpy.x = 0;
-      cmd_attitude.euler_rpy.y = 0;
+      cmd_euler_rpy.x = 0;
+      cmd_euler_rpy.y = 0;
       delta_attitude.x = 0;
       delta_attitude.y = 0;
       cmd_moment.vector.x = 0; // For when IMU sin't working, do NOT change roll or pitch
@@ -229,7 +231,7 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr &joy)
       delta_attitude.x = 0;
       delta_attitude.y = 0;
       delta_attitude.z = 0;
-      cmd_attitude.euler_rpy.z = (int)euler_rpy.z;
+      cmd_euler_rpy.z = (int)euler_rpy.z;
 
       // XY Moment
       if (abs(joy->axes[AXES_STICK_LEFT_UD]) < 0.5)
@@ -350,16 +352,23 @@ void PS3Controller::DisableAttitude()
 {
   if (!IS_ATTITUDE_RESET)
   {
-    cmd_attitude.roll_active = false;
-    cmd_attitude.pitch_active = false;
-    cmd_attitude.yaw_active = false;
+    riptide_msgs::AttitudeCommand roll_cmd;
+    riptide_msgs::AttitudeCommand pitch_cmd;
+    riptide_msgs::AttitudeCommand yaw_cmd;
 
-    cmd_attitude.euler_rpy.x = 0;
-    cmd_attitude.euler_rpy.y = 0;
-    cmd_attitude.euler_rpy.z = 0;
+    roll_cmd.value = 0;
+    pitch_cmd.value = 0;
+    yaw_cmd.value = 0;
+
+    roll_cmd.mode = roll_cmd.MOMENT;
+    pitch_cmd.mode = pitch_cmd.MOMENT;
+    yaw_cmd.mode = yaw_cmd.MOMENT;
+    
 
     IS_ATTITUDE_RESET = true;
-    attitude_pub.publish(cmd_attitude);
+    roll_pub.publish(roll_cmd);
+    pitch_pub.publish(pitch_cmd);
+    yaw_pub.publish(yaw_cmd);
   }
 }
 
@@ -391,20 +400,17 @@ void PS3Controller::UpdateCommands()
   {
     IS_ATTITUDE_RESET = false;
 
-    cmd_attitude.roll_active = true;
-    cmd_attitude.pitch_active = true;
-    cmd_attitude.yaw_active = true;
-    cmd_attitude.euler_rpy.x += delta_attitude.x;
-    cmd_attitude.euler_rpy.y += delta_attitude.y;
-    cmd_attitude.euler_rpy.z += delta_attitude.z;
+    cmd_euler_rpy.x += delta_attitude.x;
+    cmd_euler_rpy.y += delta_attitude.y;
+    cmd_euler_rpy.z += delta_attitude.z;
 
-    cmd_attitude.euler_rpy.x = PS3Controller::Constrain(cmd_attitude.euler_rpy.x, MAX_ROLL);
-    cmd_attitude.euler_rpy.y = PS3Controller::Constrain(cmd_attitude.euler_rpy.y, MAX_PITCH);
+    cmd_euler_rpy.x = PS3Controller::Constrain(cmd_euler_rpy.x, MAX_ROLL);
+    cmd_euler_rpy.y = PS3Controller::Constrain(cmd_euler_rpy.y, MAX_PITCH);
 
-    if (cmd_attitude.euler_rpy.z > 180)
-      cmd_attitude.euler_rpy.z -= 360;
-    if (cmd_attitude.euler_rpy.z < -180)
-      cmd_attitude.euler_rpy.z += 360;
+    if (cmd_euler_rpy.z > 180)
+      cmd_euler_rpy.z -= 360;
+    if (cmd_euler_rpy.z < -180)
+      cmd_euler_rpy.z += 360;
   }
   else
   {
@@ -432,7 +438,21 @@ void PS3Controller::PublishCommands()
 {
   if (enableAttitude && !IS_ATTITUDE_RESET)
   {
-    attitude_pub.publish(cmd_attitude);
+    riptide_msgs::AttitudeCommand roll_cmd;
+    riptide_msgs::AttitudeCommand pitch_cmd;
+    riptide_msgs::AttitudeCommand yaw_cmd;
+
+    roll_cmd.value = cmd_euler_rpy.x;
+    pitch_cmd.value = cmd_euler_rpy.y;
+    yaw_cmd.value = cmd_euler_rpy.z;
+
+    roll_cmd.mode = roll_cmd.POSITION;
+    pitch_cmd.mode = pitch_cmd.POSITION;
+    yaw_cmd.mode = yaw_cmd.POSITION;
+    
+    roll_pub.publish(roll_cmd);
+    pitch_pub.publish(pitch_cmd);
+    yaw_pub.publish(yaw_cmd);
   }
   else
   {

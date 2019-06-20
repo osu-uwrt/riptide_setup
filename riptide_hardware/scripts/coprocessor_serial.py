@@ -80,9 +80,11 @@ def thruster_current_callback(event):
     
 def shutdown_copro():
     if connected:
-        # disable thrusters
-        copro.sendall(bytearray([3, 2, 0]))
+        # Stop thrusters
+        rospy.loginfo("Stopping thrusters")
+        copro.sendall(bytearray([18, 7, 5, 220, 5, 220, 5, 220, 5, 220, 5, 220, 5, 220, 5, 220, 5, 220]))
         copro.sendall(bytearray([0]))
+        rospy.sleep(.1)
         copro.close()
 
 def main():
@@ -102,7 +104,7 @@ def main():
     connection_pub = rospy.Publisher('/state/copro', Bool, queue_size=1)
     thruster_current_pub = rospy.Publisher('/state/thruster_currents', Float32MultiArray, queue_size=1)
 
-    rospy.Subscriber('/command/pwm', PwmStamped, pwm_callback, queue_size=1)
+    rospy.Subscriber('/command/pwm', PwmStamped, pwm_callback, queue_size=10)
     # rospy.Subscriber('/status/light', StatusLight, light_callback, queue_size=1)
     
     # setup timer for periodic depth/switches update
@@ -129,7 +131,7 @@ def main():
                     copro.sendall(bytearray(command))
                 if len(readable) > 0:
                     # read the switch or depth data and publish
-                    buffer += copro.recv(1024)
+                    buffer += copro.recv(50)
                     if not isinstance(buffer[0], int):
                         buffer = list(map(ord, buffer))
                     while len(buffer) > 0 and buffer[0] <= len(buffer):
@@ -179,7 +181,8 @@ def main():
                 print(e)
                 command_queue.clear()
                 response_queue.clear()
-                copro.close()
+                buffer = []
+                shutdown_copro()
                 copro = None
                 connected = False
                 
@@ -194,9 +197,6 @@ def main():
             connection_pub.publish(True)
             response_queue.clear()
             command_queue.clear()
-
-            # enable the thrusters
-            enqueueCommand(2, [1])
 
         rate.sleep()
 
