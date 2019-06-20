@@ -1,4 +1,0 @@
-<launch>
-  <node pkg="riptide_gnc" type="pose_edkf_interface" name="pose_edkf_interface" output="screen">
-  </node>
-</launch>
