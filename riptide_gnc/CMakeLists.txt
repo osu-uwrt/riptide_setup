@@ -16,7 +16,10 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Eigen3 REQUIRED)
 
-catkin_package(INCLUDE_DIRS include)
+catkin_package(
+  INCLUDE_DIRS include
+  CATKIN_DEPENDS roscpp
+)
 include_directories(include ${catkin_INCLUDE_DIRS} ${Eigen3_INCLUDE_DIRS})
 
 add_executable(trans_ekf_combinator src/trans_ekf_combinator_node.cpp src/trans_ekf_combinator.cpp)
