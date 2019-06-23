@@ -41,6 +41,7 @@ add_message_files(
     CalibrateAlignment.msg
     NetLoad.msg
     LinearCommand.msg
+    VelocityCommand.msg
 )
 
 generate_messages(
