@@ -1,0 +1,7 @@
+#goal definition
+geometry_msgs/Vector3 position
+---
+#result definition
+---
+#feedback
+int32[] sequence

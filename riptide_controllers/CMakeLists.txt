@@ -31,6 +31,7 @@ find_package(Eigen3 REQUIRED)
 generate_dynamic_reconfigure_options(
   cfg/VehicleProperties.cfg
   cfg/AttitudeController.cfg
+  cfg/LinearController.cfg
 )
 
 add_action_files(
@@ -40,10 +41,12 @@ add_action_files(
   GoToYaw.action
   GoToPitch.action
   GoToRoll.action
+  GoToTask.action
+  GoToPosition.action
 )
 
 generate_messages(
-  DEPENDENCIES actionlib_msgs std_msgs  # Or other packages containing msgs
+  DEPENDENCIES actionlib_msgs std_msgs geometry_msgs # Or other packages containing msgs
 )
 
 catkin_package(

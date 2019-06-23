@@ -13,6 +13,7 @@ DVLProcessor::DVLProcessor() : nh("dvl_processor")
   dvl_data_sub = nh.subscribe<nortek_dvl::Dvl>("/dvl/dvl", 1, &DVLProcessor::DvlCB, this);
 
   dvl_state_pub = nh.advertise<nortek_dvl::Dvl>("/state/dvl", 1);
+  // dvl_data_pub = nh.advertise<riptide_msgs::Dvl>("/state/dvl2", 1);
 
   // Load relative positions between DVL and COM from YAML file
   DVLProcessor::LoadParam<string>("positions_file", positions_file);
@@ -62,4 +63,9 @@ void DVLProcessor::DvlCB(const nortek_dvl::Dvl::ConstPtr &dvl_msg)
   dvl_state.velocity.z = dvl_msg->velocity.z - relative_vel(2);
 
   dvl_state_pub.publish(dvl_state);
+
+  // riptide_msgs::Dvl dvl_state2(*dvl_state);
+  
+  // dvl_data_pub.publish(dvl_state2);
+
 }

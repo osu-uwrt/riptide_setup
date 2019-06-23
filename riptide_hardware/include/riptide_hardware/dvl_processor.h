@@ -18,16 +18,13 @@ class DVLProcessor
 private:
   ros::NodeHandle nh;
   ros::Subscriber imu_state_sub, dvl_data_sub;
-  ros::Publisher dvl_state_pub;
+  ros::Publisher dvl_state_pub, dvl_data_pub;
 
   YAML::Node positions;
   string positions_file;
   Vector3d dvl_position;
   Vector3d relative_vel;
   geometry_msgs::Vector3 dvl_vel;
-
- 
-
 
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
