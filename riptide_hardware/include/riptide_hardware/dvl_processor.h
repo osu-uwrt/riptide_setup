@@ -10,6 +10,8 @@
 #include "eigen3/Eigen/Core"
 #include <yaml-cpp/yaml.h>
 
+#define PI 3.141592653
+
 using namespace Eigen;
 using namespace std;
 
@@ -20,9 +22,10 @@ private:
   ros::Subscriber imu_state_sub, dvl_data_sub;
   ros::Publisher dvl_state_pub;
 
-  YAML::Node positions;
-  string positions_file;
+  YAML::Node properties;
+  string properties_file;
   Vector3d dvl_position;
+  double psi;
   Vector3d relative_vel;
   geometry_msgs::Vector3 dvl_vel;
 
