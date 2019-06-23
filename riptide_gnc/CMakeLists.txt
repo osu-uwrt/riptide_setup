@@ -10,17 +10,17 @@ project(riptide_gnc)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   riptide_msgs
-  auv_msgs
   auv_gnc
+  auv_msgs
 )
 
 find_package(Eigen3 REQUIRED)
 
 catkin_package(
-  INCLUDE_DIRS include
+  INCLUDE_DIRS include ${EIGEN3_INCLUDE_DIRS}
   CATKIN_DEPENDS roscpp
 )
-include_directories(include ${catkin_INCLUDE_DIRS} ${Eigen3_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
 
 add_executable(trans_ekf_combinator src/trans_ekf_combinator_node.cpp src/trans_ekf_combinator.cpp)
 target_link_libraries(trans_ekf_combinator ${catkin_LIBRARIES})

@@ -59,6 +59,11 @@ void IMUProcessor::FilterCallback(const imu_3dm_gx4::FilterOutput::ConstPtr &fil
   state.header = filter_msg->header;
   state.header.frame_id = filter_msg->header.frame_id;
 
+  state.quaternion.x = filter_msg->quaternion.x;
+  state.quaternion.y = filter_msg->quaternion.y;
+  state.quaternion.z = filter_msg->quaternion.z;
+  state.quaternion.w = filter_msg->quaternion.w;
+
   state.rpy_rad = filter_msg->euler_rpy;
   state.rpy_rad.z = filter_msg->heading_update_alt; // Use alternate heading calc
   state.rpy_deg.x = filter_msg->euler_rpy.x * (180 / PI);

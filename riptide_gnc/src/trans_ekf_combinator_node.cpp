@@ -9,6 +9,10 @@ int main(int argc, char** argv) {
   while (ros::ok())
   {
      ros::spinOnce();
+     if (tec.getCBCounter() > 0) // If any callbacks have been entered, then publish msg
+     {
+       tec.publishMsg();
+     }
   }
   return 0;
 }

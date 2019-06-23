@@ -1,7 +1,7 @@
 <launch>
   <arg name="config_file" default="$(find riptide_gnc)/cfg/trans_ekf.yaml" />
   
-  <!--<node pkg="riptide_gnc" type="trans_ekf_combinator" name="trans_ekf_combinator" output="screen"/>-->
+  <node pkg="riptide_gnc" type="trans_ekf_combinator" name="trans_ekf_combinator" output="screen"/>
   
   <include file="$(find auv_gnc)/launch/trans_ekf.launch">
     <arg name="config_file" value="$(arg config_file)" />
