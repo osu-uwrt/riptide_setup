@@ -1,0 +1,16 @@
+# Below is the task info including names of the tasks, relative positions between the previosu task
+# and the next task, angles the robot should turn after a particular task.
+
+tasks: [
+{
+  id: 0,
+  name: "from Board to Gate",
+  pose: [], # Information we are collecting
+  # The next position the vehicle needs to drive to in the world frame
+},
+{
+  id: 1,
+  name: "",
+  pose: [],
+},
+]
