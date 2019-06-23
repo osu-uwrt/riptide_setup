@@ -5,6 +5,7 @@ from riptide_msgs.msg import Dvl, LinearCommand
 from geometry_msgs import Vector3
 from std_msgs.msg import Float64, Float32
 from dynamic_reconfigure.server import Server
+from riptide_controllers.cfg import LinearControllerConfig
 
 class LinearController():
 
