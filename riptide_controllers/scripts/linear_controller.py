@@ -1,24 +1,26 @@
 #! /usr/bin/env python
 
 import rospy
-from riptide_msgs.msg import Dvl, LinearCommand
-from geometry_msgs import Vector3
-from std_msgs.msg import Float64, Float32
+from riptide_msgs.msg import LinearCommand
+from nortek_dvl.msg import Dvl
+from geometry_msgs.msg import Vector3
+from std_msgs.msg import Float64, Float32, Header
 from dynamic_reconfigure.server import Server
 from riptide_controllers.cfg import LinearControllerConfig
+import math
 
 class LinearController():
 
-    VELOCITY_P = 1.0
+    VELOCITY_P = 2.0
 
     velocityCmd = None
     force = 0
 
     def cmdCb(self, msg):
         if msg.mode == LinearCommand.VELOCITY:
-            self.velocityCmd = min(max(-self.MAX_VELOCITY, msg.value), self.MAX_VELOCITY)
+            self.velocityCmd = msg.value
         elif msg.mode == LinearCommand.FORCE:
-            self.moment = msg.value
+            self.force = msg.value
             self.velocityCmd = None
 
     def updateState(self, velocity):
@@ -26,7 +28,8 @@ class LinearController():
         # If there is a desired velocity
         if self.velocityCmd != None:
             # Set force porportional to velocity error
-            self.force = self.VELOCITY_P * (self.velocityCmd - velocity)
+            if not math.isnan(velocity):
+                self.force = self.VELOCITY_P * (self.velocityCmd - velocity)
 
     def reconfigure(self, config, name):
         self.VELOCITY_P = config[name + "_velocity_p"]
@@ -48,11 +51,11 @@ def dvlCb(msg):
     YPub.publish(yController.force)
 
 
-def dynamicReconfigureCb(config, level):
-    # On dynamic reconfiguration
-    xController.reconfigure(config, "x")
-    yController.reconfigure(config, "y")
-    return config
+# def dynamicReconfigureCb(config, level):
+#     # On dynamic reconfiguration
+#     xController.reconfigure(config, "x")
+#     yController.reconfigure(config, "y")
+#     return config
 
 
 if __name__ == '__main__':
@@ -64,6 +67,6 @@ if __name__ == '__main__':
     rospy.Subscriber("/command/y", LinearCommand, yController.cmdCb)
     rospy.Subscriber("/state/dvl", Dvl, dvlCb)
     
-    Server(LinearControllerConfig, dynamicReconfigureCb)
+    # Server(LinearControllerConfig, dynamicReconfigureCb)
 
     rospy.spin()
