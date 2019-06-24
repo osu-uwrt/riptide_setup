@@ -44,10 +44,8 @@ def dvlCb(msg):
     yController.updateState(msg.velocity.y)
 
     # Publish new forces
-    header = Header()
-    header.stamp = rospy.Time.now()
-    XPub.publish(header, Vector3(xController.force))
-    YPub.publish(header, Vector3(yController.force))
+    XPub.publish(xController.force)
+    YPub.publish(yController.force)
 
 
 def dynamicReconfigureCb(config, level):
