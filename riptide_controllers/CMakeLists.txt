@@ -42,7 +42,7 @@ add_action_files(
   GoToPitch.action
   GoToRoll.action
   GoToTask.action
-  GoToPosition.action
+  MoveDistance.action
 )
 
 generate_messages(

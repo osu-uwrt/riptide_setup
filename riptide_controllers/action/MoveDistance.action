@@ -1,5 +1,6 @@
 #goal definition
-geometry_msgs/Vector3 position
+float32 x
+float32 y
 ---
 #result definition
 ---

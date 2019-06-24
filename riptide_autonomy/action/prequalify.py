@@ -112,6 +112,8 @@ class PrequalifyAction(object):
             diff = time.time() - lastTime
             if diff < 0.5:
                 count += 1
+            else:
+                count = 0
             lastTime = time.time()
 
         rospy.loginfo("Aligning to pole")
@@ -139,7 +141,7 @@ class PrequalifyAction(object):
         # Shut off alignment and turn to gate
         self.alignmentPub.publish(AlignmentCommand(False, False, False, "",
                                0, 0, 0, Point(0, 0, 0)))
-        self.setHeading(angleDiff(GATE_HEADING, 170))
+        self.performActions(self.yawAction(angleDiff(GATE_HEADING, 170)))
 
         rospy.loginfo("Headed back to gate")
         # Drive forward for a while
