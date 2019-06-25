@@ -51,11 +51,11 @@ def dvlCb(msg):
     YPub.publish(yController.force)
 
 
-# def dynamicReconfigureCb(config, level):
-#     # On dynamic reconfiguration
-#     xController.reconfigure(config, "x")
-#     yController.reconfigure(config, "y")
-#     return config
+def dynamicReconfigureCb(config, level):
+    # On dynamic reconfiguration
+    xController.reconfigure(config, "x")
+    yController.reconfigure(config, "y")
+    return config
 
 
 if __name__ == '__main__':
@@ -67,6 +67,6 @@ if __name__ == '__main__':
     rospy.Subscriber("/command/y", LinearCommand, yController.cmdCb)
     rospy.Subscriber("/state/dvl", Dvl, dvlCb)
     
-    # Server(LinearControllerConfig, dynamicReconfigureCb)
+    Server(LinearControllerConfig, dynamicReconfigureCb)
 
     rospy.spin()
