@@ -52,6 +52,8 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS
     include
+    ${EIGEN3_INCLUDE_DIR}
+    ${CERES_INCLUDE_DIRS}
   CATKIN_DEPENDS
     dynamic_reconfigure
     actionlib_msgs
@@ -62,7 +64,7 @@ roslint_cpp()
 include_directories(include ${catkin_INCLUDE_DIRS}
   ${CERES_INCLUDE_DIRS}
   ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake
-  {EIGEN3_INCLUDE_DIR}
+  ${EIGEN3_INCLUDE_DIR}
 )
 
 cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)
