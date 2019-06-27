@@ -17,16 +17,16 @@ private:
   ros::Subscriber depth_sub_, imu_sub_, dvl_sub_;
   ros::Publisher six_dof_pub_;
   auv_msgs::SixDoF six_dof_msg_;
-  int cbCounter_; // Counts the number of callbacks entered within each spin
+  int cb_counter_; // Counts the number of callbacks entered within each spin
+
+  void depthCB(const riptide_msgs::Depth::ConstPtr &depth);
+  void imuCB(const riptide_msgs::Imu::ConstPtr &imu);
+  void dvlCB(const nortek_dvl::Dvl::ConstPtr &dvl);
 
 public:
   TransEKFCombinator(ros::NodeHandle nh);
   int getCBCounter();
   void publishMsg();
-
-  void depthCB(const riptide_msgs::Depth::ConstPtr &depth);
-  void imuCB(const riptide_msgs::Imu::ConstPtr &imu);
-  void dvlCB(const nortek_dvl::Dvl::ConstPtr &dvl);
 };
 } // namespace riptide_gnc
 

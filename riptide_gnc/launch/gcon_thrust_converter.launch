@@ -1,0 +1,13 @@
+<launch>
+  <arg name="auv_model" default="$(find riptide_gnc)/cfg/auv_model_gazebo.yaml"/>
+  <arg name="lqr" default="$(find riptide_gnc)/cfg/lqr.yaml"/>
+  <arg name="gcon" default="$(find riptide_gnc)/cfg/guidance_controller.yaml"/>
+  
+  <node pkg="riptide_gnc" type="gnc_thrust_converter" name="gnc_thrust_converter" output="screen"/>
+  
+  <include file="$(find auv_gnc)/launch/guidance_controller.launch">
+    <arg name="auv_model" value="$(arg auv_model)" />
+    <arg name="lqr" value="$(arg lqr)" />
+    <arg name="gcon" value="$(arg gcon)" />
+  </include>
+</launch>

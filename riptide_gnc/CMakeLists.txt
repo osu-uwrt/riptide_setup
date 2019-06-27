@@ -26,3 +26,7 @@ add_executable(trans_ekf_combinator src/trans_ekf_combinator_node.cpp src/trans_
 target_link_libraries(trans_ekf_combinator ${catkin_LIBRARIES})
 add_dependencies(trans_ekf_combinator ${catkin_EXPORTED_TARGETS})
 
+add_executable(gnc_thrust_converter src/gnc_thrust_converter_node.cpp src/gnc_thrust_converter.cpp)
+target_link_libraries(gnc_thrust_converter ${catkin_LIBRARIES})
+add_dependencies(gnc_thrust_converter ${catkin_EXPORTED_TARGETS})
+

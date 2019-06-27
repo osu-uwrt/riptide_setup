@@ -13,18 +13,18 @@ TransEKFCombinator::TransEKFCombinator(ros::NodeHandle nh)
    imu_sub_ = nh_.subscribe<riptide_msgs::Imu>("/state/imu", 1, &TransEKFCombinator::imuCB, this);
    dvl_sub_ = nh_.subscribe<nortek_dvl::Dvl>("/state/dvl", 1, &TransEKFCombinator::dvlCB, this);
    
-   six_dof_pub_ = nh_.advertise<auv_msgs::SixDoF>(trans_ekf_sub_topic, 1, this);
+   six_dof_pub_ = nh_.advertise<auv_msgs::SixDoF>(trans_ekf_sub_topic, 1);
 }
 
 int TransEKFCombinator::getCBCounter()
 {
-   return cbCounter_;
+   return cb_counter_;
 }
 
 void TransEKFCombinator::publishMsg()
 {
    six_dof_pub_.publish(six_dof_msg_);
-   cbCounter_ = 0;
+   cb_counter_ = 0;
 }
 
 void TransEKFCombinator::depthCB(const riptide_msgs::Depth::ConstPtr &depth)
@@ -35,7 +35,7 @@ void TransEKFCombinator::depthCB(const riptide_msgs::Depth::ConstPtr &depth)
       six_dof_msg_.header.stamp = depth->header.stamp;
 
    six_dof_msg_.pose.position.z = depth->depth;
-   cbCounter_++;
+   cb_counter_++;
 }
 
 void TransEKFCombinator::imuCB(const riptide_msgs::Imu::ConstPtr &imu)
@@ -57,7 +57,7 @@ void TransEKFCombinator::imuCB(const riptide_msgs::Imu::ConstPtr &imu)
    six_dof_msg_.linear_accel.x = imu->linear_accel.x;
    six_dof_msg_.linear_accel.y = imu->linear_accel.y;
    six_dof_msg_.linear_accel.z = imu->linear_accel.z;
-   cbCounter_++;
+   cb_counter_++;
 }
 
 void TransEKFCombinator::dvlCB(const nortek_dvl::Dvl::ConstPtr &dvl)
@@ -70,6 +70,6 @@ void TransEKFCombinator::dvlCB(const nortek_dvl::Dvl::ConstPtr &dvl)
    six_dof_msg_.velocity.linear.x = dvl->velocity.x;
    six_dof_msg_.velocity.linear.y = dvl->velocity.y;
    six_dof_msg_.velocity.linear.z = dvl->velocity.z;
-   cbCounter_++;
+   cb_counter_++;
 }
 } // namespace riptide_gnc
