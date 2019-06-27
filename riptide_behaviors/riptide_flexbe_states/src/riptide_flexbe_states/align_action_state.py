@@ -28,9 +28,8 @@ class AlignActionState(EventState):
 
 	def __init__(self):
 		# See example_state.py for basic explanations.
-		super(AlignActionState, self).__init__(outcomes = ['success', 'command_error'],
-												 input_keys = ['object'],
-												 output_keys = [])
+		super(AlignActionState, self).__init__(outcomes = ['success', 'command_error']
+												 )
 
 		
 		# Create the action client when building the behavior.

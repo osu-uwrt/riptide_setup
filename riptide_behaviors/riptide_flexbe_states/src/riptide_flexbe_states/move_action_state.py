@@ -7,7 +7,7 @@ from flexbe_core.proxy import ProxyActionClient
 from chores.msg import DoDishesAction, DoDishesGoal
 
 
-class ExampleActionState(EventState):
+class MoveActionState(EventState):
 	'''
 	Actionlib actions are the most common basis for state implementations
 	since they provide a non-blocking, high-level interface for robot capabilities.
@@ -19,9 +19,8 @@ class ExampleActionState(EventState):
 
 	def __init__(self, dishes_to_do):
 		# See example_state.py for basic explanations.
-		super(ExampleActionState, self).__init__(outcomes = ['success', 'failed', 'command_error'],
-												 input_keys = ['trajectory'],
-												 output_keys = [])
+		super(MoveActionState, self).__init__(outcomes = ['success', 'failed', 'command_error']
+												 )
 
 		self._dishes_to_do = dishes_to_do
 
