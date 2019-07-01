@@ -12,6 +12,7 @@ import math
 class LinearController():
 
     VELOCITY_P = 2.0
+    DRAG_COEFF = 0
 
     velocityCmd = None
     force = 0
@@ -29,10 +30,11 @@ class LinearController():
         if self.velocityCmd != None:
             # Set force porportional to velocity error
             if not math.isnan(velocity):
-                self.force = self.VELOCITY_P * (self.velocityCmd - velocity)
+                self.force = self.VELOCITY_P * (self.velocityCmd - velocity) + self.DRAG_COEFF * velocity * abs(velocity)
 
     def reconfigure(self, config, name):
         self.VELOCITY_P = config[name + "_velocity_p"]
+        self.DRAG_COEFF = config[name + "_drag_coeff"]
         
         
 
@@ -51,11 +53,11 @@ def dvlCb(msg):
     YPub.publish(yController.force)
 
 
-# def dynamicReconfigureCb(config, level):
-#     # On dynamic reconfiguration
-#     xController.reconfigure(config, "x")
-#     yController.reconfigure(config, "y")
-#     return config
+def dynamicReconfigureCb(config, level):
+    # On dynamic reconfiguration
+    xController.reconfigure(config, "x")
+    yController.reconfigure(config, "y")
+    return config
 
 
 if __name__ == '__main__':
@@ -67,6 +69,6 @@ if __name__ == '__main__':
     rospy.Subscriber("/command/y", LinearCommand, yController.cmdCb)
     rospy.Subscriber("/state/dvl", Dvl, dvlCb)
     
-    # Server(LinearControllerConfig, dynamicReconfigureCb)
+    Server(LinearControllerConfig, dynamicReconfigureCb)
 
     rospy.spin()
