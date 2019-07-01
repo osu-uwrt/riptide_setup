@@ -130,6 +130,7 @@ void AlignmentController::UpdateError() {
     last_error_dot.y = error_dot.y;
 
     cmd_force_y.data = y_pid.computeCommand(error.y, error_dot.y, sample_duration);
+    cmd_force_y.data = min(max(cmd_force_y.data, -30.0), 30.0);
     y_pub.publish(cmd_force_y);
   }
 
@@ -149,6 +150,7 @@ void AlignmentController::UpdateError() {
     last_error_dot.x = error_dot.x;
 
     cmd_force_x.data = x_pid.computeCommand(error.x, error_dot.x, sample_duration);
+    cmd_force_x.data = min(max(cmd_force_x.data, -30.0), 30.0);
     x_pub.publish(cmd_force_x);
   }
 
