@@ -12,6 +12,7 @@ class RotationController():
     MAX_VELOCITY = 1.0
     DECEL_RATE = 1.0
     VELOCITY_P = 1.0
+    DRAG_COEFF = 0
 
     positionCmd = None
     velocityCmd = None
@@ -39,13 +40,13 @@ class RotationController():
         # If there is a desired velocity
         if self.velocityCmd != None:
             # Set moment porportional to velocity error
-            self.moment = self.VELOCITY_P * (self.velocityCmd - velocity)
+            self.moment = self.VELOCITY_P * (self.velocityCmd - velocity) + self.DRAG_COEFF * velocity * abs(velocity)
 
     def reconfigure(self, config, name):
         self.MAX_VELOCITY = config[name + "_max_velocity"]
         self.DECEL_RATE = config[name + "_decel_rate"]
         self.VELOCITY_P = config[name + "_velocity_p"]
-        
+        self.DRAG_COEFF = config[name + "_drag_coeff"]
         
 
 rollController = RotationController()

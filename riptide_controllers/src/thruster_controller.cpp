@@ -77,8 +77,8 @@ void ThrusterController::LoadVehicleProperties()
 {
   mass = properties["properties"]["mass"].as<double>();
   double comX = properties["properties"]["center_of_mass"][0].as<double>();
-  double comY = properties["properties"]["center_of_mass"][0].as<double>();
-  double comZ =  properties["properties"]["center_of_mass"][0].as<double>();
+  double comY = properties["properties"]["center_of_mass"][1].as<double>();
+  double comZ =  properties["properties"]["center_of_mass"][2].as<double>();
   center_of_mass[0] = comX;
   center_of_mass[1] = comY;
   center_of_mass[2] = comZ;

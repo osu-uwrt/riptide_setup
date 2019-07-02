@@ -14,7 +14,7 @@ import math
 from multiprocessing import Process
 
 
-GATE_HEADING = 20
+GATE_HEADING = 110
 
 
 def angleDiff(a1, a2):
@@ -94,7 +94,7 @@ class PrequalifyAction(object):
 
         # Submerge and face gate
         self.performActions(
-            self.depthAction(1),
+            self.depthAction(2.0),
             self.rollAction(0),
             self.pitchAction(0),
             self.yawAction(GATE_HEADING)
@@ -102,21 +102,24 @@ class PrequalifyAction(object):
 
         rospy.loginfo("Headed forward")
         # Drive forward
-        self.forcePub.publish(40)
+        self.forcePub.publish(30)
+        rospy.sleep(4)
 
         # Wait until you see the pole a few times
         count = 0
         lastTime = time.time()
-        while count < 3:
+        while count < 5:
             rospy.wait_for_message("/state/object", Object)
             diff = time.time() - lastTime
-            if diff < 0.5:
+            if diff < 0.3:
                 count += 1
+            else:
+                count = 0
             lastTime = time.time()
 
         rospy.loginfo("Aligning to pole")
         # Align to pole
-        cmd = AlignmentCommand(True, True, False, "", 0, 0, 0, Point(2, 0, 0))
+        cmd = AlignmentCommand(True, True, False, "", 0, 0, 0, Point(2.5, 0, 0))
         self.alignmentPub.publish(cmd)
 
         # Wait until aligned
@@ -125,26 +128,26 @@ class PrequalifyAction(object):
 
         rospy.loginfo("Going around")
         # Start rotating while still aligning
-        self.yawPub.publish(90, AttitudeCommand.VELOCITY)
+        self.yawPub.publish(7, AttitudeCommand.VELOCITY)
 
         # Wait until on other side of pole
         done = False
         while not done:
             angle = rospy.wait_for_message("/state/imu", Imu).rpy_deg.z
             diff = angleDiff(angle, GATE_HEADING)
-            if diff > -90 and diff < -20:
+            if diff > -100 and diff < -40:
                 done = True
 
         rospy.loginfo("Turning back to gate")
         # Shut off alignment and turn to gate
         self.alignmentPub.publish(AlignmentCommand(False, False, False, "",
                                0, 0, 0, Point(0, 0, 0)))
-        self.setHeading(angleDiff(GATE_HEADING, 170))
+        self.performActions(self.yawAction(angleDiff(GATE_HEADING, 180)))
 
         rospy.loginfo("Headed back to gate")
         # Drive forward for a while
-        self.forcePub.publish(40)
-        rospy.sleep(5)
+        self.forcePub.publish(30)
+        rospy.sleep(30)
 
         rospy.loginfo("Done. Easy peasy")
         # Surface

@@ -72,7 +72,7 @@ class CalibrateAction(object):
             for _ in range(1,10):
                 momentMsg = rospy.wait_for_message("/command/moment", Vector3Stamped).vector
                 CobYSum += momentMsg.x / Fb * 0.1
-                CobYSum += momentMsg.y / Fb * 0.1
+                CobXSum += momentMsg.y / Fb * 0.1
 
             CobY += CobYSum * 0.8
             CobX -= CobXSum * 0.8
