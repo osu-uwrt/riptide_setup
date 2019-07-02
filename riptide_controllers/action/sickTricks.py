@@ -150,6 +150,7 @@ class PlaySickTricks(object):
         # Surface
         self.XPub.publish(0, LinearCommand.FORCE)
         self.YPub.publish(0, LinearCommand.FORCE)
+        self.ZPub.publish(0)
         self.yawPub.publish(0, AttitudeCommand.MOMENT)
         self.performActions(
             self.depthAction(0.0),
