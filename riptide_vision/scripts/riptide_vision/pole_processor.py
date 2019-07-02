@@ -65,7 +65,25 @@ def imgCB(msg):
         
         if w > 15:
 
-            disparity = (integral[rows * 3 / 4, x+w] - integral[rows * 1 / 4, x+w] - integral[rows* 3 / 4, x] + integral[rows* 1 / 4, x])*2 / rows / w
+            sample_region = cv_image[rows*1/4:rows*3/4, x:x+w].reshape((-1,1))
+            
+            # Define criteria = ( type, max_iter = 10 , epsilon = 1.0 )
+            criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+
+            # Set flags (Just to avoid line break in the code)
+            flags = cv2.KMEANS_RANDOM_CENTERS
+
+            # Apply KMeans
+            _,labels,centers = cv2.kmeans(sample_region,4,None,criteria,10,flags)
+
+            labels = [x[0] for x in labels]
+            maxLabel = max(set(labels), key=labels.count)
+            disparity = centers[maxLabel][0]
+            if disparity < 0:
+                labels = [x for x in labels if x != maxLabel]
+                maxLabel = max(set(labels), key=labels.count)
+                disparity = centers[maxLabel][0]
+
             depth = msg.f * msg.T / disparity
 
             img.publish(bridge.cv2_to_imgmsg(thresh))

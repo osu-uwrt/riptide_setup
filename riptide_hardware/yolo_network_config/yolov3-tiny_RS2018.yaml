@@ -1,17 +1,18 @@
 yolo_model:
 
   config_file:
-    name: yolov3-tiny_RS2018.cfg
+    name: yolov3-tiny-obj.cfg
   weight_file:
-    name: yolov3-tiny_RS2018_170000.weights
+    name: yolov3-tiny-obj_best.weights
   threshold:
     value: 0.1 # Leave small b/c the yolo_processor will handle thresholding
   detection_classes:
     names:
-      - GFlap
-      - Dice5
-      - Dice6
-      - Slots_Fruit
-      - Slots_Big_Red
-      - Roulette
-      - Buy_Gold_Chip
+      - Bat
+      - Batman
+      - Crucifix
+      - Cutie
+      - Decap
+      - Garlic
+      - Gate
+      - Groot
