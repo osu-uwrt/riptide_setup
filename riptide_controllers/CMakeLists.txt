@@ -43,6 +43,7 @@ add_action_files(
   GoToRoll.action
   GoToTask.action
   MoveDistance.action
+  SickTricks.action
 )
 
 generate_messages(
