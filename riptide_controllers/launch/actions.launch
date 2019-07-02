@@ -6,4 +6,5 @@
   <node pkg="riptide_controllers" type="goToRoll.py" name="go_to_roll" output="screen" />
   <node pkg="riptide_controllers" type="goToPitch.py" name="go_to_pitch" output="screen" />
   <node pkg="riptide_controllers" type="goToYaw.py" name="go_to_yaw" output="screen" />
+  <node pkg="riptide_controllers" type="sickTricks.py" name="sick_tricks" output="screen" />
 </launch>
