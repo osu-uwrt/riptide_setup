@@ -17,12 +17,12 @@ class MoveActionState(EventState):
 
 	'''
 
-	def __init__(self, dishes_to_do):
+	def __init__(self):
 		# See example_state.py for basic explanations.
 		super(MoveActionState, self).__init__(outcomes = ['success', 'failed', 'command_error']
 												 )
 
-		self._dishes_to_do = dishes_to_do
+		
 
 		# Create the action client when building the behavior.
 		# This will cause the behavior to wait for the client before starting execution
@@ -46,16 +46,13 @@ class MoveActionState(EventState):
 		# Check if the action has been finished
 		if self._client.has_result(self._topic):
 			result = self._client.get_result(self._topic)
-			dishes_cleaned = result.total_dishes_cleaned
+			
 
 			# In this example, we also provide the amount of cleaned dishes as output key.
-			userdata.cleaned = dishes_cleaned
+			
 
 			# Based on the result, decide which outcome to trigger.
-			if dishes_cleaned > self._dishes_to_do:
-				return 'cleaned_enough'
-			else:
-				return 'cleaned_some'
+			
 
 		# If the action has not yet finished, no outcome will be returned and the state stays active.
 		
@@ -65,11 +62,9 @@ class MoveActionState(EventState):
 
 		# As documented above, we get the specification of which dishwasher to use as input key.
 		# This enables a previous state to make this decision during runtime and provide the ID as its own output key.
-		dishwasher_id = userdata.dishwasher
-
+		
 		# Create the goal.
-		goal = DoDishesGoal()
-		goal.dishwasher_id = dishwasher_id
+		
 
 		# Send the goal.
 		self._error = False # make sure to reset the error state since a previous state execution might have failed
@@ -78,7 +73,7 @@ class MoveActionState(EventState):
 		except Exception as e:
 			# Since a state failure not necessarily causes a behavior failure, it is recommended to only print warnings, not errors.
 			# Using a linebreak before appending the error log enables the operator to collapse details in the GUI.
-			Logger.logwarn('Failed to send the DoDishes command:\n%s' % str(e))
+			Logger.logwarn('Failed to send the move command:\n%s' % str(e))
 			self._error = True
 
 
