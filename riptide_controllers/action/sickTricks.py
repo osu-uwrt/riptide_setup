@@ -87,7 +87,7 @@ class PlaySickTricks(object):
         if goal.maneuvers == 1:
             rospy.loginfo("Driving forward while spining in x direction")
             self.XPub.publish(20, LinearCommand.FORCE)
-            self.rollPub.publish(50, AttitudeCommand.VELOCITY)
+            self.rollPub.publish(100, AttitudeCommand.VELOCITY)
             rospy.sleep(5)
         elif goal.maneuvers == 2:
             rospy.loginfo("Driving forward")
@@ -134,17 +134,18 @@ class PlaySickTricks(object):
                 self.rollAction(180),
                 self.yawAction(0)
             )
-            self.performActions(self.pitchAction(45))
-            self.performActions(self.pitchAction(-45))
+            rospy.sleep(2)
             self.performActions(
                 self.rollAction(0),
                 self.yawAction(180),
-                self.pitchAction(0)
             )
+            rospy.sleep(2)
         elif goal.maneuvers == 6:
             rospy.loginfo("Front flip")
-            self.pitchPub.publish(-90, AttitudeCommand.VELOCITY)
-            rospy.sleep(4)
+            self.rollPub.publish(0, AttitudeCommand.MOMENT)
+            self.yawPub.publish(0, AttitudeCommand.MOMENT)
+            self.pitchPub.publish(-40, AttitudeCommand.MOMENT)
+            rospy.sleep(5)
                     
 
         # Surface
