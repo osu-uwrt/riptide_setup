@@ -8,8 +8,9 @@
 ###########################################################
 
 from flexbe_core import Behavior, Autonomy, OperatableStateMachine, ConcurrencyContainer, PriorityContainer, Logger
-from riptide_flexbe_states.move_action_state import MoveActionState
-from riptide_flexbe_states.align_action_state import AlignActionState
+from riptide_flexbe_states.move_to_gate_state import MoveToGateState
+from riptide_flexbe_states.align_gate_state import AlignGateState
+from riptide_flexbe_states.move_through_gate_state import MoveThroughGateState
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -17,18 +18,18 @@ from riptide_flexbe_states.align_action_state import AlignActionState
 
 
 '''
-Created on Wed Jun 26 2019
+Created on Wed Jul 03 2019
 @author: Parth Parekh
 '''
-class GateTaskSM(Behavior):
+class gate_taskSM(Behavior):
 	'''
-	Does Gate Task
+	the gate behavior
 	'''
 
 
 	def __init__(self):
-		super(GateTaskSM, self).__init__()
-		self.name = 'Gate Task'
+		super(gate_taskSM, self).__init__()
+		self.name = 'gate_task'
 
 		# parameters of this behavior
 
@@ -44,7 +45,7 @@ class GateTaskSM(Behavior):
 
 
 	def create(self):
-		# x:690 y:663, x:719 y:166
+		# x:24 y:379, x:462 y:385
 		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'])
 
 		# Additional creation code can be added inside the following tags
@@ -54,53 +55,23 @@ class GateTaskSM(Behavior):
 
 
 		with _state_machine:
-			# x:140 y:61
-			OperatableStateMachine.add('Turn Towards Gate',
-										MoveActionState(dishes_to_do=oof),
-										transitions={'success': 'Move Towards Gate', 'failed': 'Turn Towards Gate', 'command_error': 'failed'},
-										autonomy={'success': Autonomy.Off, 'failed': Autonomy.Off, 'command_error': Autonomy.Off})
+			# x:218 y:63
+			OperatableStateMachine.add('Move To Gate',
+										MoveToGateState(),
+										transitions={'success': 'Align To Gate', 'failed': 'Move To Gate', 'command_error': 'failed'},
+										autonomy={'success': Autonomy.Full, 'failed': Autonomy.Full, 'command_error': Autonomy.Full})
 
-			# x:184 y:163
-			OperatableStateMachine.add('Move Towards Gate',
-										MoveActionState(dishes_to_do=d),
-										transitions={'success': 'Align With Gate', 'failed': 'Move Towards Gate', 'command_error': 'failed'},
-										autonomy={'success': Autonomy.Off, 'failed': Autonomy.Off, 'command_error': Autonomy.Off})
+			# x:196 y:195
+			OperatableStateMachine.add('Align To Gate',
+										AlignGateState(),
+										transitions={'success': 'Move Through Gate', 'command_error': 'failed'},
+										autonomy={'success': Autonomy.Full, 'command_error': Autonomy.Full})
 
-			# x:223 y:279
-			OperatableStateMachine.add('Align With Gate',
-										AlignActionState(),
-										transitions={'success': 'Move forwards', 'command_error': 'Align With Gate'},
-										autonomy={'success': Autonomy.Off, 'command_error': Autonomy.Off})
-
-			# x:79 y:381
-			OperatableStateMachine.add('Move forwards',
-										MoveActionState(dishes_to_do=3),
-										transitions={'success': 'rotate 90 degrees', 'failed': 'Move forwards', 'command_error': 'failed'},
-										autonomy={'success': Autonomy.Off, 'failed': Autonomy.Off, 'command_error': Autonomy.Off})
-
-			# x:119 y:472
-			OperatableStateMachine.add('rotate 90 degrees',
-										MoveActionState(dishes_to_do=3),
-										transitions={'success': 'pitch 90 degrees', 'failed': 'rotate 90 degrees', 'command_error': 'failed'},
-										autonomy={'success': Autonomy.Off, 'failed': Autonomy.Off, 'command_error': Autonomy.Off})
-
-			# x:306 y:495
-			OperatableStateMachine.add('pitch 90 degrees',
-										MoveActionState(dishes_to_do=3),
-										transitions={'success': '90 deg rot', 'failed': 'pitch 90 degrees', 'command_error': 'failed'},
-										autonomy={'success': Autonomy.Off, 'failed': Autonomy.Off, 'command_error': Autonomy.Off})
-
-			# x:455 y:549
-			OperatableStateMachine.add('90 deg rot',
-										MoveActionState(dishes_to_do=3),
-										transitions={'success': 'go through gate', 'failed': '90 deg rot', 'command_error': 'failed'},
-										autonomy={'success': Autonomy.Off, 'failed': Autonomy.Off, 'command_error': Autonomy.Off})
-
-			# x:627 y:519
-			OperatableStateMachine.add('go through gate',
-										MoveActionState(dishes_to_do=4),
-										transitions={'success': 'finished', 'failed': 'go through gate', 'command_error': 'failed'},
-										autonomy={'success': Autonomy.Off, 'failed': Autonomy.Off, 'command_error': Autonomy.Off})
+			# x:227 y:310
+			OperatableStateMachine.add('Move Through Gate',
+										MoveThroughGateState(),
+										transitions={'success': 'finished', 'failed': 'Move Through Gate', 'command_error': 'failed'},
+										autonomy={'success': Autonomy.Full, 'failed': Autonomy.Full, 'command_error': Autonomy.Full})
 
 
 		return _state_machine

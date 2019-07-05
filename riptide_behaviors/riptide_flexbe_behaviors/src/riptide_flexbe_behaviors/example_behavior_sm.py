@@ -28,7 +28,7 @@ class ExampleBehaviorSM(Behavior):
 	def __init__(self):
 		super(ExampleBehaviorSM, self).__init__()
 		self.name = 'Example Behavior'
-
+ 
 		# parameters of this behavior
 		self.add_parameter('waiting_time', 3)
 

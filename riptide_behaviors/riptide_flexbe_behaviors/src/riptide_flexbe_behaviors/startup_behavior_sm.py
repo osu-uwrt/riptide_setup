@@ -9,6 +9,7 @@
 
 from flexbe_core import Behavior, Autonomy, OperatableStateMachine, ConcurrencyContainer, PriorityContainer, Logger
 from riptide_flexbe_states.wait_killSwitch_state import WaitForKillSwitch
+from riptide_flexbe_states.initial_depth_state import InitialDepthState
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -56,8 +57,14 @@ class startup_behaviorSM(Behavior):
 			# x:95 y:101
 			OperatableStateMachine.add('Wait on the kill Switch',
 										WaitForKillSwitch(),
-										transitions={'continue': 'finished', 'failed': 'failed'},
+										transitions={'continue': 'Go To Depth', 'failed': 'Wait on the kill Switch'},
 										autonomy={'continue': Autonomy.Off, 'failed': Autonomy.Off})
+
+			# x:152 y:218
+			OperatableStateMachine.add('Go To Depth',
+										InitialDepthState(depth=5),
+										transitions={'failed': 'Go To Depth', 'completed': 'finished'},
+										autonomy={'failed': Autonomy.Off, 'completed': Autonomy.Off})
 
 
 		return _state_machine
