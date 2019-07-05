@@ -189,7 +189,6 @@ void ThrusterController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
   angular_vel[0] = imu_msg->ang_vel_deg.x * PI / 180;
   angular_vel[1] = imu_msg->ang_vel_deg.y * PI / 180;
   angular_vel[2] = imu_msg->ang_vel_deg.z * PI / 180;
-  angular_vel = (AngleAxisd(theta, Vector3d::UnitY()) * AngleAxisd(phi, Vector3d::UnitX())).inverse() * angular_vel;
 
   transportThm[3] = -angular_vel[1] * angular_vel[2] * (Izz - Iyy);
   transportThm[4] = -angular_vel[0] * angular_vel[2] * (Ixx - Izz);
