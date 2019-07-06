@@ -63,24 +63,24 @@ def imuCb(msg):
     r = msg.rpy_deg.x * D2R
     p = msg.rpy_deg.y * D2R
     ang_vel = np.matrix([[msg.ang_vel_deg.x], [msg.ang_vel_deg.y], [msg.ang_vel_deg.z]])
-    rot_mat = np.matrix([[1, sin(r)*tan(p), cos(r)*tan(p)],
-                         [0, cos(r)       , -sin(r)],
-                         [0, sin(r)/cos(p), cos(r)/cos(p)]])
-    ang_vel = rot_mat * ang_vel
+    conv_mat = np.matrix([[1, sin(r)*tan(p), cos(r)*tan(p)],
+                          [0, cos(r)       , -sin(r)],
+                          [0, sin(r)/cos(p), cos(r)/cos(p)]])
+    euler_dot = conv_mat * ang_vel
 
     # Update state of each controller
-    rollController.updateState(msg.rpy_deg.x, ang_vel[0])
-    pitchController.updateState(msg.rpy_deg.y, ang_vel[1])
-    yawController.updateState(msg.rpy_deg.z, ang_vel[2])
+    rollController.updateState(msg.rpy_deg.x, euler_dot[0])
+    pitchController.updateState(msg.rpy_deg.y, euler_dot[1])
+    yawController.updateState(msg.rpy_deg.z, euler_dot[2])
 
     # Publish new moments
     header = Header()
     header.stamp = rospy.Time.now()
     moment = np.matrix([[rollController.moment], [pitchController.moment], [yawController.moment]])
-    rot_mat = np.matrix([[1, 0,       -sin(p)],
-                         [0, cos(r),  sin(r)*cos(p)],
-                         [0, -sin(r), cos(r)*cos(p)]])
-    moment = rot_mat * moment
+    conv_mat = np.matrix([[1, 0,       -sin(p)],
+                          [0, cos(r),  sin(r)*cos(p)],
+                          [0, -sin(r), cos(r)*cos(p)]])
+    moment = conv_mat * moment
     momentPub.publish(header, Vector3(moment[0], moment[1], moment[2]))
 
 def dynamicReconfigureCb(config, level):
