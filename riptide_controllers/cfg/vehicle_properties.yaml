@@ -8,6 +8,7 @@ properties: {
   # Z = (X - F*.8636/W)/tan(theta)
   center_of_mass: [0.394, 0.191, -0.17], # Relative to port aft foot [X (m),Y(m),Z(m)]
   dvl: [0.33, 0, 0.44, 90],
+  imu: [0.8125, 0.1778, 0.26],
   inertia: [1.32, 2.84, 3.65], # Principle Inertias [kg-m^2]
   depth_fully_submerged: 0.15, # [m]
   thrusters: [ 

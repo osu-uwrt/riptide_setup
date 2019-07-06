@@ -6,7 +6,8 @@ from std_msgs.msg import Float32, Header
 from geometry_msgs.msg import Vector3Stamped, Vector3
 from dynamic_reconfigure.server import Server
 from riptide_controllers.cfg import AttitudeControllerConfig
-import math
+from math import sin, cos, tan
+import numpy as np
 
 D2R = 3.14159265/180
 
@@ -59,25 +60,28 @@ yawController = RotationController()
 momentPub = rospy.Publisher("/command/moment", Vector3Stamped, queue_size=5)
 
 def imuCb(msg):
-    r = msg.rpy_deg.x
-    p = msg.rpy_deg.y
-    y = msg.rpy_deg.z
+    r = msg.rpy_deg.x * D2R
+    p = msg.rpy_deg.y * D2R
+    ang_vel = np.matrix([[msg.ang_vel_deg.x], [msg.ang_vel_deg.y], [msg.ang_vel_deg.z]])
+    conv_mat = np.matrix([[1, sin(r)*tan(p), cos(r)*tan(p)],
+                          [0, cos(r)       , -sin(r)],
+                          [0, sin(r)/cos(p), cos(r)/cos(p)]])
+    euler_dot = conv_mat * ang_vel
 
     # Update state of each controller
-    rollController.updateState(r, msg.ang_vel_deg.x)
-    pitchController.updateState(p, msg.ang_vel_deg.y)
-    yawController.updateState(y, msg.ang_vel_deg.z)
+    rollController.updateState(msg.rpy_deg.x, euler_dot[0])
+    pitchController.updateState(msg.rpy_deg.y, euler_dot[1])
+    yawController.updateState(msg.rpy_deg.z, euler_dot[2])
 
     # Publish new moments
     header = Header()
     header.stamp = rospy.Time.now()
-    mx = rollController.moment
-    my = pitchController.moment
-    mz = yawController.moment
-    x = mx - math.sin(p*D2R)*mz
-    y = math.cos(r*D2R)*my + math.sin(r*D2R)*math.cos(p*D2R)*mz
-    z = math.cos(r*D2R)*math.cos(p*D2R)*mz - math.sin(r*D2R)*my
-    momentPub.publish(header, Vector3(x, y, z))
+    moment = np.matrix([[rollController.moment], [pitchController.moment], [yawController.moment]])
+    conv_mat = np.matrix([[1, 0,       -sin(p)],
+                          [0, cos(r),  sin(r)*cos(p)],
+                          [0, -sin(r), cos(r)*cos(p)]])
+    moment = conv_mat * moment
+    momentPub.publish(header, Vector3(moment[0], moment[1], moment[2]))
 
 def dynamicReconfigureCb(config, level):
     # On dynamic reconfiguration
