@@ -1,5 +1,0 @@
-max_roll_error: 10 # [deg]
-max_pitch_error: 10 # [deg]
-max_yaw_error: 30 # [deg]
-max_roll_limit: 90 # [deg]
-max_pitch_limit: 70 # [deg]
