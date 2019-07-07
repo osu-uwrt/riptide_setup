@@ -20,7 +20,7 @@ class PlaySickTricks(object):
             "/command/roll", AttitudeCommand, queue_size=5)
         self.pitchPub = rospy.Publisher(
             "/command/pitch", AttitudeCommand, queue_size=5)
-        self.yawPub = rospy.Publisher(
+        self.yawPub = rospy.Publisher(  
             "/command/yaw", AttitudeCommand, queue_size=5)
         self.XPub = rospy.Publisher(
             "/command/x", LinearCommand, queue_size=5)
