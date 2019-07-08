@@ -69,9 +69,9 @@ def imuCb(msg):
     euler_dot = conv_mat * ang_vel
 
     # Update state of each controller
-    rollController.updateState(msg.rpy_deg.x, euler_dot[0])
-    pitchController.updateState(msg.rpy_deg.y, euler_dot[1])
-    yawController.updateState(msg.rpy_deg.z, euler_dot[2])
+    rollController.updateState(msg.rpy_deg.x, euler_dot.item(0))
+    pitchController.updateState(msg.rpy_deg.y, euler_dot.item(1))
+    yawController.updateState(msg.rpy_deg.z, euler_dot.item(2))
 
     # Publish new moments
     header = Header()
@@ -81,7 +81,7 @@ def imuCb(msg):
                           [0, cos(r),  sin(r)*cos(p)],
                           [0, -sin(r), cos(r)*cos(p)]])
     moment = conv_mat * moment
-    momentPub.publish(header, Vector3(moment[0], moment[1], moment[2]))
+    momentPub.publish(header, Vector3(moment.item(0), moment.item(1), moment.item(2)))
 
 def dynamicReconfigureCb(config, level):
     # On dynamic reconfiguration

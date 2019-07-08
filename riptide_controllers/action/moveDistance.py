@@ -22,12 +22,15 @@ class MoveDistance(object):
     def execute_cb(self, goal):
         rospy.loginfo("Moving robot %dm x and %dm y" % (goal.x, goal.y))
         self.goal = goal
-        rospy.Subscriber("/state/Dvl", Dvl, self.dvlCb)
+        dvl_sub = rospy.Subscriber("/state/Dvl", Dvl, self.dvlCb)
 
         while abs(self.distanceX - goal.position.x) > 0.1 or abs(self.distanceY - goal.position.y) > 0.1:
             rospy.sleep(0.05)
 
         rospy.loginfo("At desired position")
+        dvl_sub.unregister()
+        self.xPub.publish(0, LinearCommand.VELOCITY)
+        self.yPub.publish(0, LinearCommand.VELOCITY)
         self._as.set_succeeded()
 
     def dvlCb(self, msg):

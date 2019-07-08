@@ -14,7 +14,7 @@ import math
 from multiprocessing import Process
 
 
-GATE_HEADING = 110
+GATE_HEADING = -130
 
 
 def angleDiff(a1, a2):
@@ -102,7 +102,7 @@ class PrequalifyAction(object):
 
         rospy.loginfo("Headed forward")
         # Drive forward
-        self.forcePub.publish(30)
+        self.forcePub.publish(40)
         rospy.sleep(4)
 
         # Wait until you see the pole a few times
@@ -119,7 +119,7 @@ class PrequalifyAction(object):
 
         rospy.loginfo("Aligning to pole")
         # Align to pole
-        cmd = AlignmentCommand(True, True, False, "", 0, 0, 0, Point(2.5, 0, 0))
+        cmd = AlignmentCommand(True, True, False, "", 0, 0, 0, Point(1.5, 0, 0))
         self.alignmentPub.publish(cmd)
 
         # Wait until aligned
@@ -130,32 +130,27 @@ class PrequalifyAction(object):
         # Start rotating while still aligning
         self.yawPub.publish(7, AttitudeCommand.VELOCITY)
 
-        # Wait until on other side of pole
-        done = False
-        while not done:
-            angle = rospy.wait_for_message("/state/imu", Imu).rpy_deg.z
-            diff = angleDiff(angle, GATE_HEADING)
-            if diff > -100 and diff < -40:
-                done = True
+        rospy.sleep(45)
 
         rospy.loginfo("Turning back to gate")
         # Shut off alignment and turn to gate
         self.alignmentPub.publish(AlignmentCommand(False, False, False, "",
                                0, 0, 0, Point(0, 0, 0)))
-        self.performActions(self.yawAction(angleDiff(GATE_HEADING, 180)))
+        self.performActions(self.yawAction(angleDiff(GATE_HEADING, 160)))
 
         rospy.loginfo("Headed back to gate")
         # Drive forward for a while
-        self.forcePub.publish(30)
-        rospy.sleep(30)
+        self.forcePub.publish(40)
+        rospy.sleep(25)
 
         rospy.loginfo("Done. Easy peasy")
         # Surface
         self.forcePub.publish(0)
+        self.yawPub.publish(0, AttitudeCommand.MOMENT)
+        self.performActions(self.depthAction(0.0))
         self.depthPub.publish(False, 0)
         self.rollPub.publish(0, AttitudeCommand.MOMENT)
         self.pitchPub.publish(0, AttitudeCommand.MOMENT)
-        self.yawPub.publish(0, AttitudeCommand.MOMENT)
 
         self._as.set_succeeded()
 
