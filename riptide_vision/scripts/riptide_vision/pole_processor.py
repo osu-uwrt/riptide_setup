@@ -76,11 +76,11 @@ def imgCB(msg):
             # Apply KMeans
             _,labels,centers = cv2.kmeans(sample_region,4,None,criteria,10,flags)
 
-            labels = [x[0] for x in labels]
+            labels = [l[0] for l in labels]
             maxLabel = max(set(labels), key=labels.count)
             disparity = centers[maxLabel][0]
             if disparity < 0:
-                labels = [x for x in labels if x != maxLabel]
+                labels = [l for l in labels if l != maxLabel]
                 maxLabel = max(set(labels), key=labels.count)
                 disparity = centers[maxLabel][0]
 
