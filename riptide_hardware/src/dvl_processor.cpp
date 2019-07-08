@@ -18,6 +18,7 @@ DVLProcessor::DVLProcessor() : nh("dvl_processor")
   // Load relative positions between DVL and COM from YAML file
   DVLProcessor::LoadParam<string>("properties_file", properties_file);
   properties = YAML::LoadFile(properties_file);
+  DVLProcessor::LoadDVLProperties();
 }
 
 template <typename T>
@@ -53,6 +54,7 @@ void DVLProcessor::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
   angular_vel(1) = imu_msg->ang_vel_rad.y;
   angular_vel(2) = imu_msg->ang_vel_rad.z;
   relative_vel = angular_vel.cross(dvl_position);
+  ROS_INFO(dvl_position);
 }
 
 void DVLProcessor::DvlCB(const nortek_dvl::Dvl::ConstPtr &dvl_msg)
