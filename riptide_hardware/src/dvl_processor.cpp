@@ -18,6 +18,7 @@ DVLProcessor::DVLProcessor() : nh("dvl_processor")
   // Load relative positions between DVL and COM from YAML file
   DVLProcessor::LoadParam<string>("properties_file", properties_file);
   properties = YAML::LoadFile(properties_file);
+  DVLProcessor::LoadDVLProperties();
 }
 
 template <typename T>
