@@ -44,6 +44,7 @@ void GNCThrustConverter::gncThrustCB(const auv_msgs::Thrust::ConstPtr &gnc_thrus
       if (gnc_thrust->names[i] == "VSA")
          thrust.force.vector_stbd_aft = gnc_thrust->thrusts[i];
    }
+   riptide_thrust_pub_.publish(thrust);
 
 }
 
