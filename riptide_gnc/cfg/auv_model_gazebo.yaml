@@ -9,13 +9,13 @@ inertia: { # Inertias [kg-m^2]
   Ixz: 0.0,
   Iyz: 0.0  
 }
-translational_drag: { # In the order of X, Y, Z axes
-  linear: [11.7391, 20, 31.8678], # Fdrag = -c*Xdot [N], where c = drag coeff
-  quadratic: [0.0, 0.0, 0.0] # Fdrag = -c*sign(Xdot)*Xdot^2 [N], where c = drag coeff
+translational_drag: { # In the order of X, Y, Z axes #[11.7391, 20, 31.8678], 
+  linear: [17.0, 44.0, 44.0], # Fdrag = -c*Xdot [N], where c = drag coeff
+  quadratic: [171.0, 444.0, 444.0] # Fdrag = -c*sign(Xdot)*Xdot^2 [N], where c = drag coeff
 }
 rotational_drag: { # In the order of X, Y, Z axes
-  linear: [11.7391, 20, 31.8678], # Tdrag = -C*Xdot [Nm], where c = drag coeff
-  quadratic: [0.0,0.0, 0.0] # Tdrag = -C*sign(Xdot)*Xdot^2 [Nm], where c = drag coeff
+  linear: [5.0, 10.0, 10.0], # Tdrag = -C*Xdot [Nm], where c = drag coeff
+  quadratic: [10.0, 20.0, 20.0] # Tdrag = -C*sign(Xdot)*Xdot^2 [Nm], where c = drag coeff
 }
 thrusters: [
   # You can add up to EIGHT thruster blocks
