@@ -22,6 +22,14 @@ class CalibrateAction(object):
         self._as = actionlib.SimpleActionServer("calibrate", riptide_controllers.msg.CalibrateAction, execute_cb=self.execute_cb, auto_start=False)
         self._as.start()
 
+    def depthAction(self, depth):
+        client = actionlib.SimpleActionClient(
+            "go_to_depth", riptide_controllers.msg.GoToDepthAction)
+        client.wait_for_server()
+
+        # Sends the goal to the action server.
+        client.send_goal(riptide_controllers.msg.GoToDepthGoal(depth))
+        return client
       
     def execute_cb(self, goal):
         client = dynamic_reconfigure.client.Client("thruster_controller", timeout=30)
@@ -101,6 +109,7 @@ class CalibrateAction(object):
             
         rospy.loginfo("Calibration complete")
 
+        self.depthAction(0).wait_for_result()
         self.depthPub.publish(False, 0)
         self.rollPub.publish(0, AttitudeCommand.MOMENT)
         self.pitchPub.publish(0, AttitudeCommand.MOMENT)

@@ -9,7 +9,7 @@ pitch: 0.0 # [deg]
 roll: 0.0 # [deg]
 
 # Sensor Low Pass Filter Bandwidths
-mag_LPF_bandwidth: 15 # Integer [Hz], -1 to disable
+mag_LPF_bandwidth: 10 # Integer [Hz], -1 to disable
 accel_LPF_bandwidth: 50 # Integer [Hz], -1 to disable
 gyro_LPF_bandwidth: 50 # Integer [Hz], -1 to disable
 
