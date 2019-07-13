@@ -53,4 +53,8 @@ if(NOT _host_name MATCHES "riptide")
   target_link_libraries(bbox_pub ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
   add_dependencies(bbox_pub ${catkin_EXPORTED_TARGETS})
 
+  add_executable(yolo_processor_new src/yolo_processor_new.cpp)
+  target_link_libraries(yolo_processor_new ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} yaml-cpp)
+  add_dependencies(yolo_processor_new ${catkin_EXPORTED_TARGETS})
+
 endif()
