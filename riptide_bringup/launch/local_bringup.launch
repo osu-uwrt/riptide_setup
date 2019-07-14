@@ -1,8 +1,8 @@
 <launch>
-  <include file="$(find riptide_hardware)/launch/hardware.launch" />
-  <include file="$(find riptide_vision)/launch/pole_processor.launch" />
+  <include file="$(find riptide_vision)/launch/vision.launch" />
   <include file="$(find riptide_controllers)/launch/controllers.launch" />
   <include file="$(find riptide_autonomy)/launch/prequalify.launch" />
+  <include file="$(find riptide_teleop)/launch/ps3_controller.launch" />
 
   <arg name="log" default="false" />
   <node pkg="rosbag" type="record" name="record_autonomy" 
