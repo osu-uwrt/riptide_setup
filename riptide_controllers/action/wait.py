@@ -1,10 +1,10 @@
 #! /usr/bin/env python
 import rospy
 import actionlib
-import dynamic_reconfigure.client
 
-from std_msgs import string, int32
+from std_msgs.msg import String, Int32
 from darknet_ros_msgs.msg import BoundingBoxes
+import riptide_controllers.msg
 
 import time
 
@@ -31,6 +31,9 @@ class WaitAction(object):
                 lastTime = time.time()
                     
         rospy.loginfo("Found object %s", goal.object)
+
+        self._as.set_succeeded()
+
 
 
 if __name__ == '__main__':

@@ -12,3 +12,8 @@
     <param name="rate" type="double" value="$(arg rate)" />
   </node>
 </launch>
+
+<!-- To get this to work completely, on the top side computer run:
+  
+    rosrun joy joy_node
+-->
