@@ -1,5 +1,0 @@
-<launch>
-  <include file="$(find riptide_hardware)/launch/hardware.launch" />
-  <include file="$(find riptide_controllers)/launch/calibration.launch" />
-  <include file="$(find riptide_controllers)/launch/controllers.launch" />
-</launch>
