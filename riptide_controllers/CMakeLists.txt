@@ -44,6 +44,7 @@ add_action_files(
   GoToTask.action
   MoveDistance.action
   SickTricks.action
+  Wait.action
 )
 
 generate_messages(

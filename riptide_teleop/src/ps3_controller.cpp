@@ -1,3 +1,16 @@
+/*
+Start: start the robot, roll and pitch are hold to zero, depth is set to half meter. 
+
+While driving:
+Right stick, forward backward left right in the robot frame.
+Left stick, up down deep shallow, LR yaw
+Cross buttons: up down: pitch lef right: roll
+
+Square: boost, go faster, not for x and y
+Circle; zero roll and pith
+X: cut thrusters
+ */
+
 #include "riptide_teleop/ps3_controller.h"
 
 #define GRAVITY 9.81       // [m/s^2]
@@ -25,7 +38,7 @@ PS3Controller::PS3Controller() : nh("ps3_controller")
   y_pub = nh.advertise<riptide_msgs::LinearCommand>("/command/y", 1);
   depth_pub = nh.advertise<riptide_msgs::DepthCommand>("/command/depth", 1);
   reset_pub = nh.advertise<riptide_msgs::ResetControls>("/controls/reset", 1);
-  plane_pub = nh.advertise<std_msgs::Int8>("/command/ps3_plane", 1);
+  camera_pub = nh.advertise<std_msgs::Int8>("/command/camera", 1);
 
   PS3Controller::LoadParam<double>("rate", rt);                       // [Hz]
   PS3Controller::LoadParam<double>("max_x_force", MAX_X_FORCE);       // [m/s^2]
@@ -46,7 +59,7 @@ PS3Controller::PS3Controller() : nh("ps3_controller")
   euler_rpy.x = 0;
   euler_rpy.y = 0;
   euler_rpy.z = 0;
-  alignment_plane = (bool)riptide_msgs::Constants::PLANE_YZ;
+  camera = 0;
 
   roll_factor = CMD_ROLL_RATE / rt;
   pitch_factor = CMD_PITCH_RATE / rt;
@@ -135,7 +148,6 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr &joy)
     isReset = true;
     PS3Controller::DisableControllers();
     ROS_INFO("PS3 Controller Reset. Press Start to begin.");
-    ROS_INFO("PS3: Press Triangle to begin depth command.");
   }
   else if (isReset)
   { // If reset, must wait for Start button to be pressed
@@ -197,7 +209,7 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr &joy)
   cmd_y.value = -joy->axes[AXES_STICK_RIGHT_LR] * MAX_Y_FORCE; // Sway (Y) positive left
 
   if (joy->buttons[BUTTON_SELECT])
-    alignment_plane = !alignment_plane;
+    camera = (camera + 1) % 2;
 }
 
 // Run when Reset button is pressed
@@ -242,7 +254,7 @@ void PS3Controller::UpdateCommands()
   if (cmd_depth.depth < 0)
     cmd_depth.depth = 0;
 
-  plane_msg.data = (int)alignment_plane;
+  camera_msg.data = camera;
 }
 
 void PS3Controller::PublishCommands()
@@ -270,7 +282,7 @@ void PS3Controller::PublishCommands()
 
   depth_pub.publish(cmd_depth);
 
-  plane_pub.publish(plane_msg);
+  camera_pub.publish(camera_msg);
 }
 
 // This loop function is critical because it allows for different command rates
