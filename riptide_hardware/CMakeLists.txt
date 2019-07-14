@@ -14,7 +14,6 @@ find_package(catkin REQUIRED
     roslint
     roscpp
     riptide_msgs
-    nortek_dvl
     geometry_msgs
     imu_3dm_gx4
     pointgrey_camera_driver
@@ -45,9 +44,9 @@ cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)
 
 if(NOT _host_name MATCHES "jetson")
 
-    # add_executable(acoustics src/acoustics.cpp)
-    # target_link_libraries(acoustics ${catkin_LIBRARIES} okFrontPanel fftw3)
-    # add_dependencies(acoustics ${catkin_EXPORTED_TARGETS})
+    add_executable(dvl_processor src/dvl_processor.cpp)
+    target_link_libraries(dvl_processor ${catkin_LIBRARIES} yaml-cpp)
+    add_dependencies(dvl_processor ${catkin_EXPORTED_TARGETS})
 
     add_executable(depth_processor src/depth_processor.cpp)
     target_link_libraries(depth_processor ${catkin_LIBRARIES})
@@ -58,6 +57,4 @@ add_executable(imu_processor src/imu_processor.cpp)
 target_link_libraries(imu_processor ${catkin_LIBRARIES})
 add_dependencies(imu_processor ${catkin_EXPORTED_TARGETS})
 
-add_executable(dvl_processor src/dvl_processor.cpp)
-target_link_libraries(dvl_processor ${catkin_LIBRARIES} yaml-cpp)
-add_dependencies(dvl_processor ${catkin_EXPORTED_TARGETS})
+

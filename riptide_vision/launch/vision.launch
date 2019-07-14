@@ -1,5 +1,4 @@
 <launch>
   <include file="$(find riptide_vision)/launch/hud.launch" />
-  <include file="$(find riptide_vision)/launch/yolo_processor.launch" />
-  <include file="$(find riptide_vision)/launch/object_processor.launch" />
+  <include file="$(find riptide_vision)/launch/darknet_processor.launch" />
 </launch>
