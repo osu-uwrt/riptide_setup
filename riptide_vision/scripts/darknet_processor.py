@@ -8,11 +8,11 @@ from sensor_msgs.msg import Image
 currentCam = 0
 
 def cameraCb(msg):
-    if bboxPub.get_num_connections() != 0:
-        cameraPub.publish(msg)
+    cameraPub.publish(msg)
 
 def cameraSelectionCb(msg):
     global cameraSub
+    global currentCam
 
     if msg.data != currentCam:
         cameraSub.unregister()
@@ -20,6 +20,7 @@ def cameraSelectionCb(msg):
             cameraSub = rospy.Subscriber("/stereo/left/image_rect_color", Image, cameraCb)
         else:
             cameraSub = rospy.Subscriber("/stereo/right/image_rect_color", Image, cameraCb)
+        currentCam = msg.data
 
 def bboxCb(msg):
     objects = {}
