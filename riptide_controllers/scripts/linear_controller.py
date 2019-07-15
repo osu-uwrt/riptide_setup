@@ -29,6 +29,7 @@ class LinearController():
         # If there is a desired velocity
         if self.velocityCmd != None:
             # Set force porportional to velocity error
+            self.force = 0
             if not math.isnan(velocity):
                 self.force = self.VELOCITY_P * (self.velocityCmd - velocity) + self.DRAG_COEFF * velocity * abs(velocity)
 
