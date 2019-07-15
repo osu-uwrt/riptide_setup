@@ -5,7 +5,7 @@ action_name: /auv_gnc/guidance_controller/check_for_trajectory
 # Trajectory Generator (TGen) Limits
 # Distance Limits (for simltaneous trajectories)
 max_xy_distance: 3.0 # [m]
-max_z_distance: 1.0 # [m]
+max_z_distance: 1.5 # [m]
 
 # Set heading towards destination when path inclination is less than this angle
 max_path_inclination: 1.40 # [rad]
@@ -16,7 +16,7 @@ closing_tolerance: # When within this many units away from endpoint, use the clo
 
 # Velocity/Accel/Jerk Limits
 max_velocity:
-  x: 0.75 # [m/s]
+  x: 0.70 # [m/s]
   y: 0.4 # [m/s]
   Z: 0.3 # [m/s]
   rotational: 1.57 # [rad/s]
@@ -27,7 +27,7 @@ max_accel:
   rotational: 3.14 # [rad/s^2]
 jerk:
   xyz:
-    nominal: 0.4 # [m/s^3]
+    nominal: 0.8 # [m/s^3]
     closing: 1.0 # [m/s^3]
   rotational:
     nominal: 5.0 # [rad/s^3]
