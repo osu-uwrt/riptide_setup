@@ -3,7 +3,7 @@ import actionlib
 
 import riptide_autonomy.msg
 
-from task import *
+from actionWrapper import *
 
 class GateTaskAction(object):
 

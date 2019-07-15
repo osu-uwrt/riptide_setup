@@ -77,6 +77,21 @@ def moveAction(x, y):
     client.send_goal(riptide_controllers.msg.MoveDistanceActionGoal(x, y))
     return client
 
+def waitAction(obj, times):
+    """ 
+    Action completes when object seen "times" times
+  
+    Parameters: 
+        obj (str): The object to look for
+        times (int): The number of times to see the object before continuing
+    """
+    client = actionlib.SimpleActionClient(
+        "wait", riptide_controllers.msg.WaitAction)
+    client.wait_for_server()
+
+    client.send_goal(riptide_controllers.msg.WaitActionGoal(obj, times))
+    return client
+
 def gateManeuverAction():
     """Unimplemented"""
     pass
@@ -84,3 +99,17 @@ def gateManeuverAction():
 def alignAction(object):
     """Unimplemented"""
     pass
+
+def gateTask(isLeft):
+    """
+    The gate task
+    
+    Parameters: 
+        isLeft (bool): Whether the small side of the gate is on the left
+    """
+    client = actionlib.SimpleActionClient(
+        "gate_task", riptide_controllers.msg.GateTaskAction)
+    client.wait_for_server()
+
+    client.send_goal(riptide_controllers.msg.GateTaskActionGoal())
+    return client
