@@ -10,7 +10,6 @@ from dynamic_reconfigure.server import Server
 from riptide_controllers.cfg import AlignmentControllerConfig
 
 import math
-import time
 
 class AlignmentController():
 
