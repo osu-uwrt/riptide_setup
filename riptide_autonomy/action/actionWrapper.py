@@ -149,7 +149,7 @@ def getDistanceAction(obj):
     client.send_goal(riptide_controllers.msg.GetDistanceActionGoal(obj))
     return client
 
-def gateTask(isLeft):
+def gateTaskAction(isLeft):
     """
     The gate task
     

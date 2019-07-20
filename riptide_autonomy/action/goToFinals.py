@@ -29,7 +29,7 @@ class GoToFinalsAction(object):
             )
             self.goToTask("Gate")
             waitAction("Gate", 10).wait_for_result()
-            gateTaskAction().wait_for_result()
+            gateTaskAction(True).wait_for_result()
         
 
         self._as.set_succeeded()
