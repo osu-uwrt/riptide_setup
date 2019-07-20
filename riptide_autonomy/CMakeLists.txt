@@ -20,6 +20,7 @@ add_action_files(
   DIRECTORY action
   FILES Prequalify.action
   GateTask.action
+  BuoyTask.action
   GoToFinals.action
 )
 

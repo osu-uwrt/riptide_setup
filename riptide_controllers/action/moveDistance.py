@@ -16,15 +16,15 @@ class MoveDistance(object):
         self.xPub = rospy.Publisher("/command/x", LinearCommand, queue_size=1)
         self.yPub = rospy.Publisher("/command/y", LinearCommand, queue_size=1)
         self._as = actionlib.SimpleActionServer("move_distance", riptide_controllers.msg.MoveDistanceAction, execute_cb=self.execute_cb, auto_start=False)
-        self.distanceX = 0
-        self.distanceY = 0
-        self.lastXVelocity = 0
-        self.lastYVelocity = 0
         self._as.start()
 
       
     def execute_cb(self, goal):
         rospy.loginfo("Moving robot %dm x and %dm y" % (goal.x, goal.y))
+        self.distanceX = 0
+        self.distanceY = 0
+        self.lastXVelocity = 0
+        self.lastYVelocity = 0
         self.goal = goal
         dvl_sub = rospy.Subscriber("/state/Dvl", Dvl, self.dvlCb)
 

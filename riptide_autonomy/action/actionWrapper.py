@@ -1,5 +1,6 @@
 import actionlib
 import riptide_controllers.msg
+import riptide_autonomy.msg
 
 
 def performActions(*actions):
@@ -93,12 +94,49 @@ def waitAction(obj, times):
     return client
 
 def gateManeuverAction():
+    """ 
+    Simultaneously translates 360 roll and yaw while driving in direcion of original yaw
+    """
+    client = actionlib.SimpleActionClient(
+        "gate_maneuver", riptide_controllers.msg.GateManeuverAction)
+    client.wait_for_server()
+
+    client.send_goal(riptide_controllers.msg.GateManeuverActionGoal())
+    return client
+
+def arcAction(angle, velocity, radius):
+    """ 
+    Move the robot in an arc motion while remaining facing the center
+
+    Parameters: 
+        angle (float): How many degrees to move along the circle
+        velocity (float): Velocity in degrees per second
+        radius (float): Radius of the circle in which to drive along
+    """
+    client = actionlib.SimpleActionClient(
+        "arc", riptide_controllers.msg.ArcAction)
+    client.wait_for_server()
+
+    client.send_goal(riptide_controllers.msg.ArcActionGoal(angle, velocity, radius))
+    return client
+
+def alignAction(obj, bboxWidth):
     """Unimplemented"""
     pass
 
-def alignAction(object):
-    """Unimplemented"""
-    pass
+def getDistanceAction(obj):
+    """ 
+    Finds the distance to the specified object in the x axis. Returns distance in meters
+
+    Parameters: 
+        obj (str): Name of the object
+    """
+    client = actionlib.SimpleActionClient(
+        "get_distance", riptide_controllers.msg.GetDistanceAction)
+    client.wait_for_server()
+
+    client.send_goal(riptide_controllers.msg.GetDistanceActionGoal(obj))
+    return client
 
 def gateTask(isLeft):
     """
@@ -108,8 +146,8 @@ def gateTask(isLeft):
         isLeft (bool): Whether the small side of the gate is on the left
     """
     client = actionlib.SimpleActionClient(
-        "gate_task", riptide_controllers.msg.GateTaskAction)
+        "gate_task", riptide_autonomy.msg.GateTaskAction)
     client.wait_for_server()
 
-    client.send_goal(riptide_controllers.msg.GateTaskActionGoal())
+    client.send_goal(riptide_autonomy.msg.GateTaskActionGoal())
     return client

@@ -2,8 +2,8 @@
 Start: start the robot, roll and pitch are hold to zero, depth is set to half meter. 
 
 While driving:
-Right stick, forward backward left right in the robot frame.
-Left stick, up down deep shallow, LR yaw
+Right stick, drive forward backward turn left right in the robot frame.
+Left stick, up down deep shallow, LR strafe
 Cross buttons: up down: pitch lef right: roll
 
 Square: boost, go faster, not for x and y
@@ -82,7 +82,14 @@ void PS3Controller::InitMsgs()
   euler_rpy.y = 0;
   euler_rpy.z = 0;
 
-  PS3Controller::DisableControllers();
+  delta_attitude.x = 0;
+  delta_attitude.y = 0;
+  delta_attitude.z = 0;
+
+  delta_depth = 0;
+
+  cmd_x.value = 0;
+  cmd_y.value = 0;
 }
 
 // Load parameter from namespace
@@ -170,43 +177,36 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr &joy)
       delta_attitude.x = 0;
       delta_attitude.y = 0;
     }
+    // Update roll/pitch angles with CROSS
+    // Roll
+    if (joy->buttons[BUTTON_CROSS_RIGHT])
+      delta_attitude.x = roll_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); // Right -> inc roll
+    else if (joy->buttons[BUTTON_CROSS_LEFT])
+      delta_attitude.x = -roll_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); // Left -> dec roll
     else
-    { // Update roll/pitch angles with CROSS
-      // Roll
-      if (joy->buttons[BUTTON_CROSS_RIGHT])
-        delta_attitude.x = roll_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); // Right -> inc roll
-      else if (joy->buttons[BUTTON_CROSS_LEFT])
-        delta_attitude.x = -roll_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); // Left -> dec roll
-      else
-      {
-        delta_attitude.x = 0;
-        // ROS_INFO("FALSE FROM ENABLE");
-      }
-
-      // Pitch
-      if (joy->buttons[BUTTON_CROSS_UP])
-        delta_attitude.y = -pitch_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); // Up -> inc pitch (Nose points upward)
-      else if (joy->buttons[BUTTON_CROSS_DOWN])
-        delta_attitude.y = pitch_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); //Down -> dec pitch (Nose points downward)
-      else
-        delta_attitude.y = 0;
-
-      // Yaw
-      delta_attitude.z = -joy->axes[AXES_STICK_LEFT_LR] * yaw_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]);
+    {
+      delta_attitude.x = 0;
+      // ROS_INFO("FALSE FROM ENABLE");
     }
 
-    delta_depth = -joy->axes[AXES_STICK_LEFT_UD] * depth_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); // Up -> dec depth, Down -> inc depth
+    // Pitch
+    if (joy->buttons[BUTTON_CROSS_UP])
+      delta_attitude.y = -pitch_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); // Up -> inc pitch (Nose points upward)
+    else if (joy->buttons[BUTTON_CROSS_DOWN])
+      delta_attitude.y = pitch_factor * (1 + (boost - 1) * joy->buttons[BUTTON_SHAPE_SQUARE]); //Down -> dec pitch (Nose points downward)
+    else
+      delta_attitude.y = 0;
 
-    /*// Code for using R2 and L2
-      if (isR2Init && (1 - joy->axes[AXES_REAR_R2] != 0))                     // If pressed at all, inc z-accel
-        cmd_force_z.data = 0.5 * (1 - joy->axes[AXES_REAR_R2]) * MAX_Z_FORCE; // Multiplied by 0.5 to scale axes value from 0 to 1
-      else if (isL2Init && (1 - joy->axes[AXES_REAR_L2] != 0))                // If pressed at all, dec z-accel
-        cmd_force_z.data = 0.5 * (1 - joy->axes[AXES_REAR_L2]) * MAX_Z_FORCE; // Multiplied by 0.5 to scale axes value from 0 to 1*/
+    cmd_y.value = -joy->axes[AXES_STICK_LEFT_LR] * MAX_Y_FORCE; // Sway (Y) positive left
+    delta_depth = -joy->axes[AXES_STICK_LEFT_UD] * depth_factor; // Up -> dec depth, Down -> inc depth
+
+      // Update Linear XY Accel
+    cmd_x.value = joy->axes[AXES_STICK_RIGHT_UD] * MAX_X_FORCE;  // Surge (X) positive forward
+    delta_attitude.z = -joy->axes[AXES_STICK_RIGHT_LR] * yaw_factor;
+    
   }
 
-  // Update Linear XY Accel
-  cmd_x.value = joy->axes[AXES_STICK_RIGHT_UD] * MAX_X_FORCE;  // Surge (X) positive forward
-  cmd_y.value = -joy->axes[AXES_STICK_RIGHT_LR] * MAX_Y_FORCE; // Sway (Y) positive left
+  
 
   if (joy->buttons[BUTTON_SELECT])
     camera = (camera + 1) % 2;

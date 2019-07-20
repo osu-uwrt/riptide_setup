@@ -14,7 +14,7 @@ class GateTaskAction(object):
 
 
     def execute_cb(self, goal):
-        alignAction("Gate").wait_for_result()
+        alignAction("Gate", .4).wait_for_result()
         if goal.isLeft:
             moveAction(0, -1).wait_for_result()
         else:

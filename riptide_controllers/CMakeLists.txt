@@ -45,6 +45,9 @@ add_action_files(
   MoveDistance.action
   SickTricks.action
   Wait.action
+  Arc.action
+  GateManeuver.action
+  GetDistance.action
 )
 
 generate_messages(

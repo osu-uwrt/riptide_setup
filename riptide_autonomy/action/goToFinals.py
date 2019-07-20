@@ -29,7 +29,6 @@ class GoToFinalsAction(object):
             )
             self.goToTask("Gate")
             waitAction("Gate", 10).wait_for_result()
-            self.xPub(0, LinearCommand.FORCE)
             gateTaskAction().wait_for_result()
         
 
