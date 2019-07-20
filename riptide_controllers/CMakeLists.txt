@@ -47,6 +47,7 @@ add_action_files(
   MoveDistance.action
   SickTricks.action
   Wait.action
+  Align.action
 )
 
 generate_messages(
