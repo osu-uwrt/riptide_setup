@@ -121,8 +121,19 @@ def arcAction(angle, velocity, radius):
     return client
 
 def alignAction(obj, bboxWidth):
-    """Unimplemented"""
-    pass
+    """ 
+    Align to the specific object, and keep a rough distance with that object by bboxWidth
+
+    Parameters: 
+        obj (str): Name of the object
+        bboxWidth (float): Ratio of bbox width over camera width
+    """
+    client = actionlib.SimpleActionClient(
+        "align", riptide_controllers.msg.AlignAction)
+    client.wait_for_server()
+
+    client.send_goal(riptide_controllers.msg.AlignActionGoal(obj, bboxWidth))
+    return client
 
 def getDistanceAction(obj):
     """ 
