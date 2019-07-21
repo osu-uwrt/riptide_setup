@@ -17,12 +17,16 @@ class LinearController():
     velocityCmd = None
     force = 0
 
+    def __init__(self, publisher):
+        self.publisher = publisher
+
     def cmdCb(self, msg):
         if msg.mode == LinearCommand.VELOCITY:
             self.velocityCmd = msg.value
         elif msg.mode == LinearCommand.FORCE:
             self.force = msg.value
             self.velocityCmd = None
+            self.publisher.publish(self.force)
 
     def updateState(self, velocity):
 
@@ -39,11 +43,11 @@ class LinearController():
         
         
 
-xController = LinearController()
-yController = LinearController()
-
 XPub = rospy.Publisher("/command/force_x", Float64, queue_size=5)
 YPub = rospy.Publisher("/command/force_y", Float64, queue_size=5)
+
+xController = LinearController(XPub)
+yController = LinearController(YPub)
 
 def dvlCb(msg):
     xController.updateState(msg.velocity.x)

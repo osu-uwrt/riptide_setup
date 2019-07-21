@@ -24,7 +24,9 @@ HUD::HUD() : nh("hud") {
   cmd_pitch_sub = nh.subscribe<riptide_msgs::AttitudeCommand>("/command/pitch", 1, &HUD::CmdPitchCB, this);
   cmd_yaw_sub = nh.subscribe<riptide_msgs::AttitudeCommand>("/command/yaw", 1, &HUD::CmdYawCB, this);
   cmd_depth_sub = nh.subscribe<riptide_msgs::DepthCommand>("/command/depth", 1, &HUD::CmdDepthCB, this);
-  cmd_accel_sub = nh.subscribe<geometry_msgs::Accel>("/command/accel", 1, &HUD::CmdAccelCB, this);
+  cmd_x_sub = nh.subscribe<std_msgs::Float64>("/command/force_x", 1, &HUD::ForceXCB, this);
+  cmd_y_sub = nh.subscribe<std_msgs::Float64>("/command/force_y", 1, &HUD::ForceYCB, this);
+  cmd_z_sub = nh.subscribe<std_msgs::Float64>("/command/force_z", 1, &HUD::ForceZCB, this);
   reset_sub = nh.subscribe<riptide_msgs::ResetControls>("/controls/reset", 1, &HUD::ResetCB, this);
 
   // Outputs
@@ -61,9 +63,9 @@ void HUD::InitMsgs() {
   cmd_euler_rpy.x = 0;
   cmd_euler_rpy.y = 0;
   cmd_euler_rpy.z = 0;
-  cmd_linear_accel.x = 0;
-  cmd_linear_accel.y = 0;
-  cmd_linear_accel.z = 0;
+  cmd_x = 0;
+  cmd_y = 0;
+  cmd_z = 0;
   cmd_depth = 0;
 }
 
@@ -151,7 +153,7 @@ Mat HUD::CreateHUD(Mat &img) {
   sprintf(state_rpyd, "STATE: R: %.2f, P: %.2f, Y: %.2f, D: %.2f", euler_rpy.x, euler_rpy.y, euler_rpy.z, depth);
   sprintf(cmd_rpyd, "CMD: R: %.2f, P: %.2f, Y: %.2f, D: %.2f", cmd_euler_rpy.x, cmd_euler_rpy.y, cmd_euler_rpy.z, cmd_depth);
   sprintf(state_accel, "STATE: Ax: %.3f, Ay: %.3f, Az: %.3f", linear_accel.x, linear_accel.y, linear_accel.z);
-  sprintf(cmd_accel, "CMD: Ax: %.3f, Ay: %.3f, Az: %.3f", cmd_linear_accel.x, cmd_linear_accel.y, cmd_linear_accel.z);
+  sprintf(cmd_accel, "CMD: Ax: %.3f, Ay: %.3f, Az: %.3f", cmd_x, cmd_y, cmd_z);
 
   putText(hud, string(state_rpyd), Point(5, text_start[0]), FONT_HERSHEY_COMPLEX_SMALL, font_scale, text_color, thickness);
   putText(hud, string(cmd_rpyd), Point(5, text_start[1]), FONT_HERSHEY_COMPLEX_SMALL, font_scale, text_color, thickness);
@@ -205,11 +207,16 @@ void HUD::CmdDepthCB(const riptide_msgs::DepthCommand::ConstPtr& cmd_msg) {
   cmd_depth = cmd_msg->depth;
 }
 
-// Get command linear accel
-void HUD::CmdAccelCB(const geometry_msgs::Accel::ConstPtr& cmd_msg){
-  cmd_linear_accel.x = cmd_msg->linear.x;
-  cmd_linear_accel.y = cmd_msg->linear.y;
-  cmd_linear_accel.z = cmd_msg->linear.z;
+void HUD::ForceXCB(const std_msgs::Float64::ConstPtr& msg){
+  cmd_x = msg->data;
+}
+
+void HUD::ForceYCB(const std_msgs::Float64::ConstPtr& msg){
+  cmd_y = msg->data;
+}
+
+void HUD::ForceZCB(const std_msgs::Float64::ConstPtr& msg){
+  cmd_z = msg->data;
 }
 
 void HUD::Loop()

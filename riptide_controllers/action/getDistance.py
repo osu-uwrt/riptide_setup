@@ -17,8 +17,10 @@ bridge = CvBridge()
 
 class GetDistance(object):
 
+    _result = riptide_controllers.msg.GetDistanceResult()
+
     def __init__(self):
-        self._as = actionlib.SimpleActionServer("move_distance", riptide_controllers.msg.MoveDistanceAction, execute_cb=self.execute_cb, auto_start=False)
+        self._as = actionlib.SimpleActionServer("get_distance", riptide_controllers.msg.GetDistanceAction, execute_cb=self.execute_cb, auto_start=False)
         self._as.start()
 
       
@@ -56,8 +58,9 @@ class GetDistance(object):
 
             readings.append(self.f * self.T / disparity)
 
-        result = riptide_controllers.msg.GetDistanceActionResult(np.median(readings))
-        self._as.set_succeeded(result)
+        self._result.distance =  np.median(readings)
+        rospy.loginfo("Distance: %f"%self._result.distance)
+        self._as.set_succeeded(self._result)
 
     def imgCB(self, msg):
         self.f = msg.f

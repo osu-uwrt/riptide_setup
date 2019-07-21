@@ -1,8 +1,9 @@
+#! /usr/bin/env python
 import rospy
 import actionlib
 
 import riptide_autonomy.msg
-from riptide_controllers.msg import LinearCommand
+from riptide_msgs.msg import LinearCommand, AttitudeCommand, DepthCommand
 
 from actionWrapper import *
 
@@ -10,6 +11,11 @@ class GoToFinalsAction(object):
 
     def __init__(self):
         self.xPub = rospy.Publisher("/command/x", LinearCommand, queue_size=1)
+        self.rollPub = rospy.Publisher("/command/roll", AttitudeCommand, queue_size=1)
+        self.pitchPub = rospy.Publisher("/command/pitch", AttitudeCommand, queue_size=1)
+        self.yawPub = rospy.Publisher("/command/yaw", AttitudeCommand, queue_size=1)
+        self.depthPub = rospy.Publisher("/command/depth", DepthCommand, queue_size=1)
+
         self._as = actionlib.SimpleActionServer(
             "go_to_finals", riptide_autonomy.msg.GoToFinalsAction, execute_cb=self.execute_cb, auto_start=False)
         self._as.start()
@@ -20,18 +26,25 @@ class GoToFinalsAction(object):
 
 
     def execute_cb(self, goal):
-        if goal.quadrant == 0:
-            performActions(
-                depthAction(2),
-                rollAction(0),
-                pitchAction(0),
-                yawAction(59)
-            )
-            self.goToTask("Gate")
-            waitAction("Gate", 10).wait_for_result()
-            gateTaskAction().wait_for_result()
-        
+        performActions(
+            depthAction(2),
+            rollAction(0),
+            pitchAction(0),
+            yawAction(170)
+        )
+        self.xPub.publish(30, LinearCommand.FORCE)
+        waitAction("Cutie", 10).wait_for_result()
+        buoyTaskAction("Batman").wait_for_result()
 
+        self.yawPub.publish(0, AttitudeCommand.MOMENT)
+        performActions(
+            depthAction(0),
+            rollAction(0),
+            pitchAction(0)
+        )
+        self.rollPub.publish(0, AttitudeCommand.MOMENT)
+        self.pitchPub.publish(0, AttitudeCommand.MOMENT)
+        self.depthPub.publish(False, 0)
         self._as.set_succeeded()
 
 

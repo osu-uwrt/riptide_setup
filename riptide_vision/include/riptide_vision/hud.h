@@ -7,6 +7,7 @@
 #include "geometry_msgs/Vector3.h"
 #include "geometry_msgs/Accel.h"
 #include "sensor_msgs/image_encodings.h"
+#include "std_msgs/Float64.h"
 #include "riptide_msgs/Imu.h"
 #include "riptide_msgs/AttitudeCommand.h"
 #include "riptide_msgs/DepthCommand.h"
@@ -24,12 +25,12 @@ class HUD
  private:
   ros::NodeHandle nh;
   ros::Subscriber imu_sub, depth_sub, stereo_img_sub, down_img_sub, darknet_img_sub, reset_sub;
-  ros::Subscriber cmd_roll_sub, cmd_pitch_sub, cmd_yaw_sub, cmd_depth_sub, cmd_accel_sub, object_sub;
+  ros::Subscriber cmd_roll_sub, cmd_pitch_sub, cmd_yaw_sub, cmd_depth_sub, cmd_x_sub, cmd_y_sub, cmd_z_sub, object_sub;
   image_transport::Publisher stereo_img_pub, down_img_pub, darknet_img_pub;
 
-  geometry_msgs::Vector3 euler_rpy, cmd_euler_rpy, linear_accel, cmd_linear_accel;
+  geometry_msgs::Vector3 euler_rpy, cmd_euler_rpy, linear_accel;
   riptide_msgs::Object object;
-  double depth, cmd_depth;
+  double depth, cmd_depth, cmd_x, cmd_y, cmd_z;
   bool reset = false;
 
   int width, height, top_margin, num_rows, offset, text_start[4];
@@ -51,7 +52,9 @@ class HUD
   void CmdPitchCB(const riptide_msgs::AttitudeCommand::ConstPtr& cmd_msg);
   void CmdYawCB(const riptide_msgs::AttitudeCommand::ConstPtr& cmd_msg);
   void CmdDepthCB(const riptide_msgs::DepthCommand::ConstPtr& cmd_msg);
-  void CmdAccelCB(const geometry_msgs::Accel::ConstPtr& cmd_msg);
+  void ForceXCB(const std_msgs::Float64::ConstPtr& msg);
+  void ForceYCB(const std_msgs::Float64::ConstPtr& msg);
+  void ForceZCB(const std_msgs::Float64::ConstPtr& msg);
   void Loop();
 };
 

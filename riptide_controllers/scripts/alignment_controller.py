@@ -14,16 +14,13 @@ class AlignmentController():
     MAX_FORCE = 40.0
     X_FORCE_P = 2.0
     Y_FORCE_P = 2.0
-    DEPTH_FORCE_P = 10.0
+    DEPTH_FORCE_P = 0.1
 
     cam_width = 644
     cam_height = 482
     currentCam = 0
 
-    x_error = 0
-    y_error = 0
-    z_error = 0
-
+    obj = ""
     width_ratio = 0
     watchdog_timer = None
     
@@ -31,9 +28,11 @@ class AlignmentController():
     # time0 = time.time()
 
     def cmdCb(self, msg):
-        self.object = msg.object
-        self.width = msg.width_ratio
-        if self.object == "":
+        self.obj = msg.object
+        self.width_ratio = msg.width_ratio
+        if self.obj == "":
+            if self.watchdog_timer is not None:
+                    self.watchdog_timer.shutdown()
             self.shutdown()
 
     def depthCb(self, msg):
@@ -45,28 +44,24 @@ class AlignmentController():
     
     def bboxCb(self, msg):
         for bbox in msg.bounding_boxes:
-            if self.object == bbox.Class:
+            if self.obj == bbox.Class:
                 if self.watchdog_timer is not None:
                     self.watchdog_timer.shutdown()
-                self.watchdog_timer = rospy.Timer(rospy.Duration(0.5), self.shutdown())
+                self.watchdog_timer = rospy.Timer(rospy.Duration(0.5), self.shutdown, True)
                 self.x_error = (bbox.xmin + bbox.xmax) / 2 - self.cam_width / 2
                 self.y_error = (bbox.ymin + bbox.ymax) / 2 - self.cam_height / 2
                 self.z_error = (bbox.xmax - bbox.xmin) - self.cam_width * self.width_ratio
 
                 if self.currentCam == 0:
-                    YPub.publish(self.x_error * self.Y_FORCE_P, LinearCommand.FORCE)
-                    XPub.publish(-self.z_error * self.X_FORCE_P, LinearCommand.FORCE)
+                    YPub.publish(min(self.MAX_FORCE, max(-self.MAX_FORCE, self.x_error * self.Y_FORCE_P)), LinearCommand.FORCE)
+                    XPub.publish(min(self.MAX_FORCE, max(-self.MAX_FORCE, -self.z_error * self.X_FORCE_P)), LinearCommand.FORCE)
                     depthPub.publish(True, self.currentDepth + self.y_error * self.DEPTH_FORCE_P)
                 else:
-                    YPub.publish(self.x_error * self.Y_FORCE_P, LinearCommand.FORCE)
-                    XPub.publish(-self.y_error * self.X_FORCE_P, LinearCommand.FORCE)
+                    YPub.publish(min(self.MAX_FORCE, max(-self.MAX_FORCE, self.x_error * self.Y_FORCE_P)), LinearCommand.FORCE)
+                    XPub.publish(min(self.MAX_FORCE, max(-self.MAX_FORCE, -self.y_error * self.X_FORCE_P)), LinearCommand.FORCE)
                     depthPub.publish(True, self.currentDepth - self.z_error * self.DEPTH_FORCE_P)
 
-    def shutdown(self):
-        self.x_error = 0
-        self.y_error = 0
-        self.z_error = 0
-
+    def shutdown(self, timer = None):
         YPub.publish(0, LinearCommand.FORCE)
         XPub.publish(0, LinearCommand.FORCE)
         depthPub.publish(True, self.currentDepth)
@@ -79,8 +74,8 @@ class AlignmentController():
         
 alignmentController = AlignmentController()
 
-XPub = rospy.Publisher("/command/x", Float64, queue_size=5)
-YPub = rospy.Publisher("/command/y", Float64, queue_size=5)
+XPub = rospy.Publisher("/command/x", LinearCommand, queue_size=5)
+YPub = rospy.Publisher("/command/y", LinearCommand, queue_size=5)
 depthPub = rospy.Publisher("/command/depth", DepthCommand, queue_size=5)
 
    
@@ -94,7 +89,7 @@ if __name__ == '__main__':
     rospy.init_node("alignment_controller")
 
     # Set subscribers
-    rospy.Subscriber("/command/camera", Int8, cameraSelectionCb)
+    rospy.Subscriber("/command/camera", Int8, alignmentController.cameraSelectionCb)
     rospy.Subscriber("/command/alignment", AlignmentCommand, alignmentController.cmdCb)
     rospy.Subscriber("/state/bboxes", BoundingBoxes, alignmentController.bboxCb)
     rospy.Subscriber("/state/depth", Depth, alignmentController.depthCb)

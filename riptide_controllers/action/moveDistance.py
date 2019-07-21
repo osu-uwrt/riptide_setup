@@ -2,14 +2,15 @@
 import rospy
 import actionlib
 
-from riptide_msgs.msg import Dvl, LinearCommand
+from riptide_msgs.msg import LinearCommand
+from nortek_dvl.msg import Dvl
 from geometry_msgs.msg import Vector3
 import riptide_controllers.msg
 
 import math
 
 class MoveDistance(object):
-    P = .5
+    P = 1
     MAX_VELOCITY = 1
 
     def __init__(self):
@@ -20,15 +21,15 @@ class MoveDistance(object):
 
       
     def execute_cb(self, goal):
-        rospy.loginfo("Moving robot %dm x and %dm y" % (goal.x, goal.y))
+        rospy.loginfo("Moving robot %fm x and %fm y" % (goal.x, goal.y))
         self.distanceX = 0
         self.distanceY = 0
         self.lastXVelocity = 0
         self.lastYVelocity = 0
         self.goal = goal
-        dvl_sub = rospy.Subscriber("/state/Dvl", Dvl, self.dvlCb)
+        dvl_sub = rospy.Subscriber("/state/dvl", Dvl, self.dvlCb)
 
-        while abs(self.distanceX - goal.position.x) > 0.1 or abs(self.distanceY - goal.position.y) > 0.1:
+        while abs(self.distanceX - goal.x) > 0.1 or abs(self.distanceY - goal.y) > 0.1:
             rospy.sleep(0.05)
 
         rospy.loginfo("At desired position")
@@ -42,10 +43,17 @@ class MoveDistance(object):
 
     def dvlCb(self, msg):
         if not math.isnan(msg.velocity.x):
-            self.lastXVelocity = msg.velocity.x
-            self.lastYVelocity = msg.velocity.y
-        self.distanceX += self.lastXVelocity * (1/8)
-        self.distanceY += self.lastYVelocity * (1/8)
+            curXVel = msg.velocity.x
+            curYVel = msg.velocity.y
+        else:
+            curXVel = self.lastXVelocity
+            curYVel = self.lastYVelocity
+        self.distanceX += (self.lastXVelocity + curXVel) / 2.0 / 8
+        self.distanceY += (self.lastYVelocity + curYVel) / 2.0 / 8
+        self.lastXVelocity = curXVel
+        self.lastYVelocity = curYVel
+
+        rospy.loginfo("X:%f Y:%f"%(self.distanceX, self.distanceY))
 
         velocityX = self.P * (self.goal.x - self.distanceX)
         velocityY = self.P * (self.goal.y - self.distanceY)
