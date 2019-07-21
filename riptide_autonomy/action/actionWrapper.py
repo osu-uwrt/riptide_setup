@@ -7,6 +7,10 @@ def performActions(*actions):
     for a in actions:
         a.wait_for_result()
 
+def getResult(action):
+    action.wait_for_result()
+    return action.get_result()
+
 def depthAction(depth):
     """ 
     Travel to and hold depth
@@ -75,7 +79,7 @@ def moveAction(x, y):
         "move_distance", riptide_controllers.msg.MoveDistanceAction)
     client.wait_for_server()
 
-    client.send_goal(riptide_controllers.msg.MoveDistanceActionGoal(x, y))
+    client.send_goal(riptide_controllers.msg.MoveDistanceGoal(x, y))
     return client
 
 def waitAction(obj, times):
@@ -90,7 +94,7 @@ def waitAction(obj, times):
         "wait", riptide_controllers.msg.WaitAction)
     client.wait_for_server()
 
-    client.send_goal(riptide_controllers.msg.WaitActionGoal(obj, times))
+    client.send_goal(riptide_controllers.msg.WaitGoal(obj, times))
     return client
 
 def gateManeuverAction():
@@ -101,7 +105,7 @@ def gateManeuverAction():
         "gate_maneuver", riptide_controllers.msg.GateManeuverAction)
     client.wait_for_server()
 
-    client.send_goal(riptide_controllers.msg.GateManeuverActionGoal())
+    client.send_goal(riptide_controllers.msg.GateManeuverGoal())
     return client
 
 def arcAction(angle, velocity, radius):
@@ -117,22 +121,23 @@ def arcAction(angle, velocity, radius):
         "arc", riptide_controllers.msg.ArcAction)
     client.wait_for_server()
 
-    client.send_goal(riptide_controllers.msg.ArcActionGoal(angle, velocity, radius))
+    client.send_goal(riptide_controllers.msg.ArcGoal(angle, velocity, radius))
     return client
 
-def alignAction(obj, bboxWidth):
+def alignAction(obj, bboxWidth, hold = False):
     """ 
     Align to the specific object, and keep a rough distance with that object by bboxWidth
 
     Parameters: 
         obj (str): Name of the object
         bboxWidth (float): Ratio of bbox width over camera width
+        hold (bool): Whether to keep aligning after action completes
     """
     client = actionlib.SimpleActionClient(
         "align", riptide_controllers.msg.AlignAction)
     client.wait_for_server()
 
-    client.send_goal(riptide_controllers.msg.AlignActionGoal(obj, bboxWidth))
+    client.send_goal(riptide_controllers.msg.AlignGoal(obj, bboxWidth, hold))
     return client
 
 def getDistanceAction(obj):
@@ -146,7 +151,7 @@ def getDistanceAction(obj):
         "get_distance", riptide_controllers.msg.GetDistanceAction)
     client.wait_for_server()
 
-    client.send_goal(riptide_controllers.msg.GetDistanceActionGoal(obj))
+    client.send_goal(riptide_controllers.msg.GetDistanceGoal(obj))
     return client
 
 def gateTaskAction(isLeft):
@@ -160,5 +165,19 @@ def gateTaskAction(isLeft):
         "gate_task", riptide_autonomy.msg.GateTaskAction)
     client.wait_for_server()
 
-    client.send_goal(riptide_autonomy.msg.GateTaskActionGoal())
+    client.send_goal(riptide_autonomy.msg.GateTaskGoal(isLeft))
+    return client
+
+def buoyTaskAction(back):
+    """
+    The buoy task
+    
+    Parameters: 
+        back (str): Name of the face on the back of the buoys
+    """
+    client = actionlib.SimpleActionClient(
+        "buoy_task", riptide_autonomy.msg.BuoyTaskAction)
+    client.wait_for_server()
+
+    client.send_goal(riptide_autonomy.msg.BuoyTaskGoal(back))
     return client

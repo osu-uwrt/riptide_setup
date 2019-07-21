@@ -21,7 +21,7 @@ class GoToDepthAction(object):
         while abs(rospy.wait_for_message("/state/depth", Depth).depth - goal.depth) > 0.1:
             rospy.sleep(0.05)
 
-        rospy.loginfo("At depth")
+        rospy.loginfo("At Depth")
         self._as.set_succeeded()
         
         

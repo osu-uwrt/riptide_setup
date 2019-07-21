@@ -68,13 +68,6 @@ class WaitAction(object):
     
     def execute_cb(self, goal):
         rospy.loginfo("Waiting for object %s", goal.object)
-        rospy.loginfo("Start spining")        
-        self.performActions(
-            self.depthAction(0.5),
-            self.rollAction(0),
-            self.pitchAction(0),
-        )
-        self.yawPub.publish(30, AttitudeCommand.VELOCITY)
         # Wait until you see the object a few times
         count = 0
         lastTime = time.time()
@@ -86,23 +79,9 @@ class WaitAction(object):
                         count += 1
                     else:
                         count = 0
-                lastTime = time.time()
+                    lastTime = time.time()
 
         rospy.loginfo("Found object %s", goal.object)
-        # Stops spinning, holds depth
-        self.yawPub.publish(0, AttitudeCommand.VELOCITY)
-        rospy.sleep(5.0)
-        self.performActions(
-            self.depthAction(0),
-            self.rollAction(0),
-            self.pitchAction(0),
-        )   
-        self.rollPub.publish(0, AttitudeCommand.MOMENT)
-        self.pitchPub.publish(0, AttitudeCommand.MOMENT)
-        self.yawPub.publish(0, AttitudeCommand.MOMENT)
-        self.depthPub.publish(False, 0)
-        rospy.loginfo("Stop spinning")        
-        
         self._as.set_succeeded()
 
 if __name__ == '__main__':

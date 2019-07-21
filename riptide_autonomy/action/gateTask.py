@@ -1,6 +1,8 @@
+#! /usr/bin/env python
 import rospy
 import actionlib
 
+from riptide_msgs.msg import AlignmentCommand
 import riptide_autonomy.msg
 
 from actionWrapper import *
@@ -14,12 +16,19 @@ class GateTaskAction(object):
 
 
     def execute_cb(self, goal):
-        alignAction("Gate", .4).wait_for_result()
+        rospy.loginfo("Aligning to gate")
+        alignAction("Gate", .15).wait_for_result()
         if goal.isLeft:
+            rospy.loginfo("Moving left")
             moveAction(0, -1).wait_for_result()
         else:
+            rospy.loginfo("Moving right")
             moveAction(0, 1).wait_for_result()
+
+        rospy.loginfo("Stand back and watch this!")
         gateManeuverAction().wait_for_result()
+
+        rospy.loginfo("Gate task completed")
 
         self._as.set_succeeded()
 

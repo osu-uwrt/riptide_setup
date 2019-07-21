@@ -1,14 +1,15 @@
+#! /usr/bin/env python
 import rospy
 import actionlib
 
-from riptide_controllers.msg import LinearCommand
+from riptide_msgs.msg import LinearCommand
 import riptide_autonomy.msg
 
 from actionWrapper import *
 
 class BuoyTaskAction(object):
 
-    threeBuoySides = ["Groot", "Batman", "Fairy"]
+    threeBuoySides = ["Garlic", "Wolf"]
 
     def __init__(self):
         self.xPub = rospy.Publisher("/command/x", LinearCommand, queue_size=1)
@@ -19,26 +20,42 @@ class BuoyTaskAction(object):
 
 
     def execute_cb(self, goal):
-        alignAction("Cutie", .4).wait_for_result()
-        distance = getDistanceAction("Cutie").wait_for_result().distance
+        rospy.loginfo("Starting Buoy task")
+        alignAction("Cutie", .3).wait_for_result()
+        distance = getResult(getDistanceAction("Cutie")).distance
         moveAction(distance, 0).wait_for_result()
         self.xPub.publish(10, LinearCommand.FORCE)
         rospy.sleep(2)
         self.xPub.publish(0, LinearCommand.FORCE)
 
-        moveAction(-4, 0).wait_for_result()
-        self.yPub.publish(20, LinearCommand.FORCE)
-        frontFace = next(x for x in self.threeBuoySides if not x == goal.backside)
-        waitAction(frontFace, 5).wait_for_result()
-        distance = getDistanceAction(frontFace).wait_for_result().distance
-        arcAction(170, 10, distance).wait_for_result()
+        rospy.loginfo("Going around")
+        moveAction(-1.5, 0).wait_for_result()
+        distance = getResult(getDistanceAction("Cutie")).distance
+        arcAction(-170, -10, distance).wait_for_result()
 
-        alignAction(goal.backside, .4).wait_for_result()
-        distance = getDistanceAction(goal.backside).wait_for_result().distance
+        alignAction(goal.backside, .3).wait_for_result()
+        distance = getResult(getDistanceAction(goal.backside)).distance
         moveAction(distance, 0).wait_for_result()
         self.xPub.publish(10, LinearCommand.FORCE)
         rospy.sleep(2)
         self.xPub.publish(0, LinearCommand.FORCE)
+        moveAction(-2, 0).wait_for_result()
+
+        rospy.loginfo("Finished Buoy task")
+
+        # moveAction(-3, 0).wait_for_result()
+        # self.yPub.publish(20, LinearCommand.FORCE)
+        # frontFace = next(x for x in self.threeBuoySides if not x == goal.backside)
+        # waitAction(frontFace, 5).wait_for_result()
+        # distance = getResult(getDistanceAction(frontFace)).distance
+        # arcAction(-170, -10, distance).wait_for_result()
+
+        # alignAction(goal.backside, .4).wait_for_result()
+        # distance = getResult(getDistanceAction(goal.backside)).distance
+        # moveAction(distance, 0).wait_for_result()
+        # self.xPub.publish(10, LinearCommand.FORCE)
+        # rospy.sleep(2)
+        # self.xPub.publish(0, LinearCommand.FORCE)
 
         self._as.set_succeeded()
 
