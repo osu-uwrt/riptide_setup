@@ -51,6 +51,7 @@ add_action_files(
   GateManeuver.action
   GetDistance.action
   Align.action
+  Navigate.action
 )
 
 generate_messages(

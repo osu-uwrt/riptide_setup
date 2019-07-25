@@ -13,4 +13,6 @@
   <node pkg="riptide_controllers" type="getDistance.py" name="get_distance" output="screen" />
   <node pkg="riptide_controllers" type="align.py" name="align" output="screen" />
   <node pkg="riptide_controllers" type="moveDistance.py" name="move_distance" output="screen" />
+  <node pkg="riptide_controllers" type="navigate.py" name="navigate" output="screen" />
+
 </launch>
