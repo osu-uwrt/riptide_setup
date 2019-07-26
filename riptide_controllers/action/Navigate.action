@@ -1,0 +1,8 @@
+#goal definition
+string object
+float32 drive_ang
+---
+#result definition
+---
+#feedback
+int32[] sequence
