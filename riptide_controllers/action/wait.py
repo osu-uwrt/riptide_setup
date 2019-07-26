@@ -12,59 +12,9 @@ import time
 class WaitAction(object):
 
     def __init__(self):
-
-        self.depthPub = rospy.Publisher(
-            "/command/depth", DepthCommand, queue_size=5)
-        self.rollPub = rospy.Publisher(
-            "/command/roll", AttitudeCommand, queue_size=5)
-        self.pitchPub = rospy.Publisher(
-            "/command/pitch", AttitudeCommand, queue_size=5)
-        self.yawPub = rospy.Publisher(  
-            "/command/yaw", AttitudeCommand, queue_size=5)
-
         self._as = actionlib.SimpleActionServer(
             "wait", riptide_controllers.msg.WaitAction, execute_cb=self.execute_cb, auto_start=False)
         self._as.start()
-
-    def performActions(self, *actions):
-        for a in actions:
-            a.wait_for_result()
-
-    def depthAction(self, depth):
-        client = actionlib.SimpleActionClient(
-            "go_to_depth", riptide_controllers.msg.GoToDepthAction)
-        client.wait_for_server()
-
-        # Sends the goal to the action server.
-        client.send_goal(riptide_controllers.msg.GoToDepthGoal(depth))
-        return client
-
-    def rollAction(self, angle):
-        client = actionlib.SimpleActionClient(
-            "go_to_roll", riptide_controllers.msg.GoToRollAction)
-        client.wait_for_server()
-
-        # Sends the goal to the action server.
-        client.send_goal(riptide_controllers.msg.GoToRollGoal(angle))
-        return client
-
-    def pitchAction(self, angle):
-        client = actionlib.SimpleActionClient(
-            "go_to_pitch", riptide_controllers.msg.GoToPitchAction)
-        client.wait_for_server()
-
-        # Sends the goal to the action server.
-        client.send_goal(riptide_controllers.msg.GoToPitchGoal(angle))
-        return client
-
-    def yawAction(self, angle):
-        client = actionlib.SimpleActionClient(
-            "go_to_yaw", riptide_controllers.msg.GoToYawAction)
-        client.wait_for_server()
-
-        # Sends the goal to the action server.
-        client.send_goal(riptide_controllers.msg.GoToYawGoal(angle))
-        return client
     
     def execute_cb(self, goal):
         rospy.loginfo("Waiting for object %s", goal.object)

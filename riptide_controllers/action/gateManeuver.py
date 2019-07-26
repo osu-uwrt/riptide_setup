@@ -70,12 +70,14 @@ class GateManeuver(object):
 
     def imuCb(self, msg):
         self.angleTraveled = angleDiff(msg.rpy_deg.z, self.startAngle)
+        roll = msg.rpy_deg.x
         if self.angleTraveled < -90:
             self.pastHalf = True
         if self.pastHalf and self.angleTraveled < 0:
             self.angleTraveled += 360
+        if roll < 0:
+            roll += 360
 
-        roll = msg.rpy_deg.x
         self.rollPub.publish(self.CRUISE_VELOCITY + self.ROLL_P * (self.angleTraveled - roll), AttitudeCommand.VELOCITY)
 
         sr = math.sin(roll * math.pi / 180)

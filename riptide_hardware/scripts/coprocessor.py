@@ -6,8 +6,10 @@ import select
 import traceback
 from threading import Thread
 from collections import deque
-from std_msgs.msg import String, Header, Bool, Float32MultiArray
+from std_msgs.msg import String, Header, Bool, Float32MultiArray, Int8
 from riptide_msgs.msg import Depth, PwmStamped, StatusLight, SwitchState
+from riptide_hardware.cfg import CoprocessorDriverConfig
+from dynamic_reconfigure.server import Server
 
 IP_ADDR = '192.168.1.42'
 copro = None
@@ -87,6 +89,50 @@ def shutdown_copro():
         rospy.sleep(.1)
         copro.close()
 
+def reconfigure_callback(config, level):
+    for i in range(5):
+        start = config["coil_%d_start1" % (i+1)]
+        end = config["coil_%d_end1" % (i+1)]
+        enqueueCommand(16, [i, start // 256, start % 256, end // 256, end % 256])
+
+        start = config["coil_%d_start2" % (i+1)]
+        end = config["coil_%d_end2" % (i+1)]
+        enqueueCommand(16, [i+16, start // 256, start % 256, end // 256, end % 256])
+
+    enqueueCommand(16, [5, 0, 0, config["standby"] // 256, config["standby"] % 256])
+    enqueueCommand(16, [21, 0, 0, config["standby"] // 256, config["standby"] % 256])
+
+    return config
+
+def arm_callback(msg):
+    if msg.data:
+        enqueueCommand(16, [144])
+    else:
+        enqueueCommand(16, [128])
+
+def fire_callback(msg):
+    if msg.data == 0:
+        enqueueCommand(16, [160])
+    else:
+        enqueueCommand(16, [176])
+
+def grab_callback(msg):
+    if msg.data == 0:
+        enqueueCommand(16, [224, 6, 64])
+    elif msg.data > 0:
+        enqueueCommand(16, [224, 4, 0])
+    else:
+        enqueueCommand(16, [224, 8, 0])
+
+def drop_callback(msg):
+    if msg.data == 0:
+        enqueueCommand(16, [192])
+    else:
+        enqueueCommand(16, [208])
+
+
+    
+
 def main():
     global copro
     global depth_pub
@@ -96,7 +142,7 @@ def main():
     global connected
     global buffer
 
-    rospy.init_node('coprocessor_serial')
+    rospy.init_node('coprocessor_driver')
 
     # add publishers
     depth_pub = rospy.Publisher('/depth/raw', Depth, queue_size=1)
@@ -104,8 +150,13 @@ def main():
     connection_pub = rospy.Publisher('/state/copro', Bool, queue_size=1)
     thruster_current_pub = rospy.Publisher('/state/thruster_currents', Float32MultiArray, queue_size=1)
 
-    rospy.Subscriber('/command/pwm', PwmStamped, pwm_callback, queue_size=10)
-    # rospy.Subscriber('/status/light', StatusLight, light_callback, queue_size=1)
+    rospy.Subscriber('/command/pwm', PwmStamped, pwm_callback)
+    rospy.Subscriber('/command/drop', Int8, drop_callback)
+    rospy.Subscriber('/command/arm', Bool, arm_callback)
+    rospy.Subscriber('/command/fire', Int8, fire_callback)
+    rospy.Subscriber('/command/grabber', Int8, grab_callback)
+
+    Server(CoprocessorDriverConfig, reconfigure_callback)
     
     # setup timer for periodic depth/switches update
     rospy.Timer(rospy.Duration(0.05), depth_callback)
@@ -124,13 +175,11 @@ def main():
                 readable, writable, exceptional = select.select([copro], [copro], [copro], 0)
 
                 if len(writable) > 0 and len(command_queue) > 0:
-                    # send pwm commands
                     command = []
                     while len(command_queue) != 0:
                         command += command_queue.popleft()
                     copro.sendall(bytearray(command))
                 if len(readable) > 0:
-                    # read the switch or depth data and publish
                     buffer += copro.recv(50)
                     if not isinstance(buffer[0], int):
                         buffer = list(map(ord, buffer))
@@ -165,7 +214,7 @@ def main():
                                 switch_msg.sw5 = True if response[0] & 1 else False
                                 switch_pub.publish(switch_msg)
 
-                        elif command == 12: # switches command
+                        elif command == 12:
                             if len(response) != 8:
                                 print("Improper thruster current response: " + str(response))
                             else:

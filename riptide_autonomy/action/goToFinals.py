@@ -30,7 +30,7 @@ class GoToFinalsAction(object):
             depthAction(2),
             rollAction(0),
             pitchAction(0),
-            yawAction(170)
+            yawAction(-60)
         )
         self.xPub.publish(30, LinearCommand.FORCE)
         waitAction("Cutie", 10).wait_for_result()

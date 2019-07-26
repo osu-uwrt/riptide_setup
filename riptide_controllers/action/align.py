@@ -30,13 +30,17 @@ class AlignAction(object):
 
         self.alignPub.publish(goal.object, goal.width_ratio)  
 
-        while self.bbox_x > 50 or self.bbox_y > 50 or self.bbox_z > 50:
+        count = 0
+        while count < 5:
             bbox_msg = rospy.wait_for_message("/state/bboxes", BoundingBoxes)
             for bbox in bbox_msg.bounding_boxes:
                 if bbox.Class == goal.object:
                     self.bbox_x = (bbox.xmin + bbox.xmax) / 2 - self.cam_width / 2
                     self.bbox_y = (bbox.ymin + bbox.ymax) / 2 - self.cam_height / 2
                     self.bbox_z = (bbox.xmax - bbox.xmin) - self.cam_width * goal.width_ratio
+                    
+            if abs(self.bbox_x) < 20 and abs(self.bbox_y) < 20 and abs(self.bbox_z) < 20:
+                count += 1
             
         if not goal.hold:
             self.alignPub.publish("", 0)  
