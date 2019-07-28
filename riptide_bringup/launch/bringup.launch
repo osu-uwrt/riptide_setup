@@ -7,6 +7,6 @@
 
   <arg name="log" default="false" />
   <node pkg="rosbag" type="record" name="record_autonomy" 
-        args="record -o ../mission /rosout_agg /stereo/left/image_hud /debug/pole2" 
+        args="record -o /mnt/Data/bringup /rosout_agg /stereo/left/image_hud /debug/pole2" 
         if="$(arg log)" />
 </launch>

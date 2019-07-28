@@ -27,13 +27,19 @@ class GetDistance(object):
     def execute_cb(self, goal):
         rospy.loginfo("Finding distance to " + goal.object)
         self.image = None
-        rospy.Subscriber("/stereo/disparity", DisparityImage, self.imgCB)
+        sub = rospy.Subscriber("/stereo/disparity", DisparityImage, self.imgCB)
 
         readings = []
         while len(readings) < 5:
             bboxes = rospy.wait_for_message("/state/bboxes", BoundingBoxes).bounding_boxes
             while len([x for x in bboxes if x.Class == goal.object]) == 0 or self.image is None:
                 bboxes = rospy.wait_for_message("/state/bboxes", BoundingBoxes).bounding_boxes
+
+                if self._as.is_preempt_requested():
+                    rospy.loginfo('Preempted Get Distance')
+                    sub.unregister()
+                    self._as.set_preempted()
+                    return
 
             bbox = [x for x in bboxes if x.Class == goal.object][0]
 
@@ -58,6 +64,7 @@ class GetDistance(object):
 
             readings.append(self.f * self.T / disparity)
 
+        sub.unregister()
         self._result.distance =  np.median(readings)
         rospy.loginfo("Distance: %f"%self._result.distance)
         self._as.set_succeeded(self._result)

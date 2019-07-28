@@ -5,7 +5,7 @@ import actionlib
 import riptide_autonomy.msg
 from riptide_msgs.msg import LinearCommand, AttitudeCommand, DepthCommand
 
-from actionWrapper import *
+from actionTools import *
 
 class GoToFinalsAction(object):
 
@@ -19,6 +19,7 @@ class GoToFinalsAction(object):
         self._as = actionlib.SimpleActionServer(
             "go_to_finals", riptide_autonomy.msg.GoToFinalsAction, execute_cb=self.execute_cb, auto_start=False)
         self._as.start()
+        self.timer = rospy.Timer(rospy.Duration(0.05), lambda _: checkPreempted(self._as))
 
     def goToTask(self, task):
         yawAction(12).wait_for_result()

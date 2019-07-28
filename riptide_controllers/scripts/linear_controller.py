@@ -13,6 +13,7 @@ class LinearController():
 
     VELOCITY_P = 2.0
     DRAG_COEFF = 0
+    MAX_FORCE = 40
 
     velocityCmd = None
     force = 0
@@ -35,7 +36,7 @@ class LinearController():
             # Set force porportional to velocity error
             self.force = 0
             if not math.isnan(velocity):
-                self.force = self.VELOCITY_P * (self.velocityCmd - velocity) + self.DRAG_COEFF * velocity * abs(velocity)
+                self.force = max(-self.MAX_FORCE, min(self.MAX_FORCE, self.VELOCITY_P * (self.velocityCmd - velocity) + self.DRAG_COEFF * velocity * abs(velocity)))
 
     def reconfigure(self, config, name):
         self.VELOCITY_P = config[name + "_velocity_p"]

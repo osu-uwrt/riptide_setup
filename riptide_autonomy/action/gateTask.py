@@ -5,7 +5,7 @@ import actionlib
 from riptide_msgs.msg import AlignmentCommand
 import riptide_autonomy.msg
 
-from actionWrapper import *
+from actionTools import *
 
 class GateTaskAction(object):
 
@@ -13,6 +13,7 @@ class GateTaskAction(object):
         self._as = actionlib.SimpleActionServer(
             "gate_task", riptide_autonomy.msg.GateTaskAction, execute_cb=self.execute_cb, auto_start=False)
         self._as.start()
+        self.timer = rospy.Timer(rospy.Duration(0.05), lambda _: checkPreempted(self._as))
 
 
     def execute_cb(self, goal):

@@ -156,6 +156,11 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr &joy)
     PS3Controller::DisableControllers();
     ROS_INFO("PS3 Controller Reset. Press Start to begin.");
   }
+  else if (!isReset && joy->buttons[BUTTON_SHAPE_TRIANGLE])
+  { // Reset Vehicle (The "X" button)
+    isReset = true;
+    ROS_INFO("PS3 Controller Reset. Press Start to begin.");
+  }
   else if (isReset)
   { // If reset, must wait for Start button to be pressed
     if (joy->buttons[BUTTON_START])
