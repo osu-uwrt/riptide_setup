@@ -233,17 +233,3 @@ def buoyTaskAction(back):
     client.send_goal(riptide_autonomy.msg.BuoyTaskGoal(back))
     lastActions = [client]
     return client
-
-def navigateAction(obj, drive_ang):
-    """
-    The navigation task
-
-    Parameters:
-        object (str): Name of the next task the vehicle will navigate to
-        drive_ang (float): Direction the robot will drive to
-    """
-    client = actionlib.SimpleActionClient(
-        "navigate", riptide_controllers.msg.NavigateAction)
-    client.wait_for_server()
-
-    client.send_goal(riptide_controllers.msg.NavigateActionGoal(obj, drive_ang))

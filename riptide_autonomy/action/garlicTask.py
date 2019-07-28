@@ -2,51 +2,59 @@
 import rospy
 import actionlib
 
-from riptide_msgs.msg import LinearCommand, AttitudeCommand, DepthCommand
+from riptide_msgs.msg import LinearCommand
+from std_msgs.msg import String, Float64, Int8, Int32
+from darknet_ros_msgs.msg import BoundingBoxes
+import riptide_controllers.msg
 import riptide_autonomy.msg
+from actionTools import *
 
-from actionWrapper import *
+import time
 
-class garlicTask(object):
+class GarlicTaskAction(object):
 
     def __init__(self):
-        self.xPub = rospy.Publisher("/command/x", LinearCommand, queue_size=1)
-        self.rollPub = rospy.Publisher("/command/roll", AttitudeCommand, queue_size=1)
-        self.pitchPub = rospy.Publisher("/command/pitch", AttitudeCommand, queue_size=1)
-        self.yawPub = rospy.Publisher("/command/yaw", AttitudeCommand, queue_size=1)
-        self.depthPub = rospy.Publisher("/command/depth", DepthCommand, queue_size=1)
-
+        self.dropperPub = rospy.Publisher("/command/drop", Int8, queue_size=1)
         self._as = actionlib.SimpleActionServer(
-            "go_to_finals", riptide_autonomy.msg.GoToFinalsAction, execute_cb=self.execute_cb, auto_start=False)
+            "garlic_task", riptide_autonomy.msg.GarlicTaskAction, execute_cb=self.execute_cb, auto_start=False)
         self._as.start()
 
-    def goToTask(self, task):
-        yawAction(12).wait_for_result()
-        self.xPub.publish(20, LinearCommand.FORCE)
-
-
     def execute_cb(self, goal):
-        performActions(
-            depthAction(2),
-            rollAction(0),
-            pitchAction(0),
-            yawAction(170)
-        )
-        self.xPub.publish(30, LinearCommand.FORCE)
-        waitAction("Cutie", 10).wait_for_result()
-        buoyTaskAction("Batman").wait_for_result()
+        task_obj = ""
+        confidence_bat = 0.0
+        confidence_wolf = 0.0
+        detection = False
+        # Wait until you see the object a few times
+        while not detection:
+            boxes = rospy.wait_for_message("/state/bboxes", BoundingBoxes)
+            for a in boxes.bounding_boxes:
+                if a.Class == "Bat":
+                    confidence_bat = a.probability
+                    self.detection = True
+                if a.Class == "Wolf":
+                    confidence_wolf = a.probability
+                    self.detection = True
 
-        self.yawPub.publish(0, AttitudeCommand.MOMENT)
-        performActions(
-            depthAction(0),
-            rollAction(0),
-            pitchAction(0)
-        )
-        self.rollPub.publish(0, AttitudeCommand.MOMENT)
-        self.pitchPub.publish(0, AttitudeCommand.MOMENT)
-        self.depthPub.publish(False, 0)
+            if self._as.is_preempt_requested():
+                rospy.loginfo('Preempted Wait')
+                self._as.set_preempted()
+                return
+
+        if confidence_bat > confidence_wolf:
+            task_obj = "Bat"
+        else:
+            task_obj = "Wolf"
+        
+        rospy.loginfo("Found object %s", task_obj)
+        alignAction(task_obj, 0.5).wait_for_result()
+        moveAction(0, -0.15).wait_for_result()
+
+        self.dropperPub.publish(0)
+        rospy.sleep(2.0)
+        self.dropperPub.publish(1)
+        rospy.sleep(2.0)
+
         self._as.set_succeeded()
-
 
 if __name__ == '__main__':
     rospy.init_node('garklic_task')
