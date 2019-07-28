@@ -37,16 +37,16 @@ class Navigate(object):
     
     def execute_cb(self, goal):
         self.yawPub.publish(goal.drive_ang, AttitudeCommand.POSITION)
-        rospy.loginfo("Start navigating %s", goal.object)
+        rospy.loginfo("Start navigating %s", goal.obj)
         self.start_ang = goal.drive_ang
 
         imuSub = rospy.Subscriber("/state/imu", Imu, self.imuCb)
-        self.waitAction(goal.object, 5).wait_for_result()
+        self.waitAction(goal.obj, 5).wait_for_result()
 
         self._as.set_succeeded()
 
     def imuCb(self, msg):
-        self.position = 20 * math.sin(math.pi / 3 * (time.time() - self.startTime)) + self.start_ang
+        self.position = 20 * math.sin(math.pi / 3 * (time.time() - sef.startTime)) + self.start_ang
         self.yawPub.publish(angleDiff(self.position, 0), AttitudeCommand.POSITION)
 
         sy = math.sin(angleDiff(msg.rpy_deg.z, self.start_ang) * math.pi / 180)

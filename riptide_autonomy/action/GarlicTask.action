@@ -1,6 +1,5 @@
 #goal definition
-string obj
-float32 drive_ang
+int32 times
 ---
 #result definition
 ---
