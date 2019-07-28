@@ -4,27 +4,18 @@ import actionlib
 
 from riptide_msgs.msg import AttitudeCommand, Imu, LinearCommand
 from std_msgs.msg import Float32
-import riptide_controllers.msg
+import riptide_autonomy.msg
 
 import time
 import math
 import numpy as np
+from actionTools import *
 
 def angleDiff(a, b):
     return ((a-b+180) % 360)-180
 
 class Navigate(object):
-
-    startTime = time.time()
     drive_force = 40
-    start_ang = 0.0
-
-    def waitAction(self, obj, times):
-        client = actionlib.SimpleActionClient("wait", riptide_controllers.msg.WaitAction)
-        client.wait_for_server()
-
-        client.send_goal(riptide_controllers.msg.WaitGoal(obj, times))
-        return client
 
     def __init__(self):
         self.xPub = rospy.Publisher("/command/x", LinearCommand, queue_size=1)
@@ -32,16 +23,23 @@ class Navigate(object):
         self.yawPub = rospy.Publisher("/command/yaw", AttitudeCommand, queue_size=5)
 
         self._as = actionlib.SimpleActionServer(
-            "navigate", riptide_controllers.msg.NavigateAction, execute_cb=self.execute_cb, auto_start=False)
+            "navigate", riptide_autonomy.msg.NavigateAction, execute_cb=self.execute_cb, auto_start=False)
         self._as.start()
+        self.timer = rospy.Timer(rospy.Duration(0.05), lambda _: checkPreempted(self._as))
     
     def execute_cb(self, goal):
         self.yawPub.publish(goal.drive_ang, AttitudeCommand.POSITION)
         rospy.loginfo("Start navigating %s", goal.object)
         self.start_ang = goal.drive_ang
+        self.startTime = time.time()
 
         imuSub = rospy.Subscriber("/state/imu", Imu, self.imuCb)
-        self.waitAction(goal.object, 5).wait_for_result()
+        waitAction(goal.object, 5).wait_for_result()
+
+        imuSub.unregister()
+        self.xPub.publish(0, LinearCommand.FORCE)
+        self.yPub.publish(0, LinearCommand.FORCE)
+        self.yawPub.publish(0, AttitudeCommand.MOMENT)
 
         self._as.set_succeeded()
 

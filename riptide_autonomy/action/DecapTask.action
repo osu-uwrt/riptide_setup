@@ -1,0 +1,7 @@
+#goal definition
+string backside
+---
+#result definition
+---
+#feedback
+int32[] sequence

@@ -36,18 +36,28 @@ class Arc(object):
         self.yawPub.publish(goal.velocity, AttitudeCommand.VELOCITY)
         self.YPub.publish(self.linearVelocity, LinearCommand.VELOCITY)
 
-        imuSub = rospy.Subscriber("/state/imu", Imu, self.imuCb)
-        dvlSub = rospy.Subscriber("/state/dvl", Dvl, self.dvlCb)
+        self.imuSub = rospy.Subscriber("/state/imu", Imu, self.imuCb)
+        self.dvlSub = rospy.Subscriber("/state/dvl", Dvl, self.dvlCb)
 
         while (self.angleTraveled < goal.angle and goal.velocity > 0) or (self.angleTraveled > goal.angle and goal.velocity < 0):
             rospy.sleep(0.1)
 
-        imuSub.unregister()
-        dvlSub.unregister()
+            if self._as.is_preempt_requested():
+                rospy.loginfo('Preempted Arc Action')
+                self.cleanup()
+                self._as.set_preempted()
+                return
+
+        self.cleanup()
+
+        self._as.set_succeeded()
+
+    def cleanup(self):
+        self.imuSub.unregister()
+        self.dvlSub.unregister()
         self.yawPub.publish(0, AttitudeCommand.VELOCITY)
         self.YPub.publish(0, LinearCommand.VELOCITY)
 
-        self._as.set_succeeded()
 
     def imuCb(self, msg):
         self.angleTraveled = angleDiff(msg.rpy_deg.z, self.startAngle)

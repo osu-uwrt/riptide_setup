@@ -21,7 +21,9 @@ add_action_files(
   FILES Prequalify.action
   GateTask.action
   BuoyTask.action
+  DecapTask.action
   GoToFinals.action
+  Navigate.action
 )
 
 generate_messages(
