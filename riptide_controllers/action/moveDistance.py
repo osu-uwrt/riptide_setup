@@ -32,14 +32,24 @@ class MoveDistance(object):
         while abs(self.distanceX - goal.x) > 0.1 or abs(self.distanceY - goal.y) > 0.1:
             rospy.sleep(0.05)
 
+            if self._as.is_preempt_requested():
+                rospy.loginfo('Preempted Move Action')
+                self.cleanup()
+                self._as.set_preempted()
+                return
+
         rospy.loginfo("At desired position")
         dvl_sub.unregister()
         self.xPub.publish(0, LinearCommand.VELOCITY)
         self.yPub.publish(0, LinearCommand.VELOCITY)
         rospy.sleep(0.5)
+        self.cleanup()
+        self._as.set_succeeded()
+
+    def cleanup(self):
         self.xPub.publish(0, LinearCommand.FORCE)
         self.yPub.publish(0, LinearCommand.FORCE)
-        self._as.set_succeeded()
+
 
     def dvlCb(self, msg):
         if not math.isnan(msg.velocity.x):

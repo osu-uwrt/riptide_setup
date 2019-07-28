@@ -7,7 +7,7 @@ from std_msgs.msg import Bool, Int8
 from darknet_ros_msgs.msg import BoundingBoxes
 import riptide_autonomy.msg
 
-from actionWrapper import *
+from actionTools import *
 
 class DecapTaskAction(object):
 
@@ -19,6 +19,7 @@ class DecapTaskAction(object):
         self._as = actionlib.SimpleActionServer(
             "decap_task", riptide_autonomy.msg.DecapTaskAction, execute_cb=self.execute_cb, auto_start=False)
         self._as.start()
+        self.timer = rospy.Timer(rospy.Duration(0.05), lambda _: checkPreempted(self._as))
 
 
     def execute_cb(self, goal):
@@ -30,6 +31,11 @@ class DecapTaskAction(object):
             for a in boxes.bounding_boxes:
                 if a.Class == goal.object:
                     x = (a.xmin + a.xmax) / 2
+            if self._as.is_preempt_requested():
+                rospy.loginfo('Preempted Decap Task')
+                self.armPub.publish(False)
+                self._as.set_preempted()
+                return
         alignAction("Oval", .3).wait_for_result()
         depth = rospy.wait_for_message("/state/depth", Depth).depth
         if x < 322:
@@ -49,6 +55,11 @@ class DecapTaskAction(object):
             depthAction(depth - .1),
             moveAction(.3, .3)
         )
+        if self._as.is_preempt_requested():
+                rospy.loginfo('Preempted Decap Task')
+                self.armPub.publish(False)
+                self._as.set_preempted()
+                return
         self.firePub.publish(0)
         rospy.sleep(7)
         moveAction(-2, 0).wait_for_result()
@@ -58,6 +69,11 @@ class DecapTaskAction(object):
             depthAction(depth - .1),
             moveAction(.3, .3)
         )
+        if self._as.is_preempt_requested():
+                rospy.loginfo('Preempted Decap Task')
+                self.armPub.publish(False)
+                self._as.set_preempted()
+                return
         self.firePub.publish(1)
         rospy.sleep(7)
         self.armPub.publish(False)

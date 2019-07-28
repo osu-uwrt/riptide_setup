@@ -23,6 +23,11 @@ class GoToPitchAction(object):
         while abs(angleDiff(rospy.wait_for_message("/state/imu", Imu).rpy_deg.y, goal.pitch)) > 5:
             rospy.sleep(0.05)
 
+            if self._as.is_preempt_requested():
+                rospy.loginfo('Preempted Go To Pitch')
+                self._as.set_preempted()
+                return
+
         rospy.loginfo("At Pitch")
         self._as.set_succeeded()
         

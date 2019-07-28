@@ -15,7 +15,7 @@ class WaitAction(object):
         self._as = actionlib.SimpleActionServer(
             "wait", riptide_controllers.msg.WaitAction, execute_cb=self.execute_cb, auto_start=False)
         self._as.start()
-    
+
     def execute_cb(self, goal):
         rospy.loginfo("Waiting for object %s", goal.object)
         # Wait until you see the object a few times
@@ -30,6 +30,10 @@ class WaitAction(object):
                     else:
                         count = 0
                     lastTime = time.time()
+            if self._as.is_preempt_requested():
+                rospy.loginfo('Preempted Wait')
+                self._as.set_preempted()
+                return
 
         rospy.loginfo("Found object %s", goal.object)
         self._as.set_succeeded()

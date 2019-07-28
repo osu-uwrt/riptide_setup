@@ -3,5 +3,6 @@
   <node pkg="riptide_autonomy" type="buoyTask.py" name="buoy_task" output="screen" />
   <node pkg="riptide_autonomy" type="decapTask.py" name="decap_task" output="screen" />
   <node pkg="riptide_autonomy" type="prequalify.py" name="prequalify" output="screen" />
+  <node pkg="riptide_autonomy" type="navigate.py" name="navigate" output="screen" />
   <node pkg="riptide_autonomy" type="goToFinals.py" name="go_to_finals" output="screen" />
 </launch>

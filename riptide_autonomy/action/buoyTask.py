@@ -5,7 +5,7 @@ import actionlib
 from riptide_msgs.msg import LinearCommand, AlignmentCommand
 import riptide_autonomy.msg
 
-from actionWrapper import *
+from actionTools import *
 
 class BuoyTaskAction(object):
 
@@ -18,6 +18,7 @@ class BuoyTaskAction(object):
         self._as = actionlib.SimpleActionServer(
             "buoy_task", riptide_autonomy.msg.BuoyTaskAction, execute_cb=self.execute_cb, auto_start=False)
         self._as.start()
+        self.timer = rospy.Timer(rospy.Duration(0.05), lambda _: checkPreempted(self._as))
 
 
     def execute_cb(self, goal):
@@ -26,6 +27,10 @@ class BuoyTaskAction(object):
         distance = getResult(getDistanceAction("Cutie")).distance
         self.alignPub.publish("",0)
         moveAction(distance, 0).wait_for_result()
+        if self._as.is_preempt_requested():
+            rospy.loginfo('Preempted Buoy Task')
+            self._as.set_preempted()
+            return
         self.xPub.publish(20, LinearCommand.FORCE)
         rospy.sleep(4)
         self.xPub.publish(0, LinearCommand.FORCE)
@@ -41,6 +46,10 @@ class BuoyTaskAction(object):
         alignAction(goal.backside, .3).wait_for_result()
         distance = getResult(getDistanceAction(goal.backside)).distance
         moveAction(distance, 0).wait_for_result()
+        if self._as.is_preempt_requested():
+            rospy.loginfo('Preempted Buoy Task')
+            self._as.set_preempted()
+            return
         self.xPub.publish(20, LinearCommand.FORCE)
         rospy.sleep(4)
         self.xPub.publish(0, LinearCommand.FORCE)

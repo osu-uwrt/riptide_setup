@@ -69,6 +69,11 @@ class CalibrateAction(object):
             # Adjust in the right direction
             Fb += force * 0.8
             client.update_configuration({"Buoyant_Force": Fb, "Buoyancy_X_POS": CobX, "Buoyancy_Y_POS": CobY, "Buoyancy_Z_POS": CobZ})
+            if self._as.is_preempt_requested():
+                rospy.loginfo('Preempted Calibration')
+                self.cleanup()
+                self._as.set_preempted()
+                return
 
         rospy.loginfo("Buoyant force calibration complete")
 
@@ -86,6 +91,12 @@ class CalibrateAction(object):
             CobX -= CobXSum * 0.8
 
             client.update_configuration({"Buoyant_Force": Fb, "Buoyancy_X_POS": CobX, "Buoyancy_Y_POS": CobY, "Buoyancy_Z_POS": CobZ})
+
+            if self._as.is_preempt_requested():
+                rospy.loginfo('Preempted Calibration')
+                self.cleanup()
+                self._as.set_preempted()
+                return
 
         rospy.loginfo("Buoyancy XY calibration complete")
 
@@ -105,16 +116,28 @@ class CalibrateAction(object):
 
             client.update_configuration({"Buoyant_Force": Fb, "Buoyancy_X_POS": CobX, "Buoyancy_Y_POS": CobY, "Buoyancy_Z_POS": CobZ})
 
+            if self._as.is_preempt_requested():
+                rospy.loginfo('Preempted Calibration')
+                self.cleanup()
+                self._as.set_preempted()
+                return
+
 
             
         rospy.loginfo("Calibration complete")
 
-        self.depthAction(0).wait_for_result()
-        self.depthPub.publish(False, 0)
-        self.rollPub.publish(0, AttitudeCommand.MOMENT)
-        self.pitchPub.publish(0, AttitudeCommand.MOMENT)
+        self.cleanup()
         
         self._as.set_succeeded()
+
+def cleanup(self):
+    self.rollPub.publish(0, AttitudeCommand.POSITION)
+    self.pitchPub.publish(0, AttitudeCommand.POSITION)
+    self.depthAction(0).wait_for_result()
+    self.depthPub.publish(False, 0)
+    self.rollPub.publish(0, AttitudeCommand.MOMENT)
+    self.pitchPub.publish(0, AttitudeCommand.MOMENT)
+
 
         
         

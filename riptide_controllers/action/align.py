@@ -41,6 +41,12 @@ class AlignAction(object):
                     
             if abs(self.bbox_x) < 20 and abs(self.bbox_y) < 20 and abs(self.bbox_z) < 20:
                 count += 1
+
+            if self._as.is_preempt_requested():
+                rospy.loginfo('Preempted Align Action')
+                self.alignPub.publish("", 0)
+                self._as.set_preempted()
+                return
             
         if not goal.hold:
             self.alignPub.publish("", 0)  

@@ -23,6 +23,7 @@ add_action_files(
   BuoyTask.action
   DecapTask.action
   GoToFinals.action
+  Navigate.action
 )
 
 generate_messages(

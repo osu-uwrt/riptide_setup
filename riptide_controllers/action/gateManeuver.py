@@ -47,19 +47,20 @@ class GateManeuver(object):
         self.yawPub.publish(self.CRUISE_VELOCITY, AttitudeCommand.VELOCITY)
         self.rollPub.publish(self.CRUISE_VELOCITY, AttitudeCommand.VELOCITY)
 
-        imuSub = rospy.Subscriber("/state/imu", Imu, self.imuCb)
+        self.imuSub = rospy.Subscriber("/state/imu", Imu, self.imuCb)
 
         while self.angleTraveled < 330 and not rospy.is_shutdown():
             rospy.sleep(0.05)
 
+            if self._as.is_preempt_requested():
+                rospy.loginfo('Preempted Gate Maneuver')
+                self.cleanup()
+                self._as.set_preempted()
+                return
+
         rospy.loginfo("Leveling")
 
-        self.yawPub.publish(0, AttitudeCommand.POSITION)
-        self.rollPub.publish(0, AttitudeCommand.POSITION)
-        imuSub.unregister()
-        self.XPub.publish(0, LinearCommand.FORCE)
-        self.YPub.publish(0, LinearCommand.FORCE)
-        self.ZPub.publish(0)
+        self.cleanup()
 
         while abs(rospy.wait_for_message("/state/imu", Imu).rpy_deg.x) > 5 and not rospy.is_shutdown():
             rospy.sleep(0.05)
@@ -67,6 +68,14 @@ class GateManeuver(object):
         rospy.loginfo("Done")
 
         self._as.set_succeeded()
+
+    def cleanup(self):
+        self.yawPub.publish(0, AttitudeCommand.POSITION)
+        self.rollPub.publish(0, AttitudeCommand.POSITION)
+        self.imuSub.unregister()
+        self.XPub.publish(0, LinearCommand.FORCE)
+        self.YPub.publish(0, LinearCommand.FORCE)
+        self.ZPub.publish(0)
 
     def imuCb(self, msg):
         self.angleTraveled = angleDiff(msg.rpy_deg.z, self.startAngle)

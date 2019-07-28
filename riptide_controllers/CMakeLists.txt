@@ -43,15 +43,12 @@ add_action_files(
   GoToYaw.action
   GoToPitch.action
   GoToRoll.action
-  GoToTask.action
   MoveDistance.action
-  SickTricks.action
   Wait.action
   Arc.action
   GateManeuver.action
   GetDistance.action
   Align.action
-  Navigate.action
 )
 
 generate_messages(
