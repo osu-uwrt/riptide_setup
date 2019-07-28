@@ -42,6 +42,9 @@ class Navigate(object):
 
         imuSub = rospy.Subscriber("/state/imu", Imu, self.imuCb)
         self.waitAction(goal.object, 5).wait_for_result()
+        imuSub.unregister()
+        self.xPub.publish(0, LinearCommand.FORCE)
+        self.yPub.publish(0, LinearCommand.FORCE)
 
         self._as.set_succeeded()
 

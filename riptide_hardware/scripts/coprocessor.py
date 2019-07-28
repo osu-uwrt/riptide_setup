@@ -89,7 +89,9 @@ def shutdown_copro():
         rospy.sleep(.1)
         copro.close()
 
+lastConfig = None
 def reconfigure_callback(config, level):
+    lastConfig = config
     for i in range(5):
         start = config["coil_%d_start1" % (i+1)]
         end = config["coil_%d_end1" % (i+1)]
@@ -246,6 +248,8 @@ def main():
             connection_pub.publish(True)
             response_queue.clear()
             command_queue.clear()
+            if lastConfig is not None:
+                reconfigure_callback(lastConfig, 0)
 
         rate.sleep()
 
