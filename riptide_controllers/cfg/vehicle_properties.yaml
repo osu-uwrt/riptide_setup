@@ -2,11 +2,11 @@
 # All thrusters are assumed to be pointing in the positive body-frame x-direction
 # You MUST define the correct yaw and pitch angle from body-frame TO the thruster frame
 properties: {
-  mass: 40.85, # [kg]
+  mass: 39.825, # [kg]
   # X = F*.8636/W
   # Y = F*.3683/W
   # Z = (X - F*.8636/W)/tan(theta)
-  center_of_mass: [0.394, 0.191, -0.17], # Relative to port aft foot [X (m),Y(m),Z(m)]
+  center_of_mass: [0.4288, 0.1666, -0.17], # Relative to port aft foot [X (m),Y(m),Z(m)]
   dvl: [0.33, 0, 0.44, -90],
   imu: [0.8125, 0.1778, 0.26],
   inertia: [1.32, 2.84, 3.65], # Principle Inertias [kg-m^2]
