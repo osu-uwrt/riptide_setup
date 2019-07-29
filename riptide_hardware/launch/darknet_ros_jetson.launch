@@ -1,7 +1,7 @@
 <launch>
 <include file="$(find riptide_hardware)/launch/cameras_jetson.launch" />
   
-  <machine address="jetson" name="jetson" user="ros" env-loader="~/osu-uwrt/riptide_software/src/riptide_utilities/riptide_master.sh"/>
+  <machine address="jetson" name="jetson" user="ros" env-loader="~/osu-uwrt/riptide_software/src/riptide_utilities/baycat_master.sh"/>
 	<arg name="machine_name" default="jetson"/>
 
   <!-- Console launch prefix -->

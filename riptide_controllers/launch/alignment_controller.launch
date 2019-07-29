@@ -1,14 +1,3 @@
 <launch>
-  <arg name="PID_IIR_LPF_bandwidth" default="17" />
-  <arg name="imu_filter_rate" default="100"/> <!-- Leave at 100 Hz -->
-  
-  <rosparam command="load" ns="surge_controller" file="$(find riptide_controllers)/cfg/pid_config_surge.yaml" />
-  <rosparam command="load" ns="sway_controller" file="$(find riptide_controllers)/cfg/pid_config_sway.yaml" />
-  <rosparam command="load" ns="heave_controller" file="$(find riptide_controllers)/cfg/pid_config_heave.yaml" />
-  
-  <node pkg="riptide_controllers" type="alignment_controller" name="alignment_controller" output="screen" >
-    <rosparam command="load" file="$(find riptide_controllers)/cfg/controller_properties_alignment.yaml" />
-    <param name="PID_IIR_LPF_bandwidth" type="double" value="$(arg PID_IIR_LPF_bandwidth)" />
-    <param name="imu_filter_rate" type="double" value="$(arg imu_filter_rate)" />
-  </node>
+  <node pkg="riptide_controllers" type="alignment_controller.py" name="alignment_controller" output="screen" />
 </launch>

@@ -1,4 +1,0 @@
-<launch>
-  <include file="$(find riptide_hardware)/launch/cameras.launch" />
-  <include file="$(find riptide_vision)/launch/qualification_vision.launch" />
-</launch>

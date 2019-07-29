@@ -10,7 +10,7 @@
         <param name="frame_id" type="string" value="$(arg imu_name)"/>
         <param name="device" type="string" value="$(arg device)" />
         
-        <node pkg="imu_3dm_gx4" name="$(arg imu_name)" type="imu_3dm_gx4" output="screen"/>
+        <node pkg="imu_3dm_gx4" name="$(arg imu_name)" type="imu_3dm_gx4" output="screen" respawn="true"/>
 
         <node pkg="riptide_hardware" name="imu_processor" type="imu_processor" output="screen" >
             <rosparam command="load" file="$(arg settings)" />

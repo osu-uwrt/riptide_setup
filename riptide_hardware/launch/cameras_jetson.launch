@@ -1,5 +1,5 @@
 <launch>
-  <machine address="jetson" name="jetson" user="ros" env-loader="~/osu-uwrt/riptide_software/src/riptide_utilities/riptide_master.sh"/>
+  <machine address="jetson" name="jetson" user="ros" env-loader="~/osu-uwrt/riptide_software/src/riptide_utilities/baycat_master.sh"/>
 	<arg name="machine_name" default="jetson"/>
 
   <arg name="frame_rate" default="30" />
@@ -25,7 +25,7 @@
     <param name="approximate_sync" value="true" />
   </node>
 
-  <!-- <include file="$(find riptide_hardware)/launch/camera_jetson.launch">
+  <include file="$(find riptide_hardware)/launch/camera.launch">
       <arg name="camera_name" value="downward" />
       <arg name="serial_number" value="$(arg down_serial_number)" />
       <arg name="frame_rate" value="$(arg frame_rate)" />
