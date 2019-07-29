@@ -57,6 +57,6 @@ class GarlicTaskAction(object):
         self._as.set_succeeded()
 
 if __name__ == '__main__':
-    rospy.init_node('garklic_task')
+    rospy.init_node('garlic_task')
     server = GarlicTaskAction()
     rospy.spin()
