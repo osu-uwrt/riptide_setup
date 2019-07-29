@@ -1,6 +1,4 @@
 #goal definition
-string obj
-float32 drive_ang
 ---
 #result definition
 ---
