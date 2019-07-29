@@ -11,6 +11,12 @@
             }
         },
         {
+            "label": "make_baycat",
+            "type": "shell",
+            "command": "./src/riptide_utilities/make-baycat.sh",
+            "problemMatcher": []
+        },
+        {
             "label": "make_riptide",
             "type": "shell",
             "command": "./src/riptide_utilities/make-riptide.sh",
@@ -20,6 +26,12 @@
             "label": "make_jetson",
             "type": "shell",
             "command": "./src/riptide_utilities/make-jetson.sh",
+            "problemMatcher": []
+        },
+        {
+            "label": "xfer_baycat",
+            "type": "shell",
+            "command": "./src/riptide_utilities/xfer-baycat.sh",
             "problemMatcher": []
         },
         {
@@ -50,6 +62,12 @@
             "label": "local_gui",
             "type": "shell",
             "command": "./src/riptide_utilities/gui/local-gui.sh",
+            "problemMatcher": []
+        },
+        {
+            "label": "baycat_gui",
+            "type": "shell",
+            "command": "./src/riptide_utilities/gui/baycat-gui.sh",
             "problemMatcher": []
         },
         {

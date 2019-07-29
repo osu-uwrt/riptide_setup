@@ -10,6 +10,16 @@
         "args": "riptide_gui"
     },
     {
+        "key": "ctrl+shift+p",
+        "command": "workbench.action.tasks.runTask",
+        "args": "make_baycat"
+    },
+    {
+        "key": "ctrl+alt+shift+p",
+        "command": "workbench.action.tasks.runTask",
+        "args": "baycat_gui"
+    },
+    {
         "key": "ctrl+shift+j",
         "command": "workbench.action.tasks.runTask",
         "args": "make_jetson"
