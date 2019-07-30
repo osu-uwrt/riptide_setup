@@ -7,6 +7,7 @@
 #include "nortek_dvl/Dvl.h"
 #include "auv_msgs/SixDoF.h"
 #include <algorithm>
+#include "math.h"
 
 namespace riptide_gnc
 {
