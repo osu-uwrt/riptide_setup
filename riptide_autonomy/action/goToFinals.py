@@ -3,49 +3,85 @@ import rospy
 import actionlib
 
 import riptide_autonomy.msg
-from riptide_msgs.msg import LinearCommand, AttitudeCommand, DepthCommand
+from riptide_msgs.msg import ResetControls
 
 from actionTools import *
+import math
+
+
+def addAngle(a, b):
+    return ((a+b+180) % 360) - 180
+
+
+class Task:
+    def __init__(self, x, y, camera, obj, action):
+        self.x = x
+        self.y = y
+        self.camera = camera
+        self.obj = obj
+        self.action = action
+
+
+tasks = [
+    Task(5, 5, 0, "Gate", lambda: gateTaskAction(True).wait_for_result()),
+    Task(12, 44, 0, "Cutie", lambda: buoyTaskAction("Fairy").wait_for_result()),
+    Task(22, 19, 0, "Decap", lambda: decapTaskAction().wait_for_result()),
+    Task(45, 97, 1, "Bat", lambda: garlicTaskAction().wait_for_result()),
+    Task(45, 97, 0, "Structure", lambda: exposeTaskAction().wait_for_result())
+]
+
 
 class GoToFinalsAction(object):
+    transdecOrientation = 0
 
     def __init__(self):
-        self.xPub = rospy.Publisher("/command/x", LinearCommand, queue_size=1)
-        self.rollPub = rospy.Publisher("/command/roll", AttitudeCommand, queue_size=1)
-        self.pitchPub = rospy.Publisher("/command/pitch", AttitudeCommand, queue_size=1)
-        self.yawPub = rospy.Publisher("/command/yaw", AttitudeCommand, queue_size=1)
-        self.depthPub = rospy.Publisher("/command/depth", DepthCommand, queue_size=1)
+        self.resetPub = rospy.Publisher(
+            "/controls/reset", ResetControls, queue_size=1)
 
         self._as = actionlib.SimpleActionServer(
             "go_to_finals", riptide_autonomy.msg.GoToFinalsAction, execute_cb=self.execute_cb, auto_start=False)
         self._as.start()
-        self.timer = rospy.Timer(rospy.Duration(0.05), lambda _: checkPreempted(self._as))
+        self.timer = rospy.Timer(rospy.Duration(
+            0.05), lambda _: checkPreempted(self._as))
 
-    def goToTask(self, task):
-        yawAction(12).wait_for_result()
-        self.xPub.publish(20, LinearCommand.FORCE)
-
+    def goToTask(self, task, quadrant):
+        dX = task.x - self.x
+        dY = task.y - self.y
+        if quadrant == 0:
+            angle = addAngle(-math.atan2(dY, dX) * 180 / math.pi, self.transdecOrientation + 90)
+        if quadrant == 1:
+            angle = addAngle(-math.atan2(dX, dY) * 180 / math.pi,
+                             self.transdecOrientation + 180)
+        if quadrant == 2:
+            angle = addAngle(-math.atan2(dX, dY) * 180 / math.pi, self.transdecOrientation)
+        if quadrant == 3:
+            angle = addAngle(-math.atan2(dY, dX) * 180 / math.pi, self.transdecOrientation - 90)
+        yawAction(angle).wait_for_result()
+        navigateAction(task.obj, angle).wait_for_result()
 
     def execute_cb(self, goal):
+        self.resetPub.publish(False)
         performActions(
             depthAction(2),
             rollAction(0),
-            pitchAction(0),
-            yawAction(170)
+            pitchAction(0)
         )
-        self.xPub.publish(30, LinearCommand.FORCE)
-        waitAction("Cutie", 10).wait_for_result()
-        buoyTaskAction("Batman").wait_for_result()
+        self.x = 0
+        self.y = 0
 
-        self.yawPub.publish(0, AttitudeCommand.MOMENT)
+        for task in tasks:
+            self.goToTask(task, goal.quadrant)
+            task.action()
+            self.x = task.x
+            self.y = task.y
+
         performActions(
             depthAction(0),
             rollAction(0),
             pitchAction(0)
         )
-        self.rollPub.publish(0, AttitudeCommand.MOMENT)
-        self.pitchPub.publish(0, AttitudeCommand.MOMENT)
-        self.depthPub.publish(False, 0)
+        self.resetPub.publish(True)
+
         self._as.set_succeeded()
 
 
