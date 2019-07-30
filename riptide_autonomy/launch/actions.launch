@@ -5,6 +5,6 @@
   <node pkg="riptide_autonomy" type="garlicTask.py" name="garlic_task" output="screen" />
   <node pkg="riptide_autonomy" type="exposeTask.py" name="expose_task" output="screen" />
   <node pkg="riptide_autonomy" type="prequalify.py" name="prequalify" output="screen" />
-  <node pkg="riptide_autonomy" type="navigate.py" name="navigate" output="screen" />
+  <node pkg="riptide_autonomy" type="search.py" name="search" output="screen" />
   <node pkg="riptide_autonomy" type="goToFinals.py" name="go_to_finals" output="screen" />
 </launch>
