@@ -34,7 +34,7 @@ class Navigate(object):
         self.startTime = time.time()
 
         imuSub = rospy.Subscriber("/state/imu", Imu, self.imuCb)
-        waitAction(goal.object, 5).wait_for_result()
+        waitAction(goal.obj, 5).wait_for_result()
 
         imuSub.unregister()
         self.xPub.publish(0, LinearCommand.FORCE)
@@ -44,7 +44,7 @@ class Navigate(object):
         self._as.set_succeeded()
 
     def imuCb(self, msg):
-        self.position = 20 * math.sin(math.pi / 3 * (time.time() - sef.startTime)) + self.start_ang
+        self.position = 20 * math.sin(math.pi / 3 * (time.time() - self.startTime)) + self.start_ang
         self.yawPub.publish(angleDiff(self.position, 0), AttitudeCommand.POSITION)
 
         sy = math.sin(angleDiff(msg.rpy_deg.z, self.start_ang) * math.pi / 180)
