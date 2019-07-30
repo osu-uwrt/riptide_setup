@@ -14,8 +14,8 @@ from actionTools import *
 def angleDiff(a, b):
     return ((a-b+180) % 360)-180
 
-class Navigate(object):
-    drive_force = 40
+class Search(object):
+    drive_force = 30
 
     def __init__(self):
         self.xPub = rospy.Publisher("/command/x", LinearCommand, queue_size=1)
@@ -23,18 +23,18 @@ class Navigate(object):
         self.yawPub = rospy.Publisher("/command/yaw", AttitudeCommand, queue_size=5)
 
         self._as = actionlib.SimpleActionServer(
-            "navigate", riptide_autonomy.msg.NavigateAction, execute_cb=self.execute_cb, auto_start=False)
+            "search", riptide_autonomy.msg.SearchAction, execute_cb=self.execute_cb, auto_start=False)
         self._as.start()
         self.timer = rospy.Timer(rospy.Duration(0.05), lambda _: checkPreempted(self._as))
     
     def execute_cb(self, goal):
         self.yawPub.publish(goal.drive_ang, AttitudeCommand.POSITION)
-        rospy.loginfo("Start navigating %s", goal.obj)
+        rospy.loginfo("Start searching for %s", goal.obj)
         self.start_ang = goal.drive_ang
         self.startTime = time.time()
 
         imuSub = rospy.Subscriber("/state/imu", Imu, self.imuCb)
-        waitAction(goal.object, 5).wait_for_result()
+        waitAction(goal.obj, 5).wait_for_result()
 
         imuSub.unregister()
         self.xPub.publish(0, LinearCommand.FORCE)
@@ -44,7 +44,7 @@ class Navigate(object):
         self._as.set_succeeded()
 
     def imuCb(self, msg):
-        self.position = 20 * math.sin(math.pi / 3 * (time.time() - sef.startTime)) + self.start_ang
+        self.position = 20 * math.sin(math.pi / 3 * (time.time() - self.startTime)) + self.start_ang
         self.yawPub.publish(angleDiff(self.position, 0), AttitudeCommand.POSITION)
 
         sy = math.sin(angleDiff(msg.rpy_deg.z, self.start_ang) * math.pi / 180)
@@ -54,6 +54,6 @@ class Navigate(object):
         self.yPub.publish(self.drive_force * sy, LinearCommand.FORCE)
 
 if __name__ == '__main__':
-    rospy.init_node('navigate')
-    server = Navigate()
+    rospy.init_node('search')
+    server = Search()
     rospy.spin()

@@ -46,7 +46,7 @@ class CalibrateAction(object):
 
         client.update_configuration({"Buoyant_Force": Fb, "Buoyancy_X_POS": CobX, "Buoyancy_Y_POS": CobY, "Buoyancy_Z_POS": CobZ})
 
-        self.depthPub.publish(True, 1)
+        self.depthPub.publish(True, .4)
         self.rollPub.publish(0, AttitudeCommand.POSITION)
         self.pitchPub.publish(0, AttitudeCommand.POSITION)
 
@@ -130,13 +130,13 @@ class CalibrateAction(object):
         
         self._as.set_succeeded()
 
-def cleanup(self):
-    self.rollPub.publish(0, AttitudeCommand.POSITION)
-    self.pitchPub.publish(0, AttitudeCommand.POSITION)
-    self.depthAction(0).wait_for_result()
-    self.depthPub.publish(False, 0)
-    self.rollPub.publish(0, AttitudeCommand.MOMENT)
-    self.pitchPub.publish(0, AttitudeCommand.MOMENT)
+    def cleanup(self):
+        self.rollPub.publish(0, AttitudeCommand.POSITION)
+        self.pitchPub.publish(0, AttitudeCommand.POSITION)
+        self.depthAction(0).wait_for_result()
+        self.depthPub.publish(False, 0)
+        self.rollPub.publish(0, AttitudeCommand.MOMENT)
+        self.pitchPub.publish(0, AttitudeCommand.MOMENT)
 
 
         

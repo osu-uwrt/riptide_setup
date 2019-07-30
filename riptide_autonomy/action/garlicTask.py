@@ -36,7 +36,7 @@ class GarlicTaskAction(object):
                     self.detection = True
 
             if self._as.is_preempt_requested():
-                rospy.loginfo('Preempted Wait')
+                rospy.loginfo('Preempted Garlic Task')
                 self._as.set_preempted()
                 return
 
