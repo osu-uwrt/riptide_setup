@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   sensor_msgs
   actionlib_msgs
+  darknet_ros_msgs
 )
 
 add_action_files(
@@ -24,6 +25,8 @@ add_action_files(
   DecapTask.action
   GoToFinals.action
   Navigate.action
+  ExposeTask.action
+  GarlicTask.action
 )
 
 generate_messages(

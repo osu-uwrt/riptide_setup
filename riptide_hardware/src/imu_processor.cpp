@@ -100,7 +100,6 @@ void IMUProcessor::FilterCallback(const imu_3dm_gx4::FilterOutput::ConstPtr &fil
   state.heading_alt = filter_msg->heading_update_alt * (180 / M_PI);
   state.heading_LORD = filter_msg->heading_update_LORD * (180 / M_PI);
 
-  //state.linear_accel = filter_msg->linear_acceleration;
   state.ang_vel_rad = filter_msg->angular_velocity;
   state.ang_vel_deg.x = filter_msg->angular_velocity.x * (180 / M_PI);
   state.ang_vel_deg.y = filter_msg->angular_velocity.y * (180 / M_PI);
@@ -141,7 +140,7 @@ void IMUProcessor::FilterCallback(const imu_3dm_gx4::FilterOutput::ConstPtr &fil
   }
   
   // Process linear acceleration (Remove centrifugal and tangential components)
-  tf::vectorMsgToEigen(filter_msg->linear_accel, raw_accel);
+  tf::vectorMsgToEigen(filter_msg->linear_acceleration, raw_accel);
   linear_accel = raw_accel - pqr_dot.cross(imu_position) - pqr.cross(pqr.cross(imu_position));
   tf::vectorEigenToMsg(linear_accel, state.linear_accel);
   imu_state_pub.publish(state);
