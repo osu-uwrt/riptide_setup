@@ -19,6 +19,7 @@ find_package(catkin REQUIRED
     pointgrey_camera_driver
     message_filters
     tf
+    eigen_conversions
     message_generation
     sensor_msgs
     cv_bridge
@@ -64,7 +65,7 @@ if(NOT _host_name MATCHES "jetson")
 endif()
 
 add_executable(imu_processor src/imu_processor.cpp)
-target_link_libraries(imu_processor ${catkin_LIBRARIES})
+target_link_libraries(imu_processor ${catkin_LIBRARIES} yaml-cpp)
 add_dependencies(imu_processor ${catkin_EXPORTED_TARGETS})
 
 
