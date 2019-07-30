@@ -4,6 +4,7 @@ import actionlib
 
 import riptide_autonomy.msg
 from riptide_msgs.msg import ResetControls
+from std_msgs.msg import Int8
 
 from actionTools import *
 import math
@@ -37,6 +38,8 @@ class GoToFinalsAction(object):
     def __init__(self):
         self.resetPub = rospy.Publisher(
             "/controls/reset", ResetControls, queue_size=1)
+        self.camPub = rospy.Publisher(
+            "/command/camera", Int8, queue_size=1)
 
         self._as = actionlib.SimpleActionServer(
             "go_to_finals", riptide_autonomy.msg.GoToFinalsAction, execute_cb=self.execute_cb, auto_start=False)
@@ -48,16 +51,19 @@ class GoToFinalsAction(object):
         dX = task.x - self.x
         dY = task.y - self.y
         if quadrant == 0:
-            angle = addAngle(-math.atan2(dY, dX) * 180 / math.pi, self.transdecOrientation + 90)
+            angle = addAngle(-math.atan2(dY, dX) * 180 /
+                             math.pi, self.transdecOrientation + 90)
         if quadrant == 1:
             angle = addAngle(-math.atan2(dX, dY) * 180 / math.pi,
                              self.transdecOrientation + 180)
         if quadrant == 2:
-            angle = addAngle(-math.atan2(dX, dY) * 180 / math.pi, self.transdecOrientation)
+            angle = addAngle(-math.atan2(dX, dY) * 180 /
+                             math.pi, self.transdecOrientation)
         if quadrant == 3:
-            angle = addAngle(-math.atan2(dY, dX) * 180 / math.pi, self.transdecOrientation - 90)
+            angle = addAngle(-math.atan2(dY, dX) * 180 /
+                             math.pi, self.transdecOrientation - 90)
         yawAction(angle).wait_for_result()
-        navigateAction(task.obj, angle).wait_for_result()
+        searchAction(task.obj, angle).wait_for_result()
 
     def execute_cb(self, goal):
         self.resetPub.publish(False)
@@ -70,6 +76,7 @@ class GoToFinalsAction(object):
         self.y = 0
 
         for task in tasks:
+            self.camPub.publish(task.camera)
             self.goToTask(task, goal.quadrant)
             task.action()
             self.x = task.x

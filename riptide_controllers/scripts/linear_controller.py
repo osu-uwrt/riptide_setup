@@ -13,7 +13,7 @@ class LinearController():
 
     VELOCITY_P = 2.0
     DRAG_COEFF = 0
-    MAX_FORCE = 40
+    MAX_FORCE = 30
 
     velocityCmd = None
     force = 0

@@ -185,7 +185,7 @@ def getDistanceAction(obj):
     lastActions = [client]
     return client
 
-def navigateAction(obj, heading):
+def searchAction(obj, heading):
     """ 
     Travels in the direction of heading searching for obj
 
@@ -195,10 +195,10 @@ def navigateAction(obj, heading):
     """
     global lastActions
     client = actionlib.SimpleActionClient(
-        "navigate", riptide_autonomy.msg.NavigateAction)
+        "search", riptide_autonomy.msg.SearchAction)
     client.wait_for_server()
 
-    client.send_goal(riptide_autonomy.msg.NavigateGoal(obj, heading))
+    client.send_goal(riptide_autonomy.msg.SearchGoal(obj, heading))
     lastActions = [client]
     return client
 
