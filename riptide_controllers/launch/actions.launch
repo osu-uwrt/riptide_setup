@@ -6,4 +6,11 @@
   <node pkg="riptide_controllers" type="goToRoll.py" name="go_to_roll" output="screen" />
   <node pkg="riptide_controllers" type="goToPitch.py" name="go_to_pitch" output="screen" />
   <node pkg="riptide_controllers" type="goToYaw.py" name="go_to_yaw" output="screen" />
+  <node pkg="riptide_controllers" type="wait.py" name="wait" output="screen" />
+  <node pkg="riptide_controllers" type="gateManeuver.py" name="gate_maneuver" output="screen" />
+  <node pkg="riptide_controllers" type="arc.py" name="arc" output="screen" />
+  <node pkg="riptide_controllers" type="getDistance.py" name="get_distance" output="screen" />
+  <node pkg="riptide_controllers" type="align.py" name="align" output="screen" />
+  <node pkg="riptide_controllers" type="moveDistance.py" name="move_distance" output="screen" />
+
 </launch>

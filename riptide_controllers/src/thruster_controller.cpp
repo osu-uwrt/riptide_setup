@@ -77,8 +77,8 @@ void ThrusterController::LoadVehicleProperties()
 {
   mass = properties["properties"]["mass"].as<double>();
   double comX = properties["properties"]["center_of_mass"][0].as<double>();
-  double comY = properties["properties"]["center_of_mass"][0].as<double>();
-  double comZ =  properties["properties"]["center_of_mass"][0].as<double>();
+  double comY = properties["properties"]["center_of_mass"][1].as<double>();
+  double comZ =  properties["properties"]["center_of_mass"][2].as<double>();
   center_of_mass[0] = comX;
   center_of_mass[1] = comY;
   center_of_mass[2] = comZ;
@@ -185,13 +185,16 @@ void ThrusterController::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg)
 {
   float phi = imu_msg->rpy_deg.x * PI / 180;
   float theta = imu_msg->rpy_deg.y * PI / 180;
-  float p = imu_msg->ang_vel_deg.x * PI / 180;
-  float q = imu_msg->ang_vel_deg.y * PI / 180;
-  float r = imu_msg->ang_vel_deg.z * PI / 180;
+  Vector3d angular_vel;
+  angular_vel[0] = imu_msg->ang_vel_deg.x * PI / 180;
+  angular_vel[1] = imu_msg->ang_vel_deg.y * PI / 180;
+  angular_vel[2] = imu_msg->ang_vel_deg.z * PI / 180;
 
-  transportThm[3] = -q * r * (Izz - Iyy);
-  transportThm[4] = -p * r * (Ixx - Izz);
-  transportThm[5] = -p * q * (Iyy - Ixx);
+  transportThm[3] = -angular_vel[1] * angular_vel[2] * (Izz - Iyy);
+  transportThm[4] = -angular_vel[0] * angular_vel[2] * (Ixx - Izz);
+  transportThm[5] = -angular_vel[0] * angular_vel[1] * (Iyy - Ixx);
+
+  
 
   Vector3d Fb_eig;
   Fb_eig(0) = Fb * sin(theta);

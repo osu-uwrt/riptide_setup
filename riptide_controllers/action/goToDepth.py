@@ -21,7 +21,12 @@ class GoToDepthAction(object):
         while abs(rospy.wait_for_message("/state/depth", Depth).depth - goal.depth) > 0.1:
             rospy.sleep(0.05)
 
-        rospy.loginfo("At depth")
+            if self._as.is_preempt_requested():
+                rospy.loginfo('Preempted Go To Depth')
+                self._as.set_preempted()
+                return
+
+        rospy.loginfo("At Depth")
         self._as.set_succeeded()
         
         

@@ -1,6 +1,6 @@
 # Command rates only apply for attitude and depth commands
-cmd_roll_rate: 5 # [deg/s]
-cmd_pitch_rate: 5 # [deg/s]
-cmd_yaw_rate: 10 # [deg/s]
+cmd_roll_rate: 10 # [deg/s]
+cmd_pitch_rate: 10 # [deg/s]
+cmd_yaw_rate: 15 # [deg/s]
 cmd_depth_rate: 0.2  # [m/s]
 boost: 2.0 # Factor to multiply pressed button/axis for faster rate

@@ -4,18 +4,16 @@
   <arg name="enable_depth" default="true" />
   <arg name="enable_attitude" default="true" />
 
-  <node pkg="joy" type="joy_node" name="joystick_driver">
-    <param name="dev" value="/dev/input/js$(arg port)" />
-  </node>
-
   <node pkg="riptide_teleop" type="ps3_controller" name="ps3_controller" output="screen" >
     <rosparam command="load" file="$(find riptide_teleop)/cfg/ps3_command_rates.yaml" />
-    <rosparam command="load" file="$(find riptide_controllers)/cfg/controller_properties_attitude.yaml" />
     <rosparam command="load" file="$(find riptide_controllers)/cfg/controller_properties_depth.yaml" />
     <rosparam command="load" file="$(find riptide_controllers)/cfg/max_load.yaml" />
     <rosparam command="load" file="$(find riptide_controllers)/cfg/vehicle_properties.yaml" />
     <param name="rate" type="double" value="$(arg rate)" />
-    <param name="enable_depth" type="bool" value="$(arg enable_depth)" />
-    <param name="enable_attitude" type="bool" value="$(arg enable_attitude)" />
   </node>
 </launch>
+
+<!-- To get this to work completely, on the top side computer run:
+  
+    rosrun joy joy_node
+-->

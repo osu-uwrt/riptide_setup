@@ -1,0 +1,8 @@
+#goal definition
+string object
+---
+#result definition
+float64 distance
+---
+#feedback
+int32[] sequence

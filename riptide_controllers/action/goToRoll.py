@@ -23,6 +23,11 @@ class GoToRollAction(object):
         while abs(angleDiff(rospy.wait_for_message("/state/imu", Imu).rpy_deg.x, goal.roll)) > 5:
             rospy.sleep(0.05)
 
+            if self._as.is_preempt_requested():
+                rospy.loginfo('Preempted Go To Roll')
+                self._as.set_preempted()
+                return
+
         rospy.loginfo("At Roll")
         self._as.set_succeeded()
         
