@@ -1,7 +1,5 @@
 #include "riptide_hardware/imu_processor.h"
 
-#define PI 3.141592653
-
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "imu_processor");
@@ -11,8 +9,8 @@ int main(int argc, char **argv)
 
 IMUProcessor::IMUProcessor() : nh("~")
 {
-  string imu_name, filter_topic;
-  IMUProcessor::LoadParam<string>("imu_name", imu_name);
+  std::string imu_name, filter_topic;
+  IMUProcessor::LoadParam<std::string>("imu_name", imu_name);
   filter_topic = "/" + imu_name + "/filter"; // Get topic name using imu's namespace
 
   imu_filter_sub = nh.subscribe<imu_3dm_gx4::FilterOutput>(filter_topic, 1, &IMUProcessor::FilterCallback, this);
@@ -21,22 +19,45 @@ IMUProcessor::IMUProcessor() : nh("~")
   IMUProcessor::LoadParam<double>("post_IIR_LPF_bandwidth", post_IIR_LPF_bandwidth);
   IMUProcessor::LoadParam<int>("filter_rate", filter_rate); // Filter rate MUST be an integer, decided by manufacturer
 
-  // IIR LPF Variables
+  /*// IIR LPF Variables
   double fc = post_IIR_LPF_bandwidth; // Shorthand variable for IIR bandwidth
   dt = 1.0 / filter_rate;
-  alpha = 2 * PI * dt * fc / (2 * PI * dt * fc + 1); // Multiplier
+  alpha = 2 * M_PI * dt * fc / (2 * M_PI * dt * fc + 1); // Multiplier*/
 
-  prev_ang_vel.x = 0;
-  prev_ang_vel.y = 0;
-  prev_ang_vel.z = 0;
+  // Linear Accel variables
+  imu_position.setZero();
+  pqr.setZero();
+  pqr_dot.setZero();
+  prev_pqr1.setZero();
+  prev_pqr2.setZero();
+  linear_accel.setZero();
+  raw_accel.setZero();
+  ang_accel.x = 0;
+  ang_accel.y = 0;
+  ang_accel.z = 0;
+  dt = 0;
+  init_count = 0;
+
+  // Load relative positions between IMU and COM from YAML file
+  IMUProcessor::LoadParam<std::string>("properties_file", properties_file);
+  properties = YAML::LoadFile(properties_file);
+  IMUProcessor::LoadIMUProperties();
+
+  /*// IIR Smoothing Variables
+  prev_ang_vel1.x = 0;
+  prev_ang_vel1.y = 0;
+  prev_ang_vel1.z = 0;
+  prev_ang_vel2.x = 0;
+  prev_ang_vel2.y = 0;
+  prev_ang_vel2.z = 0;
   prev_linear_accel.x = 0;
   prev_linear_accel.y = 0;
-  prev_linear_accel.z = 0;
+  prev_linear_accel.z = 0;*/
 }
 
 // Load parameter from namespace
 template <typename T>
-void IMUProcessor::LoadParam(string param, T &var)
+void IMUProcessor::LoadParam(std::string param, T &var)
 {
   try
   {
@@ -47,11 +68,17 @@ void IMUProcessor::LoadParam(string param, T &var)
   }
   catch (int e)
   {
-    string ns = nh.getNamespace();
+    std::string ns = nh.getNamespace();
     ROS_ERROR("IMU Processor Namespace: %s", ns.c_str());
     ROS_ERROR("Critical! Param \"%s/%s\" does not exist or is not accessed correctly. SHutting down.", ns.c_str(), param.c_str());
     ros::shutdown();
   }
+}
+
+void IMUProcessor::LoadIMUProperties()
+{
+  for (int i = 0; i < 3; i++)
+    imu_position(i) = properties["properties"]["imu"][i].as<double>() - properties["properties"]["center_of_mass"][i].as<double>();
 }
 
 void IMUProcessor::FilterCallback(const imu_3dm_gx4::FilterOutput::ConstPtr &filter_msg)
@@ -59,38 +86,67 @@ void IMUProcessor::FilterCallback(const imu_3dm_gx4::FilterOutput::ConstPtr &fil
   state.header = filter_msg->header;
   state.header.frame_id = filter_msg->header.frame_id;
 
+  state.quaternion.x = filter_msg->quaternion.x;
+  state.quaternion.y = filter_msg->quaternion.y;
+  state.quaternion.z = filter_msg->quaternion.z;
+  state.quaternion.w = filter_msg->quaternion.w;
+
   state.rpy_rad = filter_msg->euler_rpy;
   state.rpy_rad.z = filter_msg->heading_update_alt; // Use alternate heading calc
-  state.rpy_deg.x = filter_msg->euler_rpy.x * (180 / PI);
-  state.rpy_deg.y = filter_msg->euler_rpy.y * (180 / PI);
-  state.rpy_deg.z = filter_msg->heading_update_alt * (180 / PI); // Use alternate heading calc
+  state.rpy_deg.x = filter_msg->euler_rpy.x * (180 / M_PI);
+  state.rpy_deg.y = filter_msg->euler_rpy.y * (180 / M_PI);
+  state.rpy_deg.z = filter_msg->heading_update_alt * (180 / M_PI); // Use alternate heading calc
 
-  state.heading_alt = filter_msg->heading_update_alt * (180 / PI);
-  state.heading_LORD = filter_msg->heading_update_LORD * (180 / PI);
+  state.heading_alt = filter_msg->heading_update_alt * (180 / M_PI);
+  state.heading_LORD = filter_msg->heading_update_LORD * (180 / M_PI);
 
-  state.linear_accel = filter_msg->linear_acceleration;
   state.ang_vel_rad = filter_msg->angular_velocity;
-  state.ang_vel_deg.x = filter_msg->angular_velocity.x * (180 / PI);
-  state.ang_vel_deg.y = filter_msg->angular_velocity.y * (180 / PI);
-  state.ang_vel_deg.z = filter_msg->angular_velocity.z * (180 / PI);
+  state.ang_vel_deg.x = filter_msg->angular_velocity.x * (180 / M_PI);
+  state.ang_vel_deg.y = filter_msg->angular_velocity.y * (180 / M_PI);
+  state.ang_vel_deg.z = filter_msg->angular_velocity.z * (180 / M_PI);
 
   // Smmoth angular velocity and linear accel with IIR LPF
-  raw_ang_vel.x = state.ang_vel_deg.x;
+  /*raw_ang_vel.x = state.ang_vel_deg.x;
   raw_ang_vel.y = state.ang_vel_deg.y;
   raw_ang_vel.z = state.ang_vel_deg.z;
   raw_linear_accel.x = state.linear_accel.x;
   raw_linear_accel.y = state.linear_accel.y;
-  raw_linear_accel.x = state.linear_accel.x;
+  raw_linear_accel.x = state.linear_accel.x;*/
   //IMUProcessor::SmoothDataIIR();
 
-  // Process linear acceleration (Remove centrifugal and tangential components)
-
   // Process angular acceleration (Use 3-pt backwards rule to approximate angular acceleration)
+  if (init_count < 2) // Need 2 previous data points to perform 3-pt difference backwards rule
+  {
+    prev_pqr2 = prev_pqr1;
+    tf::vectorMsgToEigen(state.ang_vel_rad, prev_pqr1);
+    prev_time = ros::Time::now();
+    init_count++;
+  }
+  else
+  {
+    ros::Time time = ros::Time::now();
+    dt = time.toSec() - prev_time.toSec();
+    tf::vectorMsgToEigen(state.ang_vel_rad, pqr);
+    pqr_dot = (3 * pqr - 4 * prev_pqr1 + prev_pqr2) / (2 * dt);
+    
+    tf::vectorEigenToMsg(pqr_dot, state.ang_accel_rad);
+    state.ang_accel_deg.x = state.ang_accel_rad.x * 180 / M_PI;
+    state.ang_accel_deg.y = state.ang_accel_rad.y * 180 / M_PI;
+    state.ang_accel_deg.z = state.ang_accel_rad.z * 180 / M_PI;
 
+    prev_pqr2 = prev_pqr1;
+    tf::vectorMsgToEigen(state.ang_vel_rad, prev_pqr1);
+    prev_time = time;
+  }
+  
+  // Process linear acceleration (Remove centrifugal and tangential components)
+  tf::vectorMsgToEigen(filter_msg->linear_acceleration, raw_accel);
+  linear_accel = raw_accel - pqr_dot.cross(imu_position) - pqr.cross(pqr.cross(imu_position));
+  tf::vectorEigenToMsg(linear_accel, state.linear_accel);
   imu_state_pub.publish(state);
 }
 
-// IIR LPF Smoothing Algorithm
+/*// IIR LPF Smoothing Algorithm
 void IMUProcessor::SmoothDataIIR()
 {
   // Output = alpha*new + (1-alpha)*previous
@@ -108,4 +164,4 @@ void IMUProcessor::SmoothDataIIR()
   prev_linear_accel.x = state.linear_accel.x;
   prev_linear_accel.y = state.linear_accel.y;
   prev_linear_accel.z = state.linear_accel.z;
-}
+}*/
