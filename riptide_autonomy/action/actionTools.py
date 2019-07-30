@@ -198,7 +198,7 @@ def navigateAction(obj, heading):
         "navigate", riptide_autonomy.msg.NavigateAction)
     client.wait_for_server()
 
-    client.send_goal(riptide_controllers.msg.NavigateGoal(obj, heading))
+    client.send_goal(riptide_autonomy.msg.NavigateGoal(obj, heading))
     lastActions = [client]
     return client
 
@@ -231,5 +231,44 @@ def buoyTaskAction(back):
     client.wait_for_server()
 
     client.send_goal(riptide_autonomy.msg.BuoyTaskGoal(back))
+    lastActions = [client]
+    return client
+
+def decapTaskAction():
+    """
+    The decap task
+    """
+    global lastActions
+    client = actionlib.SimpleActionClient(
+        "decap_task", riptide_autonomy.msg.DecapTaskAction)
+    client.wait_for_server()
+
+    client.send_goal(riptide_autonomy.msg.DecapTaskGoal())
+    lastActions = [client]
+    return client
+
+def garlicTaskAction():
+    """
+    The Garlic task
+    """
+    global lastActions
+    client = actionlib.SimpleActionClient(
+        "garlic_task", riptide_autonomy.msg.GarlicTaskAction)
+    client.wait_for_server()
+
+    client.send_goal(riptide_autonomy.msg.GarlicTaskGoal())
+    lastActions = [client]
+    return client
+
+def exposeTaskAction():
+    """
+    The Expose task
+    """
+    global lastActions
+    client = actionlib.SimpleActionClient(
+        "expose_task", riptide_autonomy.msg.ExposeTaskAction)
+    client.wait_for_server()
+
+    client.send_goal(riptide_autonomy.msg.ExposeTaskGoal())
     lastActions = [client]
     return client

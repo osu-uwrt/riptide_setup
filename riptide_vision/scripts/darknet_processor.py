@@ -19,7 +19,7 @@ def cameraSelectionCb(msg):
         if msg.data == 0:
             cameraSub = rospy.Subscriber("/stereo/left/image_rect_color", Image, cameraCb)
         else:
-            cameraSub = rospy.Subscriber("/stereo/right/image_rect_color", Image, cameraCb)
+            cameraSub = rospy.Subscriber("/downward/image_rect_color", Image, cameraCb)
         currentCam = msg.data
 
 def bboxCb(msg):
