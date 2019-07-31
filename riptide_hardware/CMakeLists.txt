@@ -18,8 +18,8 @@ find_package(catkin REQUIRED
     imu_3dm_gx4
     pointgrey_camera_driver
     message_filters
-    tf
-    eigen_conversions
+    # tf
+    # eigen_conversions
     message_generation
     sensor_msgs
     cv_bridge
