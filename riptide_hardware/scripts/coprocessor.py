@@ -172,6 +172,7 @@ def main():
     # set up clean shutdown
     rospy.on_shutdown(shutdown_copro)
 
+    last_kill_switch_state = False
     while not rospy.is_shutdown():
         if connected:
             try:
@@ -215,6 +216,14 @@ def main():
                                 switch_msg.sw3 = True if response[0] & 4 else False
                                 switch_msg.sw4 = True if response[0] & 2 else False
                                 switch_msg.sw5 = True if response[0] & 1 else False
+
+                                if last_kill_switch_state is not switch_msg.kill:
+                                    if switch_msg.kill:
+                                        rospy.loginfo("Kill switch engaged")
+                                    else:
+                                        rospy.loginfo("Kill switch disengaged")
+                                    last_kill_switch_state = switch_msg.kill
+
                                 switch_pub.publish(switch_msg)
 
                         elif command == 12:
