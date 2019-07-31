@@ -29,7 +29,7 @@ class DecapTaskAction(object):
         while not done:
             boxes = rospy.wait_for_message("/state/bboxes", BoundingBoxes)
             for a in boxes.bounding_boxes:
-                if a.Class == goal.object:
+                if a.Class == "Oval":
                     x = (a.xmin + a.xmax) / 2
             if self._as.is_preempt_requested():
                 rospy.loginfo('Preempted Decap Task')
@@ -61,7 +61,7 @@ class DecapTaskAction(object):
                 self._as.set_preempted()
                 return
         self.firePub.publish(0)
-        rospy.sleep(7)
+        rospy.sleep(10)
         moveAction(-2, 0).wait_for_result()
         alignAction("Decap", .3).wait_for_result()
         alignAction("Heart", .3).wait_for_result()
@@ -75,7 +75,7 @@ class DecapTaskAction(object):
                 self._as.set_preempted()
                 return
         self.firePub.publish(1)
-        rospy.sleep(7)
+        rospy.sleep(10)
         self.armPub.publish(False)
 
         self._as.set_succeeded()

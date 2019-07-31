@@ -49,10 +49,10 @@ class GarlicTaskAction(object):
         alignAction(task_obj, 0.5).wait_for_result()
         moveAction(0, -0.15).wait_for_result()
 
-        self.dropperPub.publish(0)
-        rospy.sleep(2.0)
-        self.dropperPub.publish(1)
-        rospy.sleep(2.0)
+        #self.dropperPub.publish(0)
+        #rospy.sleep(2.0)
+        #self.dropperPub.publish(1)
+        #rospy.sleep(2.0)
 
         self._as.set_succeeded()
 

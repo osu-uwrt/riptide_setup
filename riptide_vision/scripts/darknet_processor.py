@@ -15,6 +15,7 @@ def cameraSelectionCb(msg):
     global currentCam
 
     if msg.data != currentCam:
+        rospy.loginfo("Setting camera: %d", msg.data)
         cameraSub.unregister()
         if msg.data == 0:
             cameraSub = rospy.Subscriber("/stereo/left/image_rect_color", Image, cameraCb)

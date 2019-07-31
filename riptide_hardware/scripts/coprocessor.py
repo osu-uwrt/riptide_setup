@@ -91,6 +91,7 @@ def shutdown_copro():
 
 lastConfig = None
 def reconfigure_callback(config, level):
+    global lastConfig
     lastConfig = config
     for i in range(5):
         start = config["coil_%d_start1" % (i+1)]
@@ -122,9 +123,9 @@ def grab_callback(msg):
     if msg.data == 0:
         enqueueCommand(16, [224, 6, 64])
     elif msg.data > 0:
-        enqueueCommand(16, [224, 4, 0])
+        enqueueCommand(16, [224, 3, 0])
     else:
-        enqueueCommand(16, [224, 8, 0])
+        enqueueCommand(16, [224, 7, 0])
 
 def drop_callback(msg):
     if msg.data == 0:

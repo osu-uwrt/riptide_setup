@@ -70,7 +70,7 @@ class GateManeuver(object):
         self._as.set_succeeded()
 
     def cleanup(self):
-        self.yawPub.publish(0, AttitudeCommand.POSITION)
+        self.yawPub.publish(self.startAngle, AttitudeCommand.POSITION)
         self.rollPub.publish(0, AttitudeCommand.POSITION)
         self.imuSub.unregister()
         self.XPub.publish(0, LinearCommand.FORCE)
