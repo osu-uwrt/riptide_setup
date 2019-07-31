@@ -118,7 +118,9 @@ void IMUProcessor::FilterCallback(const imu_3dm_gx4::FilterOutput::ConstPtr &fil
   if (init_count < 2) // Need 2 previous data points to perform 3-pt difference backwards rule
   {
     prev_pqr2 = prev_pqr1;
-    tf::vectorMsgToEigen(state.ang_vel_rad, prev_pqr1);
+    prev_pqr1(0) = state.ang_vel_rad.x;
+    prev_pqr1(1) = state.ang_vel_rad.y;
+    prev_pqr1(2) = state.ang_vel_rad.z;
     prev_time = ros::Time::now();
     init_count++;
   }
@@ -126,23 +128,33 @@ void IMUProcessor::FilterCallback(const imu_3dm_gx4::FilterOutput::ConstPtr &fil
   {
     ros::Time time = ros::Time::now();
     dt = time.toSec() - prev_time.toSec();
-    tf::vectorMsgToEigen(state.ang_vel_rad, pqr);
+    pqr(0) = state.ang_vel_rad.x;
+    pqr(1) = state.ang_vel_rad.y;
+    pqr(2) = state.ang_vel_rad.z;
     pqr_dot = (3 * pqr - 4 * prev_pqr1 + prev_pqr2) / (2 * dt);
     
-    tf::vectorEigenToMsg(pqr_dot, state.ang_accel_rad);
+    state.ang_accel_rad.x = pqr_dot(0);
+    state.ang_accel_rad.y = pqr_dot(1);
+    state.ang_accel_rad.z = pqr_dot(2);
     state.ang_accel_deg.x = state.ang_accel_rad.x * 180 / M_PI;
     state.ang_accel_deg.y = state.ang_accel_rad.y * 180 / M_PI;
     state.ang_accel_deg.z = state.ang_accel_rad.z * 180 / M_PI;
 
     prev_pqr2 = prev_pqr1;
-    tf::vectorMsgToEigen(state.ang_vel_rad, prev_pqr1);
+    prev_pqr1(0) = state.ang_vel_rad.x;
+    prev_pqr1(1) = state.ang_vel_rad.y;
+    prev_pqr1(2) = state.ang_vel_rad.z;
     prev_time = time;
   }
   
   // Process linear acceleration (Remove centrifugal and tangential components)
-  tf::vectorMsgToEigen(filter_msg->linear_acceleration, raw_accel);
+  raw_accel(0) = filter_msg->linear_acceleration.x;
+  raw_accel(1) = filter_msg->linear_acceleration.y;
+  raw_accel(2) = filter_msg->linear_acceleration.z;
   linear_accel = raw_accel - pqr_dot.cross(imu_position) - pqr.cross(pqr.cross(imu_position));
-  tf::vectorEigenToMsg(linear_accel, state.linear_accel);
+  state.linear_accel.x = linear_accel(0);
+  state.linear_accel.y = linear_accel(1);
+  state.linear_accel.z = linear_accel(2);
   imu_state_pub.publish(state);
 }
 

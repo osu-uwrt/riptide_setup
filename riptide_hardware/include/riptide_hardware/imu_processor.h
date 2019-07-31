@@ -5,8 +5,8 @@
 #include "eigen3/Eigen/Core"
 
 #include "ros/ros.h"
-#include "eigen_conversions/eigen_msg.h"
-#include <tf/tf.h>
+//#include "eigen_conversions/eigen_msg.h"
+//#include <tf/tf.h>
 #include "geometry_msgs/Vector3.h"
 #include "riptide_msgs/Imu.h"
 #include "std_msgs/Header.h"
