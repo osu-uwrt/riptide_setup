@@ -29,7 +29,7 @@ class AlignmentController():
 
     def cmdCb(self, msg):
         self.obj = msg.object
-        self.width_ratio = msg.width_ratio
+        self.width_ratio  = msg.width_ratio
         if self.obj == "":
             if self.watchdog_timer is not None:
                     self.watchdog_timer.shutdown()

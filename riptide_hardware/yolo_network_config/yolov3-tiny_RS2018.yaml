@@ -5,7 +5,7 @@ yolo_model:
   weight_file:
     name: yolov3-tiny-obj_best.weights
   threshold:
-    value: 0.1 # Leave small b/c the yolo_processor will handle thresholding
+    value: 0.2 # Leave small b/c the yolo_processor will handle thresholding
   detection_classes:
     names:
       - Bat
@@ -23,3 +23,4 @@ yolo_model:
       - Sunny
       - Wolf
       - Fairy
+      - Pinger

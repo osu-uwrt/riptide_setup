@@ -22,14 +22,17 @@ class WaitAction(object):
         count = 0
         lastTime = time.time()
         while count < goal.times:
-            boxes = rospy.wait_for_message("/state/bboxes", BoundingBoxes)
-            for a in boxes.bounding_boxes:
-                if a.Class == goal.object:
-                    if (time.time() - lastTime) < 0.3:
-                        count += 1
-                    else:
-                        count = 0
-                    lastTime = time.time()
+            try:
+                boxes = rospy.wait_for_message("/state/bboxes", BoundingBoxes, timeout=1.0)
+                for a in boxes.bounding_boxes:
+                    if a.Class == goal.object:
+                        if (time.time() - lastTime) < 0.3:
+                            count += 1
+                        else:
+                            count = 0
+                        lastTime = time.time()
+            except:
+                pass
             if self._as.is_preempt_requested():
                 rospy.loginfo('Preempted Wait')
                 self._as.set_preempted()

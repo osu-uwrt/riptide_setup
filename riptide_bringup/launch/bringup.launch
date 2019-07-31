@@ -9,4 +9,9 @@
   <node pkg="rosbag" type="record" name="record_autonomy" 
         args="record -o /mnt/Data/bringup /rosout_agg /stereo/left/image_hud /debug/pole2" 
         if="$(arg log)" />
+
+  <arg name="collect" default="false" />
+  <node pkg="rosbag" type="record" name="record_autonomy" 
+        args="record -o /mnt/Data/bringup /rosout_agg /darknet_ros/input_image /darknet_ros/image_hud /state/dvl" 
+        if="$(arg collect)" />
 </launch>
