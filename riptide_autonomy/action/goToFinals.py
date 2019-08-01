@@ -24,8 +24,8 @@ class Task:
 
 
 tasks = [
-    Task(5, 5, 0, "Gate", lambda: gateTaskAction(True).wait_for_result()),
-    Task(12, 44, 0, "Cutie", lambda: buoyTaskAction("Fairy").wait_for_result()),
+    Task(17, 10, 0, "Gate", lambda: gateTaskAction(True).wait_for_result()),
+    Task(31, 20, 0, "Cutie", lambda: buoyTaskAction(True, "Fairy").wait_for_result()),
     Task(22, 19, 0, "Decap", lambda: decapTaskAction().wait_for_result()),
     Task(45, 97, 1, "Bat", lambda: garlicTaskAction().wait_for_result()),
     Task(45, 97, 0, "Structure", lambda: exposeTaskAction().wait_for_result())
@@ -33,7 +33,7 @@ tasks = [
 
 
 class GoToFinalsAction(object):
-    transdecOrientation = 0
+    transdecOrientation = -5
 
     def __init__(self):
         self.resetPub = rospy.Publisher(
@@ -63,7 +63,7 @@ class GoToFinalsAction(object):
             angle = addAngle(-math.atan2(dY, dX) * 180 /
                              math.pi, self.transdecOrientation - 90)
         yawAction(angle).wait_for_result()
-        searchAction(task.obj, angle).wait_for_result()
+        searchAction(task.obj).wait_for_result()
 
     def execute_cb(self, goal):
         self.resetPub.publish(False)
