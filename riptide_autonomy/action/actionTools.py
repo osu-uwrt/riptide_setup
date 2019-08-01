@@ -185,7 +185,7 @@ def getDistanceAction(obj):
     lastActions = [client]
     return client
 
-def searchAction(obj, heading):
+def searchAction(obj):
     """ 
     Travels in the direction of heading searching for obj
 
@@ -198,7 +198,7 @@ def searchAction(obj, heading):
         "search", riptide_autonomy.msg.SearchAction)
     client.wait_for_server()
 
-    client.send_goal(riptide_autonomy.msg.SearchGoal(obj, heading))
+    client.send_goal(riptide_autonomy.msg.SearchGoal(obj))
     lastActions = [client]
     return client
 
@@ -218,7 +218,7 @@ def gateTaskAction(isLeft):
     lastActions = [client]
     return client
 
-def buoyTaskAction(back):
+def buoyTaskAction(isCutieLeft, back):
     """
     The buoy task
     
@@ -230,7 +230,7 @@ def buoyTaskAction(back):
         "buoy_task", riptide_autonomy.msg.BuoyTaskAction)
     client.wait_for_server()
 
-    client.send_goal(riptide_autonomy.msg.BuoyTaskGoal(back))
+    client.send_goal(riptide_autonomy.msg.BuoyTaskGoal(isCutieLeft, back))
     lastActions = [client]
     return client
 

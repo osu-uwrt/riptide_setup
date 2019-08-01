@@ -26,26 +26,33 @@ class BuoyTaskAction(object):
         alignAction("Cutie", .3, True).wait_for_result()
         distance = getResult(getDistanceAction("Cutie")).distance
         self.alignPub.publish("",0)
-        moveAction(distance, 0).wait_for_result()
+        moveAction(distance, -.2).wait_for_result()
         if self._as.is_preempt_requested():
             rospy.loginfo('Preempted Buoy Task')
             self._as.set_preempted()
             return
+        rospy.loginfo("Tapping cutie")
         self.xPub.publish(20, LinearCommand.FORCE)
         rospy.sleep(4)
         self.xPub.publish(0, LinearCommand.FORCE)
 
-        moveAction(-2, 0).wait_for_result()
-        self.yPub.publish(20, LinearCommand.FORCE)
-        frontFace = next(x for x in self.threeBuoySides if not x == goal.backside)
-        waitAction(frontFace, 5).wait_for_result()
-        self.yPub.publish(0, LinearCommand.FORCE)
-        distance = getResult(getDistanceAction(frontFace)).distance + 1
-        arcAction(-170, -10, distance).wait_for_result()
+        rospy.loginfo("Backing up")
+        moveAction(distance, -.2).wait_for_result()
+        alignAction("Cutie", .3, True).wait_for_result()
+        distance = getResult(getDistanceAction("Cutie")).distance
+        self.alignPub.publish("",0)
 
+        if goal.isCutieLeft:
+            arcAction(170, 10, distance + .6).wait_for_result()
+            self.yPub.publish(-20, LinearCommand.FORCE)
+        else:
+            arcAction(-170, -10, distance + .6).wait_for_result()
+            self.yPub.publish(20, LinearCommand.FORCE)
+        
+        waitAction(goal.backside, 3).wait_for_result()
         alignAction(goal.backside, .3).wait_for_result()
         distance = getResult(getDistanceAction(goal.backside)).distance
-        moveAction(distance, 0).wait_for_result()
+        moveAction(distance, -.2).wait_for_result()
         if self._as.is_preempt_requested():
             rospy.loginfo('Preempted Buoy Task')
             self._as.set_preempted()
