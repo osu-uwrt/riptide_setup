@@ -28,7 +28,7 @@ PWMController::PWMController() : nh("~")
   reset_sub = nh.subscribe<riptide_msgs::ResetControls>("/controls/reset", 1, &PWMController::ResetController, this);
   pwm_pub = nh.advertise<riptide_msgs::PwmStamped>("/command/pwm", 1);
 
-  PWMController::LoadParam<string>("properties_file", properties_file);
+  PWMController::LoadParam<std::string>("properties_file", properties_file);
   properties = YAML::LoadFile(properties_file);
   PWMController::LoadThrusterProperties();
 
@@ -41,7 +41,7 @@ PWMController::PWMController() : nh("~")
 
 // Load parameter from namespace
 template <typename T>
-void PWMController::LoadParam(string param, T &var)
+void PWMController::LoadParam(std::string param, T &var)
 {
   try
   {
@@ -52,7 +52,7 @@ void PWMController::LoadParam(string param, T &var)
   }
   catch (int e)
   {
-    string ns = nh.getNamespace();
+    std::string ns = nh.getNamespace();
     ROS_INFO("PWM Controller Namespace: %s", ns.c_str());
     ROS_ERROR("Critical! Param \"%s/%s\" does not exist or is not accessed correctly. Shutting down.", ns.c_str(), param.c_str());
     ros::shutdown();
@@ -109,15 +109,15 @@ void PWMController::ThrustCB(const riptide_msgs::ThrustStamped::ConstPtr &thrust
   {
     pwm_msg.header.stamp = thrust->header.stamp;
 
-    pwm_msg.pwm.vector_port_fwd = Thrust2pwm(thrust->force.vector_port_fwd, thrusterType[thrust->force.VPF]);
-    pwm_msg.pwm.vector_stbd_fwd = Thrust2pwm(thrust->force.vector_stbd_fwd, thrusterType[thrust->force.VSF]);
-    pwm_msg.pwm.vector_port_aft = Thrust2pwm(thrust->force.vector_port_aft, thrusterType[thrust->force.VPA]);
-    pwm_msg.pwm.vector_stbd_aft = Thrust2pwm(thrust->force.vector_stbd_aft, thrusterType[thrust->force.VSA]);
+    pwm_msg.pwm.vector_port_fwd = Thrust2pwm(thrust->force.vector_port_fwd, thrusterType[thrust->force.VPF], "VPF");
+    pwm_msg.pwm.vector_stbd_fwd = Thrust2pwm(thrust->force.vector_stbd_fwd, thrusterType[thrust->force.VSF], "VSF");
+    pwm_msg.pwm.vector_port_aft = Thrust2pwm(thrust->force.vector_port_aft, thrusterType[thrust->force.VPA], "VPA");
+    pwm_msg.pwm.vector_stbd_aft = Thrust2pwm(thrust->force.vector_stbd_aft, thrusterType[thrust->force.VSA], "VSA");
 
-    pwm_msg.pwm.heave_port_fwd = Thrust2pwm(thrust->force.heave_port_fwd, thrusterType[thrust->force.HPF]);
-    pwm_msg.pwm.heave_stbd_fwd = Thrust2pwm(thrust->force.heave_stbd_fwd, thrusterType[thrust->force.HSF]);
-    pwm_msg.pwm.heave_port_aft = Thrust2pwm(thrust->force.heave_port_aft, thrusterType[thrust->force.HPA]);
-    pwm_msg.pwm.heave_stbd_aft = Thrust2pwm(thrust->force.heave_stbd_aft, thrusterType[thrust->force.HSA]);
+    pwm_msg.pwm.heave_port_fwd = Thrust2pwm(thrust->force.heave_port_fwd, thrusterType[thrust->force.HPF], "HPF");
+    pwm_msg.pwm.heave_stbd_fwd = Thrust2pwm(thrust->force.heave_stbd_fwd, thrusterType[thrust->force.HSF], "HSF");
+    pwm_msg.pwm.heave_port_aft = Thrust2pwm(thrust->force.heave_port_aft, thrusterType[thrust->force.HPA], "HPA");
+    pwm_msg.pwm.heave_stbd_aft = Thrust2pwm(thrust->force.heave_stbd_aft, thrusterType[thrust->force.HSA], "HSA");
 
     pwm_pub.publish(pwm_msg);
     last_alive_time = ros::Time::now();
@@ -138,7 +138,7 @@ void PWMController::ResetController(const riptide_msgs::ResetControls::ConstPtr 
     reset_pwm = false;
 }
 
-int PWMController::Thrust2pwm(double raw_force, int type)
+int PWMController::Thrust2pwm(double raw_force, int type, std::string name)
 {
   int pwm = NEUTRAL_PWM;
 
@@ -162,9 +162,15 @@ int PWMController::Thrust2pwm(double raw_force, int type)
 
   // Constrain pwm output due to physical limitations of the ESCs
   if (pwm > MAX_PWM)
+  {
     pwm = MAX_PWM;
+    ROS_WARN("Thruster Saturating. %s capped at MAX PWM = %i", name.c_str(), MAX_PWM);
+  }
   if (pwm < MIN_PWM)
+  {
     pwm = MIN_PWM;
+    ROS_WARN("Thruster Saturating. %s capped at MIN PWM = %i", name.c_str(), MIN_PWM);
+  }
 
   return pwm;
 }

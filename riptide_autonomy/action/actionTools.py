@@ -185,7 +185,7 @@ def getDistanceAction(obj):
     lastActions = [client]
     return client
 
-def navigateAction(obj, heading):
+def searchAction(obj):
     """ 
     Travels in the direction of heading searching for obj
 
@@ -195,10 +195,10 @@ def navigateAction(obj, heading):
     """
     global lastActions
     client = actionlib.SimpleActionClient(
-        "navigate", riptide_autonomy.msg.NavigateAction)
+        "search", riptide_autonomy.msg.SearchAction)
     client.wait_for_server()
 
-    client.send_goal(riptide_controllers.msg.NavigateGoal(obj, heading))
+    client.send_goal(riptide_autonomy.msg.SearchGoal(obj))
     lastActions = [client]
     return client
 
@@ -218,7 +218,7 @@ def gateTaskAction(isLeft):
     lastActions = [client]
     return client
 
-def buoyTaskAction(back):
+def buoyTaskAction(isCutieLeft, back):
     """
     The buoy task
     
@@ -230,6 +230,45 @@ def buoyTaskAction(back):
         "buoy_task", riptide_autonomy.msg.BuoyTaskAction)
     client.wait_for_server()
 
-    client.send_goal(riptide_autonomy.msg.BuoyTaskGoal(back))
+    client.send_goal(riptide_autonomy.msg.BuoyTaskGoal(isCutieLeft, back))
+    lastActions = [client]
+    return client
+
+def decapTaskAction():
+    """
+    The decap task
+    """
+    global lastActions
+    client = actionlib.SimpleActionClient(
+        "decap_task", riptide_autonomy.msg.DecapTaskAction)
+    client.wait_for_server()
+
+    client.send_goal(riptide_autonomy.msg.DecapTaskGoal())
+    lastActions = [client]
+    return client
+
+def garlicTaskAction():
+    """
+    The Garlic task
+    """
+    global lastActions
+    client = actionlib.SimpleActionClient(
+        "garlic_task", riptide_autonomy.msg.GarlicTaskAction)
+    client.wait_for_server()
+
+    client.send_goal(riptide_autonomy.msg.GarlicTaskGoal())
+    lastActions = [client]
+    return client
+
+def exposeTaskAction():
+    """
+    The Expose task
+    """
+    global lastActions
+    client = actionlib.SimpleActionClient(
+        "expose_task", riptide_autonomy.msg.ExposeTaskAction)
+    client.wait_for_server()
+
+    client.send_goal(riptide_autonomy.msg.ExposeTaskGoal())
     lastActions = [client]
     return client

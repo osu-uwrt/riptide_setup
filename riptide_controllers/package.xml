@@ -38,6 +38,7 @@
   <run_depend>sensor_msgs</run_depend>
   <run_depend>dynamic_reconfigure</run_depend>
   <run_depend>control_toolbox</run_depend>
+  <run_depend>tf</run_depend>
 
   <export>
   </export>

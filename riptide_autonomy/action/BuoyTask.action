@@ -1,4 +1,5 @@
 #goal definition
+bool isCutieLeft
 string backside
 ---
 #result definition

@@ -169,7 +169,7 @@ void PS3Controller::JoyCB(const sensor_msgs::Joy::ConstPtr &joy)
       reset_msg.reset_pwm = false;
       reset_pub.publish(reset_msg);
       cmd_euler_rpy.z = (int)euler_rpy.z;
-      cmd_depth.depth = 0.5;
+      cmd_depth.depth = current_depth;
     }
   }
   else

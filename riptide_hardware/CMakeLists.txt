@@ -18,7 +18,6 @@ find_package(catkin REQUIRED
     imu_3dm_gx4
     pointgrey_camera_driver
     message_filters
-    tf
     message_generation
     sensor_msgs
     cv_bridge
@@ -42,7 +41,7 @@ catkin_package(
     dynamic_reconfigure
 )
 find_package(OpenCV REQUIRED) # To include, OpenCV, this MUST go BEFORE include_directories()
-include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS} {EIGEN3_INCLUDE_DIR} resources/acoustics/include)
+include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR} resources/acoustics/include)
 
 roslint_cpp()
 
@@ -64,7 +63,7 @@ if(NOT _host_name MATCHES "jetson")
 endif()
 
 add_executable(imu_processor src/imu_processor.cpp)
-target_link_libraries(imu_processor ${catkin_LIBRARIES})
+target_link_libraries(imu_processor ${catkin_LIBRARIES} yaml-cpp)
 add_dependencies(imu_processor ${catkin_EXPORTED_TARGETS})
 
 

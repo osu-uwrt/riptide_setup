@@ -1,5 +1,5 @@
-max_x_force: 70.0 # [N]
-max_y_force: 70.0 # [N]
+max_x_force: 50.0 # [N]
+max_y_force: 50.0 # [N]
 max_z_force: 100.0 # [N]
 max_x_moment: 15.0 # [Nm]
 max_y_moment: 40.0 # [Nm]

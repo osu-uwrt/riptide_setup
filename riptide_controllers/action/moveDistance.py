@@ -27,7 +27,7 @@ class MoveDistance(object):
         self.lastXVelocity = 0
         self.lastYVelocity = 0
         self.goal = goal
-        dvl_sub = rospy.Subscriber("/state/dvl", Dvl, self.dvlCb)
+        self.dvl_sub = rospy.Subscriber("/state/dvl", Dvl, self.dvlCb)
 
         while abs(self.distanceX - goal.x) > 0.1 or abs(self.distanceY - goal.y) > 0.1:
             rospy.sleep(0.05)
@@ -39,7 +39,7 @@ class MoveDistance(object):
                 return
 
         rospy.loginfo("At desired position")
-        dvl_sub.unregister()
+        self.dvl_sub.unregister()
         self.xPub.publish(0, LinearCommand.VELOCITY)
         self.yPub.publish(0, LinearCommand.VELOCITY)
         rospy.sleep(0.5)
@@ -47,6 +47,7 @@ class MoveDistance(object):
         self._as.set_succeeded()
 
     def cleanup(self):
+        self.dvl_sub.unregister()
         self.xPub.publish(0, LinearCommand.FORCE)
         self.yPub.publish(0, LinearCommand.FORCE)
 

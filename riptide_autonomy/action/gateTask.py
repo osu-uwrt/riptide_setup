@@ -18,7 +18,8 @@ class GateTaskAction(object):
 
     def execute_cb(self, goal):
         rospy.loginfo("Aligning to gate")
-        alignAction("Gate", .15).wait_for_result()
+        alignAction("Gate", .05).wait_for_result()
+        depthAction(1).wait_for_result()
         if goal.isLeft:
             rospy.loginfo("Moving left")
             moveAction(0, -1).wait_for_result()

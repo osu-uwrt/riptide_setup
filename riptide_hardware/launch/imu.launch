@@ -3,6 +3,7 @@
     <arg name="device" default="/dev/imu_riptide" />
     <arg name="settings" value="$(find riptide_hardware)/cfg/imu_columbus.yaml"/>
     <arg name="post_IIR_LPF_bandwidth" default="17" />
+    <arg name="positions_file" value="$(find riptide_controllers)/cfg/vehicle_properties.yaml" />
 
     <group ns="$(arg imu_name)">
         <rosparam command="load" file="$(arg settings)" />
@@ -13,6 +14,7 @@
         <node pkg="imu_3dm_gx4" name="$(arg imu_name)" type="imu_3dm_gx4" output="screen" respawn="true"/>
 
         <node pkg="riptide_hardware" name="imu_processor" type="imu_processor" output="screen" >
+            <param name="properties_file" type="string" value="$(arg positions_file)" />
             <rosparam command="load" file="$(arg settings)" />
             <param name="imu_name" type="string" value="$(arg imu_name)" />
             <param name="post_IIR_LPF_bandwidth" type="double" value="$(arg post_IIR_LPF_bandwidth)" />

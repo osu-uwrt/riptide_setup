@@ -20,6 +20,7 @@ class GarlicTaskAction(object):
         self._as.start()
 
     def execute_cb(self, goal):
+        rospy.loginfo("Starting garlic drop")
         task_obj = ""
         confidence_bat = 0.0
         confidence_wolf = 0.0
@@ -30,15 +31,15 @@ class GarlicTaskAction(object):
             for a in boxes.bounding_boxes:
                 if a.Class == "Bat":
                     confidence_bat = a.probability
-                    self.detection = True
+                    detection = True
                 if a.Class == "Wolf":
                     confidence_wolf = a.probability
-                    self.detection = True
+                    detection = True
 
-            if self._as.is_preempt_requested():
-                rospy.loginfo('Preempted Wait')
-                self._as.set_preempted()
-                return
+                if self._as.is_preempt_requested():
+                    rospy.loginfo('Preempted Garlic Task')
+                    self._as.set_preempted()
+                    return
 
         if confidence_bat > confidence_wolf:
             task_obj = "Bat"
@@ -49,14 +50,14 @@ class GarlicTaskAction(object):
         alignAction(task_obj, 0.5).wait_for_result()
         moveAction(0, -0.15).wait_for_result()
 
-        self.dropperPub.publish(0)
-        rospy.sleep(2.0)
-        self.dropperPub.publish(1)
-        rospy.sleep(2.0)
+        #self.dropperPub.publish(0)
+        #rospy.sleep(2.0)
+        #self.dropperPub.publish(1)
+        #rospy.sleep(2.0)
 
         self._as.set_succeeded()
 
 if __name__ == '__main__':
-    rospy.init_node('garklic_task')
+    rospy.init_node('garlic_task')
     server = GarlicTaskAction()
     rospy.spin()

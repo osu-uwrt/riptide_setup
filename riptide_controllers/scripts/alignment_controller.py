@@ -11,7 +11,7 @@ from riptide_controllers.cfg import AlignmentControllerConfig
 import math
 
 class AlignmentController():
-    MAX_FORCE = 40.0
+    MAX_FORCE = 30.0
     X_FORCE_P = 2.0
     Y_FORCE_P = 2.0
     DEPTH_FORCE_P = 0.1
@@ -29,7 +29,7 @@ class AlignmentController():
 
     def cmdCb(self, msg):
         self.obj = msg.object
-        self.width_ratio = msg.width_ratio
+        self.width_ratio  = msg.width_ratio
         if self.obj == "":
             if self.watchdog_timer is not None:
                     self.watchdog_timer.shutdown()
