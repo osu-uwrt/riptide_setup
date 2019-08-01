@@ -15,6 +15,7 @@ class ExposeTaskAction(object):
         self._as.start()
 
     def execute_cb(self, goal):
+        # Drive to the surface
         depthAction(0.0).wait_for_result()
         self._as.set_succeeded()
     
