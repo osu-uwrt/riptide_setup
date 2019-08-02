@@ -63,6 +63,9 @@ class BuoyTaskAction(object):
 
         rospy.loginfo("Finished Buoy task")
 
+        # Back up after finishing task
+        moveAction(-2, 0).wait_for_result()
+
         self._as.set_succeeded()
 
 

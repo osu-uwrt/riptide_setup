@@ -15,7 +15,7 @@ def angleDiff(a, b):
     return ((a-b+180) % 360)-180
 
 class Search(object):
-    drive_force = 30
+    drive_force = 20
     camera = 0
 
     def __init__(self):
@@ -36,7 +36,7 @@ class Search(object):
     
     def execute_cb(self, goal):
         rospy.loginfo("Start searching for %s", goal.obj)
-        self.start_ang = rospy.wait_for_message("/state/imu", Imu).rpy_deg.z
+        self.start_ang = goal.heading
         self.startTime = time.time()
 
         imuSub = rospy.Subscriber("/state/imu", Imu, self.imuCb)
