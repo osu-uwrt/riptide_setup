@@ -56,12 +56,12 @@ class DecapTaskAction(object):
         if x < 322:
             moveAction(0, 1.5).wait_for_result()
             depthAction(depth + .4).wait_for_result()
-            moveAction(.3, 0).wait_for_result()
+            moveAction(.6, 0).wait_for_result()
             moveAction(0, -1.5).wait_for_result()
         else:
             moveAction(0, -1.5).wait_for_result()
             depthAction(depth + .4).wait_for_result()
-            moveAction(.3, 0).wait_for_result()
+            moveAction(.6, 0).wait_for_result()
             moveAction(0, 1.5).wait_for_result()
         
         moveAction(-2, 0).wait_for_result()
