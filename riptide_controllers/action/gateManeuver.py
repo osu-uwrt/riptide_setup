@@ -19,7 +19,7 @@ def angleDiff(a, b):
 class GateManeuver(object):
 
     ROLL_P = 2
-    CRUISE_VELOCITY = 45
+    CRUISE_VELOCITY = 90
     DRIVE_FORCE = 30
 
     def __init__(self):
@@ -40,16 +40,16 @@ class GateManeuver(object):
 
     def execute_cb(self, goal):
         rospy.loginfo("Starting gate maneuver")
-        self.startAngle = rospy.wait_for_message("/state/imu", Imu).rpy_deg.z
-        self.angleTraveled = 0
-        self.pastHalf = False
+        self.lastRoll = 0
+        self.rolls = 0
+        self.justRolled = False
 
-        self.yawPub.publish(self.CRUISE_VELOCITY, AttitudeCommand.VELOCITY)
+        self.XPub.publish(self.DRIVE_FORCE, LinearCommand.FORCE)
         self.rollPub.publish(self.CRUISE_VELOCITY, AttitudeCommand.VELOCITY)
 
         self.imuSub = rospy.Subscriber("/state/imu", Imu, self.imuCb)
 
-        while self.angleTraveled < 330 and not rospy.is_shutdown():
+        while self.rolls < 2:
             rospy.sleep(0.05)
 
             if self._as.is_preempt_requested():
@@ -70,37 +70,17 @@ class GateManeuver(object):
         self._as.set_succeeded()
 
     def cleanup(self):
-        self.yawPub.publish(self.startAngle, AttitudeCommand.POSITION)
         self.rollPub.publish(0, AttitudeCommand.POSITION)
         self.imuSub.unregister()
         self.XPub.publish(0, LinearCommand.FORCE)
-        self.YPub.publish(0, LinearCommand.FORCE)
-        self.ZPub.publish(0)
 
     def imuCb(self, msg):
-        self.angleTraveled = angleDiff(msg.rpy_deg.z, self.startAngle)
-        roll = msg.rpy_deg.x
-        if self.angleTraveled < -90:
-            self.pastHalf = True
-        if self.pastHalf and self.angleTraveled < 0:
-            self.angleTraveled += 360
-        if roll < 0:
-            roll += 360
-
-        self.rollPub.publish(self.CRUISE_VELOCITY + self.ROLL_P * (self.angleTraveled - roll), AttitudeCommand.VELOCITY)
-
-        sr = math.sin(roll * math.pi / 180)
-        cr = math.cos(roll * math.pi / 180)
-        sy = math.sin(self.angleTraveled * math.pi / 180)
-        cy = math.cos(self.angleTraveled * math.pi / 180)
-
-        rRotMat = np.matrix([[1,0,0],[0,cr,-sr],[0,sr,cr]])
-        yRotMat = np.matrix([[cy,-sy,0],[sy,cy,0],[0,0,1]])
-        outVector = np.dot(np.linalg.inv(np.dot(yRotMat, rRotMat)), np.matrix([[self.DRIVE_FORCE],[0],[0]]))
-
-        self.XPub.publish(outVector.item(0), LinearCommand.FORCE)
-        self.YPub.publish(outVector.item(1), LinearCommand.FORCE)
-        self.ZPub.publish(outVector.item(2))
+        if self.lastRoll < -90 and msg.rpy_deg.x > -90 and not self.justRolled:
+            self.rolls += 1
+            self.justRolled = True
+        if msg.rpy_deg.x > 90:
+            self.justRolled = False
+        self.lastRoll = msg.rpy_deg.x
 
 
 if __name__ == '__main__':
