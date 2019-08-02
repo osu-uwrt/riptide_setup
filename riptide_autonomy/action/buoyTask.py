@@ -2,10 +2,13 @@
 import rospy
 import actionlib
 
-from riptide_msgs.msg import LinearCommand, AlignmentCommand
+from riptide_msgs.msg import LinearCommand, AlignmentCommand, Imu
 import riptide_autonomy.msg
 
 from actionTools import *
+
+def angleAdd(a, b):
+    return ((a+b+180) % 360) - 180
 
 class BuoyTaskAction(object):
 
@@ -38,15 +41,18 @@ class BuoyTaskAction(object):
 
         rospy.loginfo("Backing up")
         moveAction(-2, 0).wait_for_result()
-        alignAction("Cutie", .3, True).wait_for_result()
-        distance = getResult(getDistanceAction("Cutie")).distance
-        self.alignPub.publish("",0)
+        alignAction("Cutie", .3).wait_for_result()
 
+        yaw = rospy.wait_for_message("/state/imu", Imu).rpy_deg.z
         if goal.isCutieLeft:
-            arcAction(170, 10, distance + .6).wait_for_result()
+            moveAction(0, -1).wait_for_result()
+            moveAction(4, 0).wait_for_result()
+            yawAction(angleAdd(yaw, 180)).wait_for_result()
             self.yPub.publish(-20, LinearCommand.FORCE)
         else:
-            arcAction(-170, -10, distance + .6).wait_for_result()
+            moveAction(0, 1).wait_for_result()
+            moveAction(4, 0).wait_for_result()
+            yawAction(angleAdd(yaw, 180)).wait_for_result()
             self.yPub.publish(20, LinearCommand.FORCE)
         
         waitAction(goal.backside, 3).wait_for_result()

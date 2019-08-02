@@ -29,7 +29,7 @@ class DecapTaskAction(object):
         depth = rospy.wait_for_message("/state/depth", Depth).depth
         performActions(
             depthAction(depth - .1),
-            moveAction(.3, .3)
+            moveAction(.8, .3)
         )
         if self._as.is_preempt_requested():
                 rospy.loginfo('Preempted Decap Task')
@@ -68,16 +68,17 @@ class DecapTaskAction(object):
         moveAction(-2, 0).wait_for_result()
         alignAction("Decap", .3).wait_for_result()
         alignAction("Oval", .3).wait_for_result()
+        
 
         performActions(
             depthAction(depth - .1),
-            moveAction(.3, .3)
+            moveAction(.8, .3)
         )
         if self._as.is_preempt_requested():
                 rospy.loginfo('Preempted Decap Task')
                 self.armPub.publish(False)
                 self._as.set_preempted()
-                return
+                returnww
         self.firePub.publish(0)
         rospy.sleep(10)
         moveAction(-2, 0).wait_for_result()

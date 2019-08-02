@@ -20,15 +20,14 @@ class GateTaskAction(object):
     def execute_cb(self, goal):
         rospy.loginfo("Aligning to gate")
         alignAction("Gate", .07).wait_for_result()
-        depthAction(1).wait_for_result()
+        depthAction(.5).wait_for_result()
         # Get 2.0 meters away from the gate
-        distance = getResult(getDistanceAction(goal.backside)).distance
         if goal.isLeft:
             rospy.loginfo("Moving left")
-            moveAction(distance - 1, -1).wait_for_result()
+            moveAction(3, -1).wait_for_result()
         else:
             rospy.loginfo("Moving right")
-            moveAction(distance - 1, 1).wait_for_result()
+            moveAction(3, 1).wait_for_result()
 
         rospy.loginfo("Stand back and watch this!")
         gateManeuverAction().wait_for_result()

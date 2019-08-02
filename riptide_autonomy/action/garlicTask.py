@@ -48,12 +48,14 @@ class GarlicTaskAction(object):
         
         rospy.loginfo("Found object %s", task_obj)
         alignAction(task_obj, 0.5).wait_for_result()
-        moveAction(0, -0.15).wait_for_result()
+        moveAction(-.3, 0).wait_for_result()
 
-        #self.dropperPub.publish(0)
-        #rospy.sleep(2.0)
-        #self.dropperPub.publish(1)
-        #rospy.sleep(2.0)
+        pitchAction(-60).wait_for_result()
+        rospy.sleep(2)
+        pitchAction(0).wait_for_result()
+
+        moveAction(0, 2).wait_for_result()
+        depthAction(2.8).wait_for_result()
 
         self._as.set_succeeded()
 
