@@ -25,8 +25,8 @@ class Task:
 
 tasks = [
     Task(17, 10, 0, "Gate", lambda: gateTaskAction(True).wait_for_result()),
-    Task(31, 20, 0, "Cutie", lambda: buoyTaskAction(True, "Fairy").wait_for_result()),
-    Task(22, 19, 0, "Decap", lambda: decapTaskAction().wait_for_result()),
+    Task(31, 16, 0, "Cutie", lambda: buoyTaskAction(False, "Batman").wait_for_result()),
+    Task(31, 19, 0, "Decap", lambda: decapTaskAction().wait_for_result()),
     Task(45, 97, 1, "Bat", lambda: garlicTaskAction().wait_for_result()),
     Task(45, 97, 0, "Structure", lambda: exposeTaskAction().wait_for_result())
 ]
