@@ -38,6 +38,7 @@ class DecapTaskAction(object):
                 return
         self.firePub.publish(1)
         rospy.sleep(10)
+        moveAction(-2, 0).wait_for_result()
         alignAction("Decap", .25, True).wait_for_result()
         done = False
         while not done:
