@@ -3,7 +3,7 @@ import rospy
 import actionlib
 
 import riptide_autonomy.msg
-from riptide_msgs.msg import ResetControls
+from riptide_msgs.msg import ResetControls, SwitchState
 from std_msgs.msg import Int8
 
 from actionTools import *
@@ -50,6 +50,7 @@ class GoToFinalsAction(object):
     def goToTask(self, task, quadrant):
         dX = task.x - self.x
         dY = task.y - self.y
+
         if quadrant == 0:
             angle = addAngle(-math.atan2(dY, dX) * 180 /
                              math.pi, self.transdecOrientation + 90)
@@ -66,6 +67,14 @@ class GoToFinalsAction(object):
         searchAction(task.obj).wait_for_result()
 
     def execute_cb(self, goal):
+        rospy.loginfo("Wait for kill switch")
+
+        while not rospy.wait_for_message("/state/switches", SwitchState).kill:
+            rospy.sleep(0.1)
+
+        rospy.sleep(5.0)
+        rospy.loginfo("Kill switch plugged in, start searching for gate")
+
         self.resetPub.publish(False)
         performActions(
             depthAction(2),
