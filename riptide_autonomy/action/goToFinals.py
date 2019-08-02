@@ -4,7 +4,7 @@ import actionlib
 
 import riptide_autonomy.msg
 from riptide_msgs.msg import ResetControls, SwitchState
-from std_msgs.msg import Int8
+from std_msgs.msg import Int8, Float32
 
 from actionTools import *
 import math
@@ -15,20 +15,19 @@ def addAngle(a, b):
 
 
 class Task:
-    def __init__(self, x, y, camera, obj, action):
-        self.x = x
-        self.y = y
+    def __init__(self, heading, camera, obj, action):
+        self.heading = heading
         self.camera = camera
         self.obj = obj
         self.action = action
 
 
 tasks = [
-    Task(17, 10, 0, "Gate", lambda: gateTaskAction(True).wait_for_result()),
-    Task(31, 20, 0, "Cutie", lambda: buoyTaskAction(True, "Fairy").wait_for_result()),
-    Task(22, 19, 0, "Decap", lambda: decapTaskAction().wait_for_result()),
-    Task(45, 97, 1, "Bat", lambda: garlicTaskAction().wait_for_result()),
-    Task(45, 97, 0, "Structure", lambda: exposeTaskAction().wait_for_result())
+    Task(15.0, 0, "Gate", lambda: gateTaskAction(True).wait_for_result()),
+    Task(15.0, 0, "Cutie", lambda: buoyTaskAction(True, "Fairy").wait_for_result()),
+    Task(80.0, 0, "Decap", lambda: decapTaskAction().wait_for_result()),
+    Task(-40.0, 1, "Bat", lambda: garlicTaskAction().wait_for_result()),
+    Task(30.0, 0, "Structure", lambda: exposeTaskAction().wait_for_result())
 ]
 
 
@@ -48,21 +47,15 @@ class GoToFinalsAction(object):
             0.05), lambda _: checkPreempted(self._as))
 
     def goToTask(self, task, quadrant):
-        dX = task.x - self.x
-        dY = task.y - self.y
 
         if quadrant == 0:
-            angle = addAngle(-math.atan2(dY, dX) * 180 /
-                             math.pi, self.transdecOrientation + 90)
+            angle = addAngle(-task.heading, self.transdecOrientation + 90)
         if quadrant == 1:
-            angle = addAngle(-math.atan2(dX, dY) * 180 / math.pi,
-                             self.transdecOrientation + 180)
+            angle = addAngle(task.heading, self.transdecOrientation + 90)
         if quadrant == 2:
-            angle = addAngle(-math.atan2(dX, dY) * 180 /
-                             math.pi, self.transdecOrientation)
+            angle = addAngle(task.heading, self.transdecOrientation - 90)
         if quadrant == 3:
-            angle = addAngle(-math.atan2(dY, dX) * 180 /
-                             math.pi, self.transdecOrientation - 90)
+            angle = addAngle(-task.heading, self.transdecOrientation - 90)
         yawAction(angle).wait_for_result()
         searchAction(task.obj).wait_for_result()
 
@@ -88,8 +81,6 @@ class GoToFinalsAction(object):
             self.camPub.publish(task.camera)
             self.goToTask(task, goal.quadrant)
             task.action()
-            self.x = task.x
-            self.y = task.y
 
         performActions(
             depthAction(0),

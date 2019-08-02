@@ -37,7 +37,8 @@ class BuoyTaskAction(object):
         self.xPub.publish(0, LinearCommand.FORCE)
 
         rospy.loginfo("Backing up")
-        moveAction(distance, -.2).wait_for_result()
+        # Back up, negative distance
+        moveAction(-distance, 0.2).wait_for_result()
         alignAction("Cutie", .3, True).wait_for_result()
         distance = getResult(getDistanceAction("Cutie")).distance
         self.alignPub.publish("",0)
@@ -62,6 +63,9 @@ class BuoyTaskAction(object):
         self.xPub.publish(0, LinearCommand.FORCE)
 
         rospy.loginfo("Finished Buoy task")
+
+        # Back up after finishing task
+        moveAction(-distance, 0.2).wait_for_result()
 
         self._as.set_succeeded()
 

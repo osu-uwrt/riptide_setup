@@ -1,5 +1,6 @@
 #goal definition
 string obj
+float32 heading
 ---
 #result definition
 ---
