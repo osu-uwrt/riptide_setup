@@ -71,6 +71,7 @@ class BuoyTaskAction(object):
 
         # Back up after finishing task
         moveAction(-2, 0).wait_for_result()
+        depthAction(.5).wait_for_result()
 
         self._as.set_succeeded()
 

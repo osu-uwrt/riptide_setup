@@ -29,10 +29,11 @@ class ExposeTaskAction(object):
         rospy.loginfo("Start exposing to sunlight task")
         alignAction("Pinger", 0.2).wait_for_result()
 
-        performActions(
-            depthAction(0),
-            moveAction(1, 0)
-        )
+        depthAction(2).wait_for_result()
+        moveAction(1, 0).wait_for_result()
+        self.xPub.publish(0, LinearCommand.VELOCITY)
+        self.yPub.publish(0, LinearCommand.VELOCITY)
+        depthAction(0).wait_for_result()
 
         rospy.loginfo("Finished Expose task")
         self._as.set_succeeded()
