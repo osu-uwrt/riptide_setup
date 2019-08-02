@@ -17,7 +17,7 @@ class ExposeTaskAction(object):
         self.xPub = rospy.Publisher("/command/x", LinearCommand, queue_size=1)
         self.yPub = rospy.Publisher("/command/y", LinearCommand, queue_size=1)
         self.rollPub = rospy.Publisher("/command/roll", AttitudeCommand, queue_size=5)
-        self.cameraPub = rospy.PUblisher("/command/camera", Int8, queue_size=1)
+        self.cameraPub = rospy.Publisher("/command/camera", Int8, queue_size=1)
 
         self._as = actionlib.SimpleActionServer(
             "expose_task", riptide_autonomy.msg.ExposeTaskAction, execute_cb=self.execute_cb, auto_start=False)
@@ -28,6 +28,11 @@ class ExposeTaskAction(object):
     def execute_cb(self, goal):
         rospy.loginfo("Start exposing to sunlight task")
         alignAction("Pinger", 0.2).wait_for_result()
+
+        performActions(
+            depthAction(0),
+            moveAction(1, 0)
+        )
 
         rospy.loginfo("Finished Expose task")
         self._as.set_succeeded()
