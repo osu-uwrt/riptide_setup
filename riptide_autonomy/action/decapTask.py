@@ -78,7 +78,7 @@ class DecapTaskAction(object):
                 rospy.loginfo('Preempted Decap Task')
                 self.armPub.publish(False)
                 self._as.set_preempted()
-                returnww
+                return
         self.firePub.publish(0)
         rospy.sleep(10)
         moveAction(-2, 0).wait_for_result()

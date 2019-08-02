@@ -23,11 +23,11 @@ class Task:
 
 
 tasks = [
-    Task(45.0, 0, "Gate", lambda: gateTaskAction(True).wait_for_result()),
-    Task(45.0, 0, "Cutie", lambda: buoyTaskAction(True, "Groot").wait_for_result()),
+    Task(57.0, 0, "Gate", lambda: gateTaskAction(False).wait_for_result()),
+    Task(45.0, 0, "Cutie", lambda: buoyTaskAction(True, "Fairy").wait_for_result()),
     #Task(80.0, 0, "Decap", lambda: decapTaskAction().wait_for_result()),
-    Task(-40.0, 1, "Wolf", lambda: garlicTaskAction().wait_for_result()),
-    Task(30.0, 0, "Pinger", lambda: exposeTaskAction().wait_for_result())
+    Task(75.0, 1, "Wolf", lambda: garlicTaskAction().wait_for_result()),
+    #Task(60.0, 0, "Pinger", lambda: exposeTaskAction().wait_for_result())
 ]
 
 
@@ -81,6 +81,9 @@ class GoToFinalsAction(object):
             self.camPub.publish(task.camera)
             self.goToTask(task, goal.quadrant)
             task.action()
+
+        yawAction(30).wait_for_result()
+        moveAction(10, 0).wait_for_result()
 
         performActions(
             depthAction(0),
