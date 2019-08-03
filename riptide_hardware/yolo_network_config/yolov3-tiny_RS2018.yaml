@@ -8,7 +8,7 @@ yolo_model:
     value: 0.2 # Leave small b/c the yolo_processor will handle thresholding
   detection_classes:
     names:
-      - Bat
+      - Bin
       - Batman
       - Crucifix
       - Cutie
@@ -21,6 +21,6 @@ yolo_model:
       - Path
       - Structure
       - Sunny
-      - Wolf
+      - Bin
       - Fairy
       - Pinger

@@ -35,6 +35,13 @@ class GateTaskAction(object):
         rospy.loginfo("Stand back and watch this!")
         gateManeuverAction().wait_for_result()
 
+        rospy.loginfo("Moving to path")
+        if goal.isLeft:
+            moveAction(0, 1).wait_for_result()
+        else:
+            rospy.loginfo("Moving right")
+            moveAction(0, -1).wait_for_result()
+
         rospy.loginfo("Gate task completed")
         depthAction(2).wait_for_result()
 

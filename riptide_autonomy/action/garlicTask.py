@@ -22,46 +22,22 @@ class GarlicTaskAction(object):
 
     def execute_cb(self, goal):
         rospy.loginfo("Starting garlic drop")
-        task_obj = ""
-        confidence_bat = 0.0
-        confidence_wolf = 0.0
-        detection = False
-        # Wait until you see the object a few times
-        while not detection:
-            boxes = rospy.wait_for_message("/state/bboxes", BoundingBoxes)
-            for a in boxes.bounding_boxes:
-                if a.Class == "Bat":
-                    confidence_bat = a.probability
-                    detection = True
-                if a.Class == "Wolf":
-                    confidence_wolf = a.probability
-                    detection = True
-
-                if self._as.is_preempt_requested():
-                    rospy.loginfo('Preempted Garlic Task')
-                    self._as.set_preempted()
-                    return
-
-        if confidence_bat > confidence_wolf:
-            task_obj = "Bat"
-        else:
-            task_obj = "Wolf"
         
-        rospy.loginfo("Found object %s", task_obj)
-        alignAction(task_obj, 0.4).wait_for_result()
+        rospy.loginfo("Found object Bin")
+        alignAction("Bin", 0.2).wait_for_result()
         moveAction(-.4, 0).wait_for_result()
 
-        pitchAction(-60).wait_for_result()
-        self.xPub.publish(15, LinearCommand.FORCE)
-        rospy.sleep(1.0)
-        self.xPub.publish(-15, LinearCommand.FORCE)
-        rospy.sleep(1.0)
+        pitchAction(-70).wait_for_result()
+        self.xPub.publish(30, LinearCommand.FORCE)
+        rospy.sleep(0.4)
+        self.xPub.publish(-30, LinearCommand.FORCE)
+        rospy.sleep(0.4)
         self.xPub.publish(0, LinearCommand.FORCE)
         rospy.sleep(2)
         pitchAction(0).wait_for_result()
 
-        moveAction(0, -3).wait_for_result()
-        depthAction(2.8).wait_for_result()
+        #moveAction(0, -3).wait_for_result()
+        #depthAction(2.8).wait_for_result()
 
         self._as.set_succeeded()
 
