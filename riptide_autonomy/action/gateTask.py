@@ -23,14 +23,14 @@ class GateTaskAction(object):
         alignAction("Gate", .07, True).wait_for_result()
         distance = getResult(getDistanceAction("Gate")).distance
         self.alignPub.publish("", 0)
-        depthAction(.5).wait_for_result()
+        depthAction(.65).wait_for_result()
         # Get 2.0 meters away from the gate
         if goal.isLeft:
             rospy.loginfo("Moving left")
-            moveAction(distance - 2, -.7).wait_for_result()
+            moveAction(distance - 2, -.8).wait_for_result()
         else:
             rospy.loginfo("Moving right")
-            moveAction(distance - 2, .7).wait_for_result()
+            moveAction(distance - 2, .8).wait_for_result()
 
         rospy.loginfo("Stand back and watch this!")
         gateManeuverAction().wait_for_result()
