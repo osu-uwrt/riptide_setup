@@ -23,8 +23,8 @@ class Task:
 
 
 tasks = [
-    Task(57.0, 0, "Gate", lambda: gateTaskAction(False).wait_for_result()),
-    Task(45.0, 0, "Cutie", lambda: buoyTaskAction(True, "Fairy").wait_for_result()),
+    Task(35.0, 0, "Gate", lambda: gateTaskAction(False).wait_for_result()),
+    Task(35.0, 0, "Cutie", lambda: buoyTaskAction(False, "Fairy").wait_for_result()),
     #Task(80.0, 0, "Decap", lambda: decapTaskAction().wait_for_result()),
     Task(75.0, 1, "Wolf", lambda: garlicTaskAction().wait_for_result()),
     #Task(60.0, 0, "Pinger", lambda: exposeTaskAction().wait_for_result())
@@ -32,7 +32,7 @@ tasks = [
 
 
 class GoToFinalsAction(object):
-    transdecOrientation = -5
+    transdecOrientation = -25
 
     def __init__(self):
         self.resetPub = rospy.Publisher(
