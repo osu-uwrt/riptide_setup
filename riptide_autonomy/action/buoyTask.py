@@ -40,18 +40,17 @@ class BuoyTaskAction(object):
         self.xPub.publish(0, LinearCommand.FORCE)
 
         rospy.loginfo("Backing up")
-        moveAction(-2, 0).wait_for_result()
-        alignAction("Cutie", .3).wait_for_result()
+        moveAction(-2.0, 0).wait_for_result()
 
         yaw = rospy.wait_for_message("/state/imu", Imu).rpy_deg.z
         if goal.isCutieLeft:
             moveAction(0, -1).wait_for_result()
-            moveAction(4, 0).wait_for_result()
+            moveAction(6, 0).wait_for_result()
             yawAction(angleAdd(yaw, 180)).wait_for_result()
             self.yPub.publish(-20, LinearCommand.FORCE)
         else:
             moveAction(0, 1).wait_for_result()
-            moveAction(4, 0).wait_for_result()
+            moveAction(6, 0).wait_for_result()
             yawAction(angleAdd(yaw, 180)).wait_for_result()
             self.yPub.publish(20, LinearCommand.FORCE)
         
