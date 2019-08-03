@@ -47,14 +47,14 @@ class GarlicTaskAction(object):
             task_obj = "Wolf"
         
         rospy.loginfo("Found object %s", task_obj)
-        alignAction(task_obj, 0.4).wait_for_result()
+        alignAction(task_obj, 0.2).wait_for_result()
         moveAction(-.4, 0).wait_for_result()
 
-        pitchAction(-60).wait_for_result()
+        pitchAction(-70).wait_for_result()
         rospy.sleep(2)
         pitchAction(0).wait_for_result()
 
-        moveAction(0, -3).wait_for_result()
+        #moveAction(0, -3).wait_for_result()
         depthAction(2.8).wait_for_result()
 
         self._as.set_succeeded()
