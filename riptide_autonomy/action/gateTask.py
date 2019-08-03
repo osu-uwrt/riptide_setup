@@ -11,6 +11,7 @@ class GateTaskAction(object):
 
     def __init__(self):
         self.xPub = rospy.Publisher("/command/x", LinearCommand, queue_size=1)
+        self.alignPub = rospy.Publisher("/command/alignment", AlignmentCommand, queue_size=1)
         self._as = actionlib.SimpleActionServer(
             "gate_task", riptide_autonomy.msg.GateTaskAction, execute_cb=self.execute_cb, auto_start=False)
         self._as.start()
@@ -19,20 +20,23 @@ class GateTaskAction(object):
 
     def execute_cb(self, goal):
         rospy.loginfo("Aligning to gate")
-        alignAction("Gate", .07).wait_for_result()
+        alignAction("Gate", .07, True).wait_for_result()
+        distance = getResult(getDistanceAction("Gate")).distance
+        self.alignPub.publish("", 0)
         depthAction(.5).wait_for_result()
         # Get 2.0 meters away from the gate
         if goal.isLeft:
             rospy.loginfo("Moving left")
-            moveAction(3, -1).wait_for_result()
+            moveAction(distance - 2, -.7).wait_for_result()
         else:
             rospy.loginfo("Moving right")
-            moveAction(3, 1).wait_for_result()
+            moveAction(distance - 2, .7).wait_for_result()
 
         rospy.loginfo("Stand back and watch this!")
         gateManeuverAction().wait_for_result()
 
         rospy.loginfo("Gate task completed")
+        depthAction(2).wait_for_result()
 
         self._as.set_succeeded()
 

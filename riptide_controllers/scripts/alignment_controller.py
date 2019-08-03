@@ -50,7 +50,7 @@ class AlignmentController():
                 self.watchdog_timer = rospy.Timer(rospy.Duration(0.5), self.shutdown, True)
                 self.x_error = (bbox.xmin + bbox.xmax) / 2 - self.cam_width / 2
                 self.y_error = (bbox.ymin + bbox.ymax) / 2 - self.cam_height / 2
-                self.z_error = (bbox.xmax - bbox.xmin) / self.width_ratio - self.cam_width 
+                self.z_error = (bbox.xmax - bbox.xmin)/self.width_ratio - self.cam_width
 
                 if self.currentCam == 0:
                     YPub.publish(min(self.MAX_FORCE, max(-self.MAX_FORCE, self.x_error * self.Y_FORCE_P)), LinearCommand.FORCE)
@@ -77,6 +77,7 @@ alignmentController = AlignmentController()
 XPub = rospy.Publisher("/command/x", LinearCommand, queue_size=5)
 YPub = rospy.Publisher("/command/y", LinearCommand, queue_size=5)
 depthPub = rospy.Publisher("/command/depth", DepthCommand, queue_size=5)
+
 
    
 def dynamicReconfigureCb(config, level):
