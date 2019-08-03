@@ -50,7 +50,7 @@ class AlignmentController():
                 self.watchdog_timer = rospy.Timer(rospy.Duration(0.5), self.shutdown, True)
                 self.x_error = (bbox.xmin + bbox.xmax) / 2 - self.cam_width / 2
                 self.y_error = (bbox.ymin + bbox.ymax) / 2 - self.cam_height / 2
-                self.z_error = (bbox.xmax - bbox.xmin) - self.cam_width * self.width_ratio
+                self.z_error = (bbox.xmax - bbox.xmin) / self.width_ratio - self.cam_width 
 
                 if self.currentCam == 0:
                     YPub.publish(min(self.MAX_FORCE, max(-self.MAX_FORCE, self.x_error * self.Y_FORCE_P)), LinearCommand.FORCE)
@@ -59,7 +59,7 @@ class AlignmentController():
                 else:
                     YPub.publish(min(self.MAX_FORCE, max(-self.MAX_FORCE, self.x_error * self.Y_FORCE_P)), LinearCommand.FORCE)
                     XPub.publish(min(self.MAX_FORCE, max(-self.MAX_FORCE, -self.y_error * self.X_FORCE_P)), LinearCommand.FORCE)
-                    depthPub.publish(True, self.currentDepth - self.z_error * self.DEPTH_FORCE_P)
+                    depthPub.publish(True, self.currentDepth - self.z_error *3 self.DEPTH_FORCE_P)
 
     def shutdown(self, timer = None):
         YPub.publish(0, LinearCommand.FORCE)
