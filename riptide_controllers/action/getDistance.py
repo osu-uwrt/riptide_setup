@@ -57,7 +57,7 @@ class GetDistance(object):
             labels = [l[0] for l in labels]
             maxLabel = max(set(labels), key=labels.count)
             disparity = centers[maxLabel][0]
-            if disparity < 0:
+            while disparity < 0 and len(labels) != 0:
                 labels = [l for l in labels if l != maxLabel]
                 maxLabel = max(set(labels), key=labels.count)
                 disparity = centers[maxLabel][0]
