@@ -21,8 +21,13 @@ class GarlicTaskAction(object):
 
     def execute_cb(self, goal):
         rospy.loginfo("Starting garlic drop")
+<<<<<<< HEAD
         waitAction("Bin", 10)
         rospy.loginfo("Found bin")
+=======
+        
+        rospy.loginfo("Found object Bin")
+>>>>>>> e92dfd2c97135166c19b596df955820b4bb0d6f0
         alignAction("Bin", 0.2).wait_for_result()
         moveAction(-.4, 0).wait_for_result()
 
@@ -35,6 +40,12 @@ class GarlicTaskAction(object):
         rospy.sleep(2)
         pitchAction(0).wait_for_result()
 
+<<<<<<< HEAD
+=======
+        #moveAction(0, -3).wait_for_result()
+        #depthAction(2.8).wait_for_result()
+
+>>>>>>> e92dfd2c97135166c19b596df955820b4bb0d6f0
         self._as.set_succeeded()
 
 if __name__ == '__main__':

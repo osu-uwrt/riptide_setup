@@ -23,11 +23,11 @@ class Task:
 
 
 tasks = [
-    Task(35.0, 0, "Gate", lambda: gateTaskAction(False).wait_for_result()),
-    Task(35.0, 0, "Cutie", lambda: buoyTaskAction(False, "Fairy").wait_for_result()),
+    Task(42.0, 0, "Gate", lambda: gateTaskAction(False).wait_for_result()),
+    Task(42.0, 0, "Cutie", lambda: buoyTaskAction(False, "Fairy").wait_for_result()),
     #Task(80.0, 0, "Decap", lambda: decapTaskAction().wait_for_result()),
-    Task(75.0, 1, "Wolf", lambda: garlicTaskAction().wait_for_result()),
-    #Task(60.0, 0, "Pinger", lambda: exposeTaskAction().wait_for_result())
+    #Task(55.0, 1, "Bat", lambda: garlicTaskAction().wait_for_result()),
+    #Task(55.0, 0, "Pinger", lambda: exposeTaskAction().wait_for_result())
 ]
 
 
@@ -46,16 +46,18 @@ class GoToFinalsAction(object):
         self.timer = rospy.Timer(rospy.Duration(
             0.05), lambda _: checkPreempted(self._as))
 
-    def goToTask(self, task, quadrant):
-
+    def getWorldAngle(self, angle, quadrant):
         if quadrant == 0:
-            angle = addAngle(-task.heading, self.transdecOrientation + 90)
+            return addAngle(-angle, self.transdecOrientation + 90)
         if quadrant == 1:
-            angle = addAngle(task.heading, self.transdecOrientation + 90)
+            return addAngle(angle, self.transdecOrientation + 90)
         if quadrant == 2:
-            angle = addAngle(task.heading, self.transdecOrientation - 90)
+            return addAngle(angle, self.transdecOrientation - 90)
         if quadrant == 3:
-            angle = addAngle(-task.heading, self.transdecOrientation - 90)
+            return addAngle(-angle, self.transdecOrientation - 90)
+
+    def goToTask(self, task, quadrant):
+        angle = getWorldAngle(task.heading, quadrant)
         yawAction(angle).wait_for_result()
         searchAction(task.obj, angle).wait_for_result()
 
@@ -70,7 +72,7 @@ class GoToFinalsAction(object):
 
         self.resetPub.publish(False)
         performActions(
-            depthAction(1),
+            depthAction(0.5),
             rollAction(0),
             pitchAction(0)
         )
@@ -82,8 +84,19 @@ class GoToFinalsAction(object):
             self.goToTask(task, goal.quadrant)
             task.action()
 
-        yawAction(30).wait_for_result()
-        moveAction(10, 0).wait_for_result()
+        yawAction(self.getWorldAngle(55, goal.angle)).wait_for_result()
+        moveAction(12.5, 0).wait_for_result()
+        depthAction(0).wait_for_result()
+        self.resetPub.publish(True)
+        rospy.sleep(3)
+        self.resetPub.publish(False)
+        depthAction(.5).wait_for_result()
+
+        garlicTask = Task(-97, 1, "Bin", lambda: garlicTaskAction().wait_for_result())
+
+        self.camPub.publish(garlicTask)
+        self.goToTask(garlicTask, goal.quadrant)
+        garlicTask.action()
 
         performActions(
             depthAction(0),
