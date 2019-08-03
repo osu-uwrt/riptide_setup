@@ -23,8 +23,8 @@ class Task:
 
 
 tasks = [
-    Task(35.0, 0, "Gate", lambda: gateTaskAction(False).wait_for_result()),
-    Task(35.0, 0, "Cutie", lambda: buoyTaskAction(False, "Fairy").wait_for_result()),
+    Task(42.0, 0, "Gate", lambda: gateTaskAction(False).wait_for_result()),
+    Task(42.0, 0, "Cutie", lambda: buoyTaskAction(False, "Fairy").wait_for_result()),
     #Task(80.0, 0, "Decap", lambda: decapTaskAction().wait_for_result()),
     #Task(55.0, 1, "Bat", lambda: garlicTaskAction().wait_for_result()),
     #Task(55.0, 0, "Pinger", lambda: exposeTaskAction().wait_for_result())
@@ -84,8 +84,19 @@ class GoToFinalsAction(object):
             self.goToTask(task, goal.quadrant)
             task.action()
 
-        yawAction(-65).wait_for_result()
+        yawAction(self.getWorldAngle(55, goal.angle)).wait_for_result()
         moveAction(12.5, 0).wait_for_result()
+        depthAction(0).wait_for_result()
+        self.resetPub.publish(True)
+        rospy.sleep(3)
+        self.resetPub.publish(False)
+        depthAction(.5).wait_for_result()
+
+        garlicTask = Task(-97, 1, "Bin", lambda: garlicTaskAction().wait_for_result())
+
+        self.camPub.publish(garlicTask)
+        self.goToTask(garlicTask, goal.quadrant)
+        garlicTask.action()
 
         performActions(
             depthAction(0),
