@@ -15,6 +15,7 @@ class GarlicTaskAction(object):
 
     def __init__(self):
         self.dropperPub = rospy.Publisher("/command/drop", Int8, queue_size=1)
+        self.xPub = rospy.Publisher("/command/x", LinearCommand, queue_size=1)
         self._as = actionlib.SimpleActionServer(
             "garlic_task", riptide_autonomy.msg.GarlicTaskAction, execute_cb=self.execute_cb, auto_start=False)
         self._as.start()
@@ -51,6 +52,11 @@ class GarlicTaskAction(object):
         moveAction(-.4, 0).wait_for_result()
 
         pitchAction(-60).wait_for_result()
+        self.xPub.publish(15, LinearCommand.FORCE)
+        rospy.sleep(1.0)
+        self.xPub.publish(-15, LinearCommand.FORCE)
+        rospy.sleep(1.0)
+        self.xPub.publish(0, LinearCommand.FORCE)
         rospy.sleep(2)
         pitchAction(0).wait_for_result()
 

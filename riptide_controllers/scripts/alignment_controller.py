@@ -59,7 +59,7 @@ class AlignmentController():
                 else:
                     YPub.publish(min(self.MAX_FORCE, max(-self.MAX_FORCE, self.x_error * self.Y_FORCE_P)), LinearCommand.FORCE)
                     XPub.publish(min(self.MAX_FORCE, max(-self.MAX_FORCE, -self.y_error * self.X_FORCE_P)), LinearCommand.FORCE)
-                    depthPub.publish(True, self.currentDepth - self.z_error * self.DEPTH_FORCE_P)
+                    depthPub.publish(True, self.currentDepth - self.z_error *3 self.DEPTH_FORCE_P)
 
     def shutdown(self, timer = None):
         YPub.publish(0, LinearCommand.FORCE)
