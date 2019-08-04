@@ -4,7 +4,6 @@ import actionlib
 
 from riptide_msgs.msg import LinearCommand
 from std_msgs.msg import String, Float64, Int8, Int32
-from darknet_ros_msgs.msg import BoundingBoxes
 import riptide_controllers.msg
 import riptide_autonomy.msg
 from actionTools import *
