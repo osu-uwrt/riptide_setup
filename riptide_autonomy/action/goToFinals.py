@@ -22,12 +22,14 @@ class Task:
         self.action = action
 
 
-tasks = [
+firstTasks = [
     Task(35.0, 0, "Gate", lambda: gateTaskAction(True).wait_for_result()),
-    Task(35.0, 0, "Cutie", lambda: buoyTaskAction(True, "Groot").wait_for_result()),
-    #Task(80.0, 0, "Decap", lambda: decapTaskAction().wait_for_result()),
-    #Task(70.0, 1, "Bin", lambda: garlicTaskAction().wait_for_result()),
-    #Task(55.0, 0, "Pinger", lambda: exposeTaskAction().wait_for_result())
+    Task(35.0, 0, "Cutie", lambda: buoyTaskAction(True, "Groot").wait_for_result())
+]
+
+secondTasks = [
+    Task(35.0, 0, "Decap", lambda: decapTaskAction().wait_for_result()),
+    Task(35.0, 0, "Bin", lambda: exposeTaskAction().wait_for_result())
 ]
 
 
@@ -76,27 +78,32 @@ class GoToFinalsAction(object):
             rollAction(0),
             pitchAction(0)
         )
-        self.x = 0
-        self.y = 0
 
-        for task in tasks:
+        for task in firstTasks:
             self.camPub.publish(task.camera)
             self.goToTask(task, goal.quadrant)
             task.action()
 
         yawAction(self.getWorldAngle(45, goal.quadrant)).wait_for_result()
-        moveAction(15, 0).wait_for_result()
+        performActions(
+            moveAction(15, 0),
+            depthAction(.5)
+        )
         depthAction(0).wait_for_result()
         self.resetPub.publish(True)
         rospy.sleep(3)
         self.resetPub.publish(False)
         depthAction(.5).wait_for_result()
+        yawAction(self.getWorldAngle(-135, goal.quadrant)).wait_for_result()
+        performActions(
+            moveAction(15, 0),
+            depthAction(.7)
+        )
 
-        garlicTask = Task(-97, 1, "Bin", lambda: garlicTaskAction().wait_for_result())
-
-        self.camPub.publish(garlicTask)
-        self.goToTask(garlicTask, goal.quadrant)
-        garlicTask.action()
+        for task in secondTasks:
+            self.camPub.publish(task.camera)
+            self.goToTask(task, goal.quadrant)
+            task.action()
 
         performActions(
             depthAction(0),
