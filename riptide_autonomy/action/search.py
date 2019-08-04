@@ -41,8 +41,11 @@ class Search(object):
 
         imuSub = rospy.Subscriber("/state/imu", Imu, self.imuCb)
         waitAction(goal.obj, 5).wait_for_result()
+        # Keep the yaw angle for aligning
+        
 
         imuSub.unregister()
+        self.yawPub.publish(rospy.wait_for_message("/state/imu", Imu).rpy_deg.z, AttitudeCommand.POSITION)
         self.xPub.publish(0, LinearCommand.FORCE)
         self.yPub.publish(0, LinearCommand.FORCE)
         self.rollPub.publish(0, AttitudeCommand.POSITION)
