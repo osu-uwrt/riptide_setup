@@ -45,7 +45,6 @@ class Search(object):
         imuSub.unregister()
         self.xPub.publish(0, LinearCommand.FORCE)
         self.yPub.publish(0, LinearCommand.FORCE)
-        self.yawPub.publish(self.start_ang, AttitudeCommand.POSITION)
         self.rollPub.publish(0, AttitudeCommand.POSITION)
 
         self._as.set_succeeded()
