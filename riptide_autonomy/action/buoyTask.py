@@ -43,13 +43,13 @@ class BuoyTaskAction(object):
 
         yaw = rospy.wait_for_message("/state/imu", Imu).rpy_deg.z
         if goal.isCutieLeft:
-            moveAction(-2, -1).wait_for_result()
-            moveAction(5, 0).wait_for_result()
+            moveAction(-2, -1.5).wait_for_result()
+            moveAction(6, 0).wait_for_result()
             yawAction(angleAdd(yaw, 180)).wait_for_result()
             self.yPub.publish(-20, LinearCommand.FORCE)
         else:
-            moveAction(-2, 1).wait_for_result()
-            moveAction(5, 0).wait_for_result()
+            moveAction(-2, 1.5).wait_for_result()
+            moveAction(6, 0).wait_for_result()
             yawAction(angleAdd(yaw, 180)).wait_for_result()
             self.yPub.publish(20, LinearCommand.FORCE)
         

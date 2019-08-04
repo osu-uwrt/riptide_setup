@@ -55,12 +55,11 @@ class GetDistance(object):
             _,labels,centers = cv2.kmeans(sample_region,4,None,criteria,10,flags)
 
             labels = [l[0] for l in labels]
-            maxLabel = max(set(labels), key=labels.count)
-            disparity = centers[maxLabel][0]
+            disparity = -1
             while disparity < 0 and len(labels) != 0:
-                labels = [l for l in labels if l != maxLabel]
                 maxLabel = max(set(labels), key=labels.count)
                 disparity = centers[maxLabel][0]
+                labels = [l for l in labels if l != maxLabel]
 
             readings.append(self.f * self.T / disparity)
 
