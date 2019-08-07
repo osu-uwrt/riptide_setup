@@ -22,6 +22,14 @@ class CalibrateAction(object):
         self._as = actionlib.SimpleActionServer("calibrate", riptide_controllers.msg.CalibrateAction, execute_cb=self.execute_cb, auto_start=False)
         self._as.start()
 
+    def depthAction(self, depth):
+        client = actionlib.SimpleActionClient(
+            "go_to_depth", riptide_controllers.msg.GoToDepthAction)
+        client.wait_for_server()
+
+        # Sends the goal to the action server.
+        client.send_goal(riptide_controllers.msg.GoToDepthGoal(depth))
+        return client
       
     def execute_cb(self, goal):
         client = dynamic_reconfigure.client.Client("thruster_controller", timeout=30)
@@ -38,7 +46,7 @@ class CalibrateAction(object):
 
         client.update_configuration({"Buoyant_Force": Fb, "Buoyancy_X_POS": CobX, "Buoyancy_Y_POS": CobY, "Buoyancy_Z_POS": CobZ})
 
-        self.depthPub.publish(True, .5)
+        self.depthPub.publish(True, 0.5)
         self.rollPub.publish(0, AttitudeCommand.POSITION)
         self.pitchPub.publish(0, AttitudeCommand.POSITION)
 
@@ -61,6 +69,11 @@ class CalibrateAction(object):
             # Adjust in the right direction
             Fb += force * 0.8
             client.update_configuration({"Buoyant_Force": Fb, "Buoyancy_X_POS": CobX, "Buoyancy_Y_POS": CobY, "Buoyancy_Z_POS": CobZ})
+            if self._as.is_preempt_requested():
+                rospy.loginfo('Preempted Calibration')
+                self.cleanup()
+                self._as.set_preempted()
+                return
 
         rospy.loginfo("Buoyant force calibration complete")
 
@@ -78,6 +91,12 @@ class CalibrateAction(object):
             CobX -= CobXSum * 0.8
 
             client.update_configuration({"Buoyant_Force": Fb, "Buoyancy_X_POS": CobX, "Buoyancy_Y_POS": CobY, "Buoyancy_Z_POS": CobZ})
+
+            if self._as.is_preempt_requested():
+                rospy.loginfo('Preempted Calibration')
+                self.cleanup()
+                self._as.set_preempted()
+                return
 
         rospy.loginfo("Buoyancy XY calibration complete")
 
@@ -97,15 +116,28 @@ class CalibrateAction(object):
 
             client.update_configuration({"Buoyant_Force": Fb, "Buoyancy_X_POS": CobX, "Buoyancy_Y_POS": CobY, "Buoyancy_Z_POS": CobZ})
 
+            if self._as.is_preempt_requested():
+                rospy.loginfo('Preempted Calibration')
+                self.cleanup()
+                self._as.set_preempted()
+                return
+
 
             
         rospy.loginfo("Calibration complete")
 
+        self.cleanup()
+        
+        self._as.set_succeeded()
+
+    def cleanup(self):
+        self.rollPub.publish(0, AttitudeCommand.POSITION)
+        self.pitchPub.publish(0, AttitudeCommand.POSITION)
+        self.depthAction(0).wait_for_result()
         self.depthPub.publish(False, 0)
         self.rollPub.publish(0, AttitudeCommand.MOMENT)
         self.pitchPub.publish(0, AttitudeCommand.MOMENT)
-        
-        self._as.set_succeeded()
+
 
         
         

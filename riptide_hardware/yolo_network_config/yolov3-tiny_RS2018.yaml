@@ -5,10 +5,10 @@ yolo_model:
   weight_file:
     name: yolov3-tiny-obj_best.weights
   threshold:
-    value: 0.1 # Leave small b/c the yolo_processor will handle thresholding
+    value: 0.2 # Leave small b/c the yolo_processor will handle thresholding
   detection_classes:
     names:
-      - Bat
+      - Bin
       - Batman
       - Crucifix
       - Cutie
@@ -16,3 +16,11 @@ yolo_model:
       - Garlic
       - Gate
       - Groot
+      - Heart
+      - Oval
+      - Path
+      - Structure
+      - Sunny
+      - Bin
+      - Fairy
+      - Pinger

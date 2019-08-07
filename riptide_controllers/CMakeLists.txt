@@ -22,6 +22,7 @@ find_package(catkin REQUIRED
     tf
     control_toolbox
     actionlib_msgs
+    darknet_ros_msgs
 )
 
 find_package(Ceres REQUIRED)
@@ -32,6 +33,7 @@ generate_dynamic_reconfigure_options(
   cfg/VehicleProperties.cfg
   cfg/AttitudeController.cfg
   cfg/LinearController.cfg
+  cfg/AlignmentController.cfg
 )
 
 add_action_files(
@@ -41,9 +43,12 @@ add_action_files(
   GoToYaw.action
   GoToPitch.action
   GoToRoll.action
-  GoToTask.action
   MoveDistance.action
-  SickTricks.action
+  Wait.action
+  Arc.action
+  GateManeuver.action
+  GetDistance.action
+  Align.action
 )
 
 generate_messages(
@@ -53,6 +58,8 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS
     include
+    ${EIGEN3_INCLUDE_DIR}
+    ${CERES_INCLUDE_DIRS}
   CATKIN_DEPENDS
     dynamic_reconfigure
     actionlib_msgs
@@ -63,7 +70,7 @@ roslint_cpp()
 include_directories(include ${catkin_INCLUDE_DIRS}
   ${CERES_INCLUDE_DIRS}
   ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake
-  {EIGEN3_INCLUDE_DIR}
+  ${EIGEN3_INCLUDE_DIR}
 )
 
 cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)
@@ -78,10 +85,6 @@ cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)
 add_executable(depth_controller src/depth_controller.cpp)
 target_link_libraries(depth_controller ${catkin_LIBRARIES})
 add_dependencies(depth_controller ${catkin_EXPORTED_TARGETS})
-
-add_executable(alignment_controller src/alignment_controller.cpp)
-target_link_libraries(alignment_controller ${catkin_LIBRARIES})
-add_dependencies(alignment_controller ${catkin_EXPORTED_TARGETS})
 
 add_executable(pwm_controller src/pwm_controller.cpp)
 target_link_libraries(pwm_controller ${catkin_LIBRARIES} yaml-cpp)

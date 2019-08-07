@@ -1,6 +1,0 @@
-<launch>
-  <machine address="jetson" name="jetson" user="ros" env-loader="~/osu-uwrt/riptide_software/src/riptide_utilities/riptide_master.sh"/>
-  <arg name="machine_name" default="jetson" />
-
-  <node machine="$(arg machine_name)" pkg="riptide_vision" type="object_processor" name="object_processor" output="screen" />
-</launch>

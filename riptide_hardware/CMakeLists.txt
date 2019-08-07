@@ -14,15 +14,14 @@ find_package(catkin REQUIRED
     roslint
     roscpp
     riptide_msgs
-    nortek_dvl
     geometry_msgs
     imu_3dm_gx4
     pointgrey_camera_driver
     message_filters
-    tf
     message_generation
     sensor_msgs
     cv_bridge
+    dynamic_reconfigure
 )
 
 find_package(Eigen3 REQUIRED)
@@ -31,9 +30,18 @@ add_service_files(FILES Pneumatics.srv)
 
 generate_messages()
 
-catkin_package(INCLUDE_DIRS include)
+generate_dynamic_reconfigure_options(
+  cfg/Torpedo.cfg
+)
+
+catkin_package(
+  INCLUDE_DIRS
+    include
+  CATKIN_DEPENDS
+    dynamic_reconfigure
+)
 find_package(OpenCV REQUIRED) # To include, OpenCV, this MUST go BEFORE include_directories()
-include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS} {EIGEN3_INCLUDE_DIR} resources/acoustics/include)
+include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR} resources/acoustics/include)
 
 roslint_cpp()
 
@@ -45,9 +53,9 @@ cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)
 
 if(NOT _host_name MATCHES "jetson")
 
-    # add_executable(acoustics src/acoustics.cpp)
-    # target_link_libraries(acoustics ${catkin_LIBRARIES} okFrontPanel fftw3)
-    # add_dependencies(acoustics ${catkin_EXPORTED_TARGETS})
+    add_executable(dvl_processor src/dvl_processor.cpp)
+    target_link_libraries(dvl_processor ${catkin_LIBRARIES} yaml-cpp)
+    add_dependencies(dvl_processor ${catkin_EXPORTED_TARGETS})
 
     add_executable(depth_processor src/depth_processor.cpp)
     target_link_libraries(depth_processor ${catkin_LIBRARIES})
@@ -55,9 +63,7 @@ if(NOT _host_name MATCHES "jetson")
 endif()
 
 add_executable(imu_processor src/imu_processor.cpp)
-target_link_libraries(imu_processor ${catkin_LIBRARIES})
+target_link_libraries(imu_processor ${catkin_LIBRARIES} yaml-cpp)
 add_dependencies(imu_processor ${catkin_EXPORTED_TARGETS})
 
-add_executable(dvl_processor src/dvl_processor.cpp)
-target_link_libraries(dvl_processor ${catkin_LIBRARIES} yaml-cpp)
-add_dependencies(dvl_processor ${catkin_EXPORTED_TARGETS})
+

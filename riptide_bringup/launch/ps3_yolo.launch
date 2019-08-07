@@ -1,6 +1,0 @@
-<launch>
-  <!--<include file="$(find riptide_hardware)/launch/hardware.launch" />-->
-  <include file="$(find riptide_hardware)/launch/darknet_ros_jetson.launch" />
-  <include file="$(find riptide_controllers)/launch/controllers.launch" />
-  <include file="$(find riptide_vision)/launch/vision_jetson.launch" />
-</launch>

@@ -13,9 +13,13 @@ class LinearController():
 
     VELOCITY_P = 2.0
     DRAG_COEFF = 0
+    MAX_FORCE = 30
 
     velocityCmd = None
     force = 0
+
+    def __init__(self, publisher):
+        self.publisher = publisher
 
     def cmdCb(self, msg):
         if msg.mode == LinearCommand.VELOCITY:
@@ -23,14 +27,16 @@ class LinearController():
         elif msg.mode == LinearCommand.FORCE:
             self.force = msg.value
             self.velocityCmd = None
+            self.publisher.publish(self.force)
 
     def updateState(self, velocity):
 
         # If there is a desired velocity
         if self.velocityCmd != None:
             # Set force porportional to velocity error
+            self.force = 0
             if not math.isnan(velocity):
-                self.force = self.VELOCITY_P * (self.velocityCmd - velocity) + self.DRAG_COEFF * velocity * abs(velocity)
+                self.force = max(-self.MAX_FORCE, min(self.MAX_FORCE, self.VELOCITY_P * (self.velocityCmd - velocity) + self.DRAG_COEFF * velocity * abs(velocity)))
 
     def reconfigure(self, config, name):
         self.VELOCITY_P = config[name + "_velocity_p"]
@@ -38,11 +44,11 @@ class LinearController():
         
         
 
-xController = LinearController()
-yController = LinearController()
-
 XPub = rospy.Publisher("/command/force_x", Float64, queue_size=5)
 YPub = rospy.Publisher("/command/force_y", Float64, queue_size=5)
+
+xController = LinearController(XPub)
+yController = LinearController(YPub)
 
 def dvlCb(msg):
     xController.updateState(msg.velocity.x)
