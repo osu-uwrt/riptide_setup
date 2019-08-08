@@ -38,15 +38,6 @@ generate_dynamic_reconfigure_options(
 
 add_action_files(
   DIRECTORY action
-<<<<<<< HEAD
-  FILES Calibration.action
-        depth_command.action
-        Calibrate.action
-        GoToDepth.action
-        GoToYaw.action
-        GoToPitch.action
-        GoToRoll.action
-=======
   FILES Calibrate.action
   GoToDepth.action
   GoToYaw.action
@@ -58,7 +49,6 @@ add_action_files(
   GateManeuver.action
   GetDistance.action
   Align.action
->>>>>>> 29eb418f4973aa73cc10ce0d9a37e53b3de347c9
 )
 
 generate_messages(
