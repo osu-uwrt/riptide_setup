@@ -13,13 +13,6 @@ find_package(catkin REQUIRED COMPONENTS
   riptide_msgs
   geometry_msgs
   sensor_msgs
-<<<<<<< HEAD
-  cv_bridge
-  rospy
-  smach
-  smach_ros
-=======
->>>>>>> 29eb418f4973aa73cc10ce0d9a37e53b3de347c9
   actionlib_msgs
   darknet_ros_msgs
 )
