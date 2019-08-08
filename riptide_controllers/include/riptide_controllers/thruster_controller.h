@@ -11,6 +11,7 @@
 #include <riptide_controllers/VehiclePropertiesConfig.h>
 #include <boost/thread/mutex.hpp>
 
+#include "std_msgs/Float32.h"
 #include "geometry_msgs/Vector3.h"
 #include "geometry_msgs/Vector3Stamped.h"
 #include "geometry_msgs/Accel.h"
@@ -52,7 +53,7 @@ private:
   string properties_file;
   vector<int> thrustersEnabled;
   Vector3d CoB;
-  double mass, volume, Fg, Fb, Ixx, Iyy, Izz, depth_fully_submerged;
+  double mass, Fg,  Fb, Ixx, Iyy, Izz, depth_fully_submerged;
   bool isSubmerged;
 
   // Variables that get passed to class EOM and FindCoB
@@ -62,6 +63,7 @@ private:
   double inertia[6], weightLoad[6], transportThm[6], command[6], Fb_vector[3];
   double solver_forces[8]; // Solved forces go here
   double solver_cob[3];    // Solved buoyancy positions go here
+  double center_of_mass[3];
 
   // EOMs
   ceres::Problem problemEOM;

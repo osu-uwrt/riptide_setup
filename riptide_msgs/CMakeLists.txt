@@ -20,7 +20,6 @@ add_message_files(
     Imu.msg
     SwitchState.msg
     TaskAlignment.msg
-    GateData.msg
     PoleData.msg
     BoundingBox.msg
     ResetControls.msg
@@ -40,10 +39,22 @@ add_message_files(
     StatusLight.msg
     CalibrateAlignment.msg
     NetLoad.msg
+    LinearCommand.msg
+    Dvl.msg
 )
 
-generate_messages(DEPENDENCIES std_msgs geometry_msgs darknet_ros_msgs)
+generate_messages(
+    DEPENDENCIES 
+    std_msgs 
+    geometry_msgs 
+    darknet_ros_msgs
 
-catkin_package(CATKIN_DEPENDS message_runtime)
+)
+
+catkin_package(
+    CATKIN_DEPENDS 
+    message_runtime
+    
+)
 
 include_directories(${catkin_INCLUDE_DIRS})

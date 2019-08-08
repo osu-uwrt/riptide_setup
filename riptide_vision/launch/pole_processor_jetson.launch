@@ -1,0 +1,7 @@
+<launch>
+  <machine address="jetson" name="jetson" user="ros" env-loader="~/osu-uwrt/riptide_software/src/riptide_utilities/baycat_master.sh"/>
+  <arg name="machine_name" default="jetson" />
+
+  <include file="$(find riptide_vision)/launch/hud_jetson.launch" />
+  <node machine="$(arg machine_name)" pkg="riptide_vision" type="pole_processor.py" name="pole_processor" output="screen" />
+</launch>

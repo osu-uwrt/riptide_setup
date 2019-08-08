@@ -13,37 +13,27 @@ find_package(catkin REQUIRED COMPONENTS
   riptide_msgs
   geometry_msgs
   sensor_msgs
-  cv_bridge
-  rospy
-  smach
-  smach_ros
+  actionlib_msgs
+  darknet_ros_msgs
 )
 
-
-roslint_cpp()
-
-set(AUTONOMY_OBJECTS
-  src/tslam.cpp
-  src/task_casino_gate.cpp
-  src/task_path_marker.cpp
-  src/task_dice_hop.cpp
-  src/task_dice.cpp
-  src/task_slots.cpp
-  src/task_roulette.cpp
-  src/task_gold_chip.cpp
-  src/task_cash_in.cpp
-  src/object_describer.cpp
-  src/validators.cpp
+add_action_files(
+  DIRECTORY action
+  FILES Prequalify.action
+  GateTask.action
+  BuoyTask.action
+  DecapTask.action
+  GoToFinals.action
+  Search.action
+  ExposeTask.action
+  GarlicTask.action
 )
 
-catkin_package(INCLUDE_DIRS include)
-find_package(OpenCV REQUIRED) # To include, OpenCV, this MUST go BEFORE include_directories()
-include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
+generate_messages(
+  DEPENDENCIES actionlib_msgs
+)
 
-cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)
+catkin_package(
+  CATKIN_DEPENDS
+    actionlib_msgs)
 
-# if(NOT _host_name MATCHES "jetson")
-#  add_executable(be_autonomous src/be_autonomous.cpp ${AUTONOMY_OBJECTS})
-#  target_link_libraries(be_autonomous ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} yaml-cpp)
-#  add_dependencies(be_autonomous ${catkin_EXPORTED_TARGETS})
-# endif()

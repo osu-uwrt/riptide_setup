@@ -18,20 +18,30 @@ find_package(catkin REQUIRED
     imu_3dm_gx4
     pointgrey_camera_driver
     message_filters
-    tf
     message_generation
     sensor_msgs
     cv_bridge
+    dynamic_reconfigure
 )
+
+find_package(Eigen3 REQUIRED)
 
 add_service_files(FILES Pneumatics.srv)
 
 generate_messages()
 
-catkin_package(INCLUDE_DIRS include)
-find_package(OpenCV REQUIRED) # To include, OpenCV, this MUST go BEFORE include_directories()
-include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS} resources/acoustics/include)
+generate_dynamic_reconfigure_options(
+  cfg/Torpedo.cfg
+)
 
+catkin_package(
+  INCLUDE_DIRS
+    include
+  CATKIN_DEPENDS
+    dynamic_reconfigure
+)
+find_package(OpenCV REQUIRED) # To include, OpenCV, this MUST go BEFORE include_directories()
+include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR} resources/acoustics/include)
 
 roslint_cpp()
 
@@ -40,34 +50,20 @@ find_package(Boost REQUIRED)
 include_directories(${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIR})
 
 cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)
-message("-- Computer name: " ${_host_name})
 
 if(NOT _host_name MATCHES "jetson")
 
-    # add_executable(acoustics src/acoustics.cpp)
-    # target_link_libraries(acoustics ${catkin_LIBRARIES} okFrontPanel fftw3)
-    # add_dependencies(acoustics ${catkin_EXPORTED_TARGETS})
+    add_executable(dvl_processor src/dvl_processor.cpp)
+    target_link_libraries(dvl_processor ${catkin_LIBRARIES} yaml-cpp)
+    add_dependencies(dvl_processor ${catkin_EXPORTED_TARGETS})
 
     add_executable(depth_processor src/depth_processor.cpp)
     target_link_libraries(depth_processor ${catkin_LIBRARIES})
     add_dependencies(depth_processor ${catkin_EXPORTED_TARGETS})
-else()
-    message("-- Skipping riptide code on jetson")
-endif()
-
-if(NOT _host_name MATCHES "riptide")
-
-    add_executable(calibrate_camera src/calibrate_camera.cpp)
-    target_link_libraries(calibrate_camera ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
-    add_dependencies(calibrate_camera ${catkin_EXPORTED_TARGETS})
-
-    add_executable(undistort_camera src/undistort_camera.cpp)
-    target_link_libraries(undistort_camera ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
-    add_dependencies(undistort_camera ${catkin_EXPORTED_TARGETS})
-else()
-    message("-- Skipping jetson code on riptide")
 endif()
 
 add_executable(imu_processor src/imu_processor.cpp)
-target_link_libraries(imu_processor ${catkin_LIBRARIES})
+target_link_libraries(imu_processor ${catkin_LIBRARIES} yaml-cpp)
 add_dependencies(imu_processor ${catkin_EXPORTED_TARGETS})
+
+
