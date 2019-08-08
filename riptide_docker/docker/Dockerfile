@@ -21,7 +21,7 @@
 
 FROM ros:kinetic-ros-core-xenial
 
-MAINTAINER Parth Parekh MAINTAINER Parth Parekh 
+MAINTAINER Parth Parekh 
 
 # install ros packages
 RUN apt-get update && apt-get install -y \
@@ -43,12 +43,11 @@ RUN apt-get update && apt-get install -y \
     git\
     ca-certificates
 
-RUN useradd osu -m
-
+RUN apt-get -y install sudo
 
 # Initialize ROS 
+USER root
 RUN rosdep update
-
 # Setup catkin workspace
 RUN echo "source /opt/ros/kinetic/setup.bash" >> ~/.bashrc
 RUN bin/bash -c "source /opt/ros/kinetic/setup.bash && \
@@ -56,47 +55,28 @@ RUN bin/bash -c "source /opt/ros/kinetic/setup.bash && \
                  cd ~/osu-uwrt/riptide_software/ && \
                  catkin init"              
                  
-
+USER root
 RUN bin/bash -c "source /opt/ros/kinetic/setup.bash && \
                  apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654 && \
                  apt-key del 421C365BD9FF1F717815A3895523BAEEB01FA116 && \
                  apt update && \
                  apt-get -y install python-rosinstall python-rosinstall-generator python-wstool build-essential && \
                  apt-get -y install ros-kinetic-control-toolbox && \
-                 apt-get -y install ros-kinetic-joy && \
-                 cd ~/osu-uwrt/riptide_software/ && \
+                 apt-get -y install ros-kinetic-joy"
+RUN bin/bash -c "cd ~/osu-uwrt/riptide_software/ && \
                  rm -rf src && \
                  git clone https://github.com/juched/riptide_software.git src &&  \
                  cd src && \
-                 git checkout autonomy && \
-                 apt-get install libraw1394-11 libavcodec-ffmpeg56                    \
+                 git checkout autonomy"
+USER root
+RUN bin/bash -c "apt-get install -y libraw1394-11 libavcodec-ffmpeg56                    \
                  libavformat-ffmpeg56 libswscale-ffmpeg3 libswresample-ffmpeg1        \
 		         libavutil-ffmpeg54 libgtkmm-2.4-dev libglademm-2.4-dev               \
-		         libgtkglextmm-x11-1.2-dev libusb-1.0-0    && \ 
-                 cd && \
+		         libgtkglextmm-x11-1.2-dev libusb-1.0-0 "
+RUN bin/bash -c "cd && \
                  git clone https://github.com/Juched/flycap-mirror.git && \
-                 cd flycap-mirror && \
-                 ./install_flycapture.sh && \
-                 cd ~/osu-uwrt/riptide_software/src && \
-                 git clone https://github.com/ros-drivers/pointgrey_camera_driver.git ros-kinetic-pointgrey-camera-driver && \
-                 rosdep update && \
-                 rosdep install --from-paths ~/osu-uwrt/riptide_software/src -i -r -y "
+                 cd ~/osu-uwrt/riptide_software/src "
 
-
-
-
-RUN bin/bash -c  "source /opt/ros/kinetic/setup.bash && \
-                 mkdir ~/dependencies && \
-                 cd ~/dependencies && \
-                 cd ~/osu-uwrt/riptide_software/src/riptide_utilities/setup_scripts/ && \
-                 apt-get -y install libx11-dev && \
-                 ./install_imu_darknet.sh && \
-                 ./install_eigen.sh && \
-                 ./install_ceres.sh && \
-                 ./install_rosdeps.sh && \
-                 ./setup_uwrt_env.sh && \
-                 cd ~/osu-uwrt/riptide_software/ && \
-                 catkin_make"
 
 RUN echo "source ~/osu-uwrt/devel/setup.bash" >> ~/.bashrc
 
@@ -121,8 +101,6 @@ ENV DISPLAY localhost:0
 USER root 
 RUN apt-get update && apt-get install -y \
     terminator 
-RUN chsh -s /bin/bash osuuwrt
-USER osuuwrt 
 
 
 # Images generated from this should be run with two options:

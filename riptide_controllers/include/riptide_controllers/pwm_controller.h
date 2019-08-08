@@ -7,7 +7,6 @@
 #include "riptide_msgs/ThrustStamped.h"
 #include "riptide_msgs/SwitchState.h"
 #include "riptide_msgs/ResetControls.h"
-using namespace std;
 
 class PWMController
 {
@@ -18,7 +17,7 @@ class PWMController
   riptide_msgs::PwmStamped pwm_msg;
 
   YAML::Node properties;
-  string properties_file;
+  std::string properties_file;
   int thrusterType[8];
   float startup_config[2][4], primary_config[2][4]; // Slopes and y-intercepts
   float critical_thrusts[2][2]; // Minimum and startup thrusts
@@ -30,13 +29,13 @@ class PWMController
  public:
   PWMController();
   template <typename T>
-  void LoadParam(string param, T &var);
+  void LoadParam(std::string param, T &var);
   void LoadThrusterProperties();
   void ThrustCB(const riptide_msgs::ThrustStamped::ConstPtr &thrust);
   void SwitchCB(const riptide_msgs::SwitchState::ConstPtr &state);
   void ResetController(const riptide_msgs::ResetControls::ConstPtr &reset_msg);
   void PublishZeroPWM();
-  int Thrust2pwm(double raw_force, int thruster);
+  int Thrust2pwm(double raw_force, int type, std::string name);
   void Loop(); //A loop fxn is needed b/c copro can only read msgs so quickly
 };
 

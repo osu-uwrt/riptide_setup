@@ -1,0 +1,7 @@
+#goal definition
+int32 maneuvers
+---
+#result definition
+---
+#feedback
+int32[] sequence

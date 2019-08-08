@@ -24,7 +24,10 @@ HUD::HUD() : nh("hud") {
   cmd_pitch_sub = nh.subscribe<riptide_msgs::AttitudeCommand>("/command/pitch", 1, &HUD::CmdPitchCB, this);
   cmd_yaw_sub = nh.subscribe<riptide_msgs::AttitudeCommand>("/command/yaw", 1, &HUD::CmdYawCB, this);
   cmd_depth_sub = nh.subscribe<riptide_msgs::DepthCommand>("/command/depth", 1, &HUD::CmdDepthCB, this);
-  cmd_accel_sub = nh.subscribe<geometry_msgs::Accel>("/command/accel", 1, &HUD::CmdAccelCB, this);
+  cmd_x_sub = nh.subscribe<std_msgs::Float64>("/command/force_x", 1, &HUD::ForceXCB, this);
+  cmd_y_sub = nh.subscribe<std_msgs::Float64>("/command/force_y", 1, &HUD::ForceYCB, this);
+  cmd_z_sub = nh.subscribe<std_msgs::Float64>("/command/force_z", 1, &HUD::ForceZCB, this);
+  reset_sub = nh.subscribe<riptide_msgs::ResetControls>("/controls/reset", 1, &HUD::ResetCB, this);
 
   // Outputs
   image_transport::ImageTransport it(nh);
@@ -60,35 +63,37 @@ void HUD::InitMsgs() {
   cmd_euler_rpy.x = 0;
   cmd_euler_rpy.y = 0;
   cmd_euler_rpy.z = 0;
-  cmd_linear_accel.x = 0;
-  cmd_linear_accel.y = 0;
-  cmd_linear_accel.z = 0;
+  cmd_x = 0;
+  cmd_y = 0;
+  cmd_z = 0;
   cmd_depth = 0;
 }
 
 void HUD::StereoImgCB(const sensor_msgs::ImageConstPtr& msg) {
-  cv_bridge::CvImagePtr cv_ptr;
-  try {
-    // Use the BGR8 image_encoding for proper color encoding
-    cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-  }
-  catch (cv_bridge::Exception& e ){
-    ROS_ERROR("cv_bridge exception:  %s", e.what());
-    return;
-  }
-  width = msg->width;
-  height = msg->height;
+  if (stereo_img_pub.getNumSubscribers() > 0) {
+    cv_bridge::CvImagePtr cv_ptr;
+    try {
+      // Use the BGR8 image_encoding for proper color encoding
+      cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+    }
+    catch (cv_bridge::Exception& e ){
+      ROS_ERROR("cv_bridge exception:  %s", e.what());
+      return;
+    }
+    /*width = msg->width;
+    height = msg->height;
 
-  if((ros::Time::now() - object.header.stamp).toSec() < .1) {
-    int w = object.bbox_width;
-    int h = object.bbox_height;
-    cv::Rect rect(object.pos.y - w/2 + width/2, object.pos.z - h/2 + height/2, w, h);
-    cv::rectangle(cv_ptr->image, rect, cv::Scalar(0, 255, 0));
-  }
+    if((ros::Time::now() - object.header.stamp).toSec() < .1) {
+      int w = object.bbox_width;
+      int h = object.bbox_height;
+      cv::Rect rect(object.pos.y - w/2 + width/2, object.pos.z - h/2 + height/2, w, h);
+      cv::rectangle(cv_ptr->image, rect, cv::Scalar(0, 255, 0));
+    }*/
 
-  Mat img = HUD::CreateHUD(cv_ptr->image);
-  sensor_msgs::ImagePtr out_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", img).toImageMsg();
-  stereo_img_pub.publish(out_msg);
+    Mat img = HUD::CreateHUD(cv_ptr->image);
+    sensor_msgs::ImagePtr out_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", img).toImageMsg();
+    stereo_img_pub.publish(out_msg);
+  }
 }
 
 void HUD::ObjectCB(const riptide_msgs::Object::ConstPtr& msg) {
@@ -96,35 +101,39 @@ void HUD::ObjectCB(const riptide_msgs::Object::ConstPtr& msg) {
 }
 
 void HUD::DownwardImgCB(const sensor_msgs::ImageConstPtr& msg) {
-  cv_bridge::CvImagePtr cv_ptr;
-  try {
-    // Use the BGR8 image_encoding for proper color encoding
-    cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-  }
-  catch (cv_bridge::Exception& e ){
-    ROS_ERROR("cv_bridge exception:  %s", e.what());
-    return;
-  }
+  if (down_img_pub.getNumSubscribers() > 0) {
+    cv_bridge::CvImagePtr cv_ptr;
+    try {
+      // Use the BGR8 image_encoding for proper color encoding
+      cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+    }
+    catch (cv_bridge::Exception& e ){
+      ROS_ERROR("cv_bridge exception:  %s", e.what());
+      return;
+    }
 
-  Mat img = HUD::CreateHUD(cv_ptr->image);
-  sensor_msgs::ImagePtr out_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", img).toImageMsg();
-  down_img_pub.publish(out_msg);
+    Mat img = HUD::CreateHUD(cv_ptr->image);
+    sensor_msgs::ImagePtr out_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", img).toImageMsg();
+    down_img_pub.publish(out_msg);
+  }
 }
 
 void HUD::DarknetImgCB(const sensor_msgs::ImageConstPtr& msg){
-  cv_bridge::CvImagePtr cv_ptr;
-  try {
-    // Use the BGR8 image_encoding for proper color encoding
-    cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-  }
-  catch (cv_bridge::Exception& e ){
-    ROS_ERROR("cv_bridge exception:  %s", e.what());
-    return;
-  }
+  if (darknet_img_pub.getNumSubscribers() > 0) {
+    cv_bridge::CvImagePtr cv_ptr;
+    try {
+      // Use the BGR8 image_encoding for proper color encoding
+      cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+    }
+    catch (cv_bridge::Exception& e ){
+      ROS_ERROR("cv_bridge exception:  %s", e.what());
+      return;
+    }
 
-  Mat img = HUD::CreateHUD(cv_ptr->image);
-  sensor_msgs::ImagePtr out_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", img).toImageMsg();
-  darknet_img_pub.publish(out_msg);
+    Mat img = HUD::CreateHUD(cv_ptr->image);
+    sensor_msgs::ImagePtr out_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", img).toImageMsg();
+    darknet_img_pub.publish(out_msg);
+  }
 }
 
 // Add top margin and display key states/cmmands
@@ -144,12 +153,15 @@ Mat HUD::CreateHUD(Mat &img) {
   sprintf(state_rpyd, "STATE: R: %.2f, P: %.2f, Y: %.2f, D: %.2f", euler_rpy.x, euler_rpy.y, euler_rpy.z, depth);
   sprintf(cmd_rpyd, "CMD: R: %.2f, P: %.2f, Y: %.2f, D: %.2f", cmd_euler_rpy.x, cmd_euler_rpy.y, cmd_euler_rpy.z, cmd_depth);
   sprintf(state_accel, "STATE: Ax: %.3f, Ay: %.3f, Az: %.3f", linear_accel.x, linear_accel.y, linear_accel.z);
-  sprintf(cmd_accel, "CMD: Ax: %.3f, Ay: %.3f, Az: %.3f", cmd_linear_accel.x, cmd_linear_accel.y, cmd_linear_accel.z);
+  sprintf(cmd_accel, "CMD: Ax: %.3f, Ay: %.3f, Az: %.3f", cmd_x, cmd_y, cmd_z);
 
   putText(hud, string(state_rpyd), Point(5, text_start[0]), FONT_HERSHEY_COMPLEX_SMALL, font_scale, text_color, thickness);
   putText(hud, string(cmd_rpyd), Point(5, text_start[1]), FONT_HERSHEY_COMPLEX_SMALL, font_scale, text_color, thickness);
   putText(hud, string(state_accel), Point(5, text_start[2]), FONT_HERSHEY_COMPLEX_SMALL, font_scale, text_color, thickness);
   putText(hud, string(cmd_accel), Point(5, text_start[3]), FONT_HERSHEY_COMPLEX_SMALL, font_scale, text_color, thickness);
+
+  if(reset)
+    putText(hud, "RESET", Point(width/3, height/3), FONT_HERSHEY_COMPLEX_SMALL, 3, text_color, thickness);
 
   return hud;
 }
@@ -163,6 +175,11 @@ void HUD::ImuCB(const riptide_msgs::Imu::ConstPtr &imu_msg) {
   linear_accel.x = imu_msg->linear_accel.x;
   linear_accel.y = imu_msg->linear_accel.y;
   linear_accel.z = imu_msg->linear_accel.z;
+}
+
+// Get current depth
+void HUD::ResetCB(const riptide_msgs::ResetControls::ConstPtr &reset_msg) {
+  reset = reset_msg->reset_pwm;
 }
 
 // Get current depth
@@ -190,11 +207,16 @@ void HUD::CmdDepthCB(const riptide_msgs::DepthCommand::ConstPtr& cmd_msg) {
   cmd_depth = cmd_msg->depth;
 }
 
-// Get command linear accel
-void HUD::CmdAccelCB(const geometry_msgs::Accel::ConstPtr& cmd_msg){
-  cmd_linear_accel.x = cmd_msg->linear.x;
-  cmd_linear_accel.y = cmd_msg->linear.y;
-  cmd_linear_accel.z = cmd_msg->linear.z;
+void HUD::ForceXCB(const std_msgs::Float64::ConstPtr& msg){
+  cmd_x = msg->data;
+}
+
+void HUD::ForceYCB(const std_msgs::Float64::ConstPtr& msg){
+  cmd_y = msg->data;
+}
+
+void HUD::ForceZCB(const std_msgs::Float64::ConstPtr& msg){
+  cmd_z = msg->data;
 }
 
 void HUD::Loop()

@@ -20,7 +20,6 @@ add_message_files(
     Imu.msg
     SwitchState.msg
     TaskAlignment.msg
-    GateData.msg
     PoleData.msg
     BoundingBox.msg
     ResetControls.msg
@@ -40,6 +39,8 @@ add_message_files(
     StatusLight.msg
     CalibrateAlignment.msg
     NetLoad.msg
+    LinearCommand.msg
+    Dvl.msg
 )
 
 generate_messages(

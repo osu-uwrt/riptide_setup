@@ -1,8 +1,0 @@
-# Please keep in mind the thruster physical limits of operation
-# Try to keep max thrust around 22 N
-antiwindup: False
-d: 0.27
-i: 0.0
-i_clamp_max: 5.0
-i_clamp_min: 0.0
-p:  1.0

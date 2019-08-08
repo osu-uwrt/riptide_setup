@@ -22,6 +22,7 @@ find_package(catkin REQUIRED
     tf
     control_toolbox
     actionlib_msgs
+    darknet_ros_msgs
 )
 
 find_package(Ceres REQUIRED)
@@ -31,10 +32,13 @@ find_package(Eigen3 REQUIRED)
 generate_dynamic_reconfigure_options(
   cfg/VehicleProperties.cfg
   cfg/AttitudeController.cfg
+  cfg/LinearController.cfg
+  cfg/AlignmentController.cfg
 )
 
 add_action_files(
   DIRECTORY action
+<<<<<<< HEAD
   FILES Calibration.action
         depth_command.action
         Calibrate.action
@@ -42,15 +46,30 @@ add_action_files(
         GoToYaw.action
         GoToPitch.action
         GoToRoll.action
+=======
+  FILES Calibrate.action
+  GoToDepth.action
+  GoToYaw.action
+  GoToPitch.action
+  GoToRoll.action
+  MoveDistance.action
+  Wait.action
+  Arc.action
+  GateManeuver.action
+  GetDistance.action
+  Align.action
+>>>>>>> 29eb418f4973aa73cc10ce0d9a37e53b3de347c9
 )
 
 generate_messages(
-  DEPENDENCIES actionlib_msgs std_msgs  # Or other packages containing msgs
+  DEPENDENCIES actionlib_msgs std_msgs geometry_msgs # Or other packages containing msgs
 )
 
 catkin_package(
   INCLUDE_DIRS
     include
+    ${EIGEN3_INCLUDE_DIR}
+    ${CERES_INCLUDE_DIRS}
   CATKIN_DEPENDS
     dynamic_reconfigure
     actionlib_msgs
@@ -61,7 +80,7 @@ roslint_cpp()
 include_directories(include ${catkin_INCLUDE_DIRS}
   ${CERES_INCLUDE_DIRS}
   ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake
-  {EIGEN3_INCLUDE_DIR}
+  ${EIGEN3_INCLUDE_DIR}
 )
 
 cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)
@@ -76,10 +95,6 @@ cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)
 add_executable(depth_controller src/depth_controller.cpp)
 target_link_libraries(depth_controller ${catkin_LIBRARIES})
 add_dependencies(depth_controller ${catkin_EXPORTED_TARGETS})
-
-add_executable(alignment_controller src/alignment_controller.cpp)
-target_link_libraries(alignment_controller ${catkin_LIBRARIES})
-add_dependencies(alignment_controller ${catkin_EXPORTED_TARGETS})
 
 add_executable(pwm_controller src/pwm_controller.cpp)
 target_link_libraries(pwm_controller ${catkin_LIBRARIES} yaml-cpp)

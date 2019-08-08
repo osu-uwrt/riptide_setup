@@ -1,3 +1,0 @@
-<launch>
-  <node pkg="riptide_vision" type="yolo_processor" name="yolo_processor" output="screen" />
-</launch>

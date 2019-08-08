@@ -1,0 +1,7 @@
+#goal definition
+int32 isLeft
+---
+#result definition
+---
+#feedback
+int32[] sequence
