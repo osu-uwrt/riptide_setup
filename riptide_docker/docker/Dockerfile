@@ -44,9 +44,8 @@ RUN apt-get update && apt-get install -y \
     ca-certificates
 
 RUN apt-get -y install sudo
-
-# Initialize ROS 
-USER root
+RUN useradd -m osu && echo "osu:OSU<3uwrt" | chpasswd && adduser osu sudo
+USER osu
 RUN rosdep update
 # Setup catkin workspace
 RUN echo "source /opt/ros/kinetic/setup.bash" >> ~/.bashrc
@@ -63,6 +62,7 @@ RUN bin/bash -c "source /opt/ros/kinetic/setup.bash && \
                  apt-get -y install python-rosinstall python-rosinstall-generator python-wstool build-essential && \
                  apt-get -y install ros-kinetic-control-toolbox && \
                  apt-get -y install ros-kinetic-joy"
+USER osu
 RUN bin/bash -c "cd ~/osu-uwrt/riptide_software/ && \
                  rm -rf src && \
                  git clone https://github.com/juched/riptide_software.git src &&  \
@@ -73,6 +73,7 @@ RUN bin/bash -c "apt-get install -y libraw1394-11 libavcodec-ffmpeg56           
                  libavformat-ffmpeg56 libswscale-ffmpeg3 libswresample-ffmpeg1        \
 		         libavutil-ffmpeg54 libgtkmm-2.4-dev libglademm-2.4-dev               \
 		         libgtkglextmm-x11-1.2-dev libusb-1.0-0 "
+USER osu
 RUN bin/bash -c "cd && \
                  git clone https://github.com/Juched/flycap-mirror.git && \
                  cd ~/osu-uwrt/riptide_software/src "
@@ -101,7 +102,7 @@ ENV DISPLAY localhost:0
 USER root 
 RUN apt-get update && apt-get install -y \
     terminator 
-
+USER osu
 
 # Images generated from this should be run with two options:
 #  -v /tmp/.X11-unix:/tmp/.X11-unix (to display on the host X server, this is
