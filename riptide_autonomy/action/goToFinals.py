@@ -23,13 +23,13 @@ class Task:
 
 
 firstTasks = [
-    Task(35.0, 0, "Gate", lambda: gateTaskAction(True).wait_for_result()),
+    Task(30.0, 0, "Gate", lambda: gateTaskAction(False).wait_for_result()),
     Task(35.0, 0, "Cutie", lambda: buoyTaskAction(True, "Groot").wait_for_result())
 ]
 
 secondTasks = [
-    Task(35.0, 0, "Decap", lambda: decapTaskAction().wait_for_result()),
-    Task(35.0, 0, "Bin", lambda: exposeTaskAction().wait_for_result())
+    Task(92.0, 0, "Decap", lambda: decapTaskAction().wait_for_result()),
+    Task(10.0, 0, "Bin", lambda: exposeTaskAction().wait_for_result())
 ]
 
 
