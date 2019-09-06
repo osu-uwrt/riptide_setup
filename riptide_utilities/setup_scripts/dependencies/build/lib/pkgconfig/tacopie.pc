@@ -1,0 +1,9 @@
+prefix=/opt/ros/kinetic
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: tacopie
+Description: tacopie is a multi-platform TCP Client & Server C++11 library.
+Version: 
+Libs: -L${libdir} -ltacopie
+Cflags: -I${includedir}

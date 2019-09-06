@@ -1,0 +1,2 @@
+set(imu_3dm_gx4_MESSAGE_FILES "/home/pparekh/osu-uwrt/riptide_software/src/riptide_utilities/setup_scripts/dependencies/src/imu_3dm_gx4/msg/FilterOutput.msg;/home/pparekh/osu-uwrt/riptide_software/src/riptide_utilities/setup_scripts/dependencies/src/imu_3dm_gx4/msg/MagFieldCF.msg;/home/pparekh/osu-uwrt/riptide_software/src/riptide_utilities/setup_scripts/dependencies/src/imu_3dm_gx4/msg/MagFieldKF.msg")
+set(imu_3dm_gx4_SERVICE_FILES "")

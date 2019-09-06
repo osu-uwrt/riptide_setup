@@ -1,0 +1,8 @@
+prefix=/opt/ros/kinetic
+
+Name: imu_3dm_gx4
+Description: Description of imu_3dm_gx4
+Version: 0.0.4
+Cflags: -I/opt/ros/kinetic/include
+Libs: -L/opt/ros/kinetic/lib 
+Requires: message_runtime geometry_msgs sensor_msgs

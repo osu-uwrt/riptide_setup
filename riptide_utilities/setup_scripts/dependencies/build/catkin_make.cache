@@ -1,0 +1,2 @@
+darknet_ros/darknet_ros:darknet_ros/darknet_ros_msgs:imu_3dm_gx4:nortek_dvl
+-DCATKIN_DEVEL_PREFIX=/home/pparekh/osu-uwrt/riptide_software/src/riptide_utilities/setup_scripts/dependencies/devel -DCMAKE_INSTALL_PREFIX=/opt/ros/kinetic -G Unix Makefiles

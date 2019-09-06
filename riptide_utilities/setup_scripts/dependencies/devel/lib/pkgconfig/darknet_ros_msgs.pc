@@ -1,0 +1,8 @@
+prefix=/home/pparekh/osu-uwrt/riptide_software/src/riptide_utilities/setup_scripts/dependencies/devel
+
+Name: darknet_ros_msgs
+Description: Description of darknet_ros_msgs
+Version: 1.1.3
+Cflags: -I/home/pparekh/osu-uwrt/riptide_software/src/riptide_utilities/setup_scripts/dependencies/devel/include
+Libs: -L/home/pparekh/osu-uwrt/riptide_software/src/riptide_utilities/setup_scripts/dependencies/devel/lib 
+Requires: actionlib_msgs geometry_msgs sensor_msgs message_runtime std_msgs

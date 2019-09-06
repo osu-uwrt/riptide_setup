@@ -1,0 +1,23 @@
+#!/bin/bash
+
+
+if [[ $UID != 0 ]]; then
+	echo "Please start the script as root or sudo!"
+	exit 1
+fi
+
+read -p "This will add $SUDO_USER to group imu are you sure? y/n: " -n 1 -r
+echo #newline
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+	# add group and user
+	groupadd uwrt
+	adduser $SUDO_USER imu
+
+	# addudev rule
+	DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" # get directory where this script is stored
+	cp $DIR/uwrt.rules /etc/udev/rules.d/
+
+	#reload udev
+	udevadm control --reload-rules
+fi

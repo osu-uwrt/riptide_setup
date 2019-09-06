@@ -1,0 +1,8 @@
+prefix=/home/pparekh/osu-uwrt/riptide_software/src/riptide_utilities/setup_scripts/dependencies/devel
+
+Name: imu_3dm_gx4
+Description: Description of imu_3dm_gx4
+Version: 0.0.4
+Cflags: -I/home/pparekh/osu-uwrt/riptide_software/src/riptide_utilities/setup_scripts/dependencies/devel/include -I/home/pparekh/osu-uwrt/riptide_software/src/riptide_utilities/setup_scripts/dependencies/src/imu_3dm_gx4/include
+Libs: -L/home/pparekh/osu-uwrt/riptide_software/src/riptide_utilities/setup_scripts/dependencies/devel/lib 
+Requires: message_runtime geometry_msgs sensor_msgs

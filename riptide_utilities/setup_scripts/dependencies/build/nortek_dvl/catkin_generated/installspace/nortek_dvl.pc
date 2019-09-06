@@ -1,0 +1,8 @@
+prefix=/opt/ros/kinetic
+
+Name: nortek_dvl
+Description: Description of nortek_dvl
+Version: 1.0.0
+Cflags: -I/opt/ros/kinetic/include
+Libs: -L/opt/ros/kinetic/lib 
+Requires: message_runtime

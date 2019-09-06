@@ -1,0 +1,8 @@
+prefix=/home/pparekh/osu-uwrt/riptide_software/src/riptide_utilities/setup_scripts/dependencies/devel
+
+Name: nortek_dvl
+Description: Description of nortek_dvl
+Version: 1.0.0
+Cflags: -I/home/pparekh/osu-uwrt/riptide_software/src/riptide_utilities/setup_scripts/dependencies/devel/include -I/home/pparekh/osu-uwrt/riptide_software/src/riptide_utilities/setup_scripts/dependencies/src/nortek_dvl/include
+Libs: -L/home/pparekh/osu-uwrt/riptide_software/src/riptide_utilities/setup_scripts/dependencies/devel/lib 
+Requires: message_runtime
