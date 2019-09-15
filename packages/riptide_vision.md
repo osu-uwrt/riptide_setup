@@ -1,3 +1,7 @@
+---
+description: riptide_vision
+---
+
 # Vision
 
 This package handles all-things image processing \(except for YOLO, which is handled separately\).
