@@ -1,4 +1,4 @@
-# Readme
+# Riptide Controllers
 
 ## The Riptide Controllers Package
 
