@@ -1,6 +1,7 @@
 # Table of contents
 
 * [Riptide Software](README.md)
+* [riptide\_hardware](riptide_hardware.md)
 * [Packages](packages/README.md)
   * [The Riptide Vision Package](packages/riptide_vision.md)
   * [Riptide Hardware](packages/riptide_hardware.md)
@@ -10,13 +11,13 @@
   * [Riptide Teleop Package](packages/riptide_teleop.md)
   * [The Riptide Bringup Package](packages/riptide_bringup.md)
   * [The Riptide Messages Package](packages/riptide_msgs.md)
-  * [Riptide Controllers](packages/riptide_controllers.md)
+  * [Readme](riptide_controllers/riptide_controllers.md)
   * [Riptide Behaviors](packages/riptide-behaviors.md)
-* [riptide\_hardware](riptide_hardware.md)
 * [riptide\_utilities](riptide_utilities.md)
 * [riptide\_teleop](riptide_teleop.md)
 * [riptide\_bringup](riptide_bringup.md)
 * [riptide\_msgs](riptide_msgs.md)
-* [riptide\_controllers](riptide_controllers.md)
+* [riptide\_controllers](riptide_controllers/README.md)
+  * [Readme](riptide_controllers/riptide_controllers.md)
 * [riptide\_behaviors](riptide_behaviors.md)
 

@@ -1,4 +1,4 @@
-# Riptide Controllers
+# Readme
 
 ## The Riptide Controllers Package
 
@@ -19,16 +19,16 @@ This node uses a PID controller to maintain our vehicle's depth.
 * Input Topics: /state/depth, /state/imu, /command/depth, /controls/reset
 * Output Topics: /command/accel\_depth, /status/controls/depth
 
-  **attitude\_controller**
+**attitude\_controller**
 
-  This node contains three nodes \(rcpid, pcpid, and ycpid\) that each use a PID controller to maintain our vehicle's orientation \(roll, pitch, and yaw\).
+This node contains three nodes \(rcpid, pcpid, and ycpid\) that each use a PID controller to maintain our vehicle's orientation \(roll, pitch, and yaw\).
 
 * Input Topics: /state/imu, /command/attitude, /controls/reset
 * Output Topics: /command/accel\_angular, /status/controls/angular
 
-  **alignment\_controller**
+**alignment\_controller**
 
-  This node contains three nodes \(surge, sway, and heave\) that each use a PID controller to align our vehicle with a desired bounding box obtained from the camera footage.
+This node contains three nodes \(surge, sway, and heave\) that each use a PID controller to align our vehicle with a desired bounding box obtained from the camera footage.
 
 * Input Topics: /state/object, /state/depth, /command/alignment, /task/info, /controls/reset 
 * Output Topics: /command/accel\_x, /command/accel\_y, /command/depth, /status/controls/linear, 
