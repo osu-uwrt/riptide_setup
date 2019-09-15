@@ -1,4 +1,8 @@
-# Riptide Controllers
+---
+description: riptide_controllers
+---
+
+# Controllers
 
 ## The Riptide Controllers Package
 

@@ -1,4 +1,8 @@
-# Riptide Teleop Package
+---
+description: riptide_teleop
+---
+
+# Teleop
 
 ## The Riptide Teleop Package
 

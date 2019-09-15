@@ -1,4 +1,4 @@
-# The Riptide Vision Package
+# Vision
 
 This package handles all-things image processing \(except for YOLO, which is handled separately\).
 

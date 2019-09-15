@@ -1,2 +1,6 @@
-# Riptide Behaviors
+---
+description: riptide_behaviors
+---
+
+# Behaviors
 

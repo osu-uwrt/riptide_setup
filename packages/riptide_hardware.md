@@ -1,4 +1,8 @@
-# Riptide Hardware
+---
+description: riptide_hardware
+---
+
+# Hardware
 
 ## The Riptide Hardware Package
 

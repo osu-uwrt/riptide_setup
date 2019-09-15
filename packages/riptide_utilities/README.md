@@ -1,4 +1,8 @@
-# The Riptide Utilities Folder
+---
+description: riptide_utilities
+---
+
+# Utilities
 
 This folder contains a variety of incredibly useful command/setup scripts for UWRT software members.
 
