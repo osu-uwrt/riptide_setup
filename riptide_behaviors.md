@@ -1,2 +1,4 @@
-# riptide_behaviors
+# riptide\_behaviors
+
 This repo contains all riptide-specific states and behaviors.
+
