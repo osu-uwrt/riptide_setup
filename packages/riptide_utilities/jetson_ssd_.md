@@ -1,3 +1,7 @@
+---
+description: How to setup the jetson
+---
+
 # jetson\_ssd\_readme
 
 Mount SSD on startup:
