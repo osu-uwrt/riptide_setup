@@ -13,16 +13,16 @@ This node reads in camera footage and adds a heads-up-display \(split into two s
 * Input Topics: //image\_undistorted, or /darknet\_ros/detection\_image
 * Output Topics: //image\_hud, or /darknet\_ros/image\_hud
 
-  **yolo\_processor**
+**yolo\_processor**
 
-  This node reads in the bounding box data from darknet and outputs the same type of message, but with bounding box info pertaining ONLY to the desired task at hand.
+This node reads in the bounding box data from darknet and outputs the same type of message, but with bounding box info pertaining ONLY to the desired task at hand.
 
 * Input Topics: /darknet\_ros/bounding\_boxes, /task/info
 * Output Topics: /task/bboxes, /task/low\_detections
 
-  **object\_processor**
+**object\_processor**
 
-  This node reads in data from yolo\_processor and outputs specific information about the bounding box \(width, height, and center\) for the alignment\_controller. Without known our position, we were forced to create an controller that aligns the vehicle to a detected object.
+This node reads in data from yolo\_processor and outputs specific information about the bounding box \(width, height, and center\) for the alignment\_controller. Without known our position, we were forced to create an controller that aligns the vehicle to a detected object.
 
 * Input Topics: /task/bboxes, /stereo/left/image\_undistorted, /task/info, /command/alignment
 * Output Topics: /state/object
@@ -35,9 +35,9 @@ This node converts video footage from a ROS bag file to a .avi file. The launch 
 
 * Input Topics: /
 
-  **darknet\_sim**
+**darknet\_sim**
 
-  This node was created to publish "dummy" darknet\_ros data for the purposes of testing the yolo\_processor and object\_processor nodes. This node reads in the "dummy" data from a file called `tasks_sim.yaml` in the cfg/ folder.
+This node was created to publish "dummy" darknet\_ros data for the purposes of testing the yolo\_processor and object\_processor nodes. This node reads in the "dummy" data from a file called `tasks_sim.yaml` in the cfg/ folder.
 
 * Output Topics: /darknet\_ros/bounding\_boxes
 
