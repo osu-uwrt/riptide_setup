@@ -19,4 +19,5 @@
 * [riptide\_msgs](riptide_msgs.md)
 * [riptide\_controllers](riptide_controllers.md)
 * [riptide\_behaviors](riptide_behaviors.md)
+* [adam-p/markdown-here](markdown-cheatsheet.md)
 
