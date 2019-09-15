@@ -1,10 +1,11 @@
 ---
 description: >-
   Link to Cheatsheet Page:
-  https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet
+  https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet Credit to
+  adam-p on Github
 ---
 
-# adam-p/markdown-here
+# Markdown Cheatsheet
 
 This is intended as a quick reference and showcase. For more complete info, see [John Gruber's original spec](http://daringfireball.net/projects/markdown/) and the [Github-flavored Markdown info page](http://github.github.com/github-flavored-markdown/).
 
