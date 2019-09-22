@@ -11,6 +11,4 @@
   * [Messages](packages/riptide_msgs.md)
   * [Behaviors](packages/riptide-behaviors.md)
   * [Controllers](packages/packages.md)
-* [Markdown Cheatsheet](markdown-cheatsheet.md)
-* [Example Package](example-package.md)
 
