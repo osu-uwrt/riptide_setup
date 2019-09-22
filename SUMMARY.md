@@ -11,4 +11,5 @@
   * [Messages](packages/riptide_msgs.md)
   * [Behaviors](packages/riptide-behaviors.md)
   * [Controllers](packages/packages.md)
+* [Riptide ROS Topics](riptide-ros-topics.md)
 
