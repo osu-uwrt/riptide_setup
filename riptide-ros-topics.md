@@ -6,9 +6,9 @@ description: >-
 
 # Riptide ROS Topics
 
-### ROS Topics:
+## ROS Topics:
 
-PARAMETERS
+#### PARAMETERS
 
 * /calibrate/properties\_file: /home/osu/osu-uwr...
 * /command\_combinator/max\_x\_force: 50.0
@@ -52,7 +52,63 @@ PARAMETERS
 * /rosversion: 1.12.14
 * /thruster\_controller/properties\_file: /home/osu/osu-uwr...
 
-NODES / align \(riptide\_controllers/align.py\) alignment\_controller \(riptide\_controllers/alignment\_controller.py\) arc \(riptide\_controllers/arc.py\) attitude\_controller \(riptide\_controllers/attitude\_controller.py\) buoy\_task \(riptide\_autonomy/buoyTask.py\) calibrate \(riptide\_controllers/calibrate.py\) command\_combinator \(riptide\_controllers/command\_combinator\) darkent\_processor \(riptide\_vision/darknet\_processor.py\) decap\_task \(riptide\_autonomy/decapTask.py\) depth\_controller \(riptide\_controllers/depth\_controller\) expose\_task \(riptide\_autonomy/exposeTask.py\) garlic\_task \(riptide\_autonomy/garlicTask.py\) gate\_maneuver \(riptide\_controllers/gateManeuver.py\) gate\_task \(riptide\_autonomy/gateTask.py\) get\_distance \(riptide\_controllers/getDistance.py\) go\_to\_depth \(riptide\_controllers/goToDepth.py\) go\_to\_finals \(riptide\_autonomy/goToFinals.py\) go\_to\_pitch \(riptide\_controllers/goToPitch.py\) go\_to\_roll \(riptide\_controllers/goToRoll.py\) go\_to\_yaw \(riptide\_controllers/goToYaw.py\) hud \(riptide\_vision/hud\) linear\_controller \(riptide\_controllers/linear\_controller.py\) move\_distance \(riptide\_controllers/moveDistance.py\) prequalify \(riptide\_autonomy/prequalify.py\) pwm\_controller \(riptide\_controllers/pwm\_controller\) search \(riptide\_autonomy/search.py\) thruster\_controller \(riptide\_controllers/thruster\_controller\) wait \(riptide\_controllers/wait.py\)
+#### NODES / 
+
+align \(riptide\_controllers/align.py\) 
+
+alignment\_controller \(riptide\_controllers/alignment\_controller.py\) 
+
+arc \(riptide\_controllers/arc.py\) 
+
+attitude\_controller \(riptide\_controllers/attitude\_controller.py\) 
+
+buoy\_task \(riptide\_autonomy/buoyTask.py\) 
+
+calibrate \(riptide\_controllers/calibrate.py\) 
+
+command\_combinator \(riptide\_controllers/command\_combinator\)
+
+darkent\_processor \(riptide\_vision/darknet\_processor.py\) 
+
+decap\_task \(riptide\_autonomy/decapTask.py\) 
+
+depth\_controller \(riptide\_controllers/depth\_controller\) 
+
+expose\_task \(riptide\_autonomy/exposeTask.py\) 
+
+garlic\_task \(riptide\_autonomy/garlicTask.py\) 
+
+gate\_maneuver \(riptide\_controllers/gateManeuver.py\) 
+
+gate\_task \(riptide\_autonomy/gateTask.py\) 
+
+get\_distance \(riptide\_controllers/getDistance.py\)
+
+go\_to\_depth \(riptide\_controllers/goToDepth.py\)
+
+go\_to\_finals \(riptide\_autonomy/goToFinals.py\)
+
+go\_to\_pitch \(riptide\_controllers/goToPitch.py\)
+
+go\_to\_roll \(riptide\_controllers/goToRoll.py\)
+
+go\_to\_yaw \(riptide\_controllers/goToYaw.py\) 
+
+hud \(riptide\_vision/hud\) 
+
+linear\_controller \(riptide\_controllers/linear\_controller.py\) 
+
+move\_distance \(riptide\_controllers/moveDistance.py\) 
+
+prequalify \(riptide\_autonomy/prequalify.py\) 
+
+pwm\_controller \(riptide\_controllers/pwm\_controller\) 
+
+search \(riptide\_autonomy/search.py\) 
+
+thruster\_controller \(riptide\_controllers/thruster\_controller\) 
+
+wait \(riptide\_controllers/wait.py\)
 
 
 
