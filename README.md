@@ -6,7 +6,7 @@ description: Software Overview and Setup
 
 ## The Riptide AUV Software Platform
 
-This repository is the main codebase for the Underwater Robotics Team at The Ohio State University. Our mission is to develop the software which powers our autonomous underwater vehicles \(AUVs\) that compete in the Association for Unmanned Vehicle Systems International \(AUVSI\) [RoboSub](https://www.auvsifoundation.org/competition/robosub) Competition in San Diego, CA. The software in this repository is built on [Robot Operating System](http://www.ros.org/) and handles low level controls, computer vision, mission-specific programs, and everything in between.
+This repository is the main codebase for the Underwater Robotics Team at The Ohio State University. Our mission is to develop the software which powers our autonomous underwater vehicles \(AUVs\) that compete in the Association for Unmanned Vehicle Systems International \(AUVSI\) [RoboSub](https://robonation.org/programs/robosub/) Competition in San Diego, CA. The software in this repository is built on [Robot Operating System](http://www.ros.org/) and handles low level controls, computer vision, mission-specific programs, and everything in between.
 
 Supported Operating Systems: Ubuntu 16.04
 
