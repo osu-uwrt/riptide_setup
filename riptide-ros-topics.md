@@ -218,6 +218,8 @@ description: >-
 
 /go\_to\_depth/status 
 
+### Go to Finals Topics
+
 /go\_to\_finals/cancel 
 
 /go\_to\_finals/feedback 
@@ -227,6 +229,8 @@ description: >-
 /go\_to\_finals/result 
 
 /go\_to\_finals/status 
+
+### Go to Pitch Topics
 
 /go\_to\_pitch/cancel 
 
@@ -238,6 +242,8 @@ description: >-
 
 /go\_to\_pitch/status 
 
+### Go to Roll Topics
+
 /go\_to\_roll/cancel 
 
 /go\_to\_roll/feedback 
@@ -247,6 +253,8 @@ description: >-
 /go\_to\_roll/result 
 
 /go\_to\_roll/status 
+
+### Go to Yaw Topics
 
 /go\_to\_yaw/cancel 
 
@@ -258,9 +266,13 @@ description: >-
 
 /go\_to\_yaw/status 
 
+### Linear Controller Topics
+
 /linear\_controller/parameter\_descriptions 
 
 /linear\_controller/parameter\_updates 
+
+### Move Distance Topics
 
 /move\_distance/cancel 
 
@@ -272,6 +284,8 @@ description: >-
 
 /move\_distance/status 
 
+### Prequalify Topics
+
 /prequalify/cancel 
 
 /prequalify/feedback 
@@ -282,11 +296,17 @@ description: >-
 
 /prequalify/status 
 
+### Properties Topics
+
 /properties/cob 
+
+### Rosout Topics
 
 /rosout 
 
 /rosout\_agg 
+
+### Search Topics
 
 /search/cancel 
 
@@ -297,6 +317,8 @@ description: >-
 /search/result 
 
 /search/status 
+
+### State Topics
 
 /state/bboxes 
 
@@ -310,7 +332,11 @@ description: >-
 
 /state/switches 
 
+### Status Topics
+
 /status/controls/depth 
+
+### Stereo Topics
 
 /stereo/left/image\_hud 
 
@@ -322,9 +348,13 @@ description: >-
 
 /stereo/left/image\_rect\_color 
 
+### Thruster Controller Topics
+
 /thruster\_controller/parameter\_descriptions 
 
 /thruster\_controller/parameter\_updates 
+
+### Wait Topics
 
 /wait/cancel 
 
