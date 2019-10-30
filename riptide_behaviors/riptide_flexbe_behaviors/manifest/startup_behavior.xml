@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="startup_behavior">
+
+	<executable package_path="riptide_flexbe_behaviors.startup_behavior_sm" class="startup_behaviorSM" />
+	<tagstring></tagstring>
+	<author>Parth Parekh</author>
+	<date>Tue Jun 25 2019</date>
+	<description>
+		waits for kill switch then starts the rest of the statemachine
+	</description>
+
+
+	<!-- Contained Behaviors -->
+
+	<!-- Available Parameters -->
+
+</behavior>
