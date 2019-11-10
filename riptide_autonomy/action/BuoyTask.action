@@ -1,8 +1,0 @@
-#goal definition
-bool isCutieLeft
-string backside
----
-#result definition
----
-#feedback
-int32[] sequence

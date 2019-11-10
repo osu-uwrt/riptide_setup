@@ -1,2 +1,0 @@
-bool active
-geometry_msg/Vector3 position

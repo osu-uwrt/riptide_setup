@@ -1,3 +1,0 @@
-<launch>
-	<node pkg="riptide_hardware" type="coprocessor.py" name="coprocessor_driver" output="screen" />
-</launch>

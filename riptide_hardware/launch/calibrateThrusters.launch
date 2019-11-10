@@ -1,4 +1,0 @@
-<launch>
-   <include file="$(find riptide_hardware)/launch/coprocessor.launch" />
-   <node pkg="riptide_hardware" type="calibrateThrusters.py" name="calibrate_thrusters" output="screen"/>
-</launch>
