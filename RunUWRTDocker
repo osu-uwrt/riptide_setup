@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# If container is already made, run it with start and exec 
+[ "$(docker ps -a | grep uwrt)" ] && docker start uwrt
+[ "$(docker ps -a | grep uwrt)" ] && docker exec -it uwrt bash
+
+# If container isn't made yet, run it from the image 
+[ ! "$(docker ps -a | grep uwrt)" ] && docker run --name uwrt -it --net=host --privileged -v=/dev:/dev osuuwrt/uwrt:base
