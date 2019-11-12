@@ -15,7 +15,6 @@ class DecapTaskAction(object):
         self.armPub = rospy.Publisher("/command/arm", Bool, queue_size=1)
         self.firePub = rospy.Publisher("/command/fire", Int8, queue_size=1)
         self.yPub = rospy.Publisher("/command/y", LinearCommand, queue_size=1)
-        self.alignPub = rospy.Publisher("/command/alignment", AlignmentCommand, queue_size=1)
         self._as = actionlib.SimpleActionServer(
             "decap_task", riptide_autonomy.msg.DecapTaskAction, execute_cb=self.execute_cb, auto_start=False)
         self._as.start()
