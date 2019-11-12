@@ -1,4 +1,6 @@
 <launch>
-  <include file="$(find riptide_vision)/launch/hud.launch" />
-  <include file="$(find riptide_vision)/launch/darknet_processor.launch" />
+	<group ns="vision">
+		<include file="$(find riptide_vision)/launch/hud.launch" />
+		<include file="$(find riptide_vision)/launch/darknet_processor.launch" />
+	</group>
 </launch>

@@ -1,9 +1,11 @@
 <launch>
-  <include file="$(find riptide_controllers)/launch/pwm_controller.launch" />
-  <include file="$(find riptide_controllers)/launch/thruster_controller.launch" />
-  <include file="$(find riptide_controllers)/launch/command_combinator.launch" />
-  <include file="$(find riptide_controllers)/launch/depth_controller.launch" />
-  <include file="$(find riptide_controllers)/launch/attitude_controller.launch" />
-  <include file="$(find riptide_controllers)/launch/alignment_controller.launch" />
-  <include file="$(find riptide_controllers)/launch/actions.launch" />
+  <group ns="controllers">
+    <include file="$(find riptide_controllers)/launch/pwm_controller.launch" />
+    <include file="$(find riptide_controllers)/launch/thruster_controller.launch" />
+    <include file="$(find riptide_controllers)/launch/command_combinator.launch" />
+    <include file="$(find riptide_controllers)/launch/depth_controller.launch" />
+    <include file="$(find riptide_controllers)/launch/attitude_controller.launch" />
+    <include file="$(find riptide_controllers)/launch/alignment_controller.launch" />
+    <include file="$(find riptide_controllers)/launch/actions.launch" />
+  </group>
 </launch>

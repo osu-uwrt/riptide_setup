@@ -1,10 +1,12 @@
 <launch>
-  <node pkg="riptide_autonomy" type="gateTask.py" name="gate_task" output="screen" />
-  <node pkg="riptide_autonomy" type="buoyTask.py" name="buoy_task" output="screen" />
-  <node pkg="riptide_autonomy" type="decapTask.py" name="decap_task" output="screen" />
-  <node pkg="riptide_autonomy" type="garlicTask.py" name="garlic_task" output="screen" />
-  <node pkg="riptide_autonomy" type="exposeTask.py" name="expose_task" output="screen" />
-  <node pkg="riptide_autonomy" type="prequalify.py" name="prequalify" output="screen" />
-  <node pkg="riptide_autonomy" type="search.py" name="search" output="screen" />
-  <node pkg="riptide_autonomy" type="goToFinals.py" name="go_to_finals" output="screen" />
+  <group ns="autonomy">
+    <node pkg="riptide_autonomy" type="gateTask.py" name="gate_task" output="screen" />
+    <node pkg="riptide_autonomy" type="buoyTask.py" name="buoy_task" output="screen" />
+    <node pkg="riptide_autonomy" type="decapTask.py" name="decap_task" output="screen" />
+    <node pkg="riptide_autonomy" type="garlicTask.py" name="garlic_task" output="screen" />
+    <node pkg="riptide_autonomy" type="exposeTask.py" name="expose_task" output="screen" />
+    <node pkg="riptide_autonomy" type="prequalify.py" name="prequalify" output="screen" />
+    <node pkg="riptide_autonomy" type="search.py" name="search" output="screen" />
+    <node pkg="riptide_autonomy" type="goToFinals.py" name="go_to_finals" output="screen" />
+  </group>
 </launch>

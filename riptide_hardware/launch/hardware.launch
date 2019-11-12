@@ -1,7 +1,9 @@
 <launch>
-  <include file="$(find riptide_hardware)/launch/coprocessor.launch" />
-  <include file="$(find riptide_hardware)/launch/imu.launch" />
-  <include file="$(find riptide_hardware)/launch/depth_processor.launch" />
-  <include file="$(find riptide_hardware)/launch/dvl.launch" />
-  <include file="$(find riptide_hardware)/launch/darknet_ros_jetson.launch" />
+  <group ns="hardware">
+    <include file="$(find riptide_hardware)/launch/coprocessor.launch" />
+    <include file="$(find riptide_hardware)/launch/imu.launch" />
+    <include file="$(find riptide_hardware)/launch/depth_processor.launch" />
+    <include file="$(find riptide_hardware)/launch/dvl.launch" />
+    <include file="$(find riptide_hardware)/launch/darknet_ros_jetson.launch" />
+  </group>
 </launch>

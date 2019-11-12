@@ -1,16 +1,18 @@
 <launch>
-  <arg name="port" default="1" />
-  <arg name="rate" default="100" />
-  <arg name="enable_depth" default="true" />
-  <arg name="enable_attitude" default="true" />
+  <group ns="teleop">
+    <arg name="port" default="1" />
+    <arg name="rate" default="100" />
+    <arg name="enable_depth" default="true" />
+    <arg name="enable_attitude" default="true" />
 
-  <node pkg="riptide_teleop" type="ps3_controller" name="ps3_controller" output="screen" >
-    <rosparam command="load" file="$(find riptide_teleop)/cfg/ps3_command_rates.yaml" />
-    <rosparam command="load" file="$(find riptide_controllers)/cfg/controller_properties_depth.yaml" />
-    <rosparam command="load" file="$(find riptide_controllers)/cfg/max_load.yaml" />
-    <rosparam command="load" file="$(find riptide_controllers)/cfg/vehicle_properties.yaml" />
-    <param name="rate" type="double" value="$(arg rate)" />
-  </node>
+    <node pkg="riptide_teleop" type="ps3_controller" name="ps3_controller" output="screen" >
+      <rosparam command="load" file="$(find riptide_teleop)/cfg/ps3_command_rates.yaml" />
+      <rosparam command="load" file="$(find riptide_controllers)/cfg/controller_properties_depth.yaml" />
+      <rosparam command="load" file="$(find riptide_controllers)/cfg/max_load.yaml" />
+      <rosparam command="load" file="$(find riptide_controllers)/cfg/vehicle_properties.yaml" />
+      <param name="rate" type="double" value="$(arg rate)" />
+    </node>
+  </group>
 </launch>
 
 <!-- To get this to work completely, on the top side computer run:
