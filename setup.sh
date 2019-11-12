@@ -15,10 +15,10 @@ rosdep init
 rosdep update
 
 
-mkdir  ../src
+mkdir  ../riptide_software/
+mkdir ../riptide_software/src
 cd ..
-cd ..
-cd ..
+
 cp repos/riptide_base.repos .
 
 
