@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="gate_task">
+
+	<executable package_path="riptide_flexbe_behaviors.gate_task_sm" class="gate_taskSM" />
+	<tagstring></tagstring>
+	<author>Parth Parekh</author>
+	<date>Wed Jul 03 2019</date>
+	<description>
+		the gate behavior
+	</description>
+
+
+	<!-- Contained Behaviors -->
+
+	<!-- Available Parameters -->
+
+</behavior>

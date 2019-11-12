@@ -24,3 +24,6 @@ yolo_model:
       - Bin
       - Fairy
       - Pinger
+
+image_view:
+  display_detected_image: false

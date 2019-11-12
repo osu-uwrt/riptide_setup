@@ -8,7 +8,7 @@ mv eig* eigen
 mkdir eigen/build_dir
 cd eigen/build_dir
 cmake ..
-sudo make install
+make install
 cd ../..
 rm -rf eigen/ $eigen_version.tar.bz2
 
