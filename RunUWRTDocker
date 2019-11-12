@@ -5,4 +5,4 @@
 [ "$(docker ps -a | grep uwrt)" ] && docker exec -it uwrt bash
 
 # If container isn't made yet, run it from the image 
-[ ! "$(docker ps -a | grep uwrt)" ] && docker run --name uwrt -it --net=host --privileged -v=/dev:/dev osuuwrt/uwrt:base
+[ ! "$(docker ps -a | grep uwrt)" ] && docker run --name uwrt -it --net=host --privileged -v=/dev:/dev -v=~/osu-uwrt/:/home/ros/osu-uwrt/ osuuwrt/uwrt:base

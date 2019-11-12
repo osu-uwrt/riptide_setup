@@ -1,7 +1,3 @@
----
-description: Software Overview and Setup
----
-
 # Riptide Software
 
 ## The Riptide AUV Software Platform
@@ -27,8 +23,8 @@ NOTE: It is common to see brackets such as `<>` to act as placeholders for actua
 
 ```text
 mkdir -p ~/osu-uwrt/riptide_software/
-cd ~/osu-uwrt/riptide_software/
-git clone <your_forked_repo> src
+cd ~/osu-uwrt/
+git clone <your_forked_repo> repos
 ```
 
 ### Setting up Git Remotes
@@ -36,7 +32,7 @@ git clone <your_forked_repo> src
 Since you just cloned your fork to your computer, your remote called `origin` will point to your fork. Now, create a new remote called `upstream` that points to this main repo.
 
 ```text
-cd ~/osu-uwrt/riptide_software/src/
+cd ~/osu-uwrt/repos
 git remote add upstream https://github.com/osu-uwrt/riptide_software.git
 ```
 
@@ -50,16 +46,16 @@ You will see both a remote to your fork and to the main repo. You will use these
 
 ### Installing ROS and/or Dependencies
 
-The `riptide_software` base currently uses ROS Kinetic Kame and is dependent on various ROS packages and other libraries. We created the [riptide\_dependencies](https://github.com/osu-uwrt/riptide_dependencies) repository for the sole purpose of containing everything you need to install on your computer so you can use the `riptide_software` platform. Please go to our `riptide_dependencies` repo and follow the necessary instructions to install the required libraries onto your computer.
+The `riptide_software` base currently uses ROS Kinetic Kame and is dependent on various ROS packages and other libraries. In an effort to stop dependency issues,
+we have moved to docker for workspace management. Use the [docker docs](https://docs.docker.com/install/linux/docker-ce/ubuntu/) to install docker-ce to prep for the environment. After you have docker installed, all you need to do is run:
+```
+./setup
 
-Once you have installed all of our dependencies, you will need to run one final script to finish setting up the UWRT environment:
-
-```text
-cd ~/osu-uwrt/riptide_software/src/riptide_utilities/setup/
-./setup_uwrt_env.sh
 ```
 
-If everything compiled successfully, then you're all set to start coding. If you wish to contribute towards our other repositories than can be used in conjunction with `riptide_software`, then read through the section "Working with Our Other Repositories". It is recommended that you read through the section "Sourcing", as this is an important feature of catkin workspaces.
+## Docker
+
+Docker is a very important component of our development environment. Some of you may have noticed that when setting up this environment, all of the repositories needed were cloned onto your local machine. The docker is used only to store all of the dependencies. This allows for the vscode scripts to work with the physical robot and for us to be able to use RQT_GUI with the robot.
 
 ## Sourcing
 
@@ -98,15 +94,15 @@ source ~/osu-uwrt/riptide_software/devel/setup.bash
 
 ## Building riptide\_software
 
-ROS is compiled using the catkin build system, and so all of our repos will use catkin.
+ROS is compiled using the catkin build system, and so all of our repos will use catkin. We are using python catkin tools to help the build the command for that is `catkin build`
 
 ### Compiling
 
-To compile this repo, you simply execute the `catkin_make` command from a terminal. As a word of caution, you MUST be inside the folder `~/osu-uwrt/riptide_software` to run `catkin_make`
+To compile this repo, you simply execute the `catkin_make` command from a terminal. As a word of caution, you MUST be inside the folder `~/osu-uwrt/riptide_software` to run `catkin_make` 
 
 ```text
 cd ~/osu-uwrt/riptide_software/
-catkin_make
+catkin_make /* or now, catkin build*/
 ```
 
 In the near future, you will have to clone and compile the [control\_toolbox](https://github.com/osu-uwrt/control_toolbox) because this repo will be dependent on it.
