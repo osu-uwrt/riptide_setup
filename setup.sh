@@ -21,20 +21,20 @@ cd ..
 
 cp repos/riptide_base.repos .
 
-
-
-vcs import < riptide_base.repos src
+vcs import < riptide_base.repos riptide_software/src
 
 
 
 sudo rosdep fix-permissions
 
+cd riptide_software
 cd src
 cd riptide_utilities
 cd setup_scripts
 
-./setup_uwrt_env.sh
+sudo bash setup_uwrt_env.sh
 
+cd ..
 cd ..
 cd ..
 cd ..
