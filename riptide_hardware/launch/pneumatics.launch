@@ -1,3 +1,0 @@
-<launch>
-  <node pkg="riptide_hardware" type="pneumatics.py" name="pneumatics" output="screen" />
-</launch>

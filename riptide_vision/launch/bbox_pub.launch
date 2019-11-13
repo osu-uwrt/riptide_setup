@@ -1,3 +1,0 @@
-<launch>
-  <node pkg="riptide_vision" type="bbox_pub" name="bbox_pub" output="screen" />
-</launch>

@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# Install Snap (Required for VSCode Install Sequence) 
+sudo apt update -y # Running at beginning of script to make sure everything is up-to-date 
+sudo apt-get install snapd -y 
+
+# Install VSCode
+sudo snap install --classic code
+sudo snap install teams-for-linux --beta
+
+# Docker
+sudo apt-get remove docker docker-engine docker.io containerd runc -y # Uninstall Old Versions
+sudo apt-get update -y # Make sure everything is up-to-date before we proceed
+
+# Add support for apt HTTPS
+sudo apt-get install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg-agent \
+    software-properties-common
+
+# Add Docker Official GPT Key
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+# Add Docker Repository
+sudo add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+
+# Update Docker Repository
+sudo apt-get update -y 
+
+# Install Docker
+sudo apt-get install docker-ce docker-ce-cli -y 
+
+# Actually Loading In The Image
+sudo docker pull osuuwrt/uwrt:base
+
+# Add User To Docker Group
+sudo groupadd docker
+sudo usermod -a -G docker $USER
+
+# Instructions for next file
+echo "Script executed successfully (or, at least, got to the end)."
+echo "Relog, then execute \"bash RunUWRTDocker\" in this directory to run the container!"

@@ -1,9 +1,0 @@
-#goal definition
-float64 angle
-float64 velocity
-float64 radius
----
-#result definition
----
-#feedback
-int32[] sequence

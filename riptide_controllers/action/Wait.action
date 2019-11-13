@@ -1,8 +1,0 @@
-#goal definition
-string object
-int32 times
----
-#result definition
----
-#feedback
-int32[] sequence

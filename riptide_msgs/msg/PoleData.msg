@@ -1,2 +1,0 @@
-float32 roll_correction
-int8 beam_thickness

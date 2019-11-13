@@ -1,8 +1,0 @@
-#goal definition
-float32 x
-float32 y
----
-#result definition
----
-#feedback
-int32[] sequence

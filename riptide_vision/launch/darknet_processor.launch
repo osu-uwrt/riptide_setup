@@ -1,3 +1,0 @@
-<launch>
-  <node pkg="riptide_vision" type="darknet_processor.py" name="darkent_processor" output="screen" />
-</launch>

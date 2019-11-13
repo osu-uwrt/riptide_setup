@@ -1,9 +1,0 @@
-# IMU Rules for "imu_riptide" and "imu_eddy"
-SUBSYSTEMS=="usb", ATTRS{manufacturer}=="Lord Microstrain",ATTRS{product}=="Lord Inertial Sensor", ATTRS{serial}=="0000__6234.50972", MODE="0777", SYMLINK+="imu_riptide", GROUP="uwrt"
-SUBSYSTEMS=="usb", ATTRS{manufacturer}=="Lord Microstrain",ATTRS{product}=="Lord Inertial Sensor", ATTRS{serial}=="0000__6234.41818", MODE="0777", SYMLINK+="imu_eddy", GROUP="uwrt"
-
-# PointGrey Cameras
-ATTRS{idVendor}=="1e10", ATTRS{idProduct}=="3300", MODE="0666", GROUP="uwrt"
-
-# Blue Robotics Ping Sonar
-SUBSYSTEMS=="usb", ATTRS{manufacturer}=="FTDI", ATTRS{serial}=="AH03F3CJ", MODE="0777", SYMLINK+="ping", GROUP="uwrt"

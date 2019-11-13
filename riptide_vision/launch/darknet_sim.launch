@@ -1,3 +1,0 @@
-<launch>
-  <node pkg="riptide_vision" type="darknet_sim" name="darknet_sim" output="screen" />
-</launch>

@@ -1,3 +1,0 @@
-boolean left_visibile
-boolean right_visible
-riptide_msgs/GeneralVision general

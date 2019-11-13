@@ -1,3 +1,0 @@
-<launch>
-  <node pkg="riptide_controllers" type="linear_controller.py" name="linear_controller" output="screen" />
-</launch>

@@ -1,9 +1,0 @@
-<launch>
-  <arg name="post_IIR_LPF_bandwidth" default="17" />
-  <arg name="sensor_rate" default="22"/>
-
-  <node pkg="riptide_hardware" type="depth_processor" name="depth_processor" >
-    <param name="post_IIR_LPF_bandwidth" type="double" value="$(arg post_IIR_LPF_bandwidth)" />
-    <param name="sensor_rate" type="double" value="$(arg sensor_rate)" />
-  </node>
-</launch>
