@@ -1,0 +1,10 @@
+*~
+*.bak
+.DS_Store
+*.pyc
+/CMakeLists.txt
+.vscode/
+.vscode/*
+
+riptide_description/urdf/riptide.urdf
+riptide_description/urdf/riptide.sdf

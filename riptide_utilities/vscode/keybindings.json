@@ -1,0 +1,42 @@
+[
+    {
+        "key": "ctrl+shift+r",
+        "command": "workbench.action.tasks.runTask",
+        "args": "make_riptide"
+    },
+    {
+        "key": "ctrl+alt+shift+r",
+        "command": "workbench.action.tasks.runTask",
+        "args": "riptide_gui"
+    },
+    {
+        "key": "ctrl+shift+p",
+        "command": "workbench.action.tasks.runTask",
+        "args": "make_baycat"
+    },
+    {
+        "key": "ctrl+alt+shift+p",
+        "command": "workbench.action.tasks.runTask",
+        "args": "baycat_gui"
+    },
+    {
+        "key": "ctrl+shift+j",
+        "command": "workbench.action.tasks.runTask",
+        "args": "make_jetson"
+    },
+    {
+        "key": "ctrl+alt+shift+j",
+        "command": "workbench.action.tasks.runTask",
+        "args": "jetson_gui"
+    },
+    {
+        "key": "ctrl+shift+l",
+        "command": "workbench.action.tasks.runTask",
+        "args": "build"
+    },
+    {
+        "key": "ctrl+alt+shift+l",
+        "command": "workbench.action.tasks.runTask",
+        "args": "local_gui"
+    }
+]

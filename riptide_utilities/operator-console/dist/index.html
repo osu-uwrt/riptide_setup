@@ -1,0 +1,161 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Copro Console</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="stylesheet" href="styles.3aeed101cdd8d243ce7d.css"></head>
+
+<body>
+  <ngx-app>Loading...</ngx-app>
+
+  <style>
+    @keyframes pulse_animation {
+    0% { transform: scale(1); }
+    10% { transform: scale(1.05); }
+    20% { transform: scale(1.17); }
+    30% { transform: scale(1.32); }
+    40% { transform: scale(1.45); }
+    50% { transform: scale(1.5); }
+    60% { transform: scale(1.45); }
+    70% { transform: scale(1.32); }
+    80% { transform: scale(1.17); }
+    90% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+.pulse {
+    animation-name: pulse_animation;
+    animation-duration: 2000ms;
+    transform-origin:70% 70%;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+
+    .loadingScreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1003;
+      background: #000000;
+      overflow: hidden
+    }
+
+    .loadingIcon {
+      padding-top: 50vh;
+    }
+
+    .loadingIcon img {
+      display: block;
+      margin: auto;
+      margin-top: -75px;
+      margin-bottom: -75px;
+      height: 150px;
+      width: 150px;
+    }
+  </style>
+  <div id="nb-global-spinner" class="loadingScreen">
+    <div class="loadingIcon">
+      <img class="pulse" src="favicon.png" />
+    </div>
+  </div>
+
+  <!-- <style>
+    @-webkit-keyframes spin {
+      0% {
+        transform: rotate(0)
+      }
+
+      100% {
+        transform: rotate(360deg)
+      }
+    }
+
+    @-moz-keyframes spin {
+      0% {
+        -moz-transform: rotate(0)
+      }
+
+      100% {
+        -moz-transform: rotate(360deg)
+      }
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0)
+      }
+
+      100% {
+        transform: rotate(360deg)
+      }
+    }
+
+    .spinner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1003;
+      background: #000000;
+      overflow: hidden
+    }
+
+    .spinner div:first-child {
+      display: block;
+      position: relative;
+      left: 50%;
+      top: 50%;
+      width: 150px;
+      height: 150px;
+      margin: -75px 0 0 -75px;
+      border-radius: 50%;
+      box-shadow: 0 3px 3px 0 rgba(255, 56, 106, 1);
+      transform: translate3d(0, 0, 0);
+      animation: spin 2s linear infinite
+    }
+
+    .spinner div:first-child:after,
+    .spinner div:first-child:before {
+      content: '';
+      position: absolute;
+      border-radius: 50%
+    }
+
+    .spinner div:first-child:before {
+      top: 5px;
+      left: 5px;
+      right: 5px;
+      bottom: 5px;
+      box-shadow: 0 3px 3px 0 rgb(255, 228, 32);
+      -webkit-animation: spin 3s linear infinite;
+      animation: spin 3s linear infinite
+    }
+
+    .spinner div:first-child:after {
+      top: 15px;
+      left: 15px;
+      right: 15px;
+      bottom: 15px;
+      box-shadow: 0 3px 3px 0 rgba(61, 175, 255, 1);
+      animation: spin 1.5s linear infinite
+    }
+  </style>
+  <div id="nb-global-spinner" class="spinner">
+    <div class="blob blob-0"></div>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="blob blob-4"></div>
+    <div class="blob blob-5"></div>
+  </div> -->
+
+<script type="text/javascript" src="runtime.c4affc7baf1d2460ccee.js"></script><script type="text/javascript" src="polyfills.8cebb097e77e5e715e3b.js"></script><script type="text/javascript" src="scripts.a638e2df990cad471d5c.js"></script><script type="text/javascript" src="main.cd20a3d6c4c386146bde.js"></script></body>
+
+</html>
