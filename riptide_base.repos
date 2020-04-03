@@ -13,7 +13,7 @@ repositories:
       version: master
     riptide_hardware:
       type: git
-      url: https://github.com/osu-uwrt/puddles_hardware.git
+      url: https://github.com/osu-uwrt/riptide_hardware.git
       version: master
     riptide_msgs:
       type: git
