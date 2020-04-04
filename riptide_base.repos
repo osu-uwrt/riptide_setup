@@ -27,10 +27,6 @@ repositories:
       type: git
       url: https://github.com/osu-uwrt/riptide_teleop.git
       version: master
-    riptide_utilities:
-      type: git
-      url: https://github.com/osu-uwrt/riptide_utilities.git
-      version: master
     riptide_vision:
       type: git
       url: https://github.com/osu-uwrt/riptide_vision.git
