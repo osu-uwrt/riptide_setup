@@ -31,3 +31,15 @@ repositories:
       type: git
       url: https://github.com/osu-uwrt/riptide_vision.git
       version: master
+    riptide_navigation:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_navigation.git
+      version: master
+    riptide_descriptions:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_descriptions.git
+      version: master
+    riptide_states:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_states.git
+      version: master
