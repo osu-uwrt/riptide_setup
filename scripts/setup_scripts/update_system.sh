@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [[ $UID = 0 ]] ; then
-  echo "Please dont use sudo command with script"
+  echo "Please dont use sudo with this script"
   exit
 fi
 
