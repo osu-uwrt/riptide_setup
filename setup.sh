@@ -1,61 +1,13 @@
 #!/bin/bash
 
+sudo pip install vcstool
 
-sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
-sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net --recv-key 0xB01FA116
-sudo apt-get update
-sudo apt-get install -y python3-vcstool 
+if [ ! -d "../riptide_software/src" ]; then
+    mkdir -p ../riptide_software
+    mkdir -p ../riptide_software/src 
 
+    vcs import < riptide_base.repos ../riptide_software/src
+fi
 
-sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
-sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
-sudo apt-get update
-
-
-sudo apt-get install -y ros-kinetic-desktop
-
-
-rosdep init
-rosdep update
-
-
-
-mkdir  ../riptide_software/
-mkdir  ../riptide_software/src
-cd ..
-cp repos/riptide_base.repos .
-
-
-
-
-vcs import < riptide_base.repos riptide_software/src
-
-
-
-
-sudo rosdep fix-permissions
-
-cd riptide_software
-cd src
-cd riptide_utilities
-cd setup_scripts
-
-
-./setup_uwrt_env.sh
-
-
-cd ..
-cd ..
-cd ..
-cd ..
-cd repos
-
-
-bash SetupUWRTDocker
-
-
-cd ../../
-cp osu-uwrt/repos/RunUWRTDocker .
-
-
-bash RunUWRTDocker
+cd scripts/setup_scripts
+./update_system.sh

@@ -1,0 +1,98 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "type": "shell",
+            "command": "cd .. && catkin build",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "make_baycat",
+            "type": "shell",
+            "command": "../../riptide_setup/scripts/ros_scripts/make.sh baycat",
+            "problemMatcher": []
+        },
+        {
+            "label": "make_riptide",
+            "type": "shell",
+            "command": "../../riptide_setup/scripts/ros_scripts/make.sh riptide",
+            "problemMatcher": []
+        },
+        {
+            "label": "make_jetson",
+            "type": "shell",
+            "command": "../../riptide_setup/scripts/ros_scripts/make.sh jetson",
+            "problemMatcher": []
+        },
+        {
+            "label": "xfer_baycat",
+            "type": "shell",
+            "command": "../../riptide_setup/scripts/ros_scripts/xfer.sh baycat",
+            "problemMatcher": []
+        },
+        {
+            "label": "xfer_riptide",
+            "type": "shell",
+            "command": "../../riptide_setup/scripts/ros_scripts/xfer.sh riptide",
+            "problemMatcher": []
+        },
+        {
+            "label": "xfer_jetson",
+            "type": "shell",
+            "command": "../../riptide_setup/scripts/ros_scripts/xfer.sh jetson",
+            "problemMatcher": []
+        },
+        {
+            "label": "shutdown_all",
+            "type": "shell",
+            "command": "../../riptide_setup/scripts/shutdown_scripts/shutdown_all.sh",
+            "problemMatcher": []
+        },
+        {
+            "label": "reboot_all",
+            "type": "shell",
+            "command": "../../riptide_setup/scripts/shutdown_scripts/reboot_all.sh",
+            "problemMatcher": []
+        },
+        {
+            "label": "local_gui",
+            "type": "shell",
+            "command": "../../riptide_setup/scripts/gui/local-gui.sh",
+            "problemMatcher": []
+        },
+        {
+            "label": "baycat_gui",
+            "type": "shell",
+            "command": "../../riptide_setup/scripts/gui/gui.sh baycat",
+            "problemMatcher": []
+        },
+        {
+            "label": "riptide_gui",
+            "type": "shell",
+            "command": "../../riptide_setup/scripts/gui/gui.sh riptide",
+            "problemMatcher": []
+        },
+        {
+            "label": "jetson_gui",
+            "type": "shell",
+            "command": "../../riptide_setup/scripts/gui/gui.sh jetson",
+            "problemMatcher": []
+        },
+        {
+            "label": "mega_computer_gui",
+            "type": "shell",
+            "command": "../../riptide_setup/scripts/gui/mega-computer-gui.sh",
+            "problemMatcher": []
+        },
+        {
+            "label": "update_system",
+            "type": "shell",
+            "command": "cd ../../riptide_setup/scripts/setup_scripts && ./update_system.sh",
+            "problemMatcher": []
+        }
+    ]
+}
