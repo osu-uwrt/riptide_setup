@@ -30,16 +30,6 @@ source /opt/ros/$ROS_DISTRO/setup.bash
 ./install_rosdeps.sh
 source /opt/ros/$ROS_DISTRO/setup.bash
 
-# Install Point grey drivers, on melodic its a custom ros package
-if [ $ROS_DISTRO == "melodic" ]; then
-    if [ ! -f /usr/lib/libflycapture.so.2 ]; then
-        printf "\n\n\nPlease install flycaptue from this repo: https://github.com/Juched/flycap-mirror\nOnce installed, please re-run this script\n\n\n"
-        exit
-    fi
-else
-    ./install_point_grey_drivers.sh
-fi
-
 # Install all custon ros packages
 ./install_custom_ros_packages.sh
 source ~/osu-uwrt/dependencies/install/setup.bash
