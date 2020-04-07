@@ -30,7 +30,7 @@ source /opt/ros/$ROS_DISTRO/setup.bash
 ./install_rosdeps.sh
 source /opt/ros/$ROS_DISTRO/setup.bash
 
-# Install all custon ros packages
+# Install all custom ros packages
 ./install_custom_ros_packages.sh
 source ~/osu-uwrt/dependencies/install/setup.bash
 

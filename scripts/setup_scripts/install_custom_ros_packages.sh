@@ -3,13 +3,14 @@
 
 cd ~/osu-uwrt/
 mkdir dependencies
+cd dependencies
 
 git -C MYNT pull || git clone https://github.com/slightech/MYNT-EYE-D-SDK.git MYNT
 cd MYNT
+make init
 make ros
 cd ..
 
-cd dependencies
 mkdir src
 cd src
 
@@ -21,5 +22,5 @@ cd ..
 
 rosdep install --from-paths src --ignore-src --rosdistro $ROS_DISTRO -y -r
 
-catkin config --install --extend /opt/ros/$ROS_DISTRO --cmake-args -DCMAKE_BUILD_TYPE=Release
+catkin config --install --extend ~/osu-uwrt/dependencies/MYNT/wrappers/ros/devel --cmake-args -DCMAKE_BUILD_TYPE=Release
 catkin build
