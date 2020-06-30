@@ -8,5 +8,4 @@ git clone https://github.com/osu-uwrt/riptide_gazebo ~/osu-uwrt/riptide_software
 cd ~/osu-uwrt/riptide_software
 
 # Build (riptide_gazebo should be the only one that needs builded if setup.sh was just run)
-catkin clean -y
 catkin build
