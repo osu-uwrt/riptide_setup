@@ -4,5 +4,6 @@
 export ROS_MASTER_URI=http://$HOSTNAME:11311
 roscore &
 rqt
+rviz
 
 
