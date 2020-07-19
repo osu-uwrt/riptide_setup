@@ -1,5 +1,6 @@
 #!/bin/bash
 
+sudo apt install python-pip
 sudo pip install vcstool
 
 if [ ! -d "../riptide_software/src" ]; then
