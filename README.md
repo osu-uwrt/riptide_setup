@@ -9,7 +9,7 @@ Supported Operating Systems: Ubuntu 16.04
 **The Underwater Robotics Team**  
 The Ohio State University
 
-[Website](https://uwrt.engineering.osu.edu) \| [License](https://github.com/osu-uwrt/riptide_software/tree/fac98cfa750df74dbb107f83064c3767e6346cc4/LICENSE/README.md)
+[Website](http://uwrt.club/) \| [License](https://github.com/osu-uwrt/riptide_software/tree/fac98cfa750df74dbb107f83064c3767e6346cc4/LICENSE/README.md)
 
 ![OSU UWRT Logo](.gitbook/assets/uwrt_logo_small.png)
 
