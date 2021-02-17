@@ -31,7 +31,7 @@ repositories:
       type: git
       url: https://github.com/osu-uwrt/riptide_vision.git
       version: master
-    riptide_navigation:
+    riptide_localization:
       type: git
       url: https://github.com/osu-uwrt/riptide_localization.git
       version: master
