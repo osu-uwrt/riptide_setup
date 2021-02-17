@@ -33,7 +33,7 @@ repositories:
       version: master
     riptide_navigation:
       type: git
-      url: https://github.com/osu-uwrt/riptide_navigation.git
+      url: https://github.com/osu-uwrt/riptide_localization.git
       version: master
     riptide_descriptions:
       type: git
