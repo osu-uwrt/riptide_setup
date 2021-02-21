@@ -4,7 +4,7 @@
 sudo apt-get install python-pip python3-pip --yes
 python -m pip install --upgrade pip
 python3 -m pip install --upgrade pip
-sudo python -m pip install vcstool
+python -m pip install vcstool
 
 if [ ! -d "../riptide_software/src" ]; then
     mkdir -p ../riptide_software

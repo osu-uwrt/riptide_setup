@@ -13,3 +13,7 @@ fi
 if ! grep -Fq "jetson" /etc/hosts; then
     echo -e "192.168.1.69\tjetson\n$(cat /etc/hosts)" > /etc/hosts
 fi
+
+if ! grep -Fq "uwrt-dvl" /etc/hosts; then
+    echo -e "192.168.1.212\tuwrt-dvl\n$(cat /etc/hosts)" > /etc/hosts
+fi

@@ -44,7 +44,7 @@ sudo ./install_eigen.sh
 sudo ./setup_hosts.sh
 
 # Add user to group 'uwrt' for sensor permissions
-sudo ~/osu-uwrt/riptide_software/src/riptide_hardware/scripts/add_rule
+sudo hardware/add_rule
 
 # Compile Code
 cd ~/osu-uwrt/riptide_software
