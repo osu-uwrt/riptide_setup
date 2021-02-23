@@ -1,0 +1,17 @@
+repositories:
+    imu_3dm_gx4:
+      type: git
+      url: https://github.com/osu-uwrt/imu_3dm_gx4.git
+      version: master
+    nortek_dvl:
+      type: git
+      url: https://github.com/osu-uwrt/nortek_dvl.git
+      version: master
+    flexbe_app:
+      type: git
+      url: https://github.com/FlexBE/flexbe_app.git
+      version: master
+    darknet_ros:
+      type: git
+      url: https://github.com/osu-uwrt/darknet_ros.git
+      version: master

@@ -36,26 +36,26 @@ if [ ! -d "/opt/ros/$ROS_DISTRO" ]; then
 fi
 source /opt/ros/$ROS_DISTRO/setup.bash
 
-# # Install dependencies
-# ./install_rosdeps.sh
-# source /opt/ros/$ROS_DISTRO/setup.bash
+# Install dependencies
+./install_rosdeps.sh
+source /opt/ros/$ROS_DISTRO/setup.bash
 
-# # Install all custom ros packages
-# ./install_custom_ros_packages.sh
-# source ~/osu-uwrt/dependencies/install/setup.bash
+# Install all custom ros packages
+./install_custom_ros_packages.sh
+source ~/osu-uwrt/dependencies/install/setup.bash
 
-# # Setup ~/.bashrc and vscode
-# ./setup_bashrc.sh
-# ./setup_vscode.sh
-# sudo ./setup_hosts.sh
+# Setup ~/.bashrc and vscode
+./setup_bashrc.sh
+./setup_vscode.sh
+sudo ./setup_hosts.sh
 
-# # Add user to group 'uwrt' for sensor permissions
-# sudo hardware/add_rule
+# Add user to group 'uwrt' for sensor permissions
+sudo hardware/add_rule
 
-# # Compile Code
-# cd ~/osu-uwrt/riptide_software
-# catkin clean -y
-# catkin build
+# Compile Code
+cd ~/osu-uwrt/riptide_software
+catkin clean -y
+catkin build
 
-# echo "If no errors occurred during compilation, then everything was setup correctly"
-# echo "Please reboot your computer for final changes to take effect"
+echo "If no errors occurred during compilation, then everything was setup correctly"
+echo "Please reboot your computer for final changes to take effect"

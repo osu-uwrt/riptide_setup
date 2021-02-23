@@ -129,6 +129,9 @@ echo ""
 echo ">>>  {Starting ROS installation, this will take about 20 min. It will depends on your internet  connection}"
 echo ""
 sudo apt-get install -y ros-${name_ros_distro}-${package_type} 
+sudo apt-get install python3-rosdep python3-catkin-tools python3-osrf-pycommon
+sudo rosdep init
+rosdep update
 echo ""
 echo ""
 echo "#######################################################################################################################"
