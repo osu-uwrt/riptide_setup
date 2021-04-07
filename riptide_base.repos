@@ -2,48 +2,52 @@ repositories:
     riptide_autonomy:
       type: git
       url: https://github.com/osu-uwrt/riptide_autonomy.git
-      version: dev
+      version: noetic-devel
     riptide_states:
       type: git
       url: https://github.com/osu-uwrt/riptide_states.git
-      version: dev
+      version: noetic-devel
     riptide_bringup:
       type: git
       url: https://github.com/osu-uwrt/riptide_bringup.git
-      version: dev
+      version: noetic-devel
     riptide_controllers:
       type: git
       url: https://github.com/osu-uwrt/riptide_controllers.git
-      version: dev
+      version: noetic-devel
     riptide_hardware:
       type: git
       url: https://github.com/osu-uwrt/riptide_hardware.git
-      version: dev
+      version: noetic-devel
     riptide_msgs:
       type: git
       url: https://github.com/osu-uwrt/riptide_msgs.git
-      version: dev
+      version: noetic-devel
     riptide_teleop:
       type: git
       url: https://github.com/osu-uwrt/riptide_teleop.git
-      version: dev
+      version: noetic-devel
     riptide_vision:
       type: git
       url: https://github.com/osu-uwrt/riptide_vision.git
-      version: dev
+      version: noetic-devel
     riptide_localization:
       type: git
       url: https://github.com/osu-uwrt/riptide_localization.git
-      version: dev
+      version: noetic-devel
     riptide_descriptions:
       type: git
       url: https://github.com/osu-uwrt/riptide_descriptions.git
-      version: dev
+      version: noetic-devel
     riptide_states:
       type: git
       url: https://github.com/osu-uwrt/riptide_states.git
-      version: dev
+      version: noetic-devel
     riptide_mapping:
       type: git
       url: https://github.com/osu-uwrt/riptide_mapping.git
-      version: dev
+      version: noetic-devel
+    riptide_navigation:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_navigation.git
+      version: noetic-devel

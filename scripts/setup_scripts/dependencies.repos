@@ -11,7 +11,7 @@ repositories:
       type: git
       url: https://github.com/FlexBE/flexbe_app.git
       version: master
-    darknet_ros:
+    uuv_simulator:
       type: git
-      url: https://github.com/osu-uwrt/darknet_ros.git
-      version: master
+      url: https://github.com/osu-uwrt/uuv_simulator.git
+      version: noetic-devel

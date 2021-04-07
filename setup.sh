@@ -16,11 +16,7 @@ if [ ! -d "../riptide_software/src" ]; then
     mkdir -p ../riptide_software
     mkdir -p ../riptide_software/src 
 
-    if [ $VER == "20.04" ]; then
-        vcs import < riptide_base_noetic.repos ../riptide_software/src
-    else
-        vcs import < riptide_base.repos ../riptide_software/src
-    fi
+    vcs import < riptide_base.repos ../riptide_software/src
 
     #Assigning default value as 1: Desktop full install
     echo
@@ -33,11 +29,7 @@ if [ ! -d "../riptide_software/src" ]; then
         y|Y|"" ) 
             git clone https://github.com/osu-uwrt/riptide_gazebo ../riptide_software/src/riptide_gazebo
             cd ../riptide_software/src/riptide_gazebo
-            if [ $VER == "20.04" ]; then
-                git checkout noetic-devel
-            else
-                git checkout dev
-            fi
+            git checkout dev
             cd ../../../riptide_setup
         ;;
     esac

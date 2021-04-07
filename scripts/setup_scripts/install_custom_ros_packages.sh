@@ -14,11 +14,7 @@ cd ..
 mkdir src
 cd src
 
-if [ $ROS_DISTRO == "noetic" ]; then
-    vcs import < ~/osu-uwrt/riptide_setup/scripts/setup_scripts/dependencies_noetic.repos . --recursive
-else
-    vcs import < ~/osu-uwrt/riptide_setup/scripts/setup_scripts/dependencies.repos . --recursive
-fi
+vcs import < ~/osu-uwrt/riptide_setup/scripts/setup_scripts/dependencies.repos . --recursive
 
 cd ..
 

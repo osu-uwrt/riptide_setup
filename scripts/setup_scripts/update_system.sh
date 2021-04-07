@@ -31,7 +31,8 @@ if [ ! -d "/opt/ros/$ROS_DISTRO" ]; then
     if [ $ROS_DISTRO == "noetic" ]; then
         ./install_noetic.sh
     else
-        ./install_ros.sh
+        echo "Ubuntu version not supported"
+        exit
     fi
 fi
 source /opt/ros/$ROS_DISTRO/setup.bash
