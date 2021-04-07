@@ -14,4 +14,4 @@ repositories:
     uuv_simulator:
       type: git
       url: https://github.com/osu-uwrt/uuv_simulator.git
-      version: noetic-devel
+      version: dev
