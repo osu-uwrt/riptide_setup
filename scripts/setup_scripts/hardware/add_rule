@@ -10,6 +10,9 @@ fi
 groupadd uwrt
 adduser $SUDO_USER uwrt
 
+# add camera permission
+usermod -a -G video $USER
+
 # addudev rule
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" # get directory where this script is stored
 cp $DIR/riptide.rules /etc/udev/rules.d/
