@@ -43,3 +43,11 @@ repositories:
       type: git
       url: https://github.com/osu-uwrt/riptide_states.git
       version: dev
+    riptide_mapping:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_mapping.git
+      version: dev
+    riptide_navigation:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_navigation.git
+      version: dev
