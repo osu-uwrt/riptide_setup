@@ -19,10 +19,6 @@ repositories:
       type: git
       url: https://github.com/osu-uwrt/riptide_hardware.git
       version: dev
-    riptide_msgs:
-      type: git
-      url: https://github.com/osu-uwrt/riptide_msgs.git
-      version: dev
     riptide_teleop:
       type: git
       url: https://github.com/osu-uwrt/riptide_teleop.git
