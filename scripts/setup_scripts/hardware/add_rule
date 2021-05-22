@@ -11,7 +11,7 @@ groupadd uwrt
 adduser $SUDO_USER uwrt
 
 # add camera permission
-usermod -a -G video $USER
+usermod -a -G video $SUDO_USER
 
 # addudev rule
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" # get directory where this script is stored
