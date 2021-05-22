@@ -17,9 +17,9 @@
             "problemMatcher": []
         },
         {
-            "label": "make_riptide",
+            "label": "make_venus",
             "type": "shell",
-            "command": "../../riptide_setup/scripts/ros_scripts/make.sh riptide",
+            "command": "../../riptide_setup/scripts/ros_scripts/make.sh venus",
             "problemMatcher": []
         },
         {
@@ -35,9 +35,9 @@
             "problemMatcher": []
         },
         {
-            "label": "xfer_riptide",
+            "label": "xfer_venus",
             "type": "shell",
-            "command": "../../riptide_setup/scripts/ros_scripts/xfer.sh riptide",
+            "command": "../../riptide_setup/scripts/ros_scripts/xfer.sh venus",
             "problemMatcher": []
         },
         {
@@ -71,9 +71,9 @@
             "problemMatcher": []
         },
         {
-            "label": "riptide_gui",
+            "label": "venus_gui",
             "type": "shell",
-            "command": "../../riptide_setup/scripts/gui/gui.sh riptide",
+            "command": "../../riptide_setup/scripts/gui/gui.sh venus",
             "problemMatcher": []
         },
         {
