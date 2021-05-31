@@ -15,3 +15,7 @@ repositories:
       type: git
       url: https://github.com/osu-uwrt/uuv_simulator.git
       version: master
+    Deep_Object_Pose:
+      type: git
+      url: https://github.com/osu-uwrt/Deep_Object_Pose.git
+      version: master
