@@ -16,6 +16,14 @@ cd src
 
 vcs import < ~/osu-uwrt/riptide_setup/scripts/setup_scripts/dependencies.repos . --recursive
 
+if [ -d ~/osu-uwrt/riptide_software/src/riptide_gazebo ] 
+then
+  echo "Downloading sim dependencies..."
+  git -C uuv_simulator pull || git clone https://github.com/osu-uwrt/uuv_simulator.git
+else
+  echo "No riptide_gazebo found. Not downloading sim dependencies."
+fi 
+
 cd ..
 
 rosdep install --from-paths src --ignore-src --rosdistro $ROS_DISTRO -y -r

@@ -11,10 +11,6 @@ repositories:
       type: git
       url: https://github.com/FlexBE/flexbe_app.git
       version: master
-    uuv_simulator:
-      type: git
-      url: https://github.com/osu-uwrt/uuv_simulator.git
-      version: master
     Deep_Object_Pose:
       type: git
       url: https://github.com/osu-uwrt/Deep_Object_Pose.git
