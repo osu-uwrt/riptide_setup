@@ -6,9 +6,7 @@ if [[ $UID = 0 ]] ; then
 fi
 
 if [[ $1 != '--nodownload' ]] ; then
-  cd ../..
   git pull
-  cd scripts/setup_scripts
   ./update_system.sh --nodownload
   exit
 fi
