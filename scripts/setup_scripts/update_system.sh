@@ -5,6 +5,14 @@ if [[ $UID = 0 ]] ; then
   exit
 fi
 
+if [[ $1 != '--nodownload' ]] ; then
+  cd ../..
+  git pull
+  cd scripts/setup_scripts
+  ./update_system.sh --nodownload
+  exit
+fi
+
 if [ -z "$ROS_DISTRO" ]; then
     if type lsb_release >/dev/null 2>&1; then
         VER=$(lsb_release -sr)
