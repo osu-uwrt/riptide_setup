@@ -30,3 +30,24 @@ rosdep install --from-paths src --ignore-src --rosdistro $ROS_DISTRO -y -r
 
 catkin config --install --extend ~/osu-uwrt/dependencies/MYNT/wrappers/ros/devel --cmake-args -DCMAKE_BUILD_TYPE=Release
 catkin build
+
+sudo add-apt-repository ppa:beineri/opt-qt596-focal -y
+sudo apt-get update
+sudo apt-get install qt59base qt59svg -y
+
+
+cd src/Groot
+wget "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" -O ~/linuxdeployq.AppImage
+chmod +x ~/linuxdeployq.AppImage
+
+mkdir build
+cd build
+source /opt/qt59/bin/qt59-env.sh
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install ..
+make -j$(nproc) install
+
+export VERSION=$(git describe --abbrev=0 --tags); echo $VERSION
+unset QTDIR; unset QT_PLUGIN_PATH ; unset LD_LIBRARY_PATH
+~/linuxdeployq.AppImage ./install/share/applications/Groot.desktop  -appimage
+cd ..
+cd ..
