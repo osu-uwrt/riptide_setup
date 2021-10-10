@@ -20,6 +20,7 @@ if [ -z "$ROS_DISTRO" ]; then
             ROS_DISTRO="kinetic"
         elif [ $VER == "20.04" ]; then
             ROS_DISTRO="noetic"
+            ROS2_DISTRO="galactic"
         else
             echo "Linux version not recognized"
             exit
