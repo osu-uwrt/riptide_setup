@@ -14,11 +14,7 @@ fi
 if [ -z "$ROS_DISTRO" ]; then
     if type lsb_release >/dev/null 2>&1; then
         VER=$(lsb_release -sr)
-        if [ $VER == "18.04" ]; then
-            ROS_DISTRO="melodic"
-        elif [ $VER == "16.04" ]; then
-            ROS_DISTRO="kinetic"
-        elif [ $VER == "20.04" ]; then
+        if [ $VER == "20.04" ]; then
             ROS_DISTRO="noetic"
             ROS2_DISTRO="galactic"
         else
@@ -27,6 +23,7 @@ if [ -z "$ROS_DISTRO" ]; then
         fi
         echo "Ros distribution $ROS_DISTRO selected"
         export ROS_DISTRO
+        export ROS2_DISTRO
     else
         echo "Linux distro not recognized"
         exit
@@ -62,9 +59,16 @@ sudo ./setup_hosts.sh
 sudo hardware/add_rule
 
 # Compile Code
-cd ~/osu-uwrt/riptide_software
+pushd ~/osu-uwrt/riptide_software > /dev/null
 catkin clean -y
 catkin build
+popd > /dev/null
+
+# setup ros2 code
+./install_uwrt_ros2.sh
+
+# Setup bridge WS
+./install_uwrt_ros2.sh
 
 echo "If no errors occurred during compilation, then everything was setup correctly"
 echo "Please reboot your computer for final changes to take effect"
