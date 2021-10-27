@@ -33,6 +33,19 @@ if [ ! -d "../riptide_software/src" ]; then
             cd ../../../riptide_setup
         ;;
     esac
+
+else
+    echo
+    echo
+    read -p "Would you like to force reinstallation of ROS (Y/n)? " -n 1 answer 
+    echo
+    echo
+
+    case "$answer" in
+        y|Y|"" ) 
+            export REINSTALL=1
+        ;;
+    esac
 fi
 
 cd scripts/setup_scripts

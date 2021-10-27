@@ -9,9 +9,9 @@ if [[ $1 != '--nodownload' ]] ; then
   git pull
   ./update_system.sh --nodownload
   exit
-elif [[ $1 != '--reinstall' ]] ; then
+
+elif [[ $REINSTALL == 1 ]] ; then
   echo "Forcing reinstall of ROS and ROS2"
-  REINSTALL=1
 fi
 
 
