@@ -9,9 +9,15 @@ if [[ $1 != '--nodownload' ]] ; then
   git pull
   ./update_system.sh --nodownload
   exit
+elif [[ $1 != '--reinstall' ]] ; then
+  echo "Forcing reinstall of ROS and ROS2"
+  REINSTALL=1
 fi
 
-if [ -z "$ROS_DISTRO" ]; then
+
+# TODO make sure the script fires for ros2
+
+if [ -z "$ROS_DISTRO"] || [ -n "$REINSTALL" ] ; then
     if type lsb_release >/dev/null 2>&1; then
         VER=$(lsb_release -sr)
         if [ $VER == "20.04" ]; then
@@ -22,6 +28,7 @@ if [ -z "$ROS_DISTRO" ]; then
             exit
         fi
         echo "Ros distribution $ROS_DISTRO selected"
+        echo "Ros2 distribution $ROS2_DISTRO selected"
         export ROS_DISTRO
         export ROS2_DISTRO
     else
@@ -31,10 +38,11 @@ if [ -z "$ROS_DISTRO" ]; then
 fi
 
 # Install ros
-if [ ! -d "/opt/ros/$ROS_DISTRO" ]; then
+if [ ! -d "/opt/ros/$ROS_DISTRO" ] || [ -n "$REINSTALL" ]  ; then
     if [ $ROS_DISTRO == "noetic" ]; then
         #./install_noetic.sh
-        ./install_ros1_ros2.sh
+        ./install_ros2_ros1.sh
+
     else
         echo "Ubuntu version not supported"
         exit
@@ -68,7 +76,7 @@ popd > /dev/null
 ./install_uwrt_ros2.sh
 
 # Setup bridge WS
-./install_uwrt_ros2.sh
+./install_bridge_ws.sh
 
 echo "If no errors occurred during compilation, then everything was setup correctly"
 echo "Please reboot your computer for final changes to take effect"

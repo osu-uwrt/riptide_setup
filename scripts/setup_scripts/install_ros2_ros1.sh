@@ -1,7 +1,4 @@
 #!/bin/bash
-
-name_ros_distro=rolling 
-
 echo "#######################################################################################################################"
 echo ""
 echo ">>> {Starting ROS Noetic Installation}"
