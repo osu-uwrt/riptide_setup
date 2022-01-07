@@ -55,6 +55,12 @@ if [ ! -d "src/Groot/build" ]; then
 		;;
 	esac
 fi
+
+# Set up dependencies for Cartographer
+sudo apt-get install -y python3-wstool python3-rosdep ninja-build stow
+sudo apt-get remove ros-${ROS_DISTRO}-abseil-cpp
+src/cartographer/scripts/install_abseil.sh
+
 catkin build
 
 
