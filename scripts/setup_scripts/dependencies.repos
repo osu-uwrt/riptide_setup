@@ -7,11 +7,21 @@ repositories:
       type: git
       url: https://github.com/osu-uwrt/nortek_dvl.git
       version: ros2_dev
-    Deep_Object_Pose:
+    isaac_ros_pose_estimation:
       type: git
-      url: https://github.com/osu-uwrt/Deep_Object_Pose.git
-      version: master
+      url: https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_pose_estimation.git
+      version: main
     micro_ros_setup:
       type: git
       url: https://github.com/micro-ROS/micro_ros_setup.git
       version: galactic
+    mynteye_ros2_wrapper:
+      type: git
+      url: https://github.com/coalman321/Mynteye_ROS2_Wrapper
+      version: main
+    image_pipeline:
+      type: git
+      url: https://github.com/coalman321/image_pipeline.git
+      version: ros2
+    
+

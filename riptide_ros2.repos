@@ -1,5 +1,41 @@
 repositories:
+    riptide_autonomy:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_autonomy.git
+      version: dev
+    riptide_bringup:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_bringup.git
+      version: dev
     riptide_controllers:
       type: git
       url: https://github.com/osu-uwrt/riptide_controllers.git
       version: ros2-dev
+    riptide_hardware:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_hardware.git
+      version: dev
+    riptide_teleop:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_teleop.git
+      version: dev
+    riptide_vision:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_vision.git
+      version: dev
+    riptide_localization:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_localization.git
+      version: ros2
+    riptide_descriptions:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_descriptions.git
+      version: ros2
+    riptide_mapping:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_mapping.git
+      version: ros2
+    riptide_navigation:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_navigation.git
+      version: dev
