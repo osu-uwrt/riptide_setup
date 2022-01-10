@@ -7,8 +7,8 @@ echo ">>> {Checking your Ubuntu version} "
 echo ""
 #Getting version and release number of Ubuntu
 version=`lsb_release -sc`
-relesenum=`grep DISTRIB_DESCRIPTION /etc/*-release | awk -F 'Ubuntu ' '{print $2}' | awk -F ' LTS' '{print $1}'`
-echo ">>> {Your Ubuntu version is: [Ubuntu $version $relesenum]}"
+releasenum=`grep DISTRIB_DESCRIPTION /etc/*-release | awk -F 'Ubuntu ' '{print $2}' | awk -F ' LTS' '{print $1}'`
+echo ">>> {Your Ubuntu version is: [Ubuntu $version $releasenum]}"
 #Checking version is focal, if yes proceed othervice quit
 case $version in
   "focal" )
@@ -53,12 +53,12 @@ read -p "Enter your install (Default is base):" answer
 if [ "$answer" == "desktop"]; then
 
   # Do ros1 with ros2 to preserve both
-  sudo apt install ros-galactic-desktop ros-noetic-desktop-full -y
+  sudo apt install ros-galactic-desktop -y
 
 else # Base install
 
   # Do ros1 with ros2 to preserve both
-  sudo apt install ros-galactic-ros-base ros-noetic-ros-base -y
+  sudo apt install ros-galactic-ros-base -y
 
 fi
 
@@ -67,6 +67,7 @@ sudo apt install python3-rosdep python3-colcon-common-extensions -y
 
 sudo rosdep init
 rosdep update
+
 echo ""
 echo ""
 echo "#######################################################################################################################"

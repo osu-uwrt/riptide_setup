@@ -11,7 +11,7 @@ if [[ $1 != '--nodownload' ]] ; then
   exit
 
 elif [[ $REINSTALL == 1 ]] ; then
-  echo "Forcing reinstall of ROS and ROS2"
+  echo "Forcing reinstall of ROS2"
 fi
 
 
@@ -21,16 +21,13 @@ if [ -z "$ROS_DISTRO"] || [ -n "$REINSTALL" ] ; then
     if type lsb_release >/dev/null 2>&1; then
         VER=$(lsb_release -sr)
         if [ $VER == "20.04" ]; then
-            ROS_DISTRO="noetic"
-            ROS2_DISTRO="galactic"
+            ROS_DISTRO="galactic"
         else
             echo "Linux version not recognized"
             exit
         fi
         echo "Ros distribution $ROS_DISTRO selected"
-        echo "Ros2 distribution $ROS2_DISTRO selected"
         export ROS_DISTRO
-        export ROS2_DISTRO
     else
         echo "Linux distro not recognized"
         exit
@@ -39,24 +36,16 @@ fi
 
 # Install ros
 if [ ! -d "/opt/ros/$ROS_DISTRO" ] || [ -n "$REINSTALL" ]  ; then
-    if [ $ROS_DISTRO == "noetic" ]; then
-        #./install_noetic.sh
-        ./install_ros2_ros1.sh
-
+    if [ $ROS_DISTRO == "galactic" ]; then
+        ./install_galactic.sh
     else
         echo "Ubuntu version not supported"
         exit
     fi
 fi
-source /opt/ros/$ROS_DISTRO/setup.bash
-
-# Install dependencies
-./install_rosdeps.sh
-source /opt/ros/$ROS_DISTRO/setup.bash
 
 # Install all custom ros packages
 ./install_custom_ros_packages.sh
-source ~/osu-uwrt/dependencies/install/setup.bash
 
 # Setup ~/.bashrc and vscode
 ./setup_bashrc.sh
@@ -66,17 +55,14 @@ sudo ./setup_hosts.sh
 # Add user to group 'uwrt' for sensor permissions
 sudo hardware/add_rule
 
-# Compile Code
-pushd ~/osu-uwrt/riptide_software > /dev/null
-catkin clean -y
-catkin build
-popd > /dev/null
-
-# setup ros2 code
+# setup uwrt packages
 ./install_uwrt_ros2.sh
 
-# Setup bridge WS
-./install_bridge_ws.sh
+source /opt/ros/$ROS_DISTRO/setup.bash
+source ~/osu-uwrt/dependencies/install/setup.bash
+
+cd ~/osu-uwrt/riptide_software
+colcon build
 
 echo "If no errors occurred during compilation, then everything was setup correctly"
 echo "Please reboot your computer for final changes to take effect"
