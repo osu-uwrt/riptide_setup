@@ -17,7 +17,12 @@ cd src
 
 vcs import < ~/osu-uwrt/riptide_setup/scripts/setup_scripts/dependencies.repos . --recursive
 
+cd ..
+
 # create and build micro_ros agent
+rosdep install --from-paths src --ignore-src --rosdistro $ROS_DISTRO -y -r
+touch ~/osu-uwrt/dependencies/isaac_ros_pose_estimation/COLCON_IGNORE
+source /opt/ros/galactic/setup.bash
 colcon build
 source install/setup.bash
 ros2 run micro_ros_setup create_agent_ws.sh
@@ -30,12 +35,8 @@ if [ -d ~/osu-uwrt/riptide_software/src/riptide_gazebo ]
 then
   echo "Downloading sim dependencies..."
   vcs import < ~/osu-uwrt/riptide_setup/scripts/setup_scripts/gazebo_dependencies.repos . --recursive
+  rosdep install --from-paths src --ignore-src --rosdistro $ROS_DISTRO -y -r
+  colcon build
 else
   echo "No riptide_gazebo found. Not downloading sim dependencies."
 fi 
-
-cd ..
-
-rosdep install --from-paths src --ignore-src --rosdistro $ROS_DISTRO -y -r
-
-colcon build

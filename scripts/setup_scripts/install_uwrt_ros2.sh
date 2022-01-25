@@ -2,6 +2,8 @@
 
 cd ~/osu-uwrt
 
+source /opt/ros/galactic/setup.bash
+
 # create the ros2 packages dir
 mkdir -p ./riptide_software/src 
 pushd ./riptide_software > /dev/null
@@ -9,15 +11,15 @@ pushd ./riptide_software > /dev/null
 
         # pull in all of the ros2 dependencies
         vcs import < ~/osu-uwrt/riptide_setup/riptide_ros2.repos .
-        source /opt/ros/${ROS2_DISTRO}/setup.bash
+        source /opt/ros/${ROS_DISTRO}/setup.bash
 
     popd > /dev/null
 
     # build what we just pulled in to make sure it works
-    source /opt/ros/$ROS2_DISTRO/setup.bash
+    source /opt/ros/$ROS_DISTRO/setup.bash
 
     # generate fw dir
-    mkdir -p ../riptide_software_ros2/firmware 
+    mkdir -p ../riptide_software/firmware 
 
     # recursive clone of titan fw
     pushd ./firmware > /dev/null
