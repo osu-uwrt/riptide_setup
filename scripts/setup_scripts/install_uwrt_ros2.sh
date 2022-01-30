@@ -2,8 +2,6 @@
 
 cd ~/osu-uwrt
 
-source /opt/ros/galactic/setup.bash
-
 # create the ros2 packages dir
 mkdir -p ./riptide_software/src 
 pushd ./riptide_software > /dev/null
@@ -15,9 +13,6 @@ pushd ./riptide_software > /dev/null
 
     popd > /dev/null
 
-    # build what we just pulled in to make sure it works
-    source /opt/ros/$ROS_DISTRO/setup.bash
-
     # generate fw dir
     mkdir -p ../riptide_software/firmware 
 
@@ -28,7 +23,13 @@ pushd ./riptide_software > /dev/null
 
     popd > /dev/null
 
+    # Pull local dependencies
+    source /opt/ros/$ROS_DISTRO/setup.bash
+    source ~/osu-uwrt/dependencies/install/setup.bash
+
     # Install dependencies
     rosdep install --from-paths src --ignore-src --rosdistro $ROS_DISTRO -y -r
+
+    colcon build
 
 popd > /dev/null

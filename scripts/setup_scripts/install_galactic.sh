@@ -50,7 +50,7 @@ echo ""
 
 read -p "Enter your install (Default is base):" answer 
 
-if [ "$answer" == "desktop"]; then
+if [ "$answer" == "desktop" ]; then
 
   # Do ros1 with ros2 to preserve both
   sudo apt install ros-galactic-desktop -y

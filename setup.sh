@@ -27,7 +27,7 @@ if [ ! -d "../riptide_software/src" ]; then
 
     case "$answer" in
         y|Y|"" ) 
-            git clone https://github.com/osu-uwrt/riptide_gazebo ../riptide_software/src/riptide_gazebo
+            git clone -b ros2 https://github.com/osu-uwrt/riptide_gazebo ../riptide_software/src/riptide_gazebo
             cd ../riptide_software/src/riptide_gazebo
             git checkout dev
             cd ../../../riptide_setup

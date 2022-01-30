@@ -58,11 +58,5 @@ sudo hardware/add_rule
 # setup uwrt packages
 ./install_uwrt_ros2.sh
 
-source /opt/ros/$ROS_DISTRO/setup.bash
-source ~/osu-uwrt/dependencies/install/setup.bash
-
-cd ~/osu-uwrt/riptide_software
-colcon build
-
 echo "If no errors occurred during compilation, then everything was setup correctly"
 echo "Please reboot your computer for final changes to take effect"
