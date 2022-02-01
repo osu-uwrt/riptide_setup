@@ -39,3 +39,11 @@ repositories:
       type: git
       url: https://github.com/osu-uwrt/riptide_navigation.git
       version: dev
+    riptide_msgs:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_msgs.git
+      version: ros2
+    riptide_rqt_plugins:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_rqt_plugins.git
+      version: ros2
