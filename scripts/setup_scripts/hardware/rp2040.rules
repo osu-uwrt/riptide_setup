@@ -1,0 +1,9 @@
+# RP2040 Bootrom
+SUBSYSTEM=="usb", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="0003", MODE="0664", GROUP="uwrt"
+
+# RP2040 Picoprobe
+SUBSYSTEM=="usb", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="0004", MODE="0664", GROUP="uwrt"
+
+# RP2040 CDC UART (Also enable serial access)
+SUBSYSTEM=="usb", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="000a", MODE="0664", GROUP="uwrt"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="000a", MODE="0664", GROUP="uwrt"
