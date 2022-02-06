@@ -1,7 +1,7 @@
 #!/bin/bash
 echo "#######################################################################################################################"
 echo ""
-echo ">>> {Starting ROS Noetic Installation}"
+echo ">>> {Starting ROS Galactic Installation}"
 echo ""
 echo ">>> {Checking your Ubuntu version} "
 echo ""
@@ -48,17 +48,15 @@ echo ""
 echo ">>>  {Starting ROS installation, this will take about 20 min. It will depends on your internet  connection}"
 echo ""
 
-read -p "Enter your install (Default is base):" answer 
+read -p "Enter your install (Default is desktop):" answer 
 
-if [ "$answer" == "desktop" ]; then
+if [ "$answer" == "base" ]; then
 
-  # Do ros1 with ros2 to preserve both
-  sudo apt install ros-galactic-desktop -y
+  sudo apt install ros-galactic-ros-base -y
 
 else # Base install
 
-  # Do ros1 with ros2 to preserve both
-  sudo apt install ros-galactic-ros-base -y
+  sudo apt install ros-galactic-desktop -y
 
 fi
 
