@@ -7,3 +7,9 @@ SUBSYSTEM=="usb", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="0004", MODE="0664"
 # RP2040 CDC UART (Also enable serial access)
 SUBSYSTEM=="usb", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="000a", MODE="0664", GROUP="uwrt"
 SUBSYSTEM=="tty", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="000a", MODE="0664", GROUP="uwrt"
+
+# MicroROS Symlink Definitions
+# Needs to be multiple layers since udev can only access attributes from one parent
+# First sets environment for matching device, second sets symlink for the right interface
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="000a", ATTRS{manufacturer}=="OSU UWRT", ATTRS{product}=="Coprocessor", ENV{UWRT_BOARD_TYPE}="Coprocessor"
+SUBSYSTEMS=="usb", ENV{UWRT_BOARD_TYPE}=="Coprocessor", ATTRS{interface}=="Micro-ROS", MODE="0777", SYMLINK+="uwrt_copro", GROUP="uwrt"
