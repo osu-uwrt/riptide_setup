@@ -12,10 +12,10 @@ if [ $# -eq 2 ]; then
         rsync -vrzc --delete --exclude="**/.git/" --exclude="riptide_gazebo/" --exclude="**/.vscode/" --exclude="riptide_rqt_plugins" --exclude="riptide_vision/weights/" ~/osu-uwrt/dependencies/src ros@$1:~/osu-uwrt/dependencies
 
         echo "Running a symlink build on dependencies"
-        ssh ros@xavier 'cd ~/osu-uwrt && ./build_remote.sh ./dependencies --symlink-install'
+        ssh ros@${1} 'cd ~/osu-uwrt && ./build_remote.sh ./dependencies --symlink-install'
     fi
     if [ $2 == "--build" ]; then
         echo "Running a symlink build on riptide_software"
-        ssh ros@xavier 'cd ~/osu-uwrt && ./build_remote.sh ./riptide_software --symlink-install'
+        ssh ros@${1} 'cd ~/osu-uwrt && ./build_remote.sh ./riptide_software --symlink-install'
     fi
 fi
