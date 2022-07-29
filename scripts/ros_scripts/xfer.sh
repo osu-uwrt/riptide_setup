@@ -1,6 +1,6 @@
 ~/osu-uwrt/riptide_setup/scripts/dates_scripts/date_set.sh $1
 
-scp ~/osu-uwrt/riptide_setup/scripts/ros_scripts/build_remote.sh ros@xavier:~/osu-uwrt
+scp ~/osu-uwrt/riptide_setup/scripts/ros_scripts/build_remote.sh ros@${1}:~/osu-uwrt
 
 echo "xfering robot code"
 rsync -vrzc --delete --exclude="**/.git/" --exclude="riptide_gazebo/" --exclude="**/.vscode/" --exclude="riptide_rqt_plugins" --exclude="riptide_vision/weights/" ~/osu-uwrt/riptide_software/src ros@$1:~/osu-uwrt/riptide_software
