@@ -1,0 +1,30 @@
+{
+    "names": {
+        "python_orocos_kdl_vendor": {
+            "cmake-args": [
+                "-DPython3_EXECUTABLE=/usr/bin/python3"
+            ]
+        },
+        "rclpy": {
+            "cmake-args": [
+                "-DPYBIND11_PYTHON_VERSION=3",
+                "-DPython3_EXECUTABLE=/usr/bin/python3"
+            ]
+        },
+        "tf2_py": {
+            "cmake-args": [
+                "-DPython3_EXECUTABLE=/usr/bin/python3"
+            ]
+        },
+        "tf2_geometry_msgs": {
+            "cmake-args": [
+                "-DPython3_EXECUTABLE=/usr/bin/python3"
+            ]
+        },
+        "rosbag2_py": {
+            "cmake-args": [
+                "-DPython3_EXECUTABLE=/usr/bin/python3"
+            ]
+        }
+    }
+}
