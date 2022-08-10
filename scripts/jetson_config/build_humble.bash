@@ -39,8 +39,8 @@ fi
 # set some environment variables for what we are about to build
 export ROS_DISTRO="humble"
 REPO_FILE_NAME="${ROS_DISTRO}_base_jetson"
-VCS_FILE_PATH="${HOME}/osu-uwrt/riptide_setup/jetson_config/${REPO_FILE_NAME}.repos"
-META_FILE_PATH="${HOME}/osu-uwrt/riptide_setup/jetson_config/${REPO_FILE_NAME}.meta"
+VCS_FILE_PATH="${HOME}/osu-uwrt/riptide_setup/scripts/jetson_config/${REPO_FILE_NAME}.repos"
+META_FILE_PATH="${HOME}/osu-uwrt/riptide_setup/scripts/jetson_config/${REPO_FILE_NAME}.meta"
 
 mkdir -p ~/osu-uwrt/jetson_install/src
 cd ~/osu-uwrt/jetson_install/
