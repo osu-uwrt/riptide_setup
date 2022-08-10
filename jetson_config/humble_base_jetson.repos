@@ -115,10 +115,22 @@ repositories:
     type: git
     url: https://gitlab.com/ros-tracing/ros2_tracing.git
     version: humble
+  ros-geographic-info/geographic_info:
+    type: git
+    url: https://github.com/ros-geographic-info/geographic_info.git
+    version: ros2
+  ros/angles:
+    type: git
+    url: https://github.com/ros/angles.git
+    version: humble-devel
   ros/class_loader:
     type: git
     url: https://github.com/ros/class_loader.git
     version: humble
+  ros/diagnostics:
+    type: git
+    url: https://github.com/ros/diagnostics.git
+    version: ros2-devel
   ros/kdl_parser:
     type: git
     url: https://github.com/ros/kdl_parser.git

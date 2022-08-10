@@ -25,6 +25,11 @@
             "cmake-args": [
                 "-DPython3_EXECUTABLE=/usr/bin/python3"
             ]
+        },
+        "cv_bridge": {
+            "cmake-args": [
+                "-DPython3_EXECUTABLE=/usr/bin/python3"
+            ]
         }
     }
 }
