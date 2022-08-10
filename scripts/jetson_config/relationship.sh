@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# stop the script if something fails
-trap 'printf "\e[31m%s: %s\e[m\n" "BOO!" $?' EXIT
-
 if [ $# -ge 1 ]; then 
     TARGET=$1
 else
@@ -18,6 +15,17 @@ else
 fi
 
 echo "Using remote username $USERNAME"
+
+# test the connection
+ping $TARGET -c 2 > /dev/null
+HAS_CONNECTION=$?
+# DO NOT SEPARATE THE TWO ABOVE LINES! the ping command sets the value for $?
+
+if [ $HAS_CONNECTION -gt 0 ]; then
+    echo "Failed to connect to $TARGET"
+    echo "Make sure network is setup properly then re-run this script"
+    exit
+fi
 
 mkdir ~/.ssh/
 
