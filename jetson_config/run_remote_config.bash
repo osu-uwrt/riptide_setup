@@ -44,3 +44,5 @@ ssh $USERNAME@$ADDRESS "mkdir -p ~/osu-uwrt/riptide_setup"
 rsync -vrzc --delete --exclude="**/.git/" --exclude="**/.vscode/" ~/osu-uwrt/riptide_setup/jetson_config $USERNAME@$ADDRESS:~/osu-uwrt/riptide_setup
 
 echo "Running target installation"
+
+ssh $USERNAME@$ADDRESS "~/osu-uwrt/riptide_setup/jetson_config/build_humble.bash"
