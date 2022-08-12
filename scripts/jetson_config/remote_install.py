@@ -139,5 +139,5 @@ if __name__ == "__main__":
 
     print("\nInstalling PyTorch on the target:")
     scriptRun = os.path.join(SCRIPT_DIR, "unpack_install", "pytorch_install.bash")
-    # runRemoteCmd(scriptRun, args.username, args.address)
+    runRemoteCmd(scriptRun, args.username, args.address)
     print("    DONE")
