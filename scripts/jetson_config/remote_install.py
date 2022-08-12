@@ -58,6 +58,19 @@ def xferDir(localdir, username, address, destination):
 def runRemoteCmd(remoteScript, username, address):
     remoteExec(remoteScript, username, address, True)
 
+def querySelection(inputList):
+    selection = -1
+    if(len(inputList) > 1):
+        print("Found multiple options:")
+        for i in range(len(inputList)):
+            print(f"{i + 1} {inputList[i]}")
+        while selection < 1 or selection > len(inputList):
+            selection = input("Select the option you want to use: ")
+        selection -= 1        
+    else:
+        selection = 0
+    return inputList[selection]
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Setup remote Jetson target")
     parser.add_argument("address", type=str, help="Address of the jetson, Hostname or IP")
@@ -66,6 +79,7 @@ if __name__ == "__main__":
 
     HOME_DIR = expanduser("~")
     BASE_DIR = os.path.join(HOME_DIR, "osu-uwrt")
+    ROS_DISTRO = "humble"
     SCRIPT_DIR = os.path.join(BASE_DIR, "riptide_setup", "scripts", "jetson_config")
 
     # test the connection first
@@ -93,20 +107,9 @@ if __name__ == "__main__":
     makeRemoteDir(BASE_DIR, args.username, args.address)
     print("    DONE")
 
-    binaries = glob(os.path.join(BASE_DIR, "humble*.tar.gz"))
-    selection = -1
-    if(len(binaries) > 1):
-        print("Found multiple binaries")
-        for i in range(len(binaries)):
-            print(f"{i + 1} {binaries[i]}")
-        while selection < 1 or selection > len(binaries):
-            selection = input("Select the binary you want to use: ")
-        selection -= 1        
-    else:
-        selection = 0
-
-    print(f"\nTransferring binary {binaries[selection]} to target, this may take a minute:")
-    xferSingleFile(binaries[selection], args.username, args.address, BASE_DIR)
+    ROS_TAR = querySelection(glob(os.path.join(BASE_DIR, f"{ROS_DISTRO}*.tar.gz")))
+    print(f"\nTransferring binary {ROS_TAR} to target, this may take a minute:")
+    xferSingleFile(ROS_TAR, args.username, args.address, BASE_DIR)
     print("    DONE")
 
     print("\nTransferring scripts to target")
@@ -125,12 +128,16 @@ if __name__ == "__main__":
     time.sleep(1.0)
 
     print("\nInstalling dependencies:")
-    depsScript = os.path.join(SCRIPT_DIR, "unpack_install", "install_deps.bash")
-    runRemoteCmd(depsScript, args.username, args.address)
+    scriptRun = os.path.join(SCRIPT_DIR, "unpack_install", "install_deps.bash")
+    runRemoteCmd(scriptRun, args.username, args.address)
     print("    DONE")
 
-
     print("\nInstalling ROS on the target:")
-    rosScript = os.path.join(SCRIPT_DIR, "unpack_install", "install_tar.bash")
-    runRemoteCmd(rosScript, args.username, args.address)
+    scriptRun = os.path.join(SCRIPT_DIR, "unpack_install", f"install_tar.bash {ROS_DISTRO} {ROS_TAR}")
+    runRemoteCmd(scriptRun, args.username, args.address)
+    print("    DONE")
+
+    print("\nInstalling PyTorch on the target:")
+    scriptRun = os.path.join(SCRIPT_DIR, "unpack_install", "pytorch_install.bash")
+    # runRemoteCmd(scriptRun, args.username, args.address)
     print("    DONE")

@@ -4,7 +4,7 @@ if [ $# -ge 1 ]; then
     TARGET=$1
 else
     echo "This script needs the hostname of the relationship to configure"
-    echo "./relationship.sh <TARGET_HOSTNAME>"
+    echo "./relationship.bash <TARGET_HOSTNAME>"
     exit
 fi
 
