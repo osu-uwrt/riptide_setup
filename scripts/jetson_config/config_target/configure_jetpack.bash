@@ -1,9 +1,5 @@
 #!/bin/bash
 
-echo "Updating system packages"
-
-./build_humble.sh
-
 echo "Updating fan control"
 # comes from https://docs.nvidia.com/jetson/archives/r34.1/DeveloperGuide/text/SD/PlatformPowerAndPerformance/JetsonXavierNxSeriesAndJetsonAgxXavierSeries.html?highlight=fan#fan-profile-control
 sudo systemctl stop nvfancontrol

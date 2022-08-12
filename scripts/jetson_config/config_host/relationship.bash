@@ -14,8 +14,6 @@ else
     USERNAME="ros"
 fi
 
-echo "Using remote username $USERNAME"
-
 # test the connection
 ping $TARGET -c 2 > /dev/null
 HAS_CONNECTION=$?
