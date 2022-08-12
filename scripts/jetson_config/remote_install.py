@@ -1,7 +1,7 @@
 import os
 from posixpath import expanduser
-from unittest import result
-from fabric import Connection
+from getpass import getpass
+from fabric import Connection, Config
 from subprocess import Popen, PIPE, CalledProcessError, call
 from glob import glob
 import argparse
@@ -21,9 +21,16 @@ def execute(fullCmd, printOut=False):
     if retCode:
         raise CalledProcessError(retCode, fullCmd)
 
-def remoteExec(cmd, username, address, printOut = False):
-    result = Connection(f"{username}@{address}").run(cmd, hide=(not printOut))
-    return result.exited
+def remoteExec(cmd, username, address, printOut=False, root=False, passwd=""):
+    if root:
+        connect = Connection(f"{username}@{address}", config=Config(overrides={"sudo": {"password": passwd}}))
+        result = connect.sudo(cmd, hide=(not printOut))
+        return result.exited
+    else:
+        connect = Connection(f"{username}@{address}")
+        result = connect.run(cmd, hide=(not printOut))
+        return result.exited
+    
 
 def testNetwork(pingAddress):
     if call(["ping", "-c", "1", pingAddress], stdout=open(os.devnull, 'wb')) != 0:
@@ -101,6 +108,12 @@ if __name__ == "__main__":
             if e.returncode != 0 and e.returncode != 1:
                 exit()
     print("    DONE")
+
+    print("\nAllowing passwordless sudo on target")
+    targetPass = getpass(prompt="Enter password for remote user:\n")
+    remoteExec(f'echo "{args.username} ALL=(ALL:ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/{args.username}',
+        args.username, args.address, root=True, passwd=targetPass)
+    print("    OK ")
         
     # make the remote directory
     print(f"\nCreating {BASE_DIR} on target")
