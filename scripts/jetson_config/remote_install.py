@@ -51,7 +51,7 @@ def execLocalScript(localPath, args):
         exit()
     callList = [scriptPath]
     callList.extend(args)
-    return execute(callList, True)
+    return execute(callList, printOut=True)
 
 def makeRemoteDir(remoteDir, username, address):
     remoteExec(f"mkdir -p {remoteDir}", username, address, False)
@@ -97,6 +97,7 @@ if __name__ == "__main__":
 
     # handle SSH keys
     print("\nChecking for SSH keys")
+    targetPass = getpass(prompt="Enter password for remote user:\n")
     sshkeys = glob(os.path.join(HOME_DIR, ".ssh", f"sshkey_{args.address}"))
     if(len(sshkeys) > 0):
         print(f"\n\nSSH key already exists for address: {args.address}")
@@ -108,12 +109,6 @@ if __name__ == "__main__":
             if e.returncode != 0 and e.returncode != 1:
                 exit()
     print("    DONE")
-
-    print("\nAllowing passwordless sudo on target")
-    targetPass = getpass(prompt="Enter password for remote user:\n")
-    remoteExec(f'echo "{args.username} ALL=(ALL:ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/{args.username}',
-        args.username, args.address, root=True, passwd=targetPass)
-    print("    OK ")
         
     # make the remote directory
     print(f"\nCreating {BASE_DIR} on target")
@@ -125,9 +120,24 @@ if __name__ == "__main__":
     xferSingleFile(ROS_TAR, args.username, args.address, BASE_DIR)
     print("    DONE")
 
-    print("\nTransferring scripts to target")
+    print("\nTransferring scripts to target:")
     riptideSetupDir = os.path.join(BASE_DIR, "riptide_setup")
     xferDir(riptideSetupDir, args.username, args.address, BASE_DIR)
+    print("    DONE")
+
+    print("\nAllowing passwordless sudo on target:")
+    remoteExec(f'echo "{args.username} ALL=(ALL:ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/{args.username}',
+        args.username, args.address, root=True, passwd=targetPass)
+    print("    OK ")
+
+    print("\nSynchronizing clocks between host and target:")
+    scriptRun = os.path.join("config_target", "date_set.bash")
+    execLocalScript(scriptRun, [args.address, args.username])
+    print("    DONE")
+
+    print("\nConfiguring JetPack settings on target:")
+    scriptRun = os.path.join(SCRIPT_DIR, "config_target", "configure_jetpack.bash")
+    remoteExec(f"/bin/bash {scriptRun}", args.username, args.address, root=True, passwd=targetPass)
     print("    DONE")
         
     print("\nTesting remote internet connection")
