@@ -21,6 +21,16 @@ def execute(fullCmd, printOut=False):
     if retCode:
         raise CalledProcessError(retCode, fullCmd)
 
+def remoteExecResult(cmd, username, address, printOut=False, root=False, passwd=""):
+    if root:
+        connect = Connection(f"{username}@{address}", config=Config(overrides={"sudo": {"password": passwd}}))
+        result = connect.sudo(cmd, hide=(not printOut))
+        return (result.exited, result.rsplit("\n"))
+    else:
+        connect = Connection(f"{username}@{address}")
+        result = connect.run(cmd, hide=(not printOut))
+        return (result.exited, result.rsplit("\n"))
+
 def remoteExec(cmd, username, address, printOut=False, root=False, passwd=""):
     if root:
         connect = Connection(f"{username}@{address}", config=Config(overrides={"sudo": {"password": passwd}}))
@@ -144,6 +154,13 @@ if __name__ == "__main__":
     if not testNetworkRemote("google.com", args.username, args.address):
         exit()
     print("    OK ")
+
+    _, remoteArch = remoteExecResult("uname -m", args.username, args.address, passwd=targetPass)
+    if len(remoteArch) < 0 or remoteArch[0] != "aarch64":
+        cont = input("The connected system is not aarch64! Continue? y/n")
+        if cont.lower() != "y" or cont.lower() != "yes":
+            print("Aborting configuration")
+            exit()
 
     print("\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     print("!! Preparing to invoke setup scripts on the target !!")
