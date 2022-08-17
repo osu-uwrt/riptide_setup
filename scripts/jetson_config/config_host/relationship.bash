@@ -46,4 +46,4 @@ mv /tmp/sshkey_${TARGET}.pub ~/.ssh/sshkey_${TARGET}.pub
 ssh-add -D
 ssh-add sshkey_${TARGET}
 
-ssh-keyscan xavier >> ~/.ssh/known_hosts 
+ssh-keyscan ${TARGET} >> ~/.ssh/known_hosts 
