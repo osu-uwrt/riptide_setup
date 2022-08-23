@@ -1,13 +1,17 @@
 #!/bin/bash
 
+TARGETDISTRO="22.04" #Jammy
+
 # Default Linux installation doesn't have pip. Install and update for both Python versions for good measure
 sudo apt-get install python3-pip --yes
 python3 -m pip install --upgrade pip
 sudo python3 -m pip install vcstool
 
 if [ ! -d "../riptide_software/src" ]; then
-    if type lsb_release >/dev/null 2>&1; then
-        VER=$(lsb_release -sr)
+
+    VER=$(lsb_release -sr)
+    if [ $VER == $TARGETDISTRO ]; then
+        echo "Installing on Ubuntu $VER"
     else
         echo "Linux distro not recognized"
         exit
@@ -17,6 +21,8 @@ if [ ! -d "../riptide_software/src" ]; then
     mkdir -p ../riptide_software/src 
 
     vcs import < riptide_base.repos ../riptide_software/src
+
+    exit
 
     #Assigning default value as 1: Desktop full install
     echo
