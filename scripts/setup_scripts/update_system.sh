@@ -14,14 +14,32 @@ elif [[ $REINSTALL == 1 ]] ; then
   echo "Forcing reinstall of ROS2"
 fi
 
-
 # TODO make sure the script fires for ros2
 
 if [ -z "$ROS_DISTRO"] || [ -n "$REINSTALL" ] ; then
     if type lsb_release >/dev/null 2>&1; then
         VER=$(lsb_release -sr)
+
+        echo $VER
+
         if [ $VER == "20.04" ]; then
-            ROS_DISTRO="galactic"
+            echo
+            echo
+            read -p "Are you sure you want to install ros2 galactic (humble is recommended)? (Y/n)? " -n 1 answer
+            echo
+            echo
+
+            case "$answer" in 
+                y|Y|"" )
+                    ROS_DISTRO="galactic"
+                ;;
+                n|N|"" )
+                    echo "To install ros2 humble, you must update your system to 22.04!"
+                    exit
+                ;;
+            esac
+        elif [ $VER == "22.04" ]; then
+            ROS_DISTRO="humble"
         else
             echo "Linux version not recognized"
             exit
@@ -34,15 +52,21 @@ if [ -z "$ROS_DISTRO"] || [ -n "$REINSTALL" ] ; then
     fi
 fi
 
+
+
 # Install ros
 if [ ! -d "/opt/ros/$ROS_DISTRO" ] || [ -n "$REINSTALL" ]  ; then
     if [ $ROS_DISTRO == "galactic" ]; then
         ./install_galactic.sh
+    elif [ $ROS_DISTRO == "humble" ]; then
+        ./install_humble.sh
     else
         echo "Ubuntu version not supported"
         exit
     fi
 fi
+
+exit
 
 # Install all custom ros packages
 ./install_custom_ros_packages.sh

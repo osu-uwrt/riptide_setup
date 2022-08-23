@@ -20,14 +20,13 @@ if [ ! -d "../riptide_software/src" ]; then
     mkdir -p ../riptide_software
     mkdir -p ../riptide_software/src 
 
-    vcs import < riptide_base.repos ../riptide_software/src
+    vcs import < ritpide_ros2.repos ../riptide_software/src
 
-    exit
 
     #Assigning default value as 1: Desktop full install
     echo
     echo
-    read -p "Would you like to install the simulator (Y/n)? " -n 1 answer 
+    read -p "Would you like to install the gazebo simulator (Y/n)? " -n 1 answer 
     echo
     echo
 
