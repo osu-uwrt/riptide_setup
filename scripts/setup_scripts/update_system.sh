@@ -66,8 +66,6 @@ if [ ! -d "/opt/ros/$ROS_DISTRO" ] || [ -n "$REINSTALL" ]  ; then
     fi
 fi
 
-exit
-
 # Install all custom ros packages
 ./install_custom_ros_packages.sh
 

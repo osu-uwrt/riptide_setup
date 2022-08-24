@@ -27,12 +27,12 @@ pushd ./src
 
 popd > /dev/null
 
-
+echo "Hello"
 
 # create and build micro_ros agent
 rosdep install --from-paths src --ignore-src --rosdistro $ROS_DISTRO -y -r
 touch ~/osu-uwrt/dependencies/src/isaac_ros_pose_estimation/COLCON_IGNORE
-source /opt/ros/galactic/setup.bash
+source /opt/ros/$ROS_DISTRO/setup.bash
 colcon build
 source install/setup.bash
 ros2 run micro_ros_setup create_agent_ws.sh

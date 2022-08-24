@@ -9,7 +9,7 @@ if [ ! -d "$1" ]; then
     exit -2
 fi
 
-source /opt/ros/galactic/setup.bash
+source /opt/ros/humble/setup.bash
 
 if [ ! "$1" == *"dependencies"* ]; then
     echo "Sourcing riptide deps"
