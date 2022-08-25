@@ -20,6 +20,7 @@ pushd ./riptide_software > /dev/null
     pushd ./firmware > /dev/null
 
         git clone --recursive https://github.com/osu-uwrt/titan_firmware.git
+        touch COLCON_IGNORE
 
     popd > /dev/null
 

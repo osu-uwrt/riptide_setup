@@ -5,12 +5,12 @@ cd ~/osu-uwrt/
 mkdir -p dependencies
 cd dependencies
 
-git -C MYNT pull || git clone https://github.com/slightech/MYNT-EYE-D-SDK.git MYNT
-pushd ./MYNT
-    make init
-    # run make install to only build SDK, the wrapper happens in the next steps
-    make install
-popd > /dev/null
+# git -C MYNT pull || git clone https://github.com/slightech/MYNT-EYE-D-SDK.git MYNT
+# pushd ./MYNT
+#     make init
+#     # run make install to only build SDK, the wrapper happens in the next steps
+#     make install
+# popd > /dev/null
 
 mkdir src
 pushd ./src

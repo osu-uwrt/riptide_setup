@@ -23,21 +23,21 @@ if [ ! -d "../riptide_software/src" ]; then
     vcs import < ritpide_ros2.repos ../riptide_software/src
 
 
-    #Assigning default value as 1: Desktop full install
-    echo
-    echo
-    read -p "Would you like to install the gazebo simulator (Y/n)? " -n 1 answer 
-    echo
-    echo
+    # #Assigning default value as 1: Desktop full install
+    # echo
+    # echo
+    # read -p "Would you like to install the gazebo simulator (Y/n)? " -n 1 answer 
+    # echo
+    # echo
 
-    case "$answer" in
-        y|Y|"" ) 
-            git clone https://github.com/osu-uwrt/riptide_gazebo ../riptide_software/src/riptide_gazebo
-            cd ../riptide_software/src/riptide_gazebo
-            git checkout ros2
-            cd ../../../riptide_setup
-        ;;
-    esac
+    # case "$answer" in
+    #     y|Y|"" ) 
+    #         git clone https://github.com/osu-uwrt/riptide_gazebo ../riptide_software/src/riptide_gazebo
+    #         cd ../riptide_software/src/riptide_gazebo
+    #         git checkout ros2
+    #         cd ../../../riptide_setup
+    #     ;;
+    # esac
 
 else
     echo

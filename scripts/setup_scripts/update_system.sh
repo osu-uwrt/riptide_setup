@@ -16,7 +16,7 @@ fi
 
 # TODO make sure the script fires for ros2
 
-if [ -z "$ROS_DISTRO"] || [ -n "$REINSTALL" ] ; then
+if [ -z "$ROS_DISTRO" ] || [ -n "$REINSTALL" ] ; then
     if type lsb_release >/dev/null 2>&1; then
         VER=$(lsb_release -sr)
 
