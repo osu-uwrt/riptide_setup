@@ -3,7 +3,7 @@ SUBSYSTEMS=="usb", ATTRS{manufacturer}=="Lord Microstrain",ATTRS{product}=="Lord
 SUBSYSTEMS=="usb", ATTRS{manufacturer}=="Lord Microstrain",ATTRS{product}=="Lord Inertial Sensor", ATTRS{serial}=="0000__6234.41818", MODE="0777", SYMLINK+="imu_eddy", GROUP="uwrt",
 
 # IMU rules for the VectorNav IMU
-SUBSYSTEMS=="usb", ATTRS{manufacturer}=="FTDI",ATTRS{product}=="USB-RS232 Cable", ATTRS{serial}=="AU0586CZ", MODE="0777", SYMLINK+="imu_vector", GROUP="uwrt"
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", ATTRS{serial}=="AU0586CZ", SYMLINK+="imu_vector", GROUP="uwrt"
 
 
 # PointGrey Cameras

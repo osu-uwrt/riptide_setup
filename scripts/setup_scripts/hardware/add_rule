@@ -20,5 +20,8 @@ cp $DIR/rp2040.rules /etc/udev/rules.d/
 
 #reload udev
 udevadm control --reload-rules
+udevadm trigger
+
+ls /dev/
 
 echo "Successfully added hardware rules"
