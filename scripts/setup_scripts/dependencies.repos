@@ -15,5 +15,8 @@ repositories:
       type: git
       url: https://github.com/coalman321/image_pipeline.git
       version: ros2
-    
+    ros_tcp_endpoint:
+      type: git
+      url: https://github.com/Unity-Technologies/ROS-TCP-Endpoint.git
+      version: main-ros2    
 
