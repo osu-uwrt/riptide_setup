@@ -13,6 +13,3 @@ echo "Unpacking tar archive $ROS_TAR for install"
 
 # extract archive
 tar -xf $ROS_TAR
-
-# edit bashrc to add the ros installation
-./setup_bashrc.bash
