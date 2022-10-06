@@ -25,11 +25,11 @@ def remoteExecResult(cmd, username, address, printOut=False, root=False, passwd=
     if root:
         connect = Connection(f"{username}@{address}", config=Config(overrides={"sudo": {"password": passwd}}))
         result = connect.sudo(cmd, hide=(not printOut))
-        return (result.exited, result.rsplit("\n"))
+        return (result.exited, str(result).rsplit("\n") if result else [])
     else:
         connect = Connection(f"{username}@{address}")
         result = connect.run(cmd, hide=(not printOut))
-        return (result.exited, result.rsplit("\n"))
+        return (result.exited, str(result).rsplit("\n") if result else [])
 
 def remoteExec(cmd, username, address, printOut=False, root=False, passwd=""):
     if root:
@@ -96,8 +96,10 @@ if __name__ == "__main__":
 
     HOME_DIR = expanduser("~")
     BASE_DIR = os.path.join(HOME_DIR, "osu-uwrt")
+    REM_BSE_DIR = os.path.join("/home", args.username, "osu-uwrt")
     ROS_DISTRO = "humble"
-    SCRIPT_DIR = os.path.join(BASE_DIR, "riptide_setup", "scripts", "jetson_config")
+    # SCRIPT_DIR = os.path.join(BASE_DIR, "riptide_setup", "scripts", "jetson_config")
+    REM_SCRIPT_DIR = os.path.join(REM_BSE_DIR, "riptide_setup", "scripts", "jetson_config")
 
     # test the connection first
     print(f"Testing connection to {args.address}")
@@ -121,18 +123,18 @@ if __name__ == "__main__":
     print("    DONE")
         
     # make the remote directory
-    print(f"\nCreating {BASE_DIR} on target")
-    makeRemoteDir(BASE_DIR, args.username, args.address)
+    print(f"\nCreating {REM_BSE_DIR} on target")
+    makeRemoteDir(REM_BSE_DIR, args.username, args.address)
     print("    DONE")
 
     ROS_TAR = querySelection(glob(os.path.join(BASE_DIR, f"{ROS_DISTRO}*.tar.gz")))
     print(f"\nTransferring binary {ROS_TAR} to target, this may take a minute:")
-    xferSingleFile(ROS_TAR, args.username, args.address, BASE_DIR)
+    xferSingleFile(ROS_TAR, args.username, args.address, REM_BSE_DIR)
     print("    DONE")
 
     print("\nTransferring scripts to target:")
     riptideSetupDir = os.path.join(BASE_DIR, "riptide_setup")
-    xferDir(riptideSetupDir, args.username, args.address, BASE_DIR)
+    xferDir(riptideSetupDir, args.username, args.address, REM_BSE_DIR)
     print("    DONE")
 
     print("\nAllowing passwordless sudo on target:")
@@ -146,7 +148,7 @@ if __name__ == "__main__":
     print("    DONE")
 
     print("\nConfiguring JetPack settings on target:")
-    scriptRun = os.path.join(SCRIPT_DIR, "config_target", "configure_jetpack.bash")
+    scriptRun = os.path.join(REM_SCRIPT_DIR, "config_target", "configure_jetpack.bash")
     remoteExec(f"/bin/bash {scriptRun}", args.username, args.address, root=True, passwd=targetPass)
     print("    DONE")
         
@@ -155,8 +157,8 @@ if __name__ == "__main__":
         exit()
     print("    OK ")
 
-    _, remoteArch = remoteExecResult("uname -m", args.username, args.address, passwd=targetPass)
-    if len(remoteArch) < 0 or remoteArch[0] != "aarch64":
+    _, remoteArch = remoteExecResult("uname -m", args.username, args.address, passwd=targetPass, printOut=True)
+    if len(remoteArch) < 0 or not "aarch64" in remoteArch:
         cont = input("The connected system is not aarch64! Continue? y/n")
         if cont.lower() != "y" or cont.lower() != "yes":
             print("Aborting configuration")
@@ -168,16 +170,23 @@ if __name__ == "__main__":
     time.sleep(1.0)
 
     print("\nInstalling dependencies:")
-    scriptRun = os.path.join(SCRIPT_DIR, "unpack_install", "install_deps.bash")
+    scriptRun = os.path.join(REM_SCRIPT_DIR, "unpack_install", "install_deps.bash")
     runRemoteCmd(scriptRun, args.username, args.address)
     print("    DONE")
 
     print("\nInstalling ROS on the target:")
-    scriptRun = os.path.join(SCRIPT_DIR, "unpack_install", f"install_tar.bash {ROS_DISTRO} {ROS_TAR}")
+    REM_TAR = os.path.join(REM_BSE_DIR, ROS_TAR[ROS_TAR.rindex('/') + 1: ])
+    print(f"Using remote tar file {REM_TAR}")
+    scriptRun = os.path.join(REM_SCRIPT_DIR, "unpack_install", f"install_tar.bash {ROS_DISTRO} {REM_TAR}")
     runRemoteCmd(scriptRun, args.username, args.address)
+
+    print("\nSetting up .bashrc")
+    scriptRun = os.path.join(REM_SCRIPT_DIR, "unpack_install", "setup_bashrc.bash")
+    runRemoteCmd(scriptRun, args.username, args.address)
+
     print("    DONE")
 
     print("\nInstalling PyTorch on the target:")
-    scriptRun = os.path.join(SCRIPT_DIR, "unpack_install", "pytorch_install.bash")
+    scriptRun = os.path.join(REM_SCRIPT_DIR, "unpack_install", "pytorch_install.bash")
     runRemoteCmd(scriptRun, args.username, args.address)
     print("    DONE")
