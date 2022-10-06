@@ -3,8 +3,8 @@
 # set some environment variables for what we are about to build
 export ROS_DISTRO="humble"
 REPO_FILE_NAME="${ROS_DISTRO}_base_jetson"
-VCS_FILE_PATH="${HOME}/osu-uwrt/riptide_setup/scripts/jetson_config/${REPO_FILE_NAME}.repos"
-META_FILE_PATH="${HOME}/osu-uwrt/riptide_setup/scripts/jetson_config/${REPO_FILE_NAME}.meta"
+VCS_FILE_PATH="${HOME}/osu-uwrt/riptide_setup/scripts/jetson_config/meta_files/${REPO_FILE_NAME}.repos"
+META_FILE_PATH="${HOME}/osu-uwrt/riptide_setup/scripts/jetson_config/meta_files/${REPO_FILE_NAME}.meta"
 
 mkdir -p ~/osu-uwrt/jetson_install/src
 cd ~/osu-uwrt/jetson_install/
@@ -42,6 +42,8 @@ if grep -q micro_ros_agent "$VCS_FILE_PATH"; then
 
         colcon build --symlink-install --cmake-clean-cache --cmake-force-configure --metas $META_FILE_PATH \
         --packages-up-to microxrcedds_agent
+
+        source ./install/setup.bash
     else
         echo "Failed to detect XRCE agent when asked to build Micro ROS Agent, build will now halt"
         exit
@@ -60,8 +62,9 @@ echo "Executing ROS build"
 colcon build --symlink-install --cmake-clean-cache --cmake-force-configure --metas $META_FILE_PATH
 
 # Create a backup archive we can use to re-create everything without a new build
-TAR_DIR="${HOME}/osu-uwrt/jetson_install"
-TARBALL_PATH="${HOME}/osu-uwrt/${REPO_FILE_NAME}.tar.gz"
+cd ${HOME}/osu-uwrt/
+TAR_DIR="./jetson_install"
+TARBALL_PATH="./${REPO_FILE_NAME}.tar.gz"
 
 echo "Creating backup tarball ${TARBALL_PATH}"
 tar cf - ${TAR_DIR} -P | pv -s $(du -sb ${TAR_DIR} | awk '{print $1}') | gzip > $TARBALL_PATH

@@ -1,6 +1,7 @@
 import os
 from posixpath import expanduser
 from getpass import getpass
+from unittest import skip
 from fabric import Connection, Config
 from subprocess import Popen, PIPE, CalledProcessError, call
 from glob import glob
@@ -127,10 +128,14 @@ if __name__ == "__main__":
     makeRemoteDir(REM_BSE_DIR, args.username, args.address)
     print("    DONE")
 
-    ROS_TAR = querySelection(glob(os.path.join(BASE_DIR, f"{ROS_DISTRO}*.tar.gz")))
-    print(f"\nTransferring binary {ROS_TAR} to target, this may take a minute:")
-    xferSingleFile(ROS_TAR, args.username, args.address, REM_BSE_DIR)
-    print("    DONE")
+    TARS = glob(os.path.join(BASE_DIR, f"{ROS_DISTRO}*.tar.gz"))
+    if len(TARS) > 0:
+        ROS_TAR = querySelection(TARS)
+        print(f"\nTransferring binary {ROS_TAR} to target, this may take a minute:")
+        xferSingleFile(ROS_TAR, args.username, args.address, REM_BSE_DIR)
+        print("    DONE")
+    else:
+        print("Skipping tarball transfer")
 
     print("\nTransferring scripts to target:")
     riptideSetupDir = os.path.join(BASE_DIR, "riptide_setup")

@@ -383,3 +383,7 @@ repositories:
     type: git
     url: https://github.com/ros2/yaml_cpp_vendor.git
     version: humble
+  ros/joint_state_publisher:
+    type: git
+    url: https://github.com/ros/joint_state_publisher.git
+    version: ros2
