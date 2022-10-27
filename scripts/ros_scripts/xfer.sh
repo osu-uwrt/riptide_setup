@@ -1,4 +1,4 @@
-~/osu-uwrt/riptide_setup/scripts/dates_scripts/date_set.sh $1
+~/osu-uwrt/riptide_setup/scripts/jetson_config/config_target/date_set.bash $1
 
 scp ~/osu-uwrt/riptide_setup/scripts/ros_scripts/build_remote.sh ros@${1}:~/osu-uwrt
 
@@ -11,11 +11,11 @@ if [ $# -eq 2 ]; then
 
         rsync -vrzc --delete --exclude="**/.git/" --exclude="riptide_gazebo/" --exclude="**/.vscode/" --exclude="riptide_rqt_plugins" --exclude="riptide_vision/weights/" ~/osu-uwrt/dependencies/src ros@$1:~/osu-uwrt/dependencies
 
-        echo "Running a symlink build on dependencies"
-        ssh ros@${1} 'cd ~/osu-uwrt && ./build_remote.sh ./dependencies --symlink-install'
+        echo "Running a build on dependencies"
+        ssh ros@${1} 'cd ~/osu-uwrt && ./build_remote.sh ./dependencies'
     fi
     if [ $2 == "--build" ]; then
-        echo "Running a symlink build on riptide_software"
-        ssh ros@${1} 'cd ~/osu-uwrt && ./build_remote.sh ./riptide_software --symlink-install'
+        echo "Running a build on riptide_software"
+        ssh ros@${1} 'cd ~/osu-uwrt && ./build_remote.sh ./riptide_software'
     fi
 fi
