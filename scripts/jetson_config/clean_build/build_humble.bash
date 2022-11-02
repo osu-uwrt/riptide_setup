@@ -40,7 +40,7 @@ if grep -q micro_ros_agent "$VCS_FILE_PATH"; then
     if colcon list | grep -q microxrcedds_agent; then
         echo "Detected build of Micro ROS Agent. Building XRCE Agent first!"
 
-        colcon build --symlink-install --cmake-clean-cache --cmake-force-configure --metas $META_FILE_PATH \
+        colcon build --merge-install --cmake-clean-cache --cmake-force-configure --metas $META_FILE_PATH \
         --packages-up-to microxrcedds_agent
 
         source ./install/setup.bash
@@ -59,7 +59,7 @@ echo "Executing ROS build"
 
 # this build forces a full clean configure and rebuild of all packages. this should make everything relatively compliant assuming
 # the current repos remain buildable (failurehttps://github.com/micro-ROS/micro-ROS-Agent.gits do make it into release sometimes...)
-colcon build --symlink-install --cmake-clean-cache --cmake-force-configure --metas $META_FILE_PATH
+colcon build --merge-install --cmake-clean-cache --cmake-force-configure --metas $META_FILE_PATH
 
 # Create a backup archive we can use to re-create everything without a new build
 cd ${HOME}/osu-uwrt/
