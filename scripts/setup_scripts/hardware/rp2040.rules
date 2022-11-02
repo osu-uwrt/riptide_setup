@@ -13,3 +13,6 @@ SUBSYSTEM=="tty", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="000a", MODE="0664"
 # First sets environment for matching device, second sets symlink for the right interface
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="000a", ATTRS{manufacturer}=="OSU UWRT", ATTRS{product}=="Coprocessor", ENV{UWRT_BOARD_TYPE}="Coprocessor"
 SUBSYSTEMS=="usb", ENV{UWRT_BOARD_TYPE}=="Coprocessor", ATTRS{interface}=="Micro-ROS", MODE="0777", SYMLINK+="uwrt_copro", GROUP="uwrt"
+
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="000a", ATTRS{manufacturer}=="OSU UWRT", ATTRS{product}=="Depth Sensor", ENV{UWRT_BOARD_TYPE}="Depth Sensor"
+SUBSYSTEMS=="usb", ENV{UWRT_BOARD_TYPE}=="Depth Sensor", ATTRS{interface}=="Micro-ROS", MODE="0777", SYMLINK+="uwrt_depth", GROUP="uwrt"
