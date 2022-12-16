@@ -1,0 +1,26 @@
+repositories:
+    riptide_autonomy:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_autonomy.git
+      version: master
+    riptide_control:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_control.git
+      version: master
+    riptide_core:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_core.git
+      version: master
+    riptide_launch:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_launch.git
+      version: master
+    riptide_perception:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_perception.git
+      version: master
+    riptide_gui:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_gui.git
+      version: master
+
