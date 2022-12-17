@@ -5,5 +5,3 @@
 /CMakeLists.txt
 .vscode/
 .vscode/*
-
-scripts/setup_scripts/ros_install*

@@ -1,5 +1,0 @@
-repositories:
-  plankton:
-    type: git
-    url: https://github.com/davidorchansky/Plankton.git
-    version: galactic
