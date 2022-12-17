@@ -1,7 +1,6 @@
 import os
 from posixpath import expanduser
 from getpass import getpass
-from unittest import skip
 from fabric import Connection, Config
 from subprocess import Popen, PIPE, CalledProcessError, call
 from glob import glob

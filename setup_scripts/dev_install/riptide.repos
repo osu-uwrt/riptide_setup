@@ -1,0 +1,54 @@
+repositories:
+    # riptide software
+    software/src/riptide_autonomy:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_autonomy.git
+      version: master
+    software/src/riptide_control:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_control.git
+      version: master
+    software/src/riptide_core:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_core.git
+      version: master
+    software/src/riptide_launch:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_launch.git
+      version: master
+    software/src/riptide_perception:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_perception.git
+      version: master
+    software/src/riptide_gui:
+      type: git
+      url: https://github.com/osu-uwrt/riptide_gui.git
+      version: master
+
+    # dependencies
+    dependencies/src/nortek_dvl:
+      type: git
+      url: https://github.com/osu-uwrt/nortek_dvl.git
+      version: ros2_dev
+    dependencies/src/micro_ros_setup:
+      type: git
+      url: https://github.com/micro-ROS/micro_ros_setup.git
+      version: galactic
+    dependencies/src/vectornav:
+      type: git
+      url: https://github.com/coalman321/vectornav.git
+      version: ros2
+    dependencies/src/zed_ros2_wrapper:
+      type: git
+      url: https://github.com/stereolabs/zed-ros2-wrapper.git
+      version: master
+    dependencies/src/chameleon_tf:
+      type: git
+      url: https://github.com/coalman321/chameleon_tf.git
+      version: master
+
+    # Firmware repos
+    titan_firmware:
+      type: git
+      url: https://github.com/osu-uwrt/titan_firmware.git
+      version: master
