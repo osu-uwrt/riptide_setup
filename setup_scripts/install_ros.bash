@@ -1,7 +1,5 @@
 #!/bin/bash
 
-ROS_DISTRO="humble"
-
 #Getting version and release number of Ubuntu
 version=`lsb_release -sc`
 releasenum=`grep DISTRIB_DESCRIPTION /etc/*-release | awk -F 'Ubuntu ' '{print $2}' | awk -F ' LTS' '{print $1}'`

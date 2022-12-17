@@ -7,7 +7,7 @@ cd ~/osu-uwrt/development
 # TODO query for new sim setup here
 
 echo "Importing repositories"
-vcs import < ~/osu-uwrt/riptide_setup_new/setup_scripts/dev_install/riptide.repos . --recursive
+vcs import < ~/osu-uwrt/riptide_setup/setup_scripts/dev_install/riptide.repos . --recursive
 
 # install child dependencies and build dependencies
 echo "Building dependencies"
@@ -17,12 +17,17 @@ cd ~/osu-uwrt/development/dependencies
 # this can also work for other packages and platforms
 if ! [ -x "$(command -v nvidia-smi)" ]; then
     echo "Nvidia driver not foun. Disabling zed packages"
-    python3 ~/osu-uwrt/riptide_setup_new/setup_scripts/dev_install/package_disable.py zed
+    python3 ~/osu-uwrt/riptide_setup/setup_scripts/dev_install/package_disable.py zed
 fi
 
 rosdep install --from-paths src --ignore-src --rosdistro $ROS_DISTRO -y -r
 source /opt/ros/$ROS_DISTRO/setup.bash
 colcon build
+if [ $? -ne 0 ]; then
+    echo "Development dependencies build failed! The script will continue but may have errors going further"
+    sleep 10
+fi
+
 
 # add pico compilier tools
 echo "Downloading Pico utils"
@@ -35,3 +40,7 @@ rosdep install --from-paths src --ignore-src --rosdistro $ROS_DISTRO -y -r
 source /opt/ros/$ROS_DISTRO/setup.bash
 source ~/osu-uwrt/development/dependencies/install/setup.bash
 colcon build
+if [ $? -ne 0 ]; then
+    echo "Development software build failed! The script will continue but may have errors going further"
+    sleep 10
+fi
