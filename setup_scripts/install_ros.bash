@@ -36,7 +36,7 @@ else # Desktop install
 fi
 
 # install ros2 tools
-sudo apt install python3-rosdep python3-colcon-common-extensions -y 
+sudo apt install python3-rosdep python3-colcon-common-extensions python3-colcon-clean -y 
 
 sudo rosdep init
 rosdep update

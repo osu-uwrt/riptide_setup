@@ -5,3 +5,8 @@
 /CMakeLists.txt
 .vscode/
 .vscode/*
+
+
+build/
+install/
+log/
