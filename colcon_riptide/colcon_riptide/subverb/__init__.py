@@ -6,7 +6,6 @@
 from pathlib import Path
 import shutil
 
-from colcon_clean.clean.query import query_yes_no
 from colcon_core.logging import colcon_logger
 from colcon_core.plugin_system import instantiate_extensions
 from colcon_core.plugin_system import order_extensions_by_name
@@ -14,42 +13,6 @@ from scantree import RecursionFilter, scantree
 
 
 logger = colcon_logger.getChild(__name__)
-
-
-class DeploySubverbExtensionPoint:
-    """
-    The interface for deploy subverb extensions.
-
-    A deploy subverb extension provides a subverb to the `deploy` verb of
-    the command line tool.
-
-    For each instance the attribute `SUBVERB_NAME` is being set to the basename
-    of the entry point registering the extension.
-    """
-
-    """The version of the deploy subverb extension interface."""
-    EXTENSION_POINT_VERSION = '1.0'
-
-    def add_arguments(self, *, parser):
-        """
-        Add command line arguments specific to the deploy subverb.
-
-        The method is intended to be overridden in a subclass.
-
-        :param parser: The argument parser
-        """
-        pass
-
-    def main(self, *, context):
-        """
-        Execute the deploy subverb extension logic.
-
-        This method must be overridden in a subclass.
-
-        :param context: The context providing the parsed command line arguments
-        :returns: The return code
-        """
-        raise NotImplementedError()
 
 
 def add_deploy_subverb_arguments(parser):

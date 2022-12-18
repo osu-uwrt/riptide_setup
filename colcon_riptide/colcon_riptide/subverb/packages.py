@@ -4,8 +4,10 @@
 
 from pathlib import Path
 
-from colcon_clean.base_handler \
-    import add_base_handler_arguments, get_base_handler_extensions
+from colcon_clean.base_handler import (
+    add_base_handler_arguments,
+    get_base_handler_extensions
+)
 from colcon_clean.subverb import (
     add_clean_subverb_arguments,
     clean_paths,
