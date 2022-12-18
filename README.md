@@ -4,7 +4,7 @@
 
 This repository serves as a setup utility for the Underwater Robotics Team at The Ohio State University. Our mission is to develop the software which powers our autonomous underwater vehicles \(AUVs\) that compete in the Association for Unmanned Vehicle Systems International \(AUVSI\) [RoboSub](https://robonation.org/programs/robosub/) Competition in San Diego, CA. The AUV software is built on [Robot Operating System 2](http://www.ros.org/) and handles low level controls, computer vision, mission-specific programs, and everything in between.
 
-Supported Operating Systems: Ubuntu 16.04
+Supported Operating Systems: Ubuntu 22.04
 
 **The Underwater Robotics Team**  
 The Ohio State University
