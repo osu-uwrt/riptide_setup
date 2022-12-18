@@ -125,7 +125,7 @@ def createAndSendBuildScript(username, hostname, remote_dir, source_files, packa
     return arch_name
 
 class DeployVerb(VerbExtensionPoint):
-    """Cleans package workspaces."""
+    """deploys package workspaces."""
 
     def __init__(self):  # noqa: D107
         super().__init__()
