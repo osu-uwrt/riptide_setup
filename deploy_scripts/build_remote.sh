@@ -9,9 +9,6 @@ if [ ! -d "$1" ]; then
     exit -2
 fi
 
-# source /opt/ros/galactic/setup.bash
-source ${HOME}/osu-uwrt/jetson_install/install/setup.bash
-
 if [[ ! "$1" =~ "dependencies" ]]; then
     echo "Sourcing riptide deps"
     source /home/ros/osu-uwrt/dependencies/install/local_setup.bash
