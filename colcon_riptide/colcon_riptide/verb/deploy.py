@@ -102,7 +102,7 @@ def createAndSendBuildScript(username, hostname, remote_dir, source_files, packa
         # figure out file names
         dir_name = remote_dir[remote_dir.index('/') + 1 : ]
         stamp = datetime.now().strftime("%b_%d_%Y_%H_%M_%S")
-        arch_name = f"/tmp/{dir_name}{stamp}.tar.gz"
+        arch_name = f"/tmp/{hostname}_{dir_name}_{stamp}.tar.gz"
 
         # build the archiive commands for bash
         archive_cmd += "printf '\n\nArchiving build\n'\n"
