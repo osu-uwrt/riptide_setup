@@ -178,9 +178,7 @@ class DeployVerb(VerbExtensionPoint):
         decorated_parser = DestinationCollectorDecorator(parser)
         add_task_arguments(decorated_parser, 'colcon_core.task.deploy')
         self.task_argument_destinations = decorated_parser.get_destinations()
-
-
-        
+  
 
     def main(self, *, context):  # noqa: D102
 
