@@ -13,7 +13,7 @@ from colcon_core.task import add_task_arguments
 
 from subprocess import Popen, PIPE, call
 from fabric import Connection, Config
-import os
+import os, stat
 
 def execute(fullCmd, printOut=False):
     if printOut: print(fullCmd)
@@ -35,14 +35,63 @@ def testNetwork(pingAddress):
 
 def remoteExec(cmd, username, address, printOut=False, passwd=""):
     connect = Connection(f"{username}@{address}")
-    result = connect.run(cmd, hide=(not printOut))
-    return result.exited
+    result = 0
+    try:
+        result = connect.run(cmd, hide=(not printOut)).exited
+    except Exception as e:
+        pass
+    return result
 
 def makeRemoteDir(remoteDir, username, address):
     remoteExec(f"mkdir -p {remoteDir}", username, address, False)
 
 def delRemoteDir(remoteDir, username, address):
     remoteExec(f"rm -rf {remoteDir}", username, address, False)
+
+def createAndSendBuildScript(username, hostname, remote_dir, source_files, packages):
+    DEPLOY_TEMPLATE = """
+    #!/bin/bash
+    echo "building dir {0}"
+
+    if [ ! -d {0} ]; then 
+        echo "Build called on a non-existant directory"
+        exit -2
+    fi
+
+    # files to source
+    {1}
+
+    # switch directory
+    cd {0}
+
+    # run the build
+    colcon build {2}
+    """
+
+    sources = ""
+    for file in source_files:
+        sources += f"source {file}\n"
+
+    # make sure there are entries in the list otherwise do it all
+    packages_to_build = ""
+    if len(packages) > 0:
+        packages_to_build = "--packages-select "
+        for package in packages:
+            packages_to_build += f"{package} "
+
+    # write the template
+    local_script_path = "/tmp/deploy_build.bash"
+    with open(local_script_path, "w") as file1:
+        # Writing data to a file
+        formatted_template = DEPLOY_TEMPLATE.format(remote_dir, sources, packages_to_build)
+        file1.write(formatted_template)
+
+    # make the template executable
+    st = os.stat(local_script_path)
+    os.chmod(local_script_path, st.st_mode | stat.S_IEXEC)
+
+    # transfer the script
+    xferDir(local_script_path, username, hostname, local_script_path)
 
 class DeployVerb(VerbExtensionPoint):
     """Cleans package workspaces."""
@@ -138,8 +187,10 @@ class DeployVerb(VerbExtensionPoint):
 
         # show packages for xfer to the user
         print("Selected packages:")
+        packages_to_build = []
         for descriptor in packages_for_xfer:
             print(f"\t{descriptor.name}")
+            packages_to_build.append(descriptor.name)
         print("\n\n")
 
         # get exlpicitly the package paths
@@ -160,7 +211,22 @@ class DeployVerb(VerbExtensionPoint):
 
         print(f"Synchronized {xfered} of {len(packages_for_xfer)} packages\n\n")
 
-
         # Now lets do a remote build
         print("Executing remote build")
+        
+        # detect if it is a clean build as everything needs to re-build
+        if WANT_CLEAN:
+            createAndSendBuildScript(USERNAME, HOSTNAME, REMOTE_DIR, 
+                                    ["/opt/ros/humble/setup.bash"], 
+                                    [])
+
+        else:
+            createAndSendBuildScript(USERNAME, HOSTNAME, REMOTE_DIR, 
+                                    ["/opt/ros/humble/setup.bash"], 
+                                    packages_to_build)
+
+        # run the actual build
+        remoteExec("/bin/bash /tmp/deploy_build.bash", USERNAME, HOSTNAME, True)
+        
+        
 
