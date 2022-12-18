@@ -41,6 +41,9 @@ def remoteExec(cmd, username, address, printOut=False, passwd=""):
 def makeRemoteDir(remoteDir, username, address):
     remoteExec(f"mkdir -p {remoteDir}", username, address, False)
 
+def delRemoteDir(remoteDir, username, address):
+    remoteExec(f"rm -rf {remoteDir}", username, address, False)
+
 class DeployVerb(VerbExtensionPoint):
     """Cleans package workspaces."""
 
@@ -64,9 +67,9 @@ class DeployVerb(VerbExtensionPoint):
         # support a configurable remote dir
         parser.add_argument(
             '--remote_dir',
-            default='~/colcon_deploy/src',
+            default='~/colcon_deploy',
             help='The remote directory to transfer files to '
-                 '(default: ~/colcon_deploy/src)'
+                 '(default: ~/colcon_deploy)'
         )
 
         # support a clean build on the other end
@@ -90,6 +93,18 @@ class DeployVerb(VerbExtensionPoint):
         USERNAME = context.args.username
         REMOTE_DIR = context.args.remote_dir
         HOSTNAME = context.args.hostname
+        WANT_CLEAN = context.args.clean
+
+        REM_SRC_DIR = os.path.join(REMOTE_DIR, "src")
+
+        # the remote directories to clean when cleaning
+        REM_DIRS_FOR_CLEAN = [
+            REM_SRC_DIR,
+            os.path.join(REMOTE_DIR, "install"),
+            os.path.join(REMOTE_DIR, "build"),
+            os.path.join(REMOTE_DIR, "log")
+        ]
+        
 
         # test connection to target
         ret_code = testNetwork(HOSTNAME)
@@ -112,6 +127,15 @@ class DeployVerb(VerbExtensionPoint):
         # make sure the remote directory exists
         makeRemoteDir(REMOTE_DIR, USERNAME, HOSTNAME)
 
+        # make sure we're not cleaning the entire directory
+        if WANT_CLEAN:
+            print("Cleaning remote directories")
+            for dir in REM_DIRS_FOR_CLEAN:
+                delRemoteDir(dir, USERNAME, HOSTNAME)
+
+        # make sure the remote source directory exists
+        makeRemoteDir(REM_SRC_DIR, USERNAME, HOSTNAME)
+
         # show packages for xfer to the user
         print("Selected packages:")
         for descriptor in packages_for_xfer:
@@ -121,6 +145,6 @@ class DeployVerb(VerbExtensionPoint):
         # get exlpicitly the package paths
         for descriptor in packages_for_xfer:
             print(f"Synchronizing >>> {descriptor.name}")
-            xferDir(descriptor.path, USERNAME, HOSTNAME, REMOTE_DIR)
+            xferDir(descriptor.path, USERNAME, HOSTNAME, REM_SRC_DIR)
         
 
