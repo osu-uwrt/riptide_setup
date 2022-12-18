@@ -12,6 +12,7 @@ from colcon_core.argument_parser.destination_collector import \
 from colcon_core.task import add_task_arguments
 
 from subprocess import Popen, PIPE, call
+from datetime import datetime
 from fabric import Connection
 import os, stat
 
@@ -28,7 +29,14 @@ def execute(fullCmd, printOut=False):
     return retCode
 
 def xferDir(localdir, username, address, destination):
-    execute(["rsync", "-vrzc", "--delete", "--exclude=**/.git/", "--exclude=**/.vscode/", localdir, f"{username}@{address}:{destination}"], False)
+    execute(["rsync", "-vrzc", "--delete", "--exclude=**/.git/",
+             "--exclude=**/.vscode/", localdir, 
+             f"{username}@{address}:{destination}"], False)
+
+def downloadDir(remotedir, username, address, destination):
+    execute(["rsync", "-vrzc", "--delete", "--exclude=**/.git/",
+             "--exclude=**/.vscode/", 
+             f"{username}@{address}:{remotedir}", destination], False)
 
 def testNetwork(pingAddress):
     return call(["ping", "-c", "1", pingAddress], stdout=open(os.devnull, 'wb'))
@@ -48,7 +56,7 @@ def makeRemoteDir(remoteDir, username, address):
 def delRemoteDir(remoteDir, username, address):
     remoteExec(f"rm -rf {remoteDir}", username, address, False)
 
-def createAndSendBuildScript(username, hostname, remote_dir, source_files, packages):
+def createAndSendBuildScript(username, hostname, remote_dir, source_files, packages, want_archive):
     DEPLOY_TEMPLATE = """
     #!/bin/bash
 
@@ -66,6 +74,14 @@ def createAndSendBuildScript(username, hostname, remote_dir, source_files, packa
 
     # run the build
     colcon build {2}
+
+    # guard archive against build failure
+    if [ $? -ne 0 ]; then
+        exit -3
+    fi
+
+    # if we want to, also build the archive
+    {3}
     """
 
     sources = ""
@@ -79,11 +95,25 @@ def createAndSendBuildScript(username, hostname, remote_dir, source_files, packa
         for package in packages:
             packages_to_build += f"{package} "
 
+    # make the archive command
+    archive_cmd = ""
+    arch_name = ""
+    if want_archive:
+        # figure out file names
+        dir_name = remote_dir[remote_dir.index('/') + 1 : ]
+        stamp = datetime.now().strftime("%b_%d_%Y_%H_%M_%S")
+        arch_name = f"/tmp/{dir_name}{stamp}.tar.gz"
+
+        # build the archiive commands for bash
+        archive_cmd += "printf '\n\nArchiving build\n'\n"
+        archive_cmd += f"tar cf - . | gzip > {arch_name}\n"
+        archive_cmd += "echo 'Done'"
+
     # write the template
     local_script_path = "/tmp/deploy_build.bash"
     with open(local_script_path, "w") as file1:
         # Writing data to a file
-        formatted_template = DEPLOY_TEMPLATE.format(remote_dir, sources, packages_to_build)
+        formatted_template = DEPLOY_TEMPLATE.format(remote_dir, sources, packages_to_build, archive_cmd)
         file1.write(formatted_template)
 
     # make the template executable
@@ -92,6 +122,7 @@ def createAndSendBuildScript(username, hostname, remote_dir, source_files, packa
 
     # transfer the script
     xferDir(local_script_path, username, hostname, local_script_path)
+    return arch_name
 
 class DeployVerb(VerbExtensionPoint):
     """Cleans package workspaces."""
@@ -125,7 +156,21 @@ class DeployVerb(VerbExtensionPoint):
         parser.add_argument(
             '--clean',
             action='store_true',
-            help='Should the remote build be cleaned first?'
+            help='Removes the workspace dirs on the target'
+        )
+
+        # support skipping the remote build
+        parser.add_argument(
+            '--no_build',
+            action='store_true',
+            help='Skips the remote build step'
+        )
+
+        # support skipping the remote build
+        parser.add_argument(
+            '--archive',
+            action='store_true',
+            help='Creates a tar archive of the build on the target and saves it to the host'
         )
 
         add_packages_arguments(parser)
@@ -143,6 +188,8 @@ class DeployVerb(VerbExtensionPoint):
         REMOTE_DIR = context.args.remote_dir
         HOSTNAME = context.args.hostname
         WANT_CLEAN = context.args.clean
+        NO_BUILD = context.args.no_build
+        WANT_ARCHIVE = context.args.archive
 
         REM_SRC_DIR = os.path.join(REMOTE_DIR, "src")
 
@@ -209,24 +256,46 @@ class DeployVerb(VerbExtensionPoint):
             print(f"Failed to synchronize {len(packages_for_xfer) - xfered} of {len(packages_for_xfer)} packages")
             exit(-2)
 
-        print(f"Synchronized {xfered} of {len(packages_for_xfer)} packages\n\n")
+        print(f"Synchronized {xfered} of {len(packages_for_xfer)} packages")
+
+        # if no build, we are done
+        if NO_BUILD:
+            exit(0)
 
         # Now lets do a remote build
-        print("Executing remote build")
+        print("\n\nExecuting remote build")
+
+        arch_name = ""
         
         # detect if it is a clean build as everything needs to re-build
         if WANT_CLEAN:
-            createAndSendBuildScript(USERNAME, HOSTNAME, REMOTE_DIR, 
-                                    ["/opt/ros/humble/setup.bash"], 
-                                    [])
+            arch_name = createAndSendBuildScript(USERNAME, HOSTNAME, REMOTE_DIR, 
+                ["/opt/ros/humble/setup.bash"], [], WANT_ARCHIVE)
 
         else:
-            createAndSendBuildScript(USERNAME, HOSTNAME, REMOTE_DIR, 
-                                    ["/opt/ros/humble/setup.bash"], 
-                                    packages_to_build)
+            arch_name = createAndSendBuildScript(USERNAME, HOSTNAME, REMOTE_DIR, 
+                ["/opt/ros/humble/setup.bash"], packages_to_build, WANT_ARCHIVE)
 
         # run the actual build
-        remoteExec("/bin/bash /tmp/deploy_build.bash", USERNAME, HOSTNAME, True)
-        
-        
+        build_status = remoteExec("/bin/bash /tmp/deploy_build.bash", USERNAME, HOSTNAME, True)
+
+        # make sure build is good
+        if build_status != 0:
+            # dont need a error message as colcon prints from the remote
+            exit(-3)
+
+        if WANT_ARCHIVE:
+            print(f"Downloading archive {arch_name}")
+
+            # copy the file to the CWD
+            work_dir = os.getcwd()
+
+            downloadDir(arch_name, USERNAME, HOSTNAME, work_dir)
+
+            local_path = os.path.join(work_dir, arch_name[arch_name.index('/') + 1 : ])
+
+            print(f"Archive downloaded to {local_path}")
+
+
+            
 
