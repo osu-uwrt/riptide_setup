@@ -206,6 +206,15 @@ class DeployVerb(VerbExtensionPoint):
             print(f"Failed to ping {HOSTNAME}. Hostname unknown, or device offline")
             exit(-1)
 
+        # make sure the remote directory exists
+        makeRemoteDir(REMOTE_DIR, USERNAME, HOSTNAME)
+
+        # make sure we're not cleaning the entire directory
+        if WANT_CLEAN:
+            print("Cleaning remote directories")
+            for dir in REM_DIRS_FOR_CLEAN:
+                delRemoteDir(dir, USERNAME, HOSTNAME)
+
         # attempt an rsync for the current directory to the target dir
         print("Synchronizing local packages to target")
         decorators = get_packages(
@@ -217,15 +226,6 @@ class DeployVerb(VerbExtensionPoint):
         # grab out the descriptors from each package as we are only building 
         # on the target and not the host
         packages_for_xfer = [package.descriptor for package in decorators]
-
-        # make sure the remote directory exists
-        makeRemoteDir(REMOTE_DIR, USERNAME, HOSTNAME)
-
-        # make sure we're not cleaning the entire directory
-        if WANT_CLEAN:
-            print("Cleaning remote directories")
-            for dir in REM_DIRS_FOR_CLEAN:
-                delRemoteDir(dir, USERNAME, HOSTNAME)
 
         # make sure the remote source directory exists
         makeRemoteDir(REM_SRC_DIR, USERNAME, HOSTNAME)
