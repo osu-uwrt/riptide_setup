@@ -193,7 +193,6 @@ class DeployVerb(VerbExtensionPoint):
 
         # the remote directories to clean when cleaning
         REM_DIRS_FOR_CLEAN = [
-            REM_SRC_DIR,
             os.path.join(REMOTE_DIR, "install"),
             os.path.join(REMOTE_DIR, "build"),
             os.path.join(REMOTE_DIR, "log")
