@@ -295,7 +295,3 @@ class DeployVerb(VerbExtensionPoint):
             local_path = os.path.join(work_dir, arch_name[arch_name.index('/') + 1 : ])
 
             print(f"Archive downloaded to {local_path}")
-
-
-            
-
