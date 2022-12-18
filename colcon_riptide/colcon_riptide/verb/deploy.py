@@ -143,8 +143,24 @@ class DeployVerb(VerbExtensionPoint):
         print("\n\n")
 
         # get exlpicitly the package paths
-        for descriptor in packages_for_xfer:
-            print(f"Synchronizing >>> {descriptor.name}")
-            xferDir(descriptor.path, USERNAME, HOSTNAME, REM_SRC_DIR)
+        xfered = 0
+        try:
+            for descriptor in packages_for_xfer:
+                print(f"Synchronizing >>> {descriptor.name}")
+                xferDir(descriptor.path, USERNAME, HOSTNAME, REM_SRC_DIR)
+                xfered += 1
+        except Exception as e:
+            print(f"Error synchronizing {descriptor.name}")
         
+        # check that all were transferred
+        if xfered != len(packages_for_xfer):
+            print(f"Synchronized {xfered} of {len(packages_for_xfer)} packages")
+            print(f"Failed to synchronize {len(packages_for_xfer) - xfered} of {len(packages_for_xfer)} packages")
+            exit(-2)
+
+        print(f"Synchronized {xfered} of {len(packages_for_xfer)} packages\n\n")
+
+
+        # Now lets do a remote build
+        print("Executing remote build")
 
