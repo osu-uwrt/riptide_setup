@@ -12,7 +12,7 @@ from colcon_core.argument_parser.destination_collector import \
 from colcon_core.task import add_task_arguments
 
 from subprocess import Popen, PIPE, call
-from fabric import Connection, Config
+from fabric import Connection
 import os, stat
 
 def execute(fullCmd, printOut=False):
@@ -51,8 +51,8 @@ def delRemoteDir(remoteDir, username, address):
 def createAndSendBuildScript(username, hostname, remote_dir, source_files, packages):
     DEPLOY_TEMPLATE = """
     #!/bin/bash
-    echo "building dir {0}"
 
+    # Make sure build dir exists
     if [ ! -d {0} ]; then 
         echo "Build called on a non-existant directory"
         exit -2
