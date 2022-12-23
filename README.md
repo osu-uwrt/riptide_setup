@@ -9,28 +9,27 @@ Supported Operating Systems: Ubuntu 22.04
 **The Underwater Robotics Team**  
 The Ohio State University
 
-[Website](http://uwrt.club/) \| [License](https://github.com/osu-uwrt/riptide_software/tree/fac98cfa750df74dbb107f83064c3767e6346cc4/LICENSE/README.md)
+[Website](https://org.osu.edu/osu-uwrt/) \| [License](https://github.com/osu-uwrt/riptide_software/tree/fac98cfa750df74dbb107f83064c3767e6346cc4/LICENSE/README.md)
 
-![OSU UWRT Logo](logos/UWRT_logo_small.png)
+![OSU UWRT Logo](logos/UWRT_Logo_small.png)
 
 ## Initial Setup
 
-### Cloning riptide\_software
+### Cloning riptide\_setup
 
 NOTE: It is common to see brackets such as `<>` to act as placeholders for actual code. Make sure you replace the ENTIRE phrase `<SOMETHING_HERE>` with the requested info.
 
 ```text
 mkdir -p ~/osu-uwrt/
 cd ~/osu-uwrt/
-git clone https://github.com/osu-uwrt/riptide_software.git
+git clone https://github.com/osu-uwrt/riptide_setup.git
 ```
 
 ### Installing ROS and/or Dependencies
 
 The `riptide_software` base currently uses ROS2 Humble Hawksbill and is dependent on various ROS packages and other libraries. Once you have cloned this repository run the following command to set everything up.
 ```
-./setup
-
+~/osu-uwrt/riptide_setup/setup.bash
 ```
 During setup, the script will prompt the user for multiple options including the following:
 * desktop vs base ROS installation, (default: desktop) for a normal install press enter
@@ -70,52 +69,3 @@ source ~/osu-uwrt/development/dependencies/install/setup.bash
 ## Building riptide\_software
 
 ROS2 is compiled using the colcon build system, and so all of our repos will use colcon. The build command is  `colcon build` while your terminal is in the correct directory
-
-## Riptide Software Hierarchy
-
-Below is a flow chart relating all major ROS nodes in our software base broken down by system level. Boxes with sharp corners represent physical objects \(hardware, actuators\), boxes with rounded corners represent individual ROS nodes, and the arrows connecting represent the direction of data communication via ROS topics. Note: only the major topics are displayed, otherwise the diagram would be too cluttered.
-
-![riptide\_software\_flow\_chart](.gitbook/assets/riptide_software_stack_full.png)
-
-### Primary Packages
-
-Below is a list of the primary packages we use to run our vehicle. Feel free to click on each package to learn more about its functionality.
-
-#### [riptide\_msgs](https://github.com/osu-uwrt/riptide_software/tree/master/riptide_msgs)
-
-This package only contains custom ROS messages used throughout riptide packages.
-
-#### [riptide\_hardware](https://github.com/osu-uwrt/riptide_software/tree/master/riptide_hardware)
-
-This package handles the hardware-software interface for working with all of our vehicle's sensors \(data collection, data processing, etc.\).
-
-#### [riptide\_controllers](https://github.com/osu-uwrt/riptide_software/tree/master/riptide_controllers)
-
-This package handles all-things controls regarding movement of the vehicle, using a system of decoupled PID controllers.
-
-#### [riptide\_vision](https://github.com/osu-uwrt/riptide_software/tree/master/riptide_vision)
-
-This package contains vision processing algorithms, such as using OpenCV to extract additional features from our camera footage, or to further process the output from darknet\_ros.
-
-#### [riptide\_bringup](https://github.com/osu-uwrt/riptide_software/tree/master/riptide_bringup)
-
-This package only contains a series of launch files used to "bring-up" our vehicle. Ex. launch a mission, launch our PS3 controller, etc.
-
-#### [riptide\_autonomy](https://github.com/osu-uwrt/riptide_software/tree/master/riptide_autonomy)
-
-This package contains the RoboSub competition-specific task code. Our ultimate goal is to have a semi-autonomous system \(since full autonomoy is too hard right now\).
-
-### Miscellaneous Packages
-
-#### [riptide\_utilities](https://github.com/osu-uwrt/riptide_software/tree/master/riptide_utilities)
-
-This is actually not a catkin package. This is a utility folder specific for UWRT software members for interfacing our computers with ROS and our vehicle's computer system.
-
-#### [riptide\_teleop](https://github.com/osu-uwrt/riptide_software/tree/master/riptide_teleop)
-
-This package contains the code to control the vehicle via PS3 controller.
-
-#### [riptide\_description](https://github.com/osu-uwrt/riptide_software/tree/master/riptide_description)
-
-This package contains the URDF files so we can build our vehicle in the Gazebo simulator.
-
