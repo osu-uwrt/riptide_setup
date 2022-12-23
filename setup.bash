@@ -28,4 +28,4 @@ if [ -d "~/osu-uwrt/development" ]; then
 fi
 
 cd ~/osu-uwrt/riptide_setup
-~/osu-uwrt/riptide_setup/scripts/update_system.sh
+~/osu-uwrt/riptide_setup/setup_scripts/update_system.bash

@@ -39,12 +39,16 @@ printf "\n\n\n"
 echo "If you intend to work directly with deploying software to the robot"
 echo "answer the following prompt with a y"
 read -p "Install release setup? (default is no) " CHOICE
-if [ $CHOICE == "y" ] || [ $CHOICE == "Y" ]; then
-    echo "Installing release setup"
-    ~/osu-uwrt/riptide_setup/setup_scripts/release_install/setup_release.bash
-else
-    echo "Skipping release setup"
-fi
+case "$CHOICE" in
+    [yY]*) 
+        echo "Installing release setup"
+        ~/osu-uwrt/riptide_setup/setup_scripts/release_install/setup_release.bash
+        ;;
+
+    *) 
+        echo "Skipping release setup"
+        ;;
+esac
 printf "\n\n\n"
 
 # setup hosts and add hardware udev rules
