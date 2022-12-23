@@ -8,8 +8,9 @@ cd ~/osu-uwrt/development
 
 echo "Importing repositories"
 vcs import < ~/osu-uwrt/riptide_setup/setup_scripts/dev_install/riptide.repos . --recursive
+vcs pull
 
-if [ ! -d ~/osu-uwrt/development/titan_firmware ]; then
+if [ -d ~/osu-uwrt/development/titan_firmware ]; then
     echo "Detected firmware repository, inserting COLCON_IGNORE"
     touch ~/osu-uwrt/development/titan_firmware/COLCON_IGNORE
 else
@@ -23,7 +24,7 @@ cd ~/osu-uwrt/development/dependencies
 # test for subfolders named zed and disable if nvidia-smi doesnt run
 # this can also work for other packages and platforms
 if ! [ -x "$(command -v nvidia-smi)" ]; then
-    echo "Nvidia driver not foun. Disabling zed packages"
+    echo "Nvidia driver not found. Disabling zed packages"
     python3 ~/osu-uwrt/riptide_setup/setup_scripts/dev_install/package_disable.py zed
 fi
 
