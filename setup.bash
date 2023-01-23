@@ -5,6 +5,9 @@ sudo apt-get install python3-pip --yes
 python3 -m pip install --upgrade pip
 sudo python3 -m pip install vcstool
 
+echo "Updating system first"
+sudo apt update && sudo apt upgrade
+
 
 if type lsb_release >/dev/null 2>&1; then
     VER=$(lsb_release -sr)
