@@ -4,6 +4,10 @@
 mkdir -p ~/osu-uwrt/development
 cd ~/osu-uwrt/development
 
+echo "Starting ROSDEP"
+sudo rosdep init
+rosdep update
+
 # TODO query for new sim setup here
 
 echo "Importing repositories"
