@@ -219,23 +219,29 @@ class DeployVerb(VerbExtensionPoint):
         decorators = get_packages(
             context.args,
             additional_argument_names=self.task_argument_destinations,
-            recursive_categories=('run', )
+            # recursive_categories=('run', )
         )
 
         # grab out the descriptors from each package as we are only building 
         # on the target and not the host
-        packages_for_xfer = [package.descriptor for package in decorators]
+        packages_for_xfer = [package.descriptor for package in decorators if package.selected]
 
         # make sure the remote source directory exists
         makeRemoteDir(REM_SRC_DIR, USERNAME, HOSTNAME)
 
         # show packages for xfer to the user
-        print("Selected packages:")
         packages_to_build = []
-        for descriptor in packages_for_xfer:
-            print(f"\t{descriptor.name}")
-            packages_to_build.append(descriptor.name)
-        print("\n\n")
+        print("Selected packages:")
+        if len(packages_for_xfer) == 0:
+            print("\tNo packages selected")
+            exit(-2)
+        else:
+            for descriptor in packages_for_xfer:
+                print(f"\t{descriptor.name}")
+                packages_to_build.append(descriptor.name)
+            print("\n\n")
+
+        
 
         # get exlpicitly the package paths
         xfered = 0

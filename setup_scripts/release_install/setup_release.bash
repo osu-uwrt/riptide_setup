@@ -15,6 +15,8 @@ cd ~/osu-uwrt/release
 git pull
 
 sudo apt install -y python3-scantree
+pip install fabric
+
 
 cd ~/osu-uwrt/riptide_setup
 
