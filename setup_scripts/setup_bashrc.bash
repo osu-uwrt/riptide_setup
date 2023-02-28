@@ -6,7 +6,7 @@ s3="source ~/osu-uwrt/development/software/install/setup.bash"
 
 # Add appropriate lines to the bashrc if they do not exist
 if ! grep -q "$s1" ~/.bashrc || ! grep -q "$s2" ~/.bashrc || ! grep -q "$s3" ~/.bashrc; then
-    sed -i "/setup.bash/d" ~/.bashrc
+    # sed -i "/setup.bash/d" ~/.bashrc
     echo "$s1" >> ~/.bashrc
     echo "$s2" >> ~/.bashrc
     echo "$s3" >> ~/.bashrc
