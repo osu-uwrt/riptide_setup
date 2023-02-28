@@ -14,4 +14,14 @@ cd ~/osu-uwrt/release
 
 git pull
 
+cd ~/osu-uwrt/riptide_setup
+
+colcon build
+
+# Add appropriate lines to the bashrc if they do not exist
+s2="source ~/osu-uwrt/riptide_setup/install/setup.bash"
+if ! grep -q "$s2" ~/.bashrc ; then
+    echo "$s2" >> ~/.bashrc
+fi
+
 echo "Release repository setup"
