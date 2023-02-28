@@ -14,6 +14,8 @@ cd ~/osu-uwrt/release
 
 git pull
 
+sudo apt install -y python3-scantree
+
 cd ~/osu-uwrt/riptide_setup
 
 colcon build
