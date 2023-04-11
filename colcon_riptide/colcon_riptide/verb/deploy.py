@@ -73,7 +73,7 @@ def createAndSendBuildScript(username, hostname, remote_dir, source_files, packa
     cd {0}
 
     # run the build
-    colcon build {2}
+    colcon build {2} {3}
 
     # guard archive against build failure
     if [ $? -ne 0 ]; then
@@ -81,7 +81,7 @@ def createAndSendBuildScript(username, hostname, remote_dir, source_files, packa
     fi
 
     # if we want to, also build the archive
-    {3}
+    {4}
     """
 
     sources = ""
@@ -94,6 +94,8 @@ def createAndSendBuildScript(username, hostname, remote_dir, source_files, packa
         packages_to_build = "--packages-select "
         for package in packages:
             packages_to_build += f"{package} "
+            
+    cmake_args = "--cmake-args -DBUILD_DEPLOY=ON" #set the BUILD_DEPLOY flag to indicate to packages that this is a deploy build
 
     # make the archive command
     archive_cmd = ""
@@ -113,7 +115,7 @@ def createAndSendBuildScript(username, hostname, remote_dir, source_files, packa
     local_script_path = "/tmp/deploy_build.bash"
     with open(local_script_path, "w") as file1:
         # Writing data to a file
-        formatted_template = DEPLOY_TEMPLATE.format(remote_dir, sources, packages_to_build, archive_cmd)
+        formatted_template = DEPLOY_TEMPLATE.format(remote_dir, sources, packages_to_build, cmake_args, archive_cmd)
         file1.write(formatted_template)
 
     # make the template executable
