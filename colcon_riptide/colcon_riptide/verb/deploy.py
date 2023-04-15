@@ -16,114 +16,6 @@ from datetime import datetime
 from fabric import Connection
 import os, stat
 
-def execute(fullCmd, printOut=False):
-    if printOut: print(fullCmd)
-    proc = Popen(fullCmd, stdout=PIPE, stderr=PIPE, universal_newlines=True)
-    if printOut:
-        for line in iter(proc.stdout.readline, ""):
-            print(line)
-        for errLine in iter(proc.stderr.readline, ""):
-            print(f"ERROR: {errLine}")
-    proc.stdout.close()
-    retCode = proc.wait()
-    return retCode
-
-def xferDir(localdir, username, address, destination):
-    execute(["rsync", "-vrzc", "--delete", "--exclude=**/.git/",
-             "--exclude=**/.vscode/", localdir, 
-             f"{username}@{address}:{destination}"], False)
-
-def downloadDir(remotedir, username, address, destination):
-    execute(["rsync", "-vrzc", "--delete", "--exclude=**/.git/",
-             "--exclude=**/.vscode/", 
-             f"{username}@{address}:{remotedir}", destination], False)
-
-def testNetwork(pingAddress):
-    return call(["ping", "-c", "1", pingAddress], stdout=open(os.devnull, 'wb'))
-
-def remoteExec(cmd, username, address, printOut=False, passwd=""):
-    connect = Connection(f"{username}@{address}")
-    result = 0
-    try:
-        result = connect.run(cmd, hide=(not printOut)).exited
-    except Exception as e:
-        pass
-    return result
-
-def makeRemoteDir(remoteDir, username, address):
-    remoteExec(f"mkdir -p {remoteDir}", username, address, False)
-
-def delRemoteDir(remoteDir, username, address):
-    remoteExec(f"rm -rf {remoteDir}", username, address, False)
-
-def createAndSendBuildScript(username, hostname, remote_dir, source_files, packages, want_archive):
-    DEPLOY_TEMPLATE = """
-    #!/bin/bash
-
-    # Make sure build dir exists
-    if [ ! -d {0} ]; then 
-        echo "Build called on a non-existant directory"
-        exit -2
-    fi
-
-    # files to source
-    {1}
-
-    # switch directory
-    cd {0}
-
-    # run the build
-    colcon build {2}
-
-    # guard archive against build failure
-    if [ $? -ne 0 ]; then
-        exit -3
-    fi
-
-    # if we want to, also build the archive
-    {3}
-    """
-
-    sources = ""
-    for file in source_files:
-        sources += f"source {file}\n"
-
-    # make sure there are entries in the list otherwise do it all
-    packages_to_build = ""
-    if len(packages) > 0:
-        packages_to_build = "--packages-select "
-        for package in packages:
-            packages_to_build += f"{package} "
-
-    # make the archive command
-    archive_cmd = ""
-    arch_name = ""
-    if want_archive:
-        # figure out file names
-        dir_name = remote_dir[remote_dir.index('/') + 1 : ]
-        stamp = datetime.now().strftime("%b_%d_%Y_%H_%M_%S")
-        arch_name = f"/tmp/{hostname}_{dir_name}_{stamp}.tar.gz"
-
-        # build the archiive commands for bash
-        archive_cmd += "printf '\n\nArchiving build\n'\n"
-        archive_cmd += f"tar cf - . | gzip > {arch_name}\n"
-        archive_cmd += "echo 'Done'"
-
-    # write the template
-    local_script_path = "/tmp/deploy_build.bash"
-    with open(local_script_path, "w") as file1:
-        # Writing data to a file
-        formatted_template = DEPLOY_TEMPLATE.format(remote_dir, sources, packages_to_build, archive_cmd)
-        file1.write(formatted_template)
-
-    # make the template executable
-    st = os.stat(local_script_path)
-    os.chmod(local_script_path, st.st_mode | stat.S_IEXEC)
-
-    # transfer the script
-    xferDir(local_script_path, username, hostname, local_script_path)
-    return arch_name
-
 class DeployVerb(VerbExtensionPoint):
     """deploys package workspaces."""
 
@@ -166,7 +58,7 @@ class DeployVerb(VerbExtensionPoint):
             help='Skips the remote build step'
         )
 
-        # support skipping the remote build
+        # support archiving the remote build
         parser.add_argument(
             '--archive',
             action='store_true',
@@ -298,3 +190,111 @@ class DeployVerb(VerbExtensionPoint):
             local_path = os.path.join(work_dir, arch_name[arch_name.index('/') + 1 : ])
 
             print(f"Archive downloaded to {local_path}")
+    
+def execute(fullCmd, printOut=False):
+    if printOut: print(fullCmd)
+    proc = Popen(fullCmd, stdout=PIPE, stderr=PIPE, universal_newlines=True)
+    if printOut:
+        for line in iter(proc.stdout.readline, ""):
+            print(line)
+        for errLine in iter(proc.stderr.readline, ""):
+            print(f"ERROR: {errLine}")
+    proc.stdout.close()
+    retCode = proc.wait()
+    return retCode
+
+def xferDir(localdir, username, address, destination):
+    execute(["rsync", "-vrzc", "--delete", "--exclude=**/.git/",
+             "--exclude=**/.vscode/", localdir, 
+             f"{username}@{address}:{destination}"], False)
+
+def downloadDir(remotedir, username, address, destination):
+    execute(["rsync", "-vrzc", "--delete", "--exclude=**/.git/",
+             "--exclude=**/.vscode/", 
+             f"{username}@{address}:{remotedir}", destination], False)
+
+def testNetwork(pingAddress):
+    return call(["ping", "-c", "1", pingAddress], stdout=open(os.devnull, 'wb'))
+
+def remoteExec(cmd, username, address, printOut=False, passwd=""):
+    connect = Connection(f"{username}@{address}")
+    result = 0
+    try:
+        result = connect.run(cmd, hide=(not printOut)).exited
+    except Exception as e:
+        pass
+    return result
+
+def makeRemoteDir(remoteDir, username, address):
+    remoteExec(f"mkdir -p {remoteDir}", username, address, False)
+
+def delRemoteDir(remoteDir, username, address):
+    remoteExec(f"rm -rf {remoteDir}", username, address, False)
+
+def createAndSendBuildScript(username, hostname, remote_dir, source_files, packages, want_archive):
+    DEPLOY_TEMPLATE = """
+    #!/bin/bash
+
+    # Make sure build dir exists
+    if [ ! -d {0} ]; then 
+        echo "Build called on a non-existant directory"
+        exit -2
+    fi
+
+    # files to source
+    {1}
+
+    # switch directory
+    cd {0}
+
+    # run the build
+    colcon build {2}
+
+    # guard archive against build failure
+    if [ $? -ne 0 ]; then
+        exit -3
+    fi
+
+    # if we want to, also build the archive
+    {3}
+    """
+
+    sources = ""
+    for file in source_files:
+        sources += f"source {file}\n"
+
+    # make sure there are entries in the list otherwise do it all
+    packages_to_build = ""
+    if len(packages) > 0:
+        packages_to_build = "--packages-select "
+        for package in packages:
+            packages_to_build += f"{package} "
+
+    # make the archive command
+    archive_cmd = ""
+    arch_name = ""
+    if want_archive:
+        # figure out file names
+        dir_name = remote_dir[remote_dir.index('/') + 1 : ]
+        stamp = datetime.now().strftime("%b_%d_%Y_%H_%M_%S")
+        arch_name = f"/tmp/{hostname}_{dir_name}_{stamp}.tar.gz"
+
+        # build the archiive commands for bash
+        archive_cmd += "printf '\n\nArchiving build\n'\n"
+        archive_cmd += f"tar cf - . | gzip > {arch_name}\n"
+        archive_cmd += "echo 'Done'"
+
+    # write the template
+    local_script_path = "/tmp/deploy_build.bash"
+    with open(local_script_path, "w") as file1:
+        # Writing data to a file
+        formatted_template = DEPLOY_TEMPLATE.format(remote_dir, sources, packages_to_build, archive_cmd)
+        file1.write(formatted_template)
+
+    # make the template executable
+    st = os.stat(local_script_path)
+    os.chmod(local_script_path, st.st_mode | stat.S_IEXEC)
+
+    # transfer the script
+    xferDir(local_script_path, username, hostname, local_script_path)
+    return arch_name

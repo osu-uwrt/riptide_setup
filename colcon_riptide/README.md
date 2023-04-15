@@ -25,7 +25,7 @@ An exmple usage can be seen here:
 
 * colcon package selection args: The command also supports the normal package selection args during the deploy process. This allows package selection for remote deployment and build.
 
-## Colcon Timesync -- TODO
+## Colcon Timesync
 colcon_riptitde adds a command verb called `timesync`. The `timesync` verb is designed to support synchronizing clocks between a host and a target machine. It has a single argument for the hostname. It requires that passwordless SSH be setup with the remote and passwordless sudo be configured on the remote as well. 
 
 An exmple usage can be seen here:
@@ -33,4 +33,7 @@ An exmple usage can be seen here:
 
 ### Required Arguments
 * `Hostname`: the hostname argument is the only required argument. This can be either a hostname or an IP address of the target machine. The hostname should already be set up with an SSH key to allow auto login beforehand. If this is not set, the timesync will error out.
+
+### Optional Args
+* `--username <name>`: This allows specification of the remote target username to invoke during SSH connections. By default the user is assumed to be `ros` which is UWRT's default target username.
 
