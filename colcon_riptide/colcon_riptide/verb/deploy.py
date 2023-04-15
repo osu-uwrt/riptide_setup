@@ -115,7 +115,8 @@ class DeployVerb(VerbExtensionPoint):
 
         # grab out the descriptors from each package as we are only building 
         # on the target and not the host
-        packages_for_xfer = [package.descriptor for package in decorators if package.selected]
+        packages_for_xfer = [package.descriptor for package in decorators if 
+            package.selected and package.descriptor.metadata["colcon_deploy_allow"]]
 
         # make sure the remote source directory exists
         makeRemoteDir(REM_SRC_DIR, USERNAME, HOSTNAME)
@@ -128,7 +129,7 @@ class DeployVerb(VerbExtensionPoint):
             exit(-2)
         else:
             for descriptor in packages_for_xfer:
-                print(f"\t{descriptor.name} {os.path.join(os.getcwd(), descriptor.path)}")
+                print(f"\t{descriptor.name}")
                 packages_to_build.append(descriptor.name)
             print("\n\n")
 
