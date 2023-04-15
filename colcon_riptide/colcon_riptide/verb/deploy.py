@@ -89,7 +89,6 @@ class DeployVerb(VerbExtensionPoint):
             os.path.join(REMOTE_DIR, "build"),
             os.path.join(REMOTE_DIR, "log")
         ]
-        
 
         # test connection to target
         ret_code = testNetwork(HOSTNAME)
@@ -129,7 +128,7 @@ class DeployVerb(VerbExtensionPoint):
             exit(-2)
         else:
             for descriptor in packages_for_xfer:
-                print(f"\t{descriptor.name}")
+                print(f"\t{descriptor.name} {os.path.join(os.getcwd(), descriptor.path)}")
                 packages_to_build.append(descriptor.name)
             print("\n\n")
 
