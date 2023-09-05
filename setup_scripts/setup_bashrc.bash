@@ -12,7 +12,7 @@ if [ ! -f /tmp/source_this_boot ]; then
     echo ""
 
     touch /tmp/source_this_boot
-    if [[ $REPLY =~ ^[Rr]$ ]]; then
+    if [[ \$REPLY =~ ^[Rr]$ ]]; then
         touch /tmp/source_release
     else
         rm -f /tmp/source_release
