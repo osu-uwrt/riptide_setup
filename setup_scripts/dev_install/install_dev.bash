@@ -23,14 +23,17 @@ fi
 
 # install child dependencies and build dependencies
 echo "Building dependencies"
-cd ~/osu-uwrt/development/dependencies
+cd ~/osu-uwrt/development
 
 # test for subfolders named zed and disable if nvidia-smi doesnt run
 # this can also work for other packages and platforms
 if ! [ -x "$(command -v nvidia-smi)" ]; then
     echo "Nvidia driver not found. Disabling zed packages"
     python3 ~/osu-uwrt/riptide_setup/setup_scripts/dev_install/package_disable.py zed
+    python3 ~/osu-uwrt/riptide_setup/setup_scripts/dev_install/package_disable.py tensor_detector
 fi
+
+cd ~/osu-uwrt/development/dependencies
 
 rosdep install --from-paths src --ignore-src --rosdistro $ROS_DISTRO -y -r
 source /opt/ros/$ROS_DISTRO/setup.bash

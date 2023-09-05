@@ -3,7 +3,7 @@ repositories:
     software/src/riptide_autonomy:
       type: git
       url: https://github.com/osu-uwrt/riptide_autonomy.git
-      version: master
+      version: ros2
     software/src/riptide_control:
       type: git
       url: https://github.com/osu-uwrt/riptide_control.git
