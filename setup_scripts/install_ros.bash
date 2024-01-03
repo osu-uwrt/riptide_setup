@@ -20,7 +20,7 @@ sudo apt update
 
 echo "#######################################################################################################################"
 echo ""
-echo ">>>  {Starting ROS installation, this will take about 20 min. It will depends on your internet  connection}"
+echo ">>>  {Starting ROS installation, this will take about 20 min. It will depend on your internet  connection}"
 echo ""
 
 read -p "Enter your install (Default is desktop):" answer 
