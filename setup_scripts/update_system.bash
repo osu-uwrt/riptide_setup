@@ -51,6 +51,19 @@ case "$CHOICE" in
 esac
 printf "\n\n\n"
 
+read -p "Install MATLAB? This will take approximately 15 additional minutes and use approximately 17 GB (default is no) " CHOICE
+case "$CHOICE" in
+    [yY]*) 
+        echo "Running MATLAB setup"
+        ~/osu-uwrt/riptide_setup/setup_scripts/matlab_install/install_matlab.bash
+        ;;
+
+    *) 
+        echo "Skipping MATLAB setup"
+        ;;
+esac
+printf "\n\n\n"
+
 # setup hosts and add hardware udev rules
 echo "Setting up hardware and hosts files"
 sudo ~/osu-uwrt/riptide_setup/setup_scripts/hardware/setup_hosts.bash
