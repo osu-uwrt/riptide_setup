@@ -37,7 +37,7 @@ do
 	echo "Please download the file to your \"Downloads\" folder, then press enter to continue:"
 	read
 	
-	if [ -f "$HOME/Downloads/$installer_name" ]
+	if [ ! -f "$HOME/Downloads/$installer_name" ]
 	then
 	    # file still not there. Maybe it has a different name
             echo "Installer not found in Downloads directory. Perhaps it has a different name?"
