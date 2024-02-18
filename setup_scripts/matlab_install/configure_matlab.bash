@@ -34,6 +34,9 @@ do
     read pythonexecutable
 done
 
+#change into scripts directory so we can run matlab scripts
+cd ~/osu-uwrt/riptide_setup/setup_scripts/matlab_install
+
 #link matlab executable to /usr/bin so that it can be easily run
 #this is done as a shell script because the matlab executable tries 
 #to reference files relative to itself.
@@ -53,10 +56,10 @@ then
     read confirm
     if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]
     then
-        echo "Replacing"
+        echo "Removing"
         sudo rm -f /usr/bin/matlab
     else
-        echo "NOT replacing"
+        echo "NOT removing"
     fi
 fi
 
@@ -103,4 +106,9 @@ matlab -batch "configure_rostoolbox(\"$pythonexecutable\")"
 
 #configure custom msgs
 echo "Configuring custom ROS message support"
+# source ros first
+. /opt/ros/$ROS_DISTRO/setup.bash
+. ~/osu-uwrt/development/dependencies/install/setup.bash
+. ~/osu-uwrt/development/software/install/setup.bash
 ros2 run riptide_controllers2 model_manager.py refresh_custom_msg_support
+

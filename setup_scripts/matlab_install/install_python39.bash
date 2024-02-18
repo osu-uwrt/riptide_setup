@@ -17,6 +17,7 @@ tar -xf Python-3.9.0.tgz
 cd Python-3.9.0
 ./configure
 echo "Building Python3.9"
-make -q -j4
+make --quiet -j4
 echo "Installing Python3.9"
-sudo make -q altinstall
+sudo make --quiet altinstall
+
